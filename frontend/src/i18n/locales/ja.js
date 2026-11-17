@@ -102,7 +102,18 @@ export default {
     "selected": "{n} 点選択",
     "needLevel2": "発送には本人確認が必要です",
     "needLevel3": "高額配送には住所確認が必要です",
-    "notShippable": "これは発送できません"
+    "notShippable": "これは発送できません",
+    "searchItems": "アイテムを検索…",
+    "highestValue": "高額順",
+    "emptyTitle": "インベントリが空です",
+    "emptySub": "ボックスを開けて埋めよう",
+    "openABox": "ボックスを開ける",
+    "portfolio": "保有資産",
+    "selectAll": "すべて選択",
+    "clear": "解除",
+    "sellN": "{n} 点を {amount} で売却",
+    "sold": "{n} 点を {amount} で売却しました",
+    "shipSoon": "配送はまだ有効ではありません。"
   },
   "profile": {
     "affiliate": "あなたの紹介",

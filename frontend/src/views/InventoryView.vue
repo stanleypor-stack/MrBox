@@ -1,81 +1,124 @@
 <template>
   <div class="mb-inv">
-    <header class="mb-inv__barra">
-      <h1 class="mb-inv__titulo">{{ $t('inventory.title') }}</h1>
+    <h1 class="mb-inv__titulo">{{ $t('inventory.title') }}</h1>
 
-      <span v-if="resumen.cuantos" class="mb-inv__resumen">
-        {{ $t('box.items', { n: resumen.cuantos }) }}
-        <span class="mb-punto" aria-hidden="true">·</span>
-        <span class="mb-sc" aria-hidden="true">SC</span><b>{{ plata(resumen.valorSc) }}</b>
-      </span>
+    <div class="mb-inv__cols">
+      <!-- ── La grilla ────────────────────────────────────────────── -->
+      <div class="mb-inv__izq">
+        <div class="mb-inv__barra">
+          <label class="mb-buscar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8ea3c7"
+                 stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
+            </svg>
+            <span class="mb-oculto">{{ $t('action.search') }}</span>
+            <input v-model="busqueda" type="search" :placeholder="$t('inventory.searchItems')">
+          </label>
 
-      <button
-        v-if="elegidos.length"
-        type="button" class="mb-boton mb-boton--primario"
-        :disabled="vendiendo" @click="venderElegidos"
-      >
-        {{ $t('inventory.sellSelected') }} · SC {{ plata(totalElegido) }}
-      </button>
-    </header>
+          <label class="mb-sel">
+            <span class="mb-oculto">{{ $t('boxes.sort') }}</span>
+            <select v-model="orden">
+              <option value="nuevo">{{ $t('boxes.sortNew') }}</option>
+              <option value="caro">{{ $t('inventory.highestValue') }}</option>
+              <option value="barato">{{ $t('boxes.sortCheap') }}</option>
+            </select>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ea3c7"
+                 stroke-width="2.6" stroke-linecap="round" aria-hidden="true">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </label>
 
-    <p v-if="cargando" class="mb-vacio">{{ $t('common.loading') }}</p>
-    <p v-else-if="!items.length" class="mb-vacio">{{ $t('inventory.empty') }}</p>
-
-    <ul v-else class="mb-grilla">
-      <li
-        v-for="o in items" :key="o._id"
-        class="mb-obj" :class="{ 'is-elegido': elegidos.includes(o._id) }"
-        :style="{ borderColor: elegidos.includes(o._id) ? color(o.rarity) : '' }"
-      >
-        <!--
-          Toda la tarjeta es el botón de elegir. Un `label` con un
-          checkbox de verdad adentro: se marca con el mouse, con el dedo
-          y con la barra espaciadora, y el lector de pantalla lo anuncia
-          como lo que es.
-        -->
-        <label class="mb-obj__elegir">
-          <input
-            type="checkbox" class="mb-obj__check"
-            :checked="elegidos.includes(o._id)"
-            @change="alternar(o._id)"
-          >
-          <span class="mb-obj__tapa" :style="{ background: fondo(o.rarity) }">
-            <img v-if="o.imageUrl" :src="o.imageUrl" :alt="''">
-            <span v-else class="mb-obj__inicial" aria-hidden="true">{{ o.name.charAt(0) }}</span>
-          </span>
-          <span class="mb-obj__nombre">{{ o.name }}</span>
-          <span class="mb-obj__valor">
-            <span class="mb-sc" aria-hidden="true">SC</span>{{ plata(o.valueSc) }}
-          </span>
-        </label>
-
-        <div class="mb-obj__acciones">
-          <button type="button" class="mb-mini" :disabled="vendiendo" @click="vender(o)">
-            {{ $t('box.sellFor', { amount: 'SC ' + plata(o.seVendePorSc) }) }}
-          </button>
-
-          <!--
-            POR QUE NO SE PUEDE ENVIAR, DICHO EN CRISTIANO.
-
-            Un botón apagado sin explicación es la peor pantalla posible:
-            el jugador no sabe si es un error nuestro o algo que puede
-            resolver. El servidor manda el motivo y acá se traduce.
-          -->
-          <button
-            type="button" class="mb-mini"
-            :disabled="!o.puedeEnviarse"
-            :title="motivo(o)"
-          >{{ $t('action.ship') }}</button>
+          <div class="mb-inv__pestanas">
+            <span class="mb-pestana is-activa">
+              <span>{{ $t('wallet.items') }}</span>
+              <span class="mb-pestana__n">{{ resumen.cuantos }}</span>
+            </span>
+            <span class="mb-pestana">
+              <span>{{ $t('nav.boxes') }}</span>
+              <span class="mb-pestana__n">{{ aperturasGratis }}</span>
+            </span>
+          </div>
         </div>
 
-        <p v-if="!o.puedeEnviarse" class="mb-obj__motivo">{{ motivo(o) }}</p>
-      </li>
-    </ul>
+        <p v-if="cargando" class="mb-vacio">{{ $t('common.loading') }}</p>
+
+        <!-- El vacío del diseño: arte, explicación y un botón que
+             lleva a abrir una caja. Un vacío que no ofrece salida es
+             una pantalla muerta. -->
+        <div v-else-if="!visibles.length" class="mb-nada">
+          <div class="mb-art mb-nada__arte" :style="arteVacio" aria-hidden="true"></div>
+          <span class="mb-nada__titulo">{{ $t('inventory.emptyTitle') }}</span>
+          <span class="mb-nada__sub">{{ $t('inventory.emptySub') }}</span>
+          <router-link to="/boxes" class="mb-nada__b">{{ $t('inventory.openABox') }}</router-link>
+        </div>
+
+        <div v-else class="mb-inv__grilla">
+          <button
+            v-for="o in visibles" :key="o._id" type="button"
+            class="mb-obj" :aria-pressed="elegidos.includes(o._id) ? 'true' : 'false'"
+            :style="estiloObjeto(o)"
+            @click="alternar(o._id)"
+          >
+            <span v-if="spr(o)" class="mb-prod mb-obj__foto" :style="spr(o)" aria-hidden="true"></span>
+            <span class="mb-obj__nombre">{{ o.name }}</span>
+            <span class="mb-obj__valor">
+              <span class="mb-sc mb-sc--16" aria-hidden="true">SC</span>{{ plata(o.valueSc) }}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── El panel de la derecha ───────────────────────────────── -->
+      <aside class="mb-invside">
+        <div class="mb-panelito">
+          <div class="mb-panelito__cifras">
+            <div class="mb-cifra">
+              <span class="mb-cifra__rot">{{ $t('inventory.portfolio') }}</span>
+              <span class="mb-cifra__val">
+                <span class="mb-sc mb-sc--18" aria-hidden="true">SC</span>{{ plata(resumen.valorSc) }}
+              </span>
+            </div>
+            <div class="mb-cifra mb-cifra--der">
+              <span class="mb-cifra__rot">{{ $t('wallet.items') }}</span>
+              <span class="mb-cifra__val">{{ resumen.cuantos }}</span>
+            </div>
+          </div>
+
+          <div class="mb-panelito__acciones">
+            <button
+              type="button" class="mb-azul" :disabled="!elegidos.length || vendiendo"
+              @click="venderElegidos"
+            >
+              {{ elegidos.length
+                ? $t('inventory.sellN', { n: elegidos.length, amount: 'SC ' + plata(totalElegido) })
+                : $t('inventory.sellSelected') }}
+            </button>
+
+            <div class="mb-panelito__fila">
+              <button type="button" class="mb-chico" @click="elegirTodo">
+                {{ todoElegido ? $t('inventory.clear') : $t('inventory.selectAll') }}
+              </button>
+              <button
+                type="button" class="mb-chico"
+                :disabled="!elegidos.length" @click="pedirEnvio"
+              >{{ $t('action.ship') }}</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Por qué no se puede enviar algo de lo elegido. -->
+        <div v-if="trabas.length" class="mb-trabas">
+          <p v-for="(t, i) in trabas" :key="i" class="mb-trabas__linea">{{ t }}</p>
+        </div>
+      </aside>
+    </div>
   </div>
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 import api from "@/api";
+import { sprite } from "@/utils/sprite";
 
 const COLORES = {
   blue: "#3f7cf0", purple: "#8b4fe0", pink: "#e0418f", red: "#e2424b", gold: "#f5b80a",
@@ -84,9 +127,21 @@ const COLORES = {
 /**
  * EL INVENTARIO.
  *
- * Lo que gano. Se puede vender de a uno o elegir varios y vender todo
- * junto, que es lo que uno quiere después de abrir veinte cajas y
- * quedarse con un montón de cosas de SC 1.
+ * Portado del prototipo: la grilla con el resplandor del color de la
+ * rareza detras de cada objeto, el buscador y el orden, el panel de la
+ * derecha con el valor de la cartera, y el vacio con su arte.
+ *
+ * SE ELIGE Y SE VENDE DE A MUCHOS
+ *
+ * Despues de abrir veinte cajas uno queda con un monton de cosas de
+ * SC 1, y venderlas de a una es insoportable. Por eso cada objeto es un
+ * boton que se marca, y el panel vende todo lo marcado junto.
+ *
+ * EL FILTRO ES LOCAL
+ *
+ * Buscar y ordenar se hacen sobre lo que ya se bajo. El inventario de
+ * alguien entra comodo en una pantalla y pedirle al servidor en cada
+ * tecla seria castigarlo sin motivo.
  */
 export default {
   name: "InventoryView",
@@ -98,38 +153,76 @@ export default {
       cargando: true,
       vendiendo: false,
       elegidos: [],
+      busqueda: "",
+      orden: "nuevo",
     };
   },
 
   computed: {
+    ...mapGetters(["aperturasGratis"]),
+
+    visibles() {
+      const q = this.busqueda.trim().toLowerCase();
+      const lista = q ? this.items.filter((o) => o.name.toLowerCase().includes(q)) : [...this.items];
+      const ORDEN = {
+        caro: (a, b) => b.valueSc - a.valueSc,
+        barato: (a, b) => a.valueSc - b.valueSc,
+        nuevo: (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      };
+      return lista.sort(ORDEN[this.orden] || ORDEN.nuevo);
+    },
+
     totalElegido() {
       return Math.round(
-        this.items
-          .filter((o) => this.elegidos.includes(o._id))
+        this.items.filter((o) => this.elegidos.includes(o._id))
           .reduce((a, o) => a + o.seVendePorSc, 0) * 100
       ) / 100;
     },
-  },
 
-  methods: {
-    color(r) { return COLORES[r] || COLORES.blue; },
-    fondo(r) {
-      const c = this.color(r);
-      return `radial-gradient(circle at 50% 40%, ${c}44 0%, #12213a 72%)`;
-    },
-    plata(n) {
-      return Number(n || 0).toLocaleString("en-US", {
-        minimumFractionDigits: 2, maximumFractionDigits: 2,
-      });
+    todoElegido() {
+      return this.visibles.length > 0 && this.elegidos.length === this.visibles.length;
     },
 
-    motivo(o) {
+    /** El arte del vacío: una caja cualquiera, para que no sea un hueco. */
+    arteVacio() {
+      return { backgroundPosition: "0% 0%" };
+    },
+
+    /** Los motivos por los que algo de lo elegido no se puede enviar. */
+    trabas() {
       const claves = {
         ITEM_NOT_SHIPPABLE: "inventory.notShippable",
         NECESITA_NIVEL_2: "inventory.needLevel2",
         NECESITA_NIVEL_3: "inventory.needLevel3",
       };
-      return o.porQueNoSeEnvia ? this.$t(claves[o.porQueNoSeEnvia] || "inventory.notShippable") : "";
+      const vistos = new Set();
+      for (const o of this.items) {
+        if (this.elegidos.includes(o._id) && o.porQueNoSeEnvia) vistos.add(o.porQueNoSeEnvia);
+      }
+      return [...vistos].map((k) => this.$t(claves[k] || "inventory.notShippable"));
+    },
+  },
+
+  methods: {
+    plata(n) {
+      return Number(n || 0).toLocaleString("en-US", {
+        minimumFractionDigits: 2, maximumFractionDigits: 2,
+      });
+    },
+    spr(o) {
+      const s = sprite(o.imageUrl);
+      return s ? s.estilo : null;
+    },
+
+    /* El resplandor y el borde salen de la rareza, como el diseño. */
+    estiloObjeto(o) {
+      const c = COLORES[o.rarity] || COLORES.blue;
+      const elegido = this.elegidos.includes(o._id);
+      return {
+        borderColor: elegido ? "#fff" : c + "66",
+        background: `radial-gradient(circle at 50% 36%, ${c}3d 0%, #142645 62%)`,
+        boxShadow: `inset 0 -3px 0 ${c}`,
+      };
     },
 
     alternar(id) {
@@ -138,14 +231,20 @@ export default {
       else this.elegidos.splice(i, 1);
     },
 
+    elegirTodo() {
+      this.elegidos = this.todoElegido ? [] : this.visibles.map((o) => o._id);
+    },
+
+    pedirEnvio() {
+      this.$store.dispatch("avisar", { texto: this.$t("inventory.shipSoon") });
+    },
+
     async traer() {
       this.cargando = true;
       try {
-        const { data } = await api.get("/inventory");
+        const { data } = await api.get("/inventory", { params: { perPage: 100 } });
         this.items = data.data.items;
         this.resumen = data.data.resumen;
-        /* Lo elegido que ya no está se saca, si no el botón suma objetos
-           que se vendieron en otra pestaña. */
         const vivos = new Set(this.items.map((o) => o._id));
         this.elegidos = this.elegidos.filter((id) => vivos.has(id));
       } catch (err) {
@@ -155,26 +254,15 @@ export default {
       }
     },
 
-    async vender(o) {
-      this.vendiendo = true;
-      try {
-        const { data } = await api.post(`/inventory/${o._id}/sell`);
-        this.$store.commit("saldo", data.data);
-        await this.traer();
-      } catch (err) {
-        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
-        /* Puede haberse vendido en otra pestaña: se refresca igual. */
-        await this.traer();
-      } finally {
-        this.vendiendo = false;
-      }
-    },
-
     async venderElegidos() {
+      if (!this.elegidos.length) return;
       this.vendiendo = true;
       try {
         const { data } = await api.post("/inventory/sell-many", { ids: this.elegidos });
         this.$store.commit("saldo", data.data);
+        this.$store.dispatch("avisar", {
+          texto: this.$t("inventory.sold", { n: data.data.vendidos, amount: "SC " + this.plata(data.data.totalSc) }),
+        });
         this.elegidos = [];
         await this.traer();
       } catch (err) {
@@ -192,171 +280,256 @@ export default {
 <style lang="scss" scoped>
 @import "@/styles/tokens";
 
-.mb-inv {
-  padding: 24px 28px 48px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  @include en-celular { padding: 16px; }
+.mb-inv { display: flex; flex-direction: column; gap: 16px; }
+
+.mb-inv__titulo {
+  margin: 0;
+  font-weight: 900;
+  font-size: clamp(26px, 3.6vw, 34px);
 }
+
+.mb-inv__cols { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
+.mb-inv__izq { flex: 999 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 18px; }
 
 .mb-inv__barra {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 18px;
+  background: #12213a;
 }
 
-.mb-inv__titulo {
-  flex: 1 1 auto;
-  margin: 0;
-  font-family: $fuente-titulo;
-  font-size: 26px;
-  font-weight: 400;
-}
-
-.mb-inv__resumen {
+.mb-buscar {
+  flex: 1 1 220px;
   display: flex;
   align-items: center;
-  gap: 7px;
-  color: $texto-3;
-  font-weight: 700;
-  b { color: $texto; }
-}
-
-.mb-punto { color: $texto-4; }
-
-.mb-grilla {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 12px;
-  @include en-celular { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-}
-
-.mb-obj {
-  display: flex;
-  flex-direction: column;
   gap: 8px;
-  padding: 10px;
-  border: 2px solid $borde;
-  border-radius: $radio-tarjeta;
-  background: $panel;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid #2a4170;
+  background: #0e1a2e;
 
-  &.is-elegido { background: $panel-hover; }
-}
-
-.mb-obj__elegir {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  cursor: pointer;
-}
-
-.mb-obj__check {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-
-  // El anillo de foco va en la tarjeta, porque la casilla es invisible.
-  &:focus-visible + .mb-obj__tapa {
-    outline: 2px solid $azul;
-    outline-offset: 2px;
+  input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    &::placeholder { color: #6f84ab; }
   }
 }
 
-.mb-obj__tapa {
+.mb-sel {
   position: relative;
-  aspect-ratio: 1 / 1;
-  border-radius: $radio-chico;
   display: flex;
   align-items: center;
-  justify-content: center;
+  height: 46px;
+  border-radius: 12px;
+  border: 1px solid #2a4170;
+  background: #0e1a2e;
+
+  select {
+    height: 100%;
+    padding: 0 34px 0 14px;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 14px;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    @include foco;
+  }
+
+  svg { position: absolute; right: 12px; pointer-events: none; }
+}
+
+.mb-inv__pestanas {
+  flex: 1 1 300px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mb-pestana {
+  position: relative;
   overflow: hidden;
+  height: 50px;
+  border-radius: 12px;
+  border: 1px solid #2a4170;
+  background: #13285a;
+  padding: 6px 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: $texto-2;
 
-  img { width: 100%; height: 100%; object-fit: contain; }
+  &.is-activa { border: 2px solid #fff; background: #173468; color: #fff; }
+  span { font-weight: 900; font-size: 15px; }
 }
 
-.mb-obj__inicial {
-  font-family: $fuente-titulo;
-  font-size: 34px;
-  color: rgba(255, 255, 255, .3);
+.mb-pestana__n { font-size: 12px !important; opacity: .75; }
+
+/* ── La grilla ────────────────────────────────────────────────────── */
+
+.mb-inv__grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(46%, 150px), 1fr));
+  gap: 12px;
 }
+
+.mb-obj {
+  min-width: 0;
+  text-align: left;
+  border-radius: 14px;
+  border: 2px solid;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: #fff;
+  font-family: inherit;
+  cursor: pointer;
+  @include foco;
+
+  &:hover { transform: translateY(-2px); }
+}
+
+.mb-obj__foto { width: 100%; aspect-ratio: 1 / 1; }
 
 .mb-obj__nombre {
   font-weight: 800;
-  font-size: 13px;
-  line-height: 1.3;
+  font-size: 12px;
+  line-height: 1.2;
+  height: 29px;
+  overflow: hidden;
 }
 
 .mb-obj__valor {
-  display: flex;
-  align-items: center;
-  gap: 5px;
   font-weight: 900;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
 }
 
-.mb-obj__acciones {
+/* ── El vacío ─────────────────────────────────────────────────────── */
+
+.mb-nada {
+  padding: 30px 16px;
   display: flex;
-  gap: 6px;
-  > * { flex: 1; }
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
 }
 
-.mb-mini {
-  min-height: 34px;
-  padding: 0 8px;
-  border: 1px solid $borde-fuerte;
-  border-radius: $radio-chico;
-  background: $panel-alto;
-  color: $texto-2;
-  font-family: inherit;
-  font-weight: 800;
-  font-size: 11px;
-  cursor: pointer;
+.mb-nada__arte { width: 180px; height: 180px; }
+.mb-nada__titulo { font-weight: 900; font-size: 22px; }
+.mb-nada__sub { font-size: 15px; color: $texto-4; }
+
+.mb-nada__b {
+  margin-top: 10px;
+  height: 52px;
+  padding: 0 40px;
+  border-radius: 26px;
+  border: 3px solid #fff;
+  background: linear-gradient(180deg, #3fa9ff 0%, #2f6fe0 100%);
+  color: #fff;
+  font-weight: 900;
+  font-size: 16px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
   @include foco;
-
-  &:hover:not(:disabled) { background: $lateral-hover; color: $texto; }
-  &:disabled { opacity: .45; cursor: not-allowed; }
+  &:hover { color: #fff; filter: brightness(1.06); }
 }
 
-.mb-obj__motivo {
-  margin: 0;
-  color: $texto-4;
-  font-size: 11px;
-  line-height: 1.35;
+/* ── El panel ─────────────────────────────────────────────────────── */
+
+.mb-invside {
+  flex: 1 1 300px;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  @include en-celular { max-width: none; order: -1; }
 }
 
-.mb-boton {
-  min-height: 44px;
-  padding: 0 18px;
-  border: 1px solid $azul;
-  border-radius: $radio;
-  background: $azul;
+.mb-panelito {
+  border-radius: 18px;
+  background: #12213a;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mb-panelito__cifras { display: flex; gap: 24px; }
+
+.mb-cifra {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  &--der { padding-left: 20px; border-left: 1px solid $borde; }
+}
+
+.mb-cifra__rot { font-weight: 900; font-size: 11px; letter-spacing: .1em; color: $texto-4; }
+.mb-cifra__val { display: flex; align-items: center; gap: 6px; font-weight: 900; font-size: 20px; }
+
+.mb-panelito__acciones { display: flex; flex-direction: column; gap: 8px; }
+.mb-panelito__fila { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.mb-azul {
+  height: 50px;
+  border-radius: 25px;
+  border: 3px solid #fff;
+  background: linear-gradient(180deg, #5b9bff 0%, #2f6fe0 100%);
+  color: #fff;
+  font-family: $fuente-cartel;
+  font-size: 17px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #1c4fc4;
+  @include foco;
+  &:hover:not(:disabled) { filter: brightness(1.07); }
+  &:disabled { opacity: .45; cursor: default; }
+}
+
+.mb-chico {
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid #2a4170;
+  background: #16253f;
   color: #fff;
   font-family: inherit;
-  font-weight: 900;
+  font-weight: 800;
+  font-size: 13px;
   cursor: pointer;
   @include foco;
-  &:disabled { opacity: .5; cursor: default; }
+  &:hover:not(:disabled) { background: #1d3354; }
+  &:disabled { opacity: .45; cursor: default; }
 }
 
-.mb-vacio { margin: 40px 0; text-align: center; color: $texto-4; }
-
-.mb-sc {
-  display: inline-flex;
-  flex: none;
-  width: 18px;
-  height: 18px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: linear-gradient($sc-verde-claro, $sc-verde);
-  color: $sc-texto;
-  font-weight: 900;
-  font-size: 8px;
-  line-height: 1;
+.mb-trabas {
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 211, 90, .35);
+  background: rgba(255, 211, 90, .08);
 }
+
+.mb-trabas__linea { margin: 0 0 6px; color: $amarillo; font-size: 13px; font-weight: 700; &:last-child { margin: 0; } }
+
+.mb-vacio { margin: 30px 0; text-align: center; color: $texto-4; }
+
+.mb-oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 </style>

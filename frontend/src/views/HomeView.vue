@@ -39,7 +39,7 @@
     <!-- ── El carrusel ──────────────────────────────────────────── -->
     <section class="mb-banners" :aria-label="$t('home.highlights')" aria-roledescription="carousel">
       <div ref="tira" class="mb-banners__tira mb-snap" @scroll.passive="alDeslizar">
-        <div v-for="(b, i) in banners" :key="i" class="mb-banner" :style="{ background: b.bg }">
+        <div v-for="(b, i) in bannersConArte" :key="i" class="mb-banner" :style="{ background: b.bg }">
           <div class="mb-rays mb-banner__rayos" aria-hidden="true"></div>
 
           <div class="mb-banner__arte" aria-hidden="true">
@@ -60,7 +60,7 @@
 
       <div class="mb-banners__puntos">
         <button
-          v-for="(b, i) in banners" :key="i" type="button"
+          v-for="(b, i) in bannersConArte" :key="i" type="button"
           class="mb-punto" :class="{ 'is-activo': i === actual }"
           :aria-label="$t(b.title)" @click="irA(i)"
         ></button>
@@ -147,19 +147,64 @@ export default {
       /* Los cuatro banners del diseño, con su color y su destino. */
       banners: [
         { kicker: "banners.carsKicker", title: "banners.carsTitle", sub: "banners.carsSub",
-          cta: "banners.carsCta", bg: "#14306a", glow: "#d24a55", a: "/boxes?sort=caras" },
+          cta: "banners.carsCta", bg: "#14306a", glow: "#d24a55", a: "/boxes?sort=caras",
+          filtro: (c) => /car|auto|porsche|audi|bmw|moto|harley|gta/i.test(c.name + c.category) },
         { kicker: "banners.goldKicker", title: "banners.goldTitle", sub: "banners.goldSub",
-          cta: "banners.goldCta", bg: "#2a2a5e", glow: "#e0a21a", a: "/boxes?search=gold" },
+          cta: "banners.goldCta", bg: "#2a2a5e", glow: "#e0a21a", a: "/boxes?search=gold",
+          filtro: (c) => /gold|bullion|diamond|ice/i.test(c.name) },
         { kicker: "banners.watchKicker", title: "banners.watchTitle", sub: "banners.watchSub",
-          cta: "banners.watchCta", bg: "#0f2f58", glow: "#1d7fbf", a: "/boxes?category=Watches" },
+          cta: "banners.watchCta", bg: "#0f2f58", glow: "#1d7fbf", a: "/boxes?category=Watches",
+          filtro: (c) => /watch|rolex|hublot|heuer|first class/i.test(c.name + c.category) },
         { kicker: "banners.luxKicker", title: "banners.luxTitle", sub: "banners.luxSub",
-          cta: "banners.luxCta", bg: "#1b2457", glow: "#6a4fe0", a: "/boxes?min=200&sort=caras" },
+          cta: "banners.luxCta", bg: "#1b2457", glow: "#6a4fe0", a: "/boxes?min=200&sort=caras",
+          filtro: (c) => c.priceSc >= 100 },
       ],
     };
   },
 
   computed: {
     ...mapGetters(["entro", "aperturasGratis"]),
+
+    /**
+     * Los banners, con el arte de cajas DE VERDAD.
+     *
+     * Derivado y no guardado: calculado una vez al cargar quedaba viejo
+     * --y si fallaba, los tres huecos caían en la posición 0% 0% de la
+     * lámina, que es la primera caja: por eso salían tres Black Card
+     * iguales en vez de tres cajas distintas.
+     *
+     * Cada banner busca cajas de su tema, como el diseño, y si no
+     * encuentra sigue con las que haya: un banner con arte repetido es
+     * feo, pero uno vacío es peor.
+     */
+    bannersConArte() {
+      const todas = this.filas.flatMap((f) => f.items);
+      if (!todas.length) return this.banners;
+
+      const pos = (c) => {
+        const s = c && sprite(c.imageUrl);
+        return s ? s.estilo.backgroundPosition : null;
+      };
+
+      return this.banners.map((b, i) => {
+        /* Primero las de su tema; después, cualquiera, salteando las ya
+           usadas para que no se repitan dentro del mismo banner. */
+        const suyas = todas.filter(b.filtro);
+        const resto = todas.filter((c) => !suyas.includes(c));
+        const fuente = [...suyas, ...resto];
+        const usadas = [];
+
+        const elegir = (n) => {
+          for (let k = 0; k < fuente.length; k += 1) {
+            const c = fuente[(n * 7 + k + i * 3) % fuente.length];
+            if (!usadas.includes(c)) { usadas.push(c); return pos(c); }
+          }
+          return pos(fuente[0]);
+        };
+
+        return { ...b, p1: elegir(0), p2: elegir(1), p3: elegir(2) };
+      });
+    },
   },
 
   methods: {
@@ -217,18 +262,6 @@ export default {
         const baratas = this.filas.find((f) => f.id === "cheap");
         this.tickets = ((baratas && baratas.items) || []).slice(0, 3);
 
-        /* Los banners se quedan con el arte de tres cajas de verdad en
-           vez de una posición escrita a mano, así siempre muestran algo
-           que existe en el catálogo. */
-        const todas = this.filas.flatMap((f) => f.items);
-        this.banners = this.banners.map((b, i) => {
-          const elegir = (n) => {
-            const c = todas[(i * 3 + n) % Math.max(1, todas.length)];
-            const s = c && sprite(c.imageUrl);
-            return s ? s.estilo.backgroundPosition : "0% 0%";
-          };
-          return { ...b, p1: elegir(0), p2: elegir(1), p3: elegir(2) };
-        });
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
       } finally {

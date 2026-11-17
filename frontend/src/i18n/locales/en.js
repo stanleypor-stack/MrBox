@@ -102,7 +102,18 @@ export default {
     "selected": "{n} selected",
     "needLevel2": "Verify your identity to ship this",
     "needLevel3": "High-value parcel: proof of address needed",
-    "notShippable": "This cannot be shipped"
+    "notShippable": "This cannot be shipped",
+    "searchItems": "Search items…",
+    "highestValue": "Highest value",
+    "emptyTitle": "Inventory Empty",
+    "emptySub": "Open boxes to fill your inventory",
+    "openABox": "Open a Box",
+    "portfolio": "PORTFOLIO",
+    "selectAll": "Select all",
+    "clear": "Clear",
+    "sellN": "Sell {n} for {amount}",
+    "sold": "Sold {n} for {amount}",
+    "shipSoon": "Shipping is not switched on yet."
   },
   "profile": {
     "affiliate": "Your referrals",

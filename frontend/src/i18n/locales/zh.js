@@ -102,7 +102,18 @@ export default {
     "selected": "已选 {n} 件",
     "needLevel2": "发货需要完成身份验证",
     "needLevel3": "高价值包裹：需要地址证明",
-    "notShippable": "此物品无法发货"
+    "notShippable": "此物品无法发货",
+    "searchItems": "搜索物品…",
+    "highestValue": "价值从高",
+    "emptyTitle": "背包是空的",
+    "emptySub": "开盒来填满背包",
+    "openABox": "开一个盒",
+    "portfolio": "持仓",
+    "selectAll": "全选",
+    "clear": "清空",
+    "sellN": "将 {n} 件以 {amount} 出售",
+    "sold": "已将 {n} 件以 {amount} 出售",
+    "shipSoon": "发货尚未开放。"
   },
   "profile": {
     "affiliate": "你的推广",

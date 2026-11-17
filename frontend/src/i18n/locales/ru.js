@@ -102,7 +102,18 @@ export default {
     "selected": "Выбрано: {n}",
     "needLevel2": "Подтвердите личность для отправки",
     "needLevel3": "Дорогая посылка: нужен адрес",
-    "notShippable": "Это нельзя отправить"
+    "notShippable": "Это нельзя отправить",
+    "searchItems": "Поиск…",
+    "highestValue": "Самые дорогие",
+    "emptyTitle": "Инвентарь пуст",
+    "emptySub": "Открывайте коробки, чтобы наполнить инвентарь",
+    "openABox": "Открыть коробку",
+    "portfolio": "ПОРТФЕЛЬ",
+    "selectAll": "Выбрать всё",
+    "clear": "Сбросить",
+    "sellN": "Продать {n} за {amount}",
+    "sold": "Продано {n} за {amount}",
+    "shipSoon": "Отправка пока недоступна."
   },
   "profile": {
     "affiliate": "Ваши рефералы",

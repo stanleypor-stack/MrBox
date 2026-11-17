@@ -102,7 +102,18 @@ export default {
     "selected": "{n} elegidos",
     "needLevel2": "Verificá tu identidad para poder enviarlo",
     "needLevel3": "Envío de alto valor: hace falta comprobante de domicilio",
-    "notShippable": "Esto no se puede enviar"
+    "notShippable": "Esto no se puede enviar",
+    "searchItems": "Buscar objetos…",
+    "highestValue": "Más valiosos",
+    "emptyTitle": "Inventario vacío",
+    "emptySub": "Abrí cajas para llenar tu inventario",
+    "openABox": "Abrir una caja",
+    "portfolio": "CARTERA",
+    "selectAll": "Elegir todo",
+    "clear": "Limpiar",
+    "sellN": "Vender {n} por {amount}",
+    "sold": "Vendiste {n} por {amount}",
+    "shipSoon": "Los envíos todavía no están activos."
   },
   "profile": {
     "affiliate": "Tus referidos",

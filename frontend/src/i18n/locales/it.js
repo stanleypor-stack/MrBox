@@ -102,7 +102,18 @@ export default {
     "selected": "{n} selezionati",
     "needLevel2": "Verifica la tua identità per spedirlo",
     "needLevel3": "Spedizione di valore: serve la prova di indirizzo",
-    "notShippable": "Questo non può essere spedito"
+    "notShippable": "Questo non può essere spedito",
+    "searchItems": "Cerca oggetti…",
+    "highestValue": "Più preziosi",
+    "emptyTitle": "Inventario vuoto",
+    "emptySub": "Apri box per riempire il tuo inventario",
+    "openABox": "Apri una box",
+    "portfolio": "PORTAFOGLIO",
+    "selectAll": "Seleziona tutto",
+    "clear": "Pulisci",
+    "sellN": "Vendi {n} per {amount}",
+    "sold": "Venduti {n} per {amount}",
+    "shipSoon": "Le spedizioni non sono ancora attive."
   },
   "profile": {
     "affiliate": "I tuoi referral",

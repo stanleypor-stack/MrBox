@@ -102,7 +102,18 @@ export default {
     "selected": "{n} ausgewählt",
     "needLevel2": "Verifiziere deine Identität, um dies zu versenden",
     "needLevel3": "Wertsendung: Adressnachweis nötig",
-    "notShippable": "Das kann nicht versendet werden"
+    "notShippable": "Das kann nicht versendet werden",
+    "searchItems": "Artikel suchen…",
+    "highestValue": "Höchster Wert",
+    "emptyTitle": "Inventar leer",
+    "emptySub": "Öffne Boxen, um dein Inventar zu füllen",
+    "openABox": "Box öffnen",
+    "portfolio": "BESTAND",
+    "selectAll": "Alle auswählen",
+    "clear": "Leeren",
+    "sellN": "{n} für {amount} verkaufen",
+    "sold": "{n} für {amount} verkauft",
+    "shipSoon": "Versand ist noch nicht aktiv."
   },
   "profile": {
     "affiliate": "Deine Empfehlungen",

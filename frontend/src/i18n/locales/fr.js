@@ -102,7 +102,18 @@ export default {
     "selected": "{n} sélectionnés",
     "needLevel2": "Vérifiez votre identité pour l’expédier",
     "needLevel3": "Colis de valeur : justificatif de domicile requis",
-    "notShippable": "Cet objet ne peut pas être expédié"
+    "notShippable": "Cet objet ne peut pas être expédié",
+    "searchItems": "Rechercher…",
+    "highestValue": "Plus grande valeur",
+    "emptyTitle": "Inventaire vide",
+    "emptySub": "Ouvre des coffrets pour remplir ton inventaire",
+    "openABox": "Ouvrir un coffret",
+    "portfolio": "PORTEFEUILLE",
+    "selectAll": "Tout sélectionner",
+    "clear": "Effacer",
+    "sellN": "Vendre {n} pour {amount}",
+    "sold": "{n} vendus pour {amount}",
+    "shipSoon": "L’expédition n’est pas encore activée."
   },
   "profile": {
     "affiliate": "Vos parrainages",
