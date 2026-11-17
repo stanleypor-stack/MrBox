@@ -7,3 +7,7 @@ dist/
 logs/
 .DS_Store
 coverage/
+
+# El catalogo sacado del diseno: se regenera con
+# scripts/extraerCatalogoDelDiseno.py y pesa 2 MB.
+backend/datos/catalogo.json
