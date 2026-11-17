@@ -206,12 +206,8 @@
           </button>
 
           <div v-else class="mb-cuenta__entrar">
-            <button type="button" class="mb-entrar" @click="$emit('entrar', 'login')">
-              {{ $t('action.signIn') }}
-            </button>
-            <button type="button" class="mb-entrar mb-entrar--fuerte" @click="$emit('entrar', 'register')">
-              {{ $t('action.signUp') }}
-            </button>
+            <router-link to="/login" class="mb-entrar">{{ $t('action.signIn') }}</router-link>
+            <router-link to="/signup" class="mb-entrar mb-entrar--fuerte">{{ $t('action.signUp') }}</router-link>
           </div>
 
           <div v-if="cuentaAbierta && entro" role="menu" :aria-label="$t('header.account')" class="mb-menu">
@@ -697,8 +693,12 @@ export default {
 .mb-cuenta__entrar { display: flex; gap: 8px; }
 
 .mb-entrar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   height: 46px;
   padding: 0 16px;
+  text-decoration: none;
   border-radius: 23px;
   border: 2px solid #fff;
   background: transparent;

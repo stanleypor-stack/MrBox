@@ -16,7 +16,8 @@ export default {
     "promotions": "活动",
     "rewards": "奖励",
     "vip": "VIP俱乐部",
-    "profile": "个人资料"
+    "profile": "个人资料",
+    "affiliates": "联盟"
   },
   "action": {
     "signIn": "登录",
@@ -164,6 +165,27 @@ export default {
     "username": "用户名",
     "email": "邮箱",
     "password": "密码",
-    "referralCode": "推广码（可选）"
+    "referralCode": "推广码（可选）",
+    "back": "返回 MR BOX",
+    "createTitle": "创建账户",
+    "welcomeBack": "欢迎回来",
+    "haveAccount": "已有账户？",
+    "newHere": "初次使用 MR BOX？",
+    "createAccount": "创建账户",
+    "orContinue": "或继续使用",
+    "emailOrUser": "邮箱或用户名",
+    "forgot": "忘记密码？",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码",
+    "codeOptional": "代码（可选）",
+    "enterCode": "输入代码",
+    "signUpBig": "注册",
+    "logInBig": "登录",
+    "soon": "尚未开放。",
+    "codeIgnored": "代码 {code} 不存在，未生效。",
+    "signUpAndClaim": "注册<br>即领",
+    "freeOpens": "{n} 次<br>免费开启",
+    "terms": "我接受<a href=\"/legal/terms\">服务条款</a>和<a href=\"/legal/privacy\">隐私政策</a>，并确认我年满18周岁。*",
+    "captchaNote": "本站由 Cloudflare Turnstile 保护。"
   }
 };

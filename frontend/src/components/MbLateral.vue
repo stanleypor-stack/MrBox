@@ -169,7 +169,7 @@ export default {
         { a: "/challenges", texto: "nav.challenges", icono: "M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7z" },
         { a: "/rewards", texto: "nav.rewards", icono: "M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.2l5.9-.9z" },
         { a: "/vip", texto: "nav.vip", icono: "M3 8l4 4 5-7 5 7 4-4-2 11H5z" },
-        { a: "/affiliates", texto: "profile.affiliate", icono: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 20a6 6 0 0 1 12 0M19 8v6M16 11h6" },
+        { a: "/affiliates", texto: "nav.affiliates", icono: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 20a6 6 0 0 1 12 0M19 8v6M16 11h6" },
       ],
     };
   },

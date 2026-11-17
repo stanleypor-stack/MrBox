@@ -16,7 +16,8 @@ export default {
     "promotions": "キャンペーン",
     "rewards": "リワード",
     "vip": "VIPクラブ",
-    "profile": "プロフィール"
+    "profile": "プロフィール",
+    "affiliates": "アフィリエイト"
   },
   "action": {
     "signIn": "ログイン",
@@ -164,6 +165,27 @@ export default {
     "username": "ユーザー名",
     "email": "メールアドレス",
     "password": "パスワード",
-    "referralCode": "紹介コード（任意）"
+    "referralCode": "紹介コード（任意）",
+    "back": "MR BOX に戻る",
+    "createTitle": "アカウントを作成",
+    "welcomeBack": "おかえりなさい",
+    "haveAccount": "すでにアカウントがありますか？",
+    "newHere": "MR BOX は初めてですか？",
+    "createAccount": "アカウントを作る",
+    "orContinue": "または",
+    "emailOrUser": "メールまたはユーザー名",
+    "forgot": "パスワードをお忘れですか？",
+    "showPassword": "パスワードを表示",
+    "hidePassword": "パスワードを隠す",
+    "codeOptional": "コード（任意）",
+    "enterCode": "コードを入力",
+    "signUpBig": "新規登録",
+    "logInBig": "ログイン",
+    "soon": "まだ有効ではありません。",
+    "codeIgnored": "コード {code} は存在せず、適用されませんでした。",
+    "signUpAndClaim": "登録して<br>受け取ろう",
+    "freeOpens": "無料で<br>{n} 回開封",
+    "terms": "<a href=\"/legal/terms\">利用規約</a>と<a href=\"/legal/privacy\">プライバシーポリシー</a>に同意し、18歳以上であることを確認します。*",
+    "captchaNote": "このサイトは Cloudflare Turnstile で保護されています。"
   }
 };

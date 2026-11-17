@@ -7,6 +7,7 @@ const express = require("express");
  */
 const router = express.Router();
 
+router.use("/public", require("./public"));
 router.use("/auth", require("./auth"));
 router.use("/profile", require("./profile"));
 router.use("/boxes", require("./boxes"));

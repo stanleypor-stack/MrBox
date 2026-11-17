@@ -16,7 +16,8 @@ export default {
     "promotions": "Promotions",
     "rewards": "Récompenses",
     "vip": "Club VIP",
-    "profile": "Profil"
+    "profile": "Profil",
+    "affiliates": "Affiliation"
   },
   "action": {
     "signIn": "Se connecter",
@@ -164,6 +165,27 @@ export default {
     "username": "Nom d’utilisateur",
     "email": "E-mail",
     "password": "Mot de passe",
-    "referralCode": "Code de parrainage (facultatif)"
+    "referralCode": "Code de parrainage (facultatif)",
+    "back": "Retour à MR BOX",
+    "createTitle": "Créez votre compte",
+    "welcomeBack": "Bon retour",
+    "haveAccount": "Déjà un compte ?",
+    "newHere": "Nouveau sur MR BOX ?",
+    "createAccount": "Créer un compte",
+    "orContinue": "Ou continuer avec",
+    "emailOrUser": "E-mail ou nom d’utilisateur",
+    "forgot": "Mot de passe oublié ?",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "codeOptional": "Code (facultatif)",
+    "enterCode": "Entrez le code",
+    "signUpBig": "S’INSCRIRE",
+    "logInBig": "SE CONNECTER",
+    "soon": "Ce n’est pas encore activé.",
+    "codeIgnored": "Le code {code} n’existe pas, il n’a pas été appliqué.",
+    "signUpAndClaim": "INSCRIS-TOI<br>ET RÉCUPÈRE",
+    "freeOpens": "{n} OUVERTURES<br>GRATUITES",
+    "terms": "J’accepte les <a href=\"/legal/terms\">Conditions d’utilisation</a> et la <a href=\"/legal/privacy\">Politique de confidentialité</a> et confirme avoir 18 ans ou plus.*",
+    "captchaNote": "Ce site est protégé par Cloudflare Turnstile."
   }
 };

@@ -16,7 +16,8 @@ export default {
     "promotions": "Promotions",
     "rewards": "Rewards",
     "vip": "VIP Club",
-    "profile": "Profile"
+    "profile": "Profile",
+    "affiliates": "Affiliates"
   },
   "action": {
     "signIn": "Sign in",
@@ -164,6 +165,27 @@ export default {
     "username": "Username",
     "email": "Email",
     "password": "Password",
-    "referralCode": "Referral code (optional)"
+    "referralCode": "Referral code (optional)",
+    "back": "Back to MR BOX",
+    "createTitle": "Create your account",
+    "welcomeBack": "Welcome back",
+    "haveAccount": "Already have an account?",
+    "newHere": "New to MR BOX?",
+    "createAccount": "Create an account",
+    "orContinue": "Or continue with",
+    "emailOrUser": "Email or username",
+    "forgot": "Forgot password?",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "codeOptional": "Code (optional)",
+    "enterCode": "Enter code",
+    "signUpBig": "SIGN UP",
+    "logInBig": "LOG IN",
+    "soon": "That is not switched on yet.",
+    "codeIgnored": "The code {code} does not exist, so it was not applied.",
+    "signUpAndClaim": "SIGN UP<br>& CLAIM",
+    "freeOpens": "{n} FREE<br>OPENS",
+    "terms": "I accept the <a href=\"/legal/terms\">Terms of Service</a> and the <a href=\"/legal/privacy\">Privacy Policy</a> and confirm I am 18 or older.*",
+    "captchaNote": "This site is protected by Cloudflare Turnstile."
   }
 };

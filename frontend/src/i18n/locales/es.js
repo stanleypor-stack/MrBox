@@ -16,7 +16,8 @@ export default {
     "promotions": "Promociones",
     "rewards": "Recompensas",
     "vip": "Club VIP",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "affiliates": "Afiliados"
   },
   "action": {
     "signIn": "Iniciar sesión",
@@ -164,6 +165,27 @@ export default {
     "username": "Nombre de usuario",
     "email": "Email",
     "password": "Contraseña",
-    "referralCode": "Código de referido (opcional)"
+    "referralCode": "Código de referido (opcional)",
+    "back": "Volver a MR BOX",
+    "createTitle": "Creá tu cuenta",
+    "welcomeBack": "Hola de nuevo",
+    "haveAccount": "¿Ya tenés cuenta?",
+    "newHere": "¿Nuevo en MR BOX?",
+    "createAccount": "Crear una cuenta",
+    "orContinue": "O continuá con",
+    "emailOrUser": "Email o nombre de usuario",
+    "forgot": "¿Olvidaste la contraseña?",
+    "showPassword": "Mostrar la contraseña",
+    "hidePassword": "Ocultar la contraseña",
+    "codeOptional": "Código (opcional)",
+    "enterCode": "Escribí el código",
+    "signUpBig": "REGISTRARME",
+    "logInBig": "ENTRAR",
+    "soon": "Eso todavía no está activo.",
+    "codeIgnored": "El código {code} no existe, así que no se aplicó.",
+    "signUpAndClaim": "REGISTRATE<br>Y LLEVATE",
+    "freeOpens": "{n} APERTURAS<br>GRATIS",
+    "terms": "Acepto los <a href=\"/legal/terms\">Términos del Servicio</a> y la <a href=\"/legal/privacy\">Política de Privacidad</a> y confirmo que tengo 18 años o más.*",
+    "captchaNote": "Este sitio está protegido por Cloudflare Turnstile."
   }
 };

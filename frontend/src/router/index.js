@@ -33,6 +33,24 @@ const routes = [
     name: "profile",
     component: () => import(/* webpackChunkName: "cuenta" */ "@/views/ProfileView.vue"),
   },
+  /*
+    Registrarse y entrar son PANTALLAS, no una ventanita.
+
+    Asi tienen direccion propia --se puede mandar el link de registro en
+    una campana-- vuelven con el boton de atras, y el cartel del diseno
+    entra entero. En una ventanita flotante ese cartel no cabe.
+  */
+  {
+    path: "/signup",
+    name: "signup",
+    component: () => import(/* webpackChunkName: "entrar" */ "@/views/AuthView.vue"),
+  },
+  {
+    path: "/login",
+    name: "login",
+    component: () => import(/* webpackChunkName: "entrar" */ "@/views/AuthView.vue"),
+  },
+
   /* Lo que no existe vuelve al catalogo, que es de donde arranca todo. */
   { path: "*", redirect: "/boxes" },
 ];

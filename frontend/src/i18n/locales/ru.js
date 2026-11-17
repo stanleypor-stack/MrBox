@@ -16,7 +16,8 @@ export default {
     "promotions": "Акции",
     "rewards": "Награды",
     "vip": "VIP-клуб",
-    "profile": "Профиль"
+    "profile": "Профиль",
+    "affiliates": "Партнёрам"
   },
   "action": {
     "signIn": "Войти",
@@ -164,6 +165,27 @@ export default {
     "username": "Имя пользователя",
     "email": "Почта",
     "password": "Пароль",
-    "referralCode": "Реферальный код (необяз.)"
+    "referralCode": "Реферальный код (необяз.)",
+    "back": "Назад в MR BOX",
+    "createTitle": "Создать аккаунт",
+    "welcomeBack": "С возвращением",
+    "haveAccount": "Уже есть аккаунт?",
+    "newHere": "Впервые в MR BOX?",
+    "createAccount": "Создать аккаунт",
+    "orContinue": "Или продолжить с",
+    "emailOrUser": "Почта или имя",
+    "forgot": "Забыли пароль?",
+    "showPassword": "Показать пароль",
+    "hidePassword": "Скрыть пароль",
+    "codeOptional": "Код (необязательно)",
+    "enterCode": "Введите код",
+    "signUpBig": "РЕГИСТРАЦИЯ",
+    "logInBig": "ВОЙТИ",
+    "soon": "Это пока недоступно.",
+    "codeIgnored": "Код {code} не существует и не применён.",
+    "signUpAndClaim": "РЕГИСТРАЦИЯ<br>И ПОДАРОК",
+    "freeOpens": "{n} БЕСПЛАТНЫХ<br>ОТКРЫТИЯ",
+    "terms": "Я принимаю <a href=\"/legal/terms\">Условия</a> и <a href=\"/legal/privacy\">Политику конфиденциальности</a> и подтверждаю, что мне 18 лет или больше.*",
+    "captchaNote": "Сайт защищён Cloudflare Turnstile."
   }
 };
