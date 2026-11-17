@@ -214,8 +214,12 @@ router.get("/openings", autorizar(true), async (req, res) => {
           ...f,
           priceSc: sc(f.priceSc),
           premio: { ...f.premio, valueSc: sc(f.premio.valueSc) },
-          /* Lo que gano o perdio en esa apertura, ya restado. */
-          diferenciaSc: sc(f.premio.valueSc - f.priceSc),
+          /* Lo que gano o perdio en esa apertura, ya restado.
+
+             Con una apertura gratis no puso nada, asi que lo ganado es
+             el premio entero: restarle el precio de lista le mostraria
+             una perdida que nunca tuvo. */
+          diferenciaSc: sc(f.premio.valueSc - (f.conAperturaGratis ? 0 : f.priceSc)),
         })),
         page: pagina, perPage: porPagina, total, pages: Math.ceil(total / porPagina),
       },
