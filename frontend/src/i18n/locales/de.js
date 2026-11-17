@@ -35,12 +35,26 @@ export default {
     "loading": "Wird geladen…",
     "language": "Sprache",
     "worth": "Wert",
-    "chance": "Chance"
+    "chance": "Chance",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "close": "Schließen",
+    "total": "Gesamt",
+    "freeOpens": "gratis"
   },
   "box": {
     "openFor": "Für {price} öffnen",
     "demo": "Gratis testen",
-    "items": "{n} Artikel"
+    "items": "{n} Artikel",
+    "chances": "Was drin sein kann",
+    "returnLabel": "Spieler erhalten zurück",
+    "youWon": "Du hast gewonnen",
+    "sellFor": "Für {amount} verkaufen",
+    "keep": "Behalten",
+    "openAgain": "Nochmal öffnen",
+    "demoNote": "Nur Demo. Es wird nichts berechnet und nichts behalten.",
+    "freeOpenUsed": "Gratis-Öffnung genutzt",
+    "provablyFair": "Nachweislich fair"
   },
   "support": {
     "title": "Support",
@@ -61,5 +75,61 @@ export default {
     "BOX_NOT_LIVE": "Diese Box ist gerade nicht verfügbar.",
     "RATE_LIMITED": "Zu viele Versuche. Warte einen Moment.",
     "SOMETHING_WENT_WRONG": "Etwas ist schiefgelaufen."
+  },
+  "boxes": {
+    "title": "Boxen",
+    "searchPlaceholder": "Boxen suchen…",
+    "sort": "Sortieren",
+    "sortPopular": "Beliebt",
+    "sortNew": "Neueste",
+    "sortCheap": "Günstigste",
+    "sortExpensive": "Teuerste",
+    "allCategories": "Alle",
+    "empty": "Keine Box passt dazu."
+  },
+  "inventory": {
+    "title": "Inventar",
+    "empty": "Noch nichts hier. Öffne eine Box.",
+    "sellSelected": "Ausgewählte verkaufen",
+    "selected": "{n} ausgewählt",
+    "needLevel2": "Verifiziere deine Identität, um dies zu versenden",
+    "needLevel3": "Wertsendung: Adressnachweis nötig",
+    "notShippable": "Das kann nicht versendet werden"
+  },
+  "profile": {
+    "affiliate": "Deine Empfehlungen",
+    "noAffiliate": "Du hast noch keinen Empfehlungscode.",
+    "code": "Code",
+    "players": "Spieler",
+    "theirPlay": "Ihr Einsatz",
+    "earned": "Verdient",
+    "toClaim": "Verfügbar",
+    "claim": "Abholen",
+    "joinedWith": "Du bist mit dem Code {code} beigetreten.",
+    "transactions": "Bewegungen",
+    "noTransactions": "Noch keine Bewegungen.",
+    "when": "Wann",
+    "what": "Was",
+    "amount": "Betrag",
+    "withdrawable": "Auszahlbar",
+    "bonusPending": "{amount} Bonus noch zu spielen",
+    "wagered": "Eingesetzt",
+    "purchased": "Gekauft",
+    "opened": "Geöffnete Boxen",
+    "mismatch": "Zahlen stimmen nicht überein: Zähler {contador}, Buch {libro}. Bitte kontaktiere den Support."
+  },
+  "txType": {
+    "purchase": "Kauf",
+    "redemption": "Auszahlung",
+    "box_open": "Box geöffnet",
+    "item_sold": "Artikel verkauft",
+    "deal": "Deal",
+    "rakeback": "Rakeback",
+    "race_prize": "Rennpreis",
+    "challenge": "Challenge",
+    "affiliate": "Empfehlungen",
+    "promo_code": "Promo-Code",
+    "creator_share": "Creator-Anteil",
+    "manual": "Manuelle Anpassung"
   }
 };

@@ -35,12 +35,26 @@ export default {
     "loading": "加载中…",
     "language": "语言",
     "worth": "价值",
-    "chance": "概率"
+    "chance": "概率",
+    "previous": "上一页",
+    "next": "下一页",
+    "close": "关闭",
+    "total": "合计",
+    "freeOpens": "免费"
   },
   "box": {
     "openFor": "{price} 开启",
     "demo": "免费试开",
-    "items": "{n} 件物品"
+    "items": "{n} 件物品",
+    "chances": "可能开出",
+    "returnLabel": "玩家返还",
+    "youWon": "你赢得了",
+    "sellFor": "以 {amount} 出售",
+    "keep": "保留",
+    "openAgain": "再开一次",
+    "demoNote": "仅为演示。不扣费，不保留。",
+    "freeOpenUsed": "已使用免费开启",
+    "provablyFair": "可验证公平"
   },
   "support": {
     "title": "客服",
@@ -61,5 +75,61 @@ export default {
     "BOX_NOT_LIVE": "该盲盒当前不可用。",
     "RATE_LIMITED": "尝试次数过多，请稍候。",
     "SOMETHING_WENT_WRONG": "出错了。"
+  },
+  "boxes": {
+    "title": "盲盒",
+    "searchPlaceholder": "搜索盲盒…",
+    "sort": "排序",
+    "sortPopular": "热门",
+    "sortNew": "最新",
+    "sortCheap": "价格从低",
+    "sortExpensive": "价格从高",
+    "allCategories": "全部",
+    "empty": "没有匹配的盲盒。"
+  },
+  "inventory": {
+    "title": "背包",
+    "empty": "还没有物品。",
+    "sellSelected": "出售所选",
+    "selected": "已选 {n} 件",
+    "needLevel2": "发货需要完成身份验证",
+    "needLevel3": "高价值包裹：需要地址证明",
+    "notShippable": "此物品无法发货"
+  },
+  "profile": {
+    "affiliate": "你的推广",
+    "noAffiliate": "你还没有推广码。",
+    "code": "代码",
+    "players": "玩家",
+    "theirPlay": "他们的投注",
+    "earned": "已赚",
+    "toClaim": "待领取",
+    "claim": "领取",
+    "joinedWith": "你使用代码 {code} 注册。",
+    "transactions": "账务明细",
+    "noTransactions": "暂无记录。",
+    "when": "时间",
+    "what": "事项",
+    "amount": "金额",
+    "withdrawable": "可提现",
+    "bonusPending": "还有 {amount} 奖金待投注",
+    "wagered": "投注量",
+    "purchased": "已充值",
+    "opened": "已开盒数",
+    "mismatch": "数字不一致：计数器 {contador}，账本 {libro}。请联系客服。"
+  },
+  "txType": {
+    "purchase": "充值",
+    "redemption": "提现",
+    "box_open": "开盒",
+    "item_sold": "出售物品",
+    "deal": "竞价",
+    "rakeback": "返水",
+    "race_prize": "竞赛奖金",
+    "challenge": "挑战",
+    "affiliate": "推广",
+    "promo_code": "优惠码",
+    "creator_share": "创作者分成",
+    "manual": "人工调整"
   }
 };

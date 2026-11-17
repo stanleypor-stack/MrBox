@@ -35,12 +35,26 @@ export default {
     "loading": "Chargement…",
     "language": "Langue",
     "worth": "Valeur",
-    "chance": "Chance"
+    "chance": "Chance",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "close": "Fermer",
+    "total": "Total",
+    "freeOpens": "gratuit"
   },
   "box": {
     "openFor": "Ouvrir pour {price}",
     "demo": "Essai gratuit",
-    "items": "{n} objets"
+    "items": "{n} objets",
+    "chances": "Ce qui peut sortir",
+    "returnLabel": "Les joueurs récupèrent",
+    "youWon": "Vous avez gagné",
+    "sellFor": "Vendre pour {amount}",
+    "keep": "Garder",
+    "openAgain": "Ouvrir à nouveau",
+    "demoNote": "Démo seulement. Rien n’est débité ni conservé.",
+    "freeOpenUsed": "Ouverture gratuite utilisée",
+    "provablyFair": "Équité vérifiable"
   },
   "support": {
     "title": "Assistance",
@@ -61,5 +75,61 @@ export default {
     "BOX_NOT_LIVE": "Ce coffret n’est pas disponible.",
     "RATE_LIMITED": "Trop de tentatives. Patientez un instant.",
     "SOMETHING_WENT_WRONG": "Une erreur est survenue."
+  },
+  "boxes": {
+    "title": "Coffrets",
+    "searchPlaceholder": "Rechercher un coffret…",
+    "sort": "Trier par",
+    "sortPopular": "Populaires",
+    "sortNew": "Nouveautés",
+    "sortCheap": "Moins chers",
+    "sortExpensive": "Plus chers",
+    "allCategories": "Toutes",
+    "empty": "Aucun coffret ne correspond."
+  },
+  "inventory": {
+    "title": "Inventaire",
+    "empty": "Rien ici. Ouvrez un coffret.",
+    "sellSelected": "Vendre la sélection",
+    "selected": "{n} sélectionnés",
+    "needLevel2": "Vérifiez votre identité pour l’expédier",
+    "needLevel3": "Colis de valeur : justificatif de domicile requis",
+    "notShippable": "Cet objet ne peut pas être expédié"
+  },
+  "profile": {
+    "affiliate": "Vos parrainages",
+    "noAffiliate": "Vous n’avez pas encore de code de parrainage.",
+    "code": "Code",
+    "players": "Joueurs",
+    "theirPlay": "Leurs mises",
+    "earned": "Gagné",
+    "toClaim": "À réclamer",
+    "claim": "Réclamer",
+    "joinedWith": "Vous vous êtes inscrit avec le code {code}.",
+    "transactions": "Mouvements",
+    "noTransactions": "Aucun mouvement.",
+    "when": "Quand",
+    "what": "Quoi",
+    "amount": "Montant",
+    "withdrawable": "Retirable",
+    "bonusPending": "{amount} de bonus encore à jouer",
+    "wagered": "Misé",
+    "purchased": "Acheté",
+    "opened": "Coffrets ouverts",
+    "mismatch": "Les chiffres ne concordent pas : compteur {contador}, registre {libro}. Contactez l’assistance."
+  },
+  "txType": {
+    "purchase": "Achat",
+    "redemption": "Retrait",
+    "box_open": "Ouverture de coffret",
+    "item_sold": "Objet vendu",
+    "deal": "Deal",
+    "rakeback": "Rakeback",
+    "race_prize": "Prix de course",
+    "challenge": "Défi",
+    "affiliate": "Parrainage",
+    "promo_code": "Code promo",
+    "creator_share": "Part du créateur",
+    "manual": "Ajustement manuel"
   }
 };

@@ -35,12 +35,26 @@ export default {
     "loading": "Caricamento…",
     "language": "Lingua",
     "worth": "Valore",
-    "chance": "Probabilità"
+    "chance": "Probabilità",
+    "previous": "Precedente",
+    "next": "Successivo",
+    "close": "Chiudi",
+    "total": "Totale",
+    "freeOpens": "gratis"
   },
   "box": {
     "openFor": "Apri per {price}",
     "demo": "Prova gratis",
-    "items": "{n} oggetti"
+    "items": "{n} oggetti",
+    "chances": "Cosa può uscire",
+    "returnLabel": "Il giocatore recupera",
+    "youWon": "Hai vinto",
+    "sellFor": "Vendi per {amount}",
+    "keep": "Tienilo",
+    "openAgain": "Apri ancora",
+    "demoNote": "Solo demo. Non si addebita nulla e non si tiene nulla.",
+    "freeOpenUsed": "Hai usato un’apertura gratis",
+    "provablyFair": "Equità verificabile"
   },
   "support": {
     "title": "Assistenza",
@@ -61,5 +75,61 @@ export default {
     "BOX_NOT_LIVE": "Questa box non è disponibile ora.",
     "RATE_LIMITED": "Troppi tentativi. Attendi un momento.",
     "SOMETHING_WENT_WRONG": "Qualcosa è andato storto."
+  },
+  "boxes": {
+    "title": "Box",
+    "searchPlaceholder": "Cerca box…",
+    "sort": "Ordina per",
+    "sortPopular": "Popolari",
+    "sortNew": "Più recenti",
+    "sortCheap": "Più economiche",
+    "sortExpensive": "Più costose",
+    "allCategories": "Tutte",
+    "empty": "Nessuna box corrisponde."
+  },
+  "inventory": {
+    "title": "Inventario",
+    "empty": "Ancora nulla. Apri una box.",
+    "sellSelected": "Vendi selezionati",
+    "selected": "{n} selezionati",
+    "needLevel2": "Verifica la tua identità per spedirlo",
+    "needLevel3": "Spedizione di valore: serve la prova di indirizzo",
+    "notShippable": "Questo non può essere spedito"
+  },
+  "profile": {
+    "affiliate": "I tuoi referral",
+    "noAffiliate": "Non hai ancora un codice referral.",
+    "code": "Codice",
+    "players": "Giocatori",
+    "theirPlay": "Il loro gioco",
+    "earned": "Guadagnato",
+    "toClaim": "Da riscuotere",
+    "claim": "Riscuoti",
+    "joinedWith": "Ti sei iscritto con il codice {code}.",
+    "transactions": "Movimenti",
+    "noTransactions": "Ancora nessun movimento.",
+    "when": "Quando",
+    "what": "Cosa",
+    "amount": "Importo",
+    "withdrawable": "Prelevabile",
+    "bonusPending": "{amount} di bonus ancora da giocare",
+    "wagered": "Giocato",
+    "purchased": "Acquistato",
+    "opened": "Box aperte",
+    "mismatch": "I numeri non coincidono: contatore {contador}, registro {libro}. Contatta l’assistenza."
+  },
+  "txType": {
+    "purchase": "Acquisto",
+    "redemption": "Prelievo",
+    "box_open": "Apertura box",
+    "item_sold": "Oggetto venduto",
+    "deal": "Deal",
+    "rakeback": "Rakeback",
+    "race_prize": "Premio gara",
+    "challenge": "Sfida",
+    "affiliate": "Referral",
+    "promo_code": "Codice promo",
+    "creator_share": "Quota del creatore",
+    "manual": "Rettifica manuale"
   }
 };
