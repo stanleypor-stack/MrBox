@@ -62,7 +62,16 @@ export default {
     "openFree": "GRATIS ÖFFNEN",
     "fast": "Schnell öffnen",
     "mute": "Ton aus",
-    "unmute": "Ton an"
+    "unmute": "Ton an",
+    "openAria": "{name} öffnen",
+    "featured": "TOP",
+    "riskExplainer": "Wie unberechenbar diese Box ist: die Chance, weniger als die Hälfte des Einsatzes zurückzubekommen.",
+    "risk": {
+      "low": "Niedrig",
+      "medium": "Mittel",
+      "high": "Hoch",
+      "extreme": "Extrem"
+    }
   },
   "support": {
     "title": "Support",
@@ -260,7 +269,8 @@ export default {
     "freeOpen": "GRATIS",
     "highlights": "Highlights",
     "livePulls": "LIVE-GEWINNE",
-    "viewAll": "Alle ansehen"
+    "viewAll": "Alle ansehen",
+    "livePullsTwoLines": "LIVE<br>DROPS"
   },
   "rows": {
     "popular": "Beliebte Boxen",
@@ -285,5 +295,30 @@ export default {
     "luxTitle": "Lebe großzügig",
     "luxSub": "Black Card, King Of Diamonds und Expensive Taste.",
     "luxCta": "Luxus ansehen"
+  },
+  "deals": {
+    "availableItems": "Verfügbare Artikel",
+    "searchItems": "Artikel suchen",
+    "priceMax": "Preis max.",
+    "any": "Alle",
+    "orderBy": "Sortieren",
+    "showMore": "Mehr zeigen",
+    "selectToStart": "Wähle einen Artikel",
+    "youWon": "Gewonnen!",
+    "soClose": "So knapp",
+    "tryAgain": "Nochmal",
+    "freeTryNote": "Gratis-Versuch · registrieren, um es zu behalten",
+    "addedToInventory": "In dein Inventar gelegt",
+    "dealFor": "Spielen für",
+    "freeTry": "Gratis testen",
+    "howManyDeals": "Anzahl der Spiele",
+    "speedrun": "Schnell",
+    "price": "Preis",
+    "max": "Max",
+    "min": "Min",
+    "chanceToWin": "Gewinnchance",
+    "returnNote": "Der Preis ist Artikelwert × deine Chance, geteilt durch {pct}% — die gleiche Auszahlung wie bei jeder Box.",
+    "minStakeNote": "Der Mindesteinsatz ist SC {amount}, daher beginnt die Chance bei diesem Artikel bei {pct}%.",
+    "wonN": "1 Artikel im Wert von SC {amount} gewonnen | {n} Artikel im Wert von SC {amount} gewonnen"
   }
 };

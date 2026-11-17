@@ -62,7 +62,16 @@ export default {
     "openFree": "OUVRIR GRATUIT",
     "fast": "Ouverture rapide",
     "mute": "Couper le son",
-    "unmute": "Activer le son"
+    "unmute": "Activer le son",
+    "openAria": "Ouvrir {name}",
+    "featured": "À LA UNE",
+    "riskExplainer": "À quel point ce coffret est imprévisible : la probabilité de récupérer moins de la moitié de votre mise.",
+    "risk": {
+      "low": "Faible",
+      "medium": "Moyen",
+      "high": "Élevé",
+      "extreme": "Extrême"
+    }
   },
   "support": {
     "title": "Assistance",
@@ -260,7 +269,8 @@ export default {
     "freeOpen": "GRATUIT",
     "highlights": "À la une",
     "livePulls": "TIRAGES EN DIRECT",
-    "viewAll": "Voir tout"
+    "viewAll": "Voir tout",
+    "livePullsTwoLines": "TIRAGES<br>EN DIRECT"
   },
   "rows": {
     "popular": "Les plus populaires",
@@ -285,5 +295,30 @@ export default {
     "luxTitle": "Vis grand",
     "luxSub": "Black Card, King Of Diamonds et Expensive Taste.",
     "luxCta": "Voir le luxe"
+  },
+  "deals": {
+    "availableItems": "Objets disponibles",
+    "searchItems": "Rechercher un objet",
+    "priceMax": "Prix max",
+    "any": "Tous",
+    "orderBy": "Trier par",
+    "showMore": "Afficher plus",
+    "selectToStart": "Choisissez un objet",
+    "youWon": "Gagné !",
+    "soClose": "Si près",
+    "tryAgain": "Réessayer",
+    "freeTryNote": "Essai gratuit · inscrivez-vous pour le garder",
+    "addedToInventory": "Ajouté à votre inventaire",
+    "dealFor": "Jouer pour",
+    "freeTry": "Essai gratuit",
+    "howManyDeals": "Nombre de parties",
+    "speedrun": "Rapide",
+    "price": "Prix",
+    "max": "Max",
+    "min": "Min",
+    "chanceToWin": "Chance de gagner",
+    "returnNote": "Le prix est la valeur de l’objet × votre chance, divisé par {pct}% — le même retour que chaque coffret.",
+    "minStakeNote": "La mise minimale est de SC {amount}, donc avec cet objet la chance commence à {pct}%.",
+    "wonN": "1 objet gagné, SC {amount} | {n} objets gagnés, SC {amount}"
   }
 };

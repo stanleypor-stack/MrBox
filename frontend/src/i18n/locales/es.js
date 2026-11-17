@@ -62,7 +62,16 @@ export default {
     "openFree": "ABRIR GRATIS",
     "fast": "Apertura rápida",
     "mute": "Silenciar",
-    "unmute": "Activar el sonido"
+    "unmute": "Activar el sonido",
+    "openAria": "Abrir {name}",
+    "featured": "DESTACADA",
+    "riskExplainer": "Qué tan impredecible es esta caja: la chance de llevarte menos de la mitad de lo que pagaste.",
+    "risk": {
+      "low": "Bajo",
+      "medium": "Medio",
+      "high": "Alto",
+      "extreme": "Extremo"
+    }
   },
   "support": {
     "title": "Soporte",
@@ -260,7 +269,8 @@ export default {
     "freeOpen": "GRATIS",
     "highlights": "Destacados",
     "livePulls": "EN VIVO",
-    "viewAll": "Ver todas"
+    "viewAll": "Ver todas",
+    "livePullsTwoLines": "SALIDAS<br>EN VIVO"
   },
   "rows": {
     "popular": "Las más abiertas",
@@ -285,5 +295,30 @@ export default {
     "luxTitle": "Viví a lo grande",
     "luxSub": "Black Card, King Of Diamonds y Expensive Taste.",
     "luxCta": "Ver lujo"
+  },
+  "deals": {
+    "availableItems": "Objetos disponibles",
+    "searchItems": "Buscar objetos",
+    "priceMax": "Precio máximo",
+    "any": "Cualquiera",
+    "orderBy": "Ordenar por",
+    "showMore": "Ver más",
+    "selectToStart": "Elegí un objeto para empezar",
+    "youWon": "¡Ganaste!",
+    "soClose": "Cerca",
+    "tryAgain": "Probá otra vez",
+    "freeTryNote": "Prueba gratis · registrate para quedártelo",
+    "addedToInventory": "Lo guardamos en tu inventario",
+    "dealFor": "Jugar por",
+    "freeTry": "Probar gratis",
+    "howManyDeals": "Cuántos tiros",
+    "speedrun": "Rápido",
+    "price": "Precio",
+    "max": "Máx",
+    "min": "Mín",
+    "chanceToWin": "Chance de ganar",
+    "returnNote": "El precio es el valor del objeto por tu chance, dividido {pct}% — el mismo retorno que paga cada caja.",
+    "minStakeNote": "La apuesta mínima es SC {amount}, así que con este objeto la chance arranca en {pct}%.",
+    "wonN": "Ganaste 1 objeto por SC {amount} | Ganaste {n} objetos por SC {amount}"
   }
 };

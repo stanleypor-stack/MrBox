@@ -279,6 +279,14 @@ function resumenDeCaja(caja) {
     featured: caja.featured,
     markedNew: caja.markedNew,
     opens: caja.opens,
+
+    /* El medidor de la grilla: cuán impredecible es, no cuán cara. Se
+       calcula de la tabla de premios en cada lectura y no se guarda,
+       así una caja editada nunca muestra el riesgo de la de ayer. */
+    riesgo: eco.riesgoDe(caja.prizes, caja.priceSc),
+    nivelDeRiesgo: eco.nivelDeRiesgo(eco.riesgoDe(caja.prizes, caja.priceSc)),
+
+    cuantosObjetos: (caja.prizes || []).length,
     prizes: (caja.prizes || []).map((p) => ({
       item: p.item,
       name: p.name,

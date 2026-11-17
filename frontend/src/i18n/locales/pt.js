@@ -62,7 +62,16 @@ export default {
     "openFree": "ABRIR GRÁTIS",
     "fast": "Abertura rápida",
     "mute": "Silenciar",
-    "unmute": "Ativar o som"
+    "unmute": "Ativar o som",
+    "openAria": "Abrir {name}",
+    "featured": "DESTAQUE",
+    "riskExplainer": "O quão imprevisível é esta caixa: a chance de levar menos da metade do que pagou.",
+    "risk": {
+      "low": "Baixo",
+      "medium": "Médio",
+      "high": "Alto",
+      "extreme": "Extremo"
+    }
   },
   "support": {
     "title": "Suporte",
@@ -260,7 +269,8 @@ export default {
     "freeOpen": "GRÁTIS",
     "highlights": "Destaques",
     "livePulls": "AO VIVO",
-    "viewAll": "Ver todas"
+    "viewAll": "Ver todas",
+    "livePullsTwoLines": "SAÍDAS<br>AO VIVO"
   },
   "rows": {
     "popular": "As mais abertas",
@@ -285,5 +295,30 @@ export default {
     "luxTitle": "Viva com estilo",
     "luxSub": "Black Card, King Of Diamonds e Expensive Taste.",
     "luxCta": "Ver luxo"
+  },
+  "deals": {
+    "availableItems": "Itens disponíveis",
+    "searchItems": "Buscar itens",
+    "priceMax": "Preço máximo",
+    "any": "Qualquer",
+    "orderBy": "Ordenar por",
+    "showMore": "Ver mais",
+    "selectToStart": "Escolha um item",
+    "youWon": "Você ganhou!",
+    "soClose": "Quase",
+    "tryAgain": "Tente de novo",
+    "freeTryNote": "Teste grátis · cadastre-se para ficar com ele",
+    "addedToInventory": "Guardado no seu inventário",
+    "dealFor": "Jogar por",
+    "freeTry": "Testar grátis",
+    "howManyDeals": "Quantas jogadas",
+    "speedrun": "Rápido",
+    "price": "Preço",
+    "max": "Máx",
+    "min": "Mín",
+    "chanceToWin": "Chance de ganhar",
+    "returnNote": "O preço é o valor do item × sua chance, dividido por {pct}% — o mesmo retorno de qualquer caixa.",
+    "minStakeNote": "A aposta mínima é SC {amount}, então com este item a chance começa em {pct}%.",
+    "wonN": "Ganhou 1 item de SC {amount} | Ganhou {n} itens de SC {amount}"
   }
 };

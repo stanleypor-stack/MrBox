@@ -62,7 +62,16 @@ export default {
     "openFree": "無料で開ける",
     "fast": "ファストオープン",
     "mute": "ミュート",
-    "unmute": "ミュート解除"
+    "unmute": "ミュート解除",
+    "openAria": "{name} を開ける",
+    "featured": "注目",
+    "riskExplainer": "このボックスの振れ幅：支払った額の半分未満になる確率です。",
+    "risk": {
+      "low": "低",
+      "medium": "中",
+      "high": "高",
+      "extreme": "極端"
+    }
   },
   "support": {
     "title": "サポート",
@@ -260,7 +269,8 @@ export default {
     "freeOpen": "無料",
     "highlights": "ハイライト",
     "livePulls": "ライブ",
-    "viewAll": "すべて見る"
+    "viewAll": "すべて見る",
+    "livePullsTwoLines": "ライブ<br>獲得"
   },
   "rows": {
     "popular": "人気のボックス",
@@ -285,5 +295,30 @@ export default {
     "luxTitle": "贅沢に暮らそう",
     "luxSub": "Black Card、King Of Diamonds ほか。",
     "luxCta": "ラグジュアリー"
+  },
+  "deals": {
+    "availableItems": "選べるアイテム",
+    "searchItems": "アイテムを検索",
+    "priceMax": "上限価格",
+    "any": "指定なし",
+    "orderBy": "並び順",
+    "showMore": "もっと見る",
+    "selectToStart": "アイテムを選んでください",
+    "youWon": "当たり！",
+    "soClose": "あと少し",
+    "tryAgain": "もう一度",
+    "freeTryNote": "お試し · 登録すればこのままもらえます",
+    "addedToInventory": "インベントリに入れました",
+    "dealFor": "この額で挑む",
+    "freeTry": "お試し",
+    "howManyDeals": "回数",
+    "speedrun": "スプード",
+    "price": "金額",
+    "max": "最大",
+    "min": "最小",
+    "chanceToWin": "当選確率",
+    "returnNote": "価格は「アイテムの価値 × 確率 ÷ {pct}%」。ボックスと同じ還元率です。",
+    "minStakeNote": "最小購入額は SC {amount} なので、このアイテムでは確率 {pct}% からになります。",
+    "wonN": "SC {amount} 分のアイテムを 1 点獲得 | SC {amount} 分のアイテムを {n} 点獲得"
   }
 };

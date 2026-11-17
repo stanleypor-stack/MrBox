@@ -47,6 +47,8 @@ const inventoryItemSchema = new mongoose.Schema(
       kind: { type: String, enum: ["box", "deal", "manual"], default: "box" },
       box: { type: mongoose.Schema.Types.ObjectId, ref: "Box", default: null },
       boxOpen: { type: mongoose.Schema.Types.ObjectId, ref: "BoxOpen", default: null },
+      /* Si vino de Deals, el tiro que lo trajo. */
+      deal: { type: mongoose.Schema.Types.ObjectId, ref: "Deal", default: null },
     },
 
     /* Lo que se le pagó al venderlo. Se llena una sola vez. */

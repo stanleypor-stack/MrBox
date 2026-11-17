@@ -62,7 +62,16 @@ export default {
     "openFree": "免费开启",
     "fast": "快速开启",
     "mute": "静音",
-    "unmute": "开启声音"
+    "unmute": "开启声音",
+    "openAria": "开启 {name}",
+    "featured": "精选",
+    "riskExplainer": "这个盒子有多不可预测：开出的东西不到付款一半的概率。",
+    "risk": {
+      "low": "低",
+      "medium": "中",
+      "high": "高",
+      "extreme": "极高"
+    }
   },
   "support": {
     "title": "客服",
@@ -260,7 +269,8 @@ export default {
     "freeOpen": "免费",
     "highlights": "精选",
     "livePulls": "实时开盒",
-    "viewAll": "查看全部"
+    "viewAll": "查看全部",
+    "livePullsTwoLines": "实时<br>开盒"
   },
   "rows": {
     "popular": "热门精选",
@@ -285,5 +295,30 @@ export default {
     "luxTitle": "尽享奢华",
     "luxSub": "Black Card、King Of Diamonds 等。",
     "luxCta": "查看奢品"
+  },
+  "deals": {
+    "availableItems": "可选物品",
+    "searchItems": "搜索物品",
+    "priceMax": "价格上限",
+    "any": "不限",
+    "orderBy": "排序",
+    "showMore": "显示更多",
+    "selectToStart": "先选一件物品",
+    "youWon": "你赢了！",
+    "soClose": "差一点",
+    "tryAgain": "再试一次",
+    "freeTryNote": "免费试玩 · 注册后即可拥有",
+    "addedToInventory": "已放入背包",
+    "dealFor": "投入",
+    "freeTry": "免费试玩",
+    "howManyDeals": "次数",
+    "speedrun": "快速",
+    "price": "价格",
+    "max": "最大",
+    "min": "最小",
+    "chanceToWin": "中奖概率",
+    "returnNote": "价格 = 物品价值 × 你的概率 ÷ {pct}%，和所有盒子的返还率一样。",
+    "minStakeNote": "最低投入为 SC {amount}，所以这件物品的概率从 {pct}% 起。",
+    "wonN": "赢得 1 件物品，共 SC {amount} | 赢得 {n} 件物品，共 SC {amount}"
   }
 };

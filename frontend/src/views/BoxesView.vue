@@ -43,7 +43,7 @@
     <p v-else-if="!cajas.items.length" class="mb-vacio">{{ $t('boxes.empty') }}</p>
 
     <div v-else class="mb-grilla">
-      <MbTarjetaDeCaja v-for="c in cajas.items" :key="c._id" :caja="c" />
+      <MbCajaEnGrilla v-for="c in cajas.items" :key="c._id" :caja="c" />
     </div>
 
     <nav v-if="cajas.pages > 1" class="mb-paginas" :aria-label="$t('boxes.title')">
@@ -60,7 +60,7 @@
 
 <script>
 import { mapState } from "vuex";
-import MbTarjetaDeCaja from "@/components/MbTarjetaDeCaja.vue";
+import MbCajaEnGrilla from "@/components/MbCajaEnGrilla.vue";
 
 /**
  * EL CATALOGO.
@@ -80,7 +80,7 @@ import MbTarjetaDeCaja from "@/components/MbTarjetaDeCaja.vue";
  */
 export default {
   name: "BoxesView",
-  components: { MbTarjetaDeCaja },
+  components: { MbCajaEnGrilla },
 
   data() {
     return {
@@ -251,7 +251,7 @@ export default {
 
 .mb-grilla {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 14px;
 
   @include en-celular {

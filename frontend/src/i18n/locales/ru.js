@@ -62,7 +62,16 @@ export default {
     "openFree": "ОТКРЫТЬ БЕСПЛАТНО",
     "fast": "Быстрое открытие",
     "mute": "Выключить звук",
-    "unmute": "Включить звук"
+    "unmute": "Включить звук",
+    "openAria": "Открыть {name}",
+    "featured": "ХИТ",
+    "riskExplainer": "Насколько непредсказуема коробка: шанс получить меньше половины стоимости.",
+    "risk": {
+      "low": "Низкий",
+      "medium": "Средний",
+      "high": "Высокий",
+      "extreme": "Экстремальный"
+    }
   },
   "support": {
     "title": "Поддержка",
@@ -260,7 +269,8 @@ export default {
     "freeOpen": "БЕСПЛАТНО",
     "highlights": "Главное",
     "livePulls": "В ЭФИРЕ",
-    "viewAll": "Смотреть все"
+    "viewAll": "Смотреть все",
+    "livePullsTwoLines": "ЖИВАЯ<br>ЛЕНТА"
   },
   "rows": {
     "popular": "Популярное",
@@ -285,5 +295,30 @@ export default {
     "luxTitle": "Живи роскошно",
     "luxSub": "Black Card, King Of Diamonds и Expensive Taste.",
     "luxCta": "К люксу"
+  },
+  "deals": {
+    "availableItems": "Доступные предметы",
+    "searchItems": "Поиск предметов",
+    "priceMax": "Макс. цена",
+    "any": "Любая",
+    "orderBy": "Сортировка",
+    "showMore": "Показать ещё",
+    "selectToStart": "Выберите предмет",
+    "youWon": "Вы выиграли!",
+    "soClose": "Совсем рядом",
+    "tryAgain": "Попробуйте ещё",
+    "freeTryNote": "Бесплатная попытка · зарегистрируйтесь, чтобы забрать",
+    "addedToInventory": "Добавлено в инвентарь",
+    "dealFor": "Играть за",
+    "freeTry": "Бесплатно",
+    "howManyDeals": "Сколько раз",
+    "speedrun": "Быстро",
+    "price": "Цена",
+    "max": "Макс",
+    "min": "Мин",
+    "chanceToWin": "Шанс на выигрыш",
+    "returnNote": "Цена — это стоимость предмета × ваш шанс, делённая на {pct}% — такой же возврат, как у коробок.",
+    "minStakeNote": "Минимальная ставка — SC {amount}, поэтому для этого предмета шанс начинается с {pct}%.",
+    "wonN": "Выигран 1 предмет на SC {amount} | Выиграно {n} предметов на SC {amount}"
   }
 };

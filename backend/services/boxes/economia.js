@@ -230,6 +230,47 @@ function revisarCaja(caja, opciones = {}) {
   };
 }
 
+/**
+ * CUAN IMPREDECIBLE ES UNA CAJA.
+ *
+ * El medidor de riesgo del diseño. No mide si la caja es cara o barata
+ * --de eso se ocupa el retorno, que es 92% en todas-- sino cuánto se
+ * parece a una lotería.
+ *
+ *     riesgo = probabilidad de llevarte MENOS DE LA MITAD de lo que pagaste
+ *
+ * Una caja donde casi siempre sale algo parecido al precio da riesgo
+ * bajo: sabés más o menos qué te va a pasar. Una donde el 99,98% de las
+ * veces sale una moneda de cincuenta centavos y el resto un auto da
+ * riesgo extremo, aunque las dos devuelvan los mismos 92 de cada 100.
+ *
+ * Esa es la pregunta que de verdad se hace el jugador frente a la
+ * grilla: "¿esto es una lotería o no?". Y es exacta: sale de la tabla
+ * de premios, no de una estimación.
+ */
+function riesgoDe(premios, precio) {
+  const p = sc(precio);
+  if (!Array.isArray(premios) || !premios.length || p <= 0) return 0;
+
+  const mitad = p / 2;
+  const malos = premios.reduce(
+    (acc, premio) => acc + (sc(premio.valueSc) < mitad ? Number(premio.chance) || 0 : 0),
+    0
+  );
+
+  /* Las chances suman 1; si una caja vieja no cierra, se recorta igual
+     en vez de devolver un 104%. */
+  return Math.round(Math.max(0, Math.min(1, malos)) * 1000) / 10;
+}
+
+/** Las cuatro etiquetas del diseño, con el mismo corte. */
+function nivelDeRiesgo(riesgo) {
+  if (riesgo < 25) return "low";
+  if (riesgo < 50) return "medium";
+  if (riesgo < 75) return "high";
+  return "extreme";
+}
+
 module.exports = {
   RETORNO_OBJETIVO,
   TOLERANCIA,
@@ -241,5 +282,7 @@ module.exports = {
   precioDe,
   retornoReal,
   margenDeLaCasa,
+  riesgoDe,
+  nivelDeRiesgo,
   revisarCaja,
 };

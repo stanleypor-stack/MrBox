@@ -62,7 +62,16 @@ export default {
     "openFree": "OPEN FREE",
     "fast": "Fast open",
     "mute": "Mute sound",
-    "unmute": "Turn sound on"
+    "unmute": "Turn sound on",
+    "openAria": "Open {name}",
+    "featured": "FEATURED",
+    "riskExplainer": "How unpredictable this box is: the chance of getting back less than half of what you paid.",
+    "risk": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "extreme": "Extreme"
+    }
   },
   "support": {
     "title": "Support",
@@ -260,7 +269,8 @@ export default {
     "freeOpen": "FREE OPEN",
     "highlights": "Highlights",
     "livePulls": "LIVE PULLS",
-    "viewAll": "View all"
+    "viewAll": "View all",
+    "livePullsTwoLines": "LIVE<br>PULLS"
   },
   "rows": {
     "popular": "Popular Picks",
@@ -285,5 +295,30 @@ export default {
     "luxTitle": "Live Lavish",
     "luxSub": "Black Card, King Of Diamonds and Expensive Taste.",
     "luxCta": "Shop luxury"
+  },
+  "deals": {
+    "availableItems": "Available Items",
+    "searchItems": "Search items",
+    "priceMax": "Price max",
+    "any": "Any",
+    "orderBy": "Order by",
+    "showMore": "Show more",
+    "selectToStart": "Select an item to start",
+    "youWon": "You won!",
+    "soClose": "So close",
+    "tryAgain": "Try again",
+    "freeTryNote": "Free try · sign up to keep it",
+    "addedToInventory": "Added to your inventory",
+    "dealFor": "Deal for",
+    "freeTry": "Free try",
+    "howManyDeals": "Number of deals",
+    "speedrun": "Speedrun",
+    "price": "Price",
+    "max": "Max",
+    "min": "Min",
+    "chanceToWin": "Chance to win",
+    "returnNote": "The price is the item value times your chance, divided by {pct}% — the same return every box pays.",
+    "minStakeNote": "The minimum stake is SC {amount}, so with this item the chance starts at {pct}%.",
+    "wonN": "Won 1 item worth SC {amount} | Won {n} items worth SC {amount}"
   }
 };

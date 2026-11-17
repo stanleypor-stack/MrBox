@@ -160,7 +160,19 @@ export default {
 
   data() {
     return {
-      abierta: true,
+      /*
+        ARRANCA PLEGADA EN PANTALLAS CHICAS.
+
+        El diseño está dibujado a 1440px de ancho. En una ventana de
+        1200 la barra se lleva 300px de los que faltan y entran dos
+        cajas menos por fila: el catálogo se ve "de cerca" sin que nada
+        haya cambiado de tamaño.
+
+        Plegada son 72px y vuelven a entrar. Es el mismo botón que ya
+        tiene el diseño; lo único que se decide acá es cómo empieza. En
+        cuanto el jugador lo toca, manda él y esto no vuelve a opinar.
+      */
+      abierta: typeof window === "undefined" || window.innerWidth >= 1280,
       categoriasAbiertas: true,
       categorias: [],
       enlaces: [
@@ -196,7 +208,7 @@ export default {
 
 .mb-side {
   flex: 1 1 250px;
-  max-width: 272px;
+  max-width: 300px;
   box-sizing: border-box;
   padding: 16px 14px;
   display: flex;

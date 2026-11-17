@@ -70,22 +70,37 @@
     <!-- ── Live pulls ───────────────────────────────────────────── -->
     <section class="mb-pulls" :aria-label="$t('home.livePulls')">
       <div class="mb-pulls__rotulo">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="#ffc83d" aria-hidden="true">
-          <path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 21h8" />
+        <svg width="40" height="40" viewBox="0 0 48 48" aria-hidden="true">
+          <defs>
+            <linearGradient id="mbTrofeo" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ffe08a" />
+              <stop offset=".45" stop-color="#ff86b8" />
+              <stop offset="1" stop-color="#b44dff" />
+            </linearGradient>
+          </defs>
+          <path d="M15 9h18v9a9 9 0 0 1-18 0z" fill="url(#mbTrofeo)" />
+          <path d="M15 12H9.5a5.5 5.5 0 0 0 5.5 7M33 12h5.5a5.5 5.5 0 0 1-5.5 7"
+                fill="none" stroke="url(#mbTrofeo)" stroke-width="3" stroke-linecap="round" />
+          <path d="M19 11h3v10h-3z" fill="#ffffff" opacity=".35" />
+          <rect x="21" y="27" width="6" height="6" fill="#ff9ac6" />
+          <path d="M15 39h18l-2.5-6h-13z" fill="#c25cff" />
+          <rect x="12.5" y="39" width="23" height="4.5" rx="1.5" fill="#8a35e0" />
+          <path d="M38 4l1.2 2.8L42 8l-2.8 1.2L38 12l-1.2-2.8L34 8l2.8-1.2z" fill="#ffe08a" />
+          <path d="M9 3l.8 1.7 1.7.8-1.7.8L9 8l-.8-1.7L6.5 5.5l1.7-.8z" fill="#ffffff" />
         </svg>
-        <span>{{ $t('home.livePulls') }}</span>
+        <span v-html="$t('home.livePullsTwoLines')"></span>
       </div>
 
       <div class="mb-pulls__via">
         <div class="mb-row mb-pulls__fila">
           <router-link
-            v-for="p in pulls" :key="p._id" :to="`/boxes/${p.boxSlug}`"
-            class="mb-pull-card" :style="{ borderColor: color(p.premio.rarity) }"
+            v-for="p in pulls" :key="p._id" :to="`/boxes/${p.boxSlug}`" class="mb-pull-card"
           >
+            <span class="mb-pull-card__marca">MB</span>
             <span v-if="sprPremio(p)" class="mb-prod mb-pull-card__foto" :style="sprPremio(p)" aria-hidden="true"></span>
             <span class="mb-pull-card__nombre">{{ p.premio.name }}</span>
             <span class="mb-pull-card__valor">
-              <span class="mb-sc mb-sc--16" aria-hidden="true">SC</span>{{ plata(p.premio.valueSc) }}
+              <span class="mb-sc mb-sc--13" aria-hidden="true">SC</span>{{ corto(p.premio.valueSc) }}
             </span>
           </router-link>
         </div>
@@ -97,9 +112,22 @@
     <section v-for="fila in filas" :key="fila.id" class="mb-fila">
       <div class="mb-fila__cabeza">
         <h2>{{ $t(fila.titulo) }}</h2>
-        <router-link :to="verTodo(fila.id)" class="mb-fila__todo">{{ $t('home.viewAll') }}</router-link>
+        <div class="mb-fila__mandos">
+          <router-link :to="verTodo(fila.id)" class="mb-fila__todo">{{ $t('home.viewAll') }}</router-link>
+          <div class="mb-flechas">
+            <button type="button" :aria-label="$t('common.previous')" @click="correr(fila.id, -1)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>
+            </button>
+            <span aria-hidden="true"></span>
+            <button type="button" :aria-label="$t('common.next')" @click="correr(fila.id, 1)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="mb-row mb-fila__tira">
+      <div :ref="'tira-' + fila.id" class="mb-row mb-fila__tira">
         <MbTarjetaDeCaja v-for="c in fila.items" :key="c._id" :caja="c" class="mb-fila__caja" />
       </div>
     </section>
@@ -214,6 +242,28 @@ export default {
       });
     },
     color(r) { return COLORES[r] || COLORES.blue; },
+
+    /**
+     * El precio corto de una tarjeta de Live Pulls.
+     *
+     * Mil o mas se abrevia: en una tarjeta de 108px, "284,000.00" se
+     * parte en tres renglones y no se lee ninguno. Asi lo hace el
+     * diseno y asi queda.
+     */
+    corto(n) {
+      const v = Number(n || 0);
+      return v >= 1000 ? (v / 1000).toFixed(1) + "K" : v.toFixed(2);
+    },
+
+    /** Mueve una fila de cajas con las flechas de su cabecera. */
+    correr(id, hacia) {
+      const tira = this.$refs["tira-" + id];
+      const caja = Array.isArray(tira) ? tira[0] : tira;
+      if (!caja) return;
+      /* Casi el ancho visible: deja una tarjeta a la vista para que no
+         se pierda el hilo de donde estabas. */
+      caja.scrollBy({ left: hacia * Math.max(200, caja.clientWidth - 206), behavior: "smooth" });
+    },
     arte(c) {
       const s = sprite(c.imageUrl);
       return s ? s.estilo : {};
@@ -604,10 +654,10 @@ export default {
   display: flex;
   align-items: stretch;
   gap: 14px;
-  padding: 12px 14px;
-  border: 1px solid $borde;
+  padding: 12px;
+  border: 1px solid #1a2a45;
   border-radius: 18px;
-  background: $panel;
+  background: $panel-pulls;
 }
 
 .mb-pulls__rotulo {
@@ -617,7 +667,9 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 8px;
+  border-right: 1px solid $borde-fuerte;
+  padding-right: 12px;
 
   span { font-weight: 900; font-size: 14px; line-height: 1.1; text-align: center; }
 }
@@ -628,40 +680,54 @@ export default {
 
 .mb-pull-card {
   flex: none;
-  width: 88px;
-  padding: 8px 6px;
-  border: 2px solid;
+  width: 108px;
+  height: 150px;
+  box-sizing: border-box;
+  padding: 8px;
+  border: 2px solid #4f9bff;
   border-radius: 12px;
-  background: #12213a;
+  background: #1c63c9;
   color: #fff;
   text-decoration: none;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: space-between;
   @include foco;
-  &:hover { color: #fff; transform: translateY(-2px); }
+  &:hover { color: #fff; }
 }
 
-.mb-pull-card__foto { width: 52px; height: 52px; }
+// La etiquetita de la casa, arriba a la izquierda.
+.mb-pull-card__marca {
+  align-self: flex-start;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: #fff;
+  color: $azul-tinta;
+  font-family: $fuente-cartel;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.mb-pull-card__foto { width: 64px; height: 64px; }
 
 .mb-pull-card__nombre {
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   text-align: center;
   font-family: $fuente-cartel;
   font-size: 10px;
   line-height: 1.15;
+  text-transform: uppercase;
 }
 
 .mb-pull-card__valor {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-weight: 900;
-  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: $fondo;
+  font-weight: 800;
+  font-size: 11px;
 }
 
 // El velo que desvanece la cinta contra el borde, para que se note que
@@ -673,7 +739,7 @@ export default {
   bottom: 0;
   width: 90px;
   pointer-events: none;
-  background: linear-gradient(90deg, rgba(14, 26, 46, 0), $panel);
+  background: linear-gradient(90deg, rgba(16, 29, 51, 0), $panel-pulls);
 }
 
 /* ── Las filas ────────────────────────────────────────────────────── */
@@ -682,32 +748,62 @@ export default {
 
 .mb-fila__cabeza {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 
-  h2 { margin: 0; font-family: $fuente-cartel; font-size: 24px; letter-spacing: .5px; }
+  h2 { margin: 0; font-weight: 800; font-size: 28px; }
 }
 
+.mb-fila__mandos { display: flex; gap: 10px; }
+
 .mb-fila__todo {
-  padding: 9px 16px;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 20px;
   border-radius: 12px;
-  background: $panel-alto;
-  border: 1px solid $borde-fuerte;
+  border: 0;
+  background: #1d3354;
   color: #fff;
   font-weight: 800;
-  font-size: 13px;
+  font-size: 15px;
   text-decoration: none;
   @include foco;
   &:hover { background: $lateral-hover; color: #fff; }
 }
 
+// Las dos flechas, pegadas, con una rayita en el medio.
+.mb-flechas {
+  display: flex;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1d3354;
+
+  button {
+    width: 48px;
+    height: 44px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    @include foco;
+    &:hover { background: $lateral-hover; }
+  }
+
+  span { width: 1px; background: #2c4670; }
+}
+
 .mb-fila__tira {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  scroll-behavior: smooth;
+  padding: 4px 0 6px;
 }
 
 .mb-fila__caja { flex: none; width: 190px; @include en-celular { width: 150px; } }
