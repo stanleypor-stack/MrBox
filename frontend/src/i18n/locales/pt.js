@@ -193,5 +193,40 @@ export default {
     "freeOpens": "{n} ABERTURAS<br>GRÁTIS",
     "terms": "Aceito os <a href=\"/legal/terms\">Termos de Serviço</a> e a <a href=\"/legal/privacy\">Política de Privacidade</a> e confirmo que tenho 18 anos ou mais.*",
     "captchaNote": "Este site é protegido por Cloudflare Turnstile."
+  },
+  "home": {
+    "claimTitle": "PEGUE {n} ABERTURAS GRÁTIS",
+    "claimSub": "Cadastre-se e abra suas primeiras caixas por nossa conta.",
+    "claim": "Pegar",
+    "yourFreeOpens": "Suas aberturas grátis",
+    "freeLeft": "{n} de {total} restantes",
+    "freeOpen": "GRÁTIS",
+    "highlights": "Destaques",
+    "livePulls": "AO VIVO",
+    "viewAll": "Ver todas"
+  },
+  "rows": {
+    "popular": "As mais abertas",
+    "featured": "Destaques",
+    "luxury": "Luxo",
+    "cheap": "Abaixo de SC 5"
+  },
+  "banners": {
+    "carsKicker": "SUPERCARROS",
+    "carsTitle": "Dirija seu sonho",
+    "carsSub": "Porsche, Audi, BMW e mais.",
+    "carsCta": "Ver caixas de carros",
+    "goldKicker": "OURO E BARRAS",
+    "goldTitle": "Ache o ouro",
+    "goldSub": "Barras, correntes e relógios cravejados.",
+    "goldCta": "Buscar ouro",
+    "watchKicker": "RELÓGIOS",
+    "watchTitle": "Hora de brilhar",
+    "watchSub": "Rolex, Hublot, Tag Heuer e First Class.",
+    "watchCta": "Ver relógios",
+    "luxKicker": "LUXO",
+    "luxTitle": "Viva com estilo",
+    "luxSub": "Black Card, King Of Diamonds e Expensive Taste.",
+    "luxCta": "Ver luxo"
   }
 };

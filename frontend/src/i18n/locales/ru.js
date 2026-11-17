@@ -193,5 +193,40 @@ export default {
     "freeOpens": "{n} БЕСПЛАТНЫХ<br>ОТКРЫТИЯ",
     "terms": "Я принимаю <a href=\"/legal/terms\">Условия</a> и <a href=\"/legal/privacy\">Политику конфиденциальности</a> и подтверждаю, что мне 18 лет или больше.*",
     "captchaNote": "Сайт защищён Cloudflare Turnstile."
+  },
+  "home": {
+    "claimTitle": "ЗАБРАТЬ {n} ОТКРЫТИЯ",
+    "claimSub": "Зарегистрируйтесь и откройте первые коробки за наш счёт.",
+    "claim": "Забрать",
+    "yourFreeOpens": "Ваши бесплатные открытия",
+    "freeLeft": "Осталось {n} из {total}",
+    "freeOpen": "БЕСПЛАТНО",
+    "highlights": "Главное",
+    "livePulls": "В ЭФИРЕ",
+    "viewAll": "Смотреть все"
+  },
+  "rows": {
+    "popular": "Популярное",
+    "featured": "Рекомендуем",
+    "luxury": "Люкс",
+    "cheap": "До SC 5"
+  },
+  "banners": {
+    "carsKicker": "СУПЕРКАРЫ",
+    "carsTitle": "За рулём мечты",
+    "carsSub": "Porsche, Audi, BMW и другие.",
+    "carsCta": "Коробки с авто",
+    "goldKicker": "ЗОЛОТО",
+    "goldTitle": "Найди золото",
+    "goldSub": "Слитки, цепи и часы.",
+    "goldCta": "Искать золото",
+    "watchKicker": "ЧАСЫ",
+    "watchTitle": "Время блистать",
+    "watchSub": "Rolex, Hublot, Tag Heuer и First Class.",
+    "watchCta": "К часам",
+    "luxKicker": "ЛЮКС",
+    "luxTitle": "Живи роскошно",
+    "luxSub": "Black Card, King Of Diamonds и Expensive Taste.",
+    "luxCta": "К люксу"
   }
 };

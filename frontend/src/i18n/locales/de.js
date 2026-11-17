@@ -193,5 +193,40 @@ export default {
     "freeOpens": "{n} GRATIS<br>ÖFFNUNGEN",
     "terms": "Ich akzeptiere die <a href=\"/legal/terms\">Nutzungsbedingungen</a> und die <a href=\"/legal/privacy\">Datenschutzerklärung</a> und bestätige, dass ich 18 Jahre oder älter bin.*",
     "captchaNote": "Diese Seite wird durch Cloudflare Turnstile geschützt."
+  },
+  "home": {
+    "claimTitle": "{n} GRATIS-ÖFFNUNGEN HOLEN",
+    "claimSub": "Registriere dich und öffne deine ersten Boxen auf uns.",
+    "claim": "Holen",
+    "yourFreeOpens": "Deine Gratis-Öffnungen",
+    "freeLeft": "{n} von {total} übrig",
+    "freeOpen": "GRATIS",
+    "highlights": "Highlights",
+    "livePulls": "LIVE-GEWINNE",
+    "viewAll": "Alle ansehen"
+  },
+  "rows": {
+    "popular": "Beliebte Boxen",
+    "featured": "Empfohlen",
+    "luxury": "Luxus",
+    "cheap": "Unter SC 5"
+  },
+  "banners": {
+    "carsKicker": "SUPERSPORTWAGEN",
+    "carsTitle": "Fahr deinen Traum",
+    "carsSub": "Porsche, Audi, BMW und mehr.",
+    "carsCta": "Auto-Boxen ansehen",
+    "goldKicker": "GOLD & BARREN",
+    "goldTitle": "Gold finden",
+    "goldSub": "Barren, Ketten und Diamantuhren.",
+    "goldCta": "Gold finden",
+    "watchKicker": "UHREN",
+    "watchTitle": "Zeit zu glänzen",
+    "watchSub": "Rolex, Hublot, Tag Heuer und First Class.",
+    "watchCta": "Uhren ansehen",
+    "luxKicker": "LUXUS",
+    "luxTitle": "Lebe großzügig",
+    "luxSub": "Black Card, King Of Diamonds und Expensive Taste.",
+    "luxCta": "Luxus ansehen"
   }
 };

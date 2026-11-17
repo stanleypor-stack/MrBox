@@ -193,5 +193,40 @@ export default {
     "freeOpens": "{n} OUVERTURES<br>GRATUITES",
     "terms": "J’accepte les <a href=\"/legal/terms\">Conditions d’utilisation</a> et la <a href=\"/legal/privacy\">Politique de confidentialité</a> et confirme avoir 18 ans ou plus.*",
     "captchaNote": "Ce site est protégé par Cloudflare Turnstile."
+  },
+  "home": {
+    "claimTitle": "RÉCUPÈRE {n} OUVERTURES",
+    "claimSub": "Inscris-toi et ouvre tes premiers coffrets, c’est offert.",
+    "claim": "Récupérer",
+    "yourFreeOpens": "Tes ouvertures gratuites",
+    "freeLeft": "{n} sur {total} restantes",
+    "freeOpen": "GRATUIT",
+    "highlights": "À la une",
+    "livePulls": "TIRAGES EN DIRECT",
+    "viewAll": "Voir tout"
+  },
+  "rows": {
+    "popular": "Les plus populaires",
+    "featured": "À la une",
+    "luxury": "Sélection luxe",
+    "cheap": "Moins de SC 5"
+  },
+  "banners": {
+    "carsKicker": "SUPERCARS",
+    "carsTitle": "Conduis ton rêve",
+    "carsSub": "Porsche, Audi, BMW et plus.",
+    "carsCta": "Voir les coffrets autos",
+    "goldKicker": "OR & LINGOTS",
+    "goldTitle": "Trouve l’or",
+    "goldSub": "Lingots, chaînes et montres serties.",
+    "goldCta": "Trouver l’or",
+    "watchKicker": "MONTRES",
+    "watchTitle": "L’heure de briller",
+    "watchSub": "Rolex, Hublot, Tag Heuer et First Class.",
+    "watchCta": "Voir les montres",
+    "luxKicker": "LUXE",
+    "luxTitle": "Vis grand",
+    "luxSub": "Black Card, King Of Diamonds et Expensive Taste.",
+    "luxCta": "Voir le luxe"
   }
 };

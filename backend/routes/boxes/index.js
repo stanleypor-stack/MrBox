@@ -141,6 +141,66 @@ router.get("/categories", autorizar(false), async (req, res) => {
   }
 });
 
+/*
+  OJO CON EL ORDEN: ESTA RUTA VA ANTES QUE /:slug.
+
+  Express prueba las rutas en el orden en que se declaran, y "/rows" es
+  un solo segmento igual que un slug: puesta despues, /boxes/rows caia
+  en /boxes/:slug y el servidor contestaba "esa caja no existe". Pasa
+  con cualquier ruta fija de un segmento que viva al lado de una
+  variable.
+*/
+/**
+ * LAS FILAS DE LA PORTADA, EN UN SOLO PEDIDO.
+ *
+ * Popular Picks, Featured, Luxury Picks y Under SC 5. Van juntas a
+ * proposito: cuatro pedidos para dibujar una portada es medio segundo
+ * de pantalla a medio armar en un telefono con mala senal, y la portada
+ * es lo primero que ve cualquiera.
+ *
+ * Cada fila dice que REGLA la arma, para que el panel pueda mostrarlo
+ * y para que nadie tenga que adivinar por que una caja esta ahi.
+ */
+router.get("/rows", autorizar(false), async (req, res) => {
+  try {
+    const comun = { live: true };
+    const campos = "slug name category imageUrl priceSc retorno featured markedNew opens prizes";
+
+    const resumir = (lista) =>
+      lista.map((c) => {
+        const mejor = (c.prizes || []).reduce((a, p) => (!a || p.valueSc > a.valueSc ? p : a), null);
+        return {
+          ...cajas.resumenDeCaja(c),
+          prizes: undefined,
+          cuantosObjetos: (c.prizes || []).length,
+          mejorPremio: mejor
+            ? { name: mejor.name, valueSc: sc(mejor.valueSc), rarity: mejor.rarity, imageUrl: mejor.imageUrl }
+            : null,
+        };
+      });
+
+    const [populares, destacadas, lujo, baratas] = await Promise.all([
+      Box.find(comun).sort({ opens: -1 }).limit(14).select(campos).lean(),
+      Box.find({ ...comun, $or: [{ featured: true }, { markedNew: true }] })
+        .sort({ createdAt: -1 }).limit(14).select(campos).lean(),
+      Box.find({ ...comun, priceSc: { $gte: 200 } }).sort({ priceSc: -1 }).limit(14).select(campos).lean(),
+      Box.find({ ...comun, priceSc: { $lt: 5 } }).sort({ priceSc: 1 }).limit(14).select(campos).lean(),
+    ]);
+
+    return res.json({
+      success: true,
+      data: [
+        { id: "popular", titulo: "rows.popular", regla: "rows.popularRule", items: resumir(populares) },
+        { id: "featured", titulo: "rows.featured", regla: "rows.featuredRule", items: resumir(destacadas) },
+        { id: "luxury", titulo: "rows.luxury", regla: "rows.luxuryRule", items: resumir(lujo) },
+        { id: "cheap", titulo: "rows.cheap", regla: "rows.cheapRule", items: resumir(baratas) },
+      ].filter((f) => f.items.length),
+    });
+  } catch (err) {
+    return responderError(res, err, "rows");
+  }
+});
+
 /**
  * UNA CAJA, CON TODOS SUS PREMIOS Y SUS CHANCES.
  *

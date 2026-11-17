@@ -193,5 +193,40 @@ export default {
     "freeOpens": "無料で<br>{n} 回開封",
     "terms": "<a href=\"/legal/terms\">利用規約</a>と<a href=\"/legal/privacy\">プライバシーポリシー</a>に同意し、18歳以上であることを確認します。*",
     "captchaNote": "このサイトは Cloudflare Turnstile で保護されています。"
+  },
+  "home": {
+    "claimTitle": "無料 {n} 回を受け取る",
+    "claimSub": "登録して最初のボックスを無料で。",
+    "claim": "受け取る",
+    "yourFreeOpens": "無料オープン",
+    "freeLeft": "残り {n} / {total}",
+    "freeOpen": "無料",
+    "highlights": "ハイライト",
+    "livePulls": "ライブ",
+    "viewAll": "すべて見る"
+  },
+  "rows": {
+    "popular": "人気のボックス",
+    "featured": "注目",
+    "luxury": "ラグジュアリー",
+    "cheap": "SC 5 未満"
+  },
+  "banners": {
+    "carsKicker": "スーパーカー",
+    "carsTitle": "夢のクルマを",
+    "carsSub": "Porsche、Audi、BMW ほか。",
+    "carsCta": "カーボックス",
+    "goldKicker": "ゴールド",
+    "goldTitle": "金を当てろ",
+    "goldSub": "バー、チェーン、ウォッチ。",
+    "goldCta": "金を探す",
+    "watchKicker": "ウォッチ",
+    "watchTitle": "輝く時間",
+    "watchSub": "Rolex、Hublot、Tag Heuer ほか。",
+    "watchCta": "ウォッチを見る",
+    "luxKicker": "ラグジュアリー",
+    "luxTitle": "贅沢に暮らそう",
+    "luxSub": "Black Card、King Of Diamonds ほか。",
+    "luxCta": "ラグジュアリー"
   }
 };

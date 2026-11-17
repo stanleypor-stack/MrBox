@@ -12,7 +12,11 @@ Vue.use(VueRouter);
  * pantalla en blanco.
  */
 const routes = [
-  { path: "/", redirect: "/boxes" },
+  {
+    path: "/",
+    name: "home",
+    component: () => import(/* webpackChunkName: "portada" */ "@/views/HomeView.vue"),
+  },
   {
     path: "/boxes",
     name: "boxes",

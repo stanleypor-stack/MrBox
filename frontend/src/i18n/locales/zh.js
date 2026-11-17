@@ -193,5 +193,40 @@ export default {
     "freeOpens": "{n} 次<br>免费开启",
     "terms": "我接受<a href=\"/legal/terms\">服务条款</a>和<a href=\"/legal/privacy\">隐私政策</a>，并确认我年满18周岁。*",
     "captchaNote": "本站由 Cloudflare Turnstile 保护。"
+  },
+  "home": {
+    "claimTitle": "领取 {n} 次免费开启",
+    "claimSub": "注册即可免费开启首批盲盒。",
+    "claim": "领取",
+    "yourFreeOpens": "你的免费开启",
+    "freeLeft": "剩余 {n} / {total}",
+    "freeOpen": "免费",
+    "highlights": "精选",
+    "livePulls": "实时开盒",
+    "viewAll": "查看全部"
+  },
+  "rows": {
+    "popular": "热门精选",
+    "featured": "特色推荐",
+    "luxury": "奢品精选",
+    "cheap": "SC 5 以下"
+  },
+  "banners": {
+    "carsKicker": "超跑",
+    "carsTitle": "驾驭梦想",
+    "carsSub": "保时捷、奥迪、宝马等。",
+    "carsCta": "汽车盲盒",
+    "goldKicker": "黄金",
+    "goldTitle": "掘金",
+    "goldSub": "金条、金链与镶钻表。",
+    "goldCta": "寻找黄金",
+    "watchKicker": "腔表",
+    "watchTitle": "闪耀时刻",
+    "watchSub": "劳力士、宇舵等。",
+    "watchCta": "查看腔表",
+    "luxKicker": "奢品",
+    "luxTitle": "尽享奢华",
+    "luxSub": "Black Card、King Of Diamonds 等。",
+    "luxCta": "查看奢品"
   }
 };

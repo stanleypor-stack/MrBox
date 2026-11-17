@@ -193,5 +193,40 @@ export default {
     "freeOpens": "{n} FREE<br>OPENS",
     "terms": "I accept the <a href=\"/legal/terms\">Terms of Service</a> and the <a href=\"/legal/privacy\">Privacy Policy</a> and confirm I am 18 or older.*",
     "captchaNote": "This site is protected by Cloudflare Turnstile."
+  },
+  "home": {
+    "claimTitle": "CLAIM {n} FREE OPENS",
+    "claimSub": "Sign up and open your first boxes on us.",
+    "claim": "Claim",
+    "yourFreeOpens": "Your free opens",
+    "freeLeft": "{n} of {total} left",
+    "freeOpen": "FREE OPEN",
+    "highlights": "Highlights",
+    "livePulls": "LIVE PULLS",
+    "viewAll": "View all"
+  },
+  "rows": {
+    "popular": "Popular Picks",
+    "featured": "Featured",
+    "luxury": "Luxury Picks",
+    "cheap": "Under SC 5"
+  },
+  "banners": {
+    "carsKicker": "UNBOX SUPERCARS",
+    "carsTitle": "Drive Your Dream",
+    "carsSub": "Porsche, Audi, BMW and more.",
+    "carsCta": "Shop car boxes",
+    "goldKicker": "GOLD & BULLION",
+    "goldTitle": "Strike Gold",
+    "goldSub": "Bars, chains and iced-out watches.",
+    "goldCta": "Find gold",
+    "watchKicker": "WATCHES",
+    "watchTitle": "Time to Shine",
+    "watchSub": "Rolex, Hublot, Tag Heuer and First Class.",
+    "watchCta": "Shop watches",
+    "luxKicker": "LUXURY",
+    "luxTitle": "Live Lavish",
+    "luxSub": "Black Card, King Of Diamonds and Expensive Taste.",
+    "luxCta": "Shop luxury"
   }
 };
