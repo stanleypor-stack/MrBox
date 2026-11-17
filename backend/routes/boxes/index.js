@@ -118,11 +118,24 @@ router.get("/", autorizar(false), async (req, res) => {
   }
 });
 
-/** Las categorias que existen de verdad, para armar los filtros. */
+/**
+ * Las categorias que existen de verdad, con cuantas cajas tiene cada una.
+ *
+ * El conteo viaja porque la barra lateral lo muestra al lado del nombre.
+ * Se hace con una agregacion y no contando una por una: trece consultas
+ * para dibujar un menu es un desperdicio que se nota.
+ */
 router.get("/categories", autorizar(false), async (req, res) => {
   try {
-    const cats = await Box.distinct("category", { live: true });
-    return res.json({ success: true, data: cats.filter(Boolean).sort() });
+    const filas = await Box.aggregate([
+      { $match: { live: true, category: { $nin: ["", null] } } },
+      { $group: { _id: "$category", count: { $sum: 1 } } },
+      { $sort: { count: -1, _id: 1 } },
+    ]);
+    return res.json({
+      success: true,
+      data: filas.map((f) => ({ name: f._id, count: f.count })),
+    });
   } catch (err) {
     return responderError(res, err, "categories");
   }

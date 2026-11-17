@@ -19,7 +19,7 @@
           class="mb-chip" :class="{ 'is-activo': categoria === c.valor }"
           :aria-pressed="categoria === c.valor ? 'true' : 'false'"
           @click="categoria = c.valor"
-        >{{ c.texto }}</button>
+        >{{ c.texto }}<span v-if="c.cuenta" class="mb-chip__cuenta">{{ c.cuenta }}</span></button>
       </div>
 
       <label class="mb-orden">
@@ -97,9 +97,14 @@ export default {
     ...mapState({ cajas: "cajas", cargando: "cargandoCajas", categorias: "categorias" }),
 
     categoriasConTodas() {
+      /*
+        El servidor manda `{ name, count }` desde que la barra lateral
+        necesita el conteo. Se arma el texto del chip con los dos, que
+        de paso es mas util: "Mix 107" dice cuanto hay antes de tocar.
+      */
       return [
-        { valor: "", texto: this.$t("boxes.allCategories") },
-        ...this.categorias.map((c) => ({ valor: c, texto: c })),
+        { valor: "", texto: this.$t("boxes.allCategories"), cuenta: this.cajas.total || 0 },
+        ...this.categorias.map((c) => ({ valor: c.name, texto: c.name, cuenta: c.count })),
       ];
     },
   },
@@ -205,6 +210,9 @@ export default {
 
 .mb-chip {
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   height: 36px;
   padding: 0 14px;
   border: 1px solid $borde-fuerte;
@@ -222,6 +230,14 @@ export default {
   &.is-activo { background: $azul; border-color: $azul; color: #fff; }
   &:disabled { opacity: .4; cursor: default; }
 }
+
+.mb-chip__cuenta {
+  color: $texto-4;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.is-activo .mb-chip__cuenta { color: rgba(255, 255, 255, .78); }
 
 .mb-orden__select {
   width: auto;

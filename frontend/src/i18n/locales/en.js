@@ -63,7 +63,8 @@ export default {
     "placeholder": "Write a message…",
     "home": "Home",
     "messages": "Messages",
-    "help": "Help"
+    "help": "Help",
+    "soon": "Live chat is not switched on yet."
   },
   "error": {
     "NOT_ENOUGH_COINS": "You need {faltan} more.",
@@ -131,5 +132,38 @@ export default {
     "promo_code": "Promo code",
     "creator_share": "Creator share",
     "manual": "Manual adjustment"
+  },
+  "header": {
+    "notifications": "Notifications",
+    "allCaughtUp": "You’re all caught up",
+    "account": "Account",
+    "sideMenu": "Side menu",
+    "collapse": "Collapse menu",
+    "expand": "Expand menu"
+  },
+  "wallet": {
+    "total": "Wallet total",
+    "withdraw": "Withdraw",
+    "redeem": "Redeem",
+    "items": "Items",
+    "depositSoon": "Deposits are not switched on yet.",
+    "withdrawSoon": "Withdrawals are not switched on yet.",
+    "redeemSoon": "Redemptions are not switched on yet."
+  },
+  "side": {
+    "allBoxes": "All boxes",
+    "categories": "Categories",
+    "dashboard": "Dashboard"
+  },
+  "races": {
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly"
+  },
+  "auth": {
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "referralCode": "Referral code (optional)"
   }
 };

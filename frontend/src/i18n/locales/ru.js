@@ -63,7 +63,8 @@ export default {
     "placeholder": "Напишите сообщение…",
     "home": "Главная",
     "messages": "Сообщения",
-    "help": "Помощь"
+    "help": "Помощь",
+    "soon": "Чат пока недоступен."
   },
   "error": {
     "NOT_ENOUGH_COINS": "Не хватает {faltan}.",
@@ -131,5 +132,38 @@ export default {
     "promo_code": "Промокод",
     "creator_share": "Доля создателя",
     "manual": "Ручная корректировка"
+  },
+  "header": {
+    "notifications": "Уведомления",
+    "allCaughtUp": "Нового нет",
+    "account": "Аккаунт",
+    "sideMenu": "Боковое меню",
+    "collapse": "Свернуть меню",
+    "expand": "Развернуть меню"
+  },
+  "wallet": {
+    "total": "Всего в кошельке",
+    "withdraw": "Вывести",
+    "redeem": "Обменять",
+    "items": "Предметы",
+    "depositSoon": "Пополнение пока недоступно.",
+    "withdrawSoon": "Вывод пока недоступен.",
+    "redeemSoon": "Обмен пока недоступен."
+  },
+  "side": {
+    "allBoxes": "Все коробки",
+    "categories": "Категории",
+    "dashboard": "Панель"
+  },
+  "races": {
+    "daily": "Ежедневно",
+    "weekly": "Еженедельно",
+    "monthly": "Ежемесячно"
+  },
+  "auth": {
+    "username": "Имя пользователя",
+    "email": "Почта",
+    "password": "Пароль",
+    "referralCode": "Реферальный код (необяз.)"
   }
 };

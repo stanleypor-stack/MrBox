@@ -4,7 +4,13 @@
          degradé del color de su rareza, que es lo que hace que la
          grilla no se vea vacía con el catálogo recién cargado. -->
     <div class="mb-caja__tapa" :style="estiloTapa">
-      <img v-if="caja.imageUrl" :src="caja.imageUrl" :alt="caja.name" class="mb-caja__foto">
+      <!-- La tapa sale de la lamina de arte del diseno: un recorte, no
+           un archivo por caja. -->
+      <span
+        v-if="lamina" class="mb-caja__arte" :class="lamina.clase"
+        :style="lamina.estilo" aria-hidden="true"
+      ></span>
+      <img v-else-if="caja.imageUrl" :src="caja.imageUrl" :alt="caja.name" class="mb-caja__foto">
       <div v-else class="mb-caja__sinfoto" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"
              stroke-linecap="round" stroke-linejoin="round">
@@ -44,6 +50,8 @@
  * derecho y el teclado la alcanza con Tab. Un div con `onClick` no hace
  * ninguna de las tres y se nota.
  */
+import { sprite } from "@/utils/sprite";
+
 const COLORES = {
   blue: "#3f7cf0",
   purple: "#8b4fe0",
@@ -58,6 +66,8 @@ export default {
     caja: { type: Object, required: true },
   },
   computed: {
+    lamina() { return sprite(this.caja.imageUrl); },
+
     precio() {
       return Number(this.caja.priceSc || 0).toLocaleString("en-US", {
         minimumFractionDigits: 2, maximumFractionDigits: 2,
@@ -104,10 +114,11 @@ export default {
   justify-content: center;
 }
 
-.mb-caja__foto {
+.mb-caja__foto, .mb-caja__arte {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  display: block;
 }
 
 .mb-caja__sinfoto {
@@ -174,18 +185,4 @@ export default {
   font-size: 15px;
 }
 
-.mb-sc {
-  display: inline-flex;
-  flex: none;
-  width: 18px;
-  height: 18px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: linear-gradient($sc-verde-claro, $sc-verde);
-  color: $sc-texto;
-  font-weight: 900;
-  font-size: 8px;
-  line-height: 1;
-}
 </style>

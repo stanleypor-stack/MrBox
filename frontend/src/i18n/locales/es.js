@@ -63,7 +63,8 @@ export default {
     "placeholder": "Escribí un mensaje…",
     "home": "Inicio",
     "messages": "Mensajes",
-    "help": "Ayuda"
+    "help": "Ayuda",
+    "soon": "El chat todavía no está activo."
   },
   "error": {
     "NOT_ENOUGH_COINS": "Te faltan {faltan}.",
@@ -131,5 +132,38 @@ export default {
     "promo_code": "Código promocional",
     "creator_share": "Parte del creador",
     "manual": "Ajuste manual"
+  },
+  "header": {
+    "notifications": "Notificaciones",
+    "allCaughtUp": "No hay nada nuevo",
+    "account": "Cuenta",
+    "sideMenu": "Menú lateral",
+    "collapse": "Achicar el menú",
+    "expand": "Agrandar el menú"
+  },
+  "wallet": {
+    "total": "Total en la billetera",
+    "withdraw": "Retirar",
+    "redeem": "Canjear",
+    "items": "Objetos",
+    "depositSoon": "Los depósitos todavía no están activos.",
+    "withdrawSoon": "Los retiros todavía no están activos.",
+    "redeemSoon": "Los canjes todavía no están activos."
+  },
+  "side": {
+    "allBoxes": "Todas las cajas",
+    "categories": "Categorías",
+    "dashboard": "Panel"
+  },
+  "races": {
+    "daily": "Diaria",
+    "weekly": "Semanal",
+    "monthly": "Mensual"
+  },
+  "auth": {
+    "username": "Nombre de usuario",
+    "email": "Email",
+    "password": "Contraseña",
+    "referralCode": "Código de referido (opcional)"
   }
 };

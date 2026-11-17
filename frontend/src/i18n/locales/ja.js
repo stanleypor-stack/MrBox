@@ -63,7 +63,8 @@ export default {
     "placeholder": "メッセージを入力…",
     "home": "ホーム",
     "messages": "メッセージ",
-    "help": "ヘルプ"
+    "help": "ヘルプ",
+    "soon": "チャットはまだ有効ではありません。"
   },
   "error": {
     "NOT_ENOUGH_COINS": "あと {faltan} 足りません。",
@@ -131,5 +132,38 @@ export default {
     "promo_code": "プロモコード",
     "creator_share": "クリエイター分配",
     "manual": "手動調整"
+  },
+  "header": {
+    "notifications": "お知らせ",
+    "allCaughtUp": "新着はありません",
+    "account": "アカウント",
+    "sideMenu": "サイドメニュー",
+    "collapse": "メニューを閉じる",
+    "expand": "メニューを開く"
+  },
+  "wallet": {
+    "total": "ウォレット合計",
+    "withdraw": "出金",
+    "redeem": "交換",
+    "items": "アイテム",
+    "depositSoon": "入金はまだ有効ではありません。",
+    "withdrawSoon": "出金はまだ有効ではありません。",
+    "redeemSoon": "交換はまだ有効ではありません。"
+  },
+  "side": {
+    "allBoxes": "すべてのボックス",
+    "categories": "カテゴリ",
+    "dashboard": "ダッシュボード"
+  },
+  "races": {
+    "daily": "デイリー",
+    "weekly": "ウィークリー",
+    "monthly": "マンスリー"
+  },
+  "auth": {
+    "username": "ユーザー名",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "referralCode": "紹介コード（任意）"
   }
 };

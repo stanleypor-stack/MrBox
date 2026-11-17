@@ -1,0 +1,74 @@
+// =====================================================================
+//  LAS LAMINAS DE ARTE
+//
+//  El diseño dibuja los 1.712 objetos y las 163 cajas con TRES imágenes,
+//  no con 1.875 archivos. Cada cosa es un recorte: se fija el tamaño del
+//  fondo a la grilla entera y se mueve la posición hasta el casillero
+//  que toca.
+//
+//  POR QUE IMPORTA
+//
+//  Una grilla de veinticuatro cajas son veinticuatro pedidos al
+//  servidor si cada tapa es un archivo. Con la lámina es UNO, que además
+//  queda en el caché del navegador para todo el sitio. En un teléfono
+//  con señal mala la diferencia entre las dos cosas es enorme.
+//
+//  La posición de cada casillero la calcula el backend al sembrar y
+//  viaja en `imageUrl` como `sprite:<lamina>:<posicion>` (ver
+//  backend/scripts/extraerCatalogoDelDiseno.py).
+// =====================================================================
+
+// Los objetos: 42 columnas x 41 filas.
+.mb-prod {
+  background-image: url("/img/22cd8a3943d5d0065a2acf2b640d17e1.webp");
+  background-repeat: no-repeat;
+  background-size: 4200% 4100%;
+}
+
+// Las cajas: 14 x 14.
+.mb-art {
+  background-image: url("/img/b76846b63a61c254c8a411d927d769f8.webp");
+  background-repeat: no-repeat;
+  background-size: 1400% 1400%;
+}
+
+// Los trofeos de las carreras: 3 de ancho.
+.mb-race {
+  background-image: url("/img/f2fe9a24224a684d49eefa02c004b74e.webp");
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+}
+
+// Las fotitos del feed de arriba: 4 x 4.
+.mb-pull {
+  background-image: url("/img/994515daa0e4cf0eadfd1cc038076853.webp");
+  background-repeat: no-repeat;
+  background-size: 400% 400%;
+}
+
+// =====================================================================
+//  LA MONEDA
+//
+//  Es el dibujo del diseño. El texto "SC" queda adentro del elemento
+//  como respaldo --si la imagen no carga, se lee "SC" en vez de un
+//  hueco-- pero se tapa con `color: transparent` y `font-size: 0`.
+// =====================================================================
+
+.mb-sc {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: url("/img/4397330e5a00828a237d1edfabb11f18.webp") center / contain no-repeat;
+  color: transparent;
+  font-size: 0;
+  line-height: 1;
+
+  &--16 { width: 16px; height: 16px; }
+  &--18 { width: 18px; height: 18px; }
+  &--20 { width: 20px; height: 20px; }
+  &--26 { width: 26px; height: 26px; }
+  &--32 { width: 32px; height: 32px; }
+}

@@ -63,7 +63,8 @@ export default {
     "placeholder": "输入消息…",
     "home": "首页",
     "messages": "消息",
-    "help": "帮助"
+    "help": "帮助",
+    "soon": "在线客服尚未开放。"
   },
   "error": {
     "NOT_ENOUGH_COINS": "还差 {faltan}。",
@@ -131,5 +132,38 @@ export default {
     "promo_code": "优惠码",
     "creator_share": "创作者分成",
     "manual": "人工调整"
+  },
+  "header": {
+    "notifications": "通知",
+    "allCaughtUp": "暂无新消息",
+    "account": "账户",
+    "sideMenu": "侧边栏",
+    "collapse": "收起菜单",
+    "expand": "展开菜单"
+  },
+  "wallet": {
+    "total": "钱包总额",
+    "withdraw": "提现",
+    "redeem": "兑换",
+    "items": "物品",
+    "depositSoon": "充值尚未开放。",
+    "withdrawSoon": "提现尚未开放。",
+    "redeemSoon": "兑换尚未开放。"
+  },
+  "side": {
+    "allBoxes": "全部盲盒",
+    "categories": "分类",
+    "dashboard": "控制台"
+  },
+  "races": {
+    "daily": "每日",
+    "weekly": "每周",
+    "monthly": "每月"
+  },
+  "auth": {
+    "username": "用户名",
+    "email": "邮箱",
+    "password": "密码",
+    "referralCode": "推广码（可选）"
   }
 };

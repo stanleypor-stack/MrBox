@@ -1,0 +1,407 @@
+<template>
+  <aside class="mb-side" :class="{ 'is-angosta': !abierta }" :aria-label="$t('header.sideMenu')">
+    <button
+      type="button" class="mb-side__plegar"
+      :aria-label="abierta ? $t('header.collapse') : $t('header.expand')"
+      @click="abierta = !abierta"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff"
+           stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path :d="abierta ? 'M15 4H4v16h11M15 4h5v16h-5M11 9l-3 3 3 3' : 'M9 4H4v16h5M9 4h11v16H9M14 9l3 3-3 3'" />
+      </svg>
+    </button>
+
+    <div v-if="abierta" class="mb-side__cuerpo">
+      <!-- ── Las carreras ─────────────────────────────────────────── -->
+      <router-link to="/races/weekly" class="mb-race-card mb-race-card--grande">
+        <span class="mb-race mb-race-card__arte mb-race-card__arte--grande" aria-hidden="true"
+              style="background-position: 0% 0%"></span>
+        <span class="mb-race-card__cifra">$10K</span>
+        <span class="mb-race-card__plazo">{{ $t('races.weekly') }}</span>
+      </router-link>
+
+      <div class="mb-side__dos">
+        <router-link to="/races/daily" class="mb-race-card">
+          <span class="mb-race mb-race-card__arte" aria-hidden="true" style="background-position: 50% 0%"></span>
+          <span class="mb-race-card__cifra mb-race-card__cifra--chica">$2K</span>
+          <span class="mb-race-card__plazo">{{ $t('races.daily') }}</span>
+        </router-link>
+        <router-link to="/races/monthly" class="mb-race-card">
+          <span class="mb-race mb-race-card__arte" aria-hidden="true" style="background-position: 100% 0%"></span>
+          <span class="mb-race-card__cifra mb-race-card__cifra--chica">$30K</span>
+          <span class="mb-race-card__plazo">{{ $t('races.monthly') }}</span>
+        </router-link>
+      </div>
+
+      <!-- ── Cajas ────────────────────────────────────────────────── -->
+      <div class="mb-grupo">
+        <div class="mb-grupo__titulo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff"
+               stroke-width="2" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 2.5 21 7v10l-9 4.5L3 17V7z" /><path d="M3 7l9 4.5L21 7M12 11.5v10" />
+          </svg>
+          {{ $t('nav.boxes') }}
+        </div>
+        <div class="mb-grupo__lista">
+          <router-link to="/boxes" class="mb-grupo__item" active-class="is-activo" exact>
+            {{ $t('side.allBoxes') }}
+          </router-link>
+          <router-link to="/community" class="mb-grupo__item" active-class="is-activo">
+            {{ $t('nav.community') }}
+          </router-link>
+          <router-link to="/deals" class="mb-grupo__item" active-class="is-activo">
+            {{ $t('nav.deals') }}
+            <span class="mb-cinta-nueva">NEW</span>
+          </router-link>
+          <router-link to="/create" class="mb-grupo__item" active-class="is-activo">
+            {{ $t('nav.createBox') }}
+          </router-link>
+          <router-link to="/dashboard" class="mb-grupo__item" active-class="is-activo">
+            {{ $t('side.dashboard') }}
+          </router-link>
+        </div>
+      </div>
+
+      <!-- ── Categorías ───────────────────────────────────────────── -->
+      <div class="mb-grupo">
+        <button
+          type="button" class="mb-grupo__plegable"
+          :aria-expanded="categoriasAbiertas ? 'true' : 'false'"
+          @click="categoriasAbiertas = !categoriasAbiertas"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff"
+               stroke-width="2" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="3.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+          {{ $t('side.categories') }}
+          <span class="mb-grupo__chevron">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff"
+                 stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path :d="categoriasAbiertas ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'" />
+            </svg>
+          </span>
+        </button>
+
+        <div v-if="categoriasAbiertas" class="mb-grupo__lista">
+          <router-link
+            v-for="c in categorias" :key="c.name"
+            :to="`/boxes?category=${encodeURIComponent(c.name)}`"
+            class="mb-grupo__item mb-grupo__item--cat"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path :d="icono(c.name)" />
+            </svg>
+            {{ c.name }}
+            <span class="mb-grupo__cuenta">{{ c.count }}</span>
+          </router-link>
+        </div>
+      </div>
+
+      <!-- ── Los accesos ──────────────────────────────────────────── -->
+      <router-link
+        v-for="l in enlaces" :key="l.a" :to="l.a"
+        class="mb-acceso" active-class="is-activo"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path :d="l.icono" />
+        </svg>
+        {{ $t(l.texto) }}
+        <span v-if="l.badge" class="mb-acceso__badge">{{ l.badge }}</span>
+      </router-link>
+
+      <div class="mb-side__pie">
+        <MbSelectorDeIdioma />
+      </div>
+    </div>
+  </aside>
+</template>
+
+<script>
+import api from "@/api";
+import MbSelectorDeIdioma from "@/components/MbSelectorDeIdioma.vue";
+
+/* Los iconos de categoria del diseno. */
+const ICONOS = {
+  Mix: "M12 2.5 21 7v10l-9 4.5L3 17V7z",
+  Fashion: "M8 3l4 3 4-3 5 4-3 4v10H6V11L3 7z",
+  Tech: "M4 5h16v11H4zM9 20h6M12 16v4",
+  Gaming: "M7 12h4M9 10v4M6 7h12a4 4 0 0 1 0 14c-2 0-3-1-6-1s-4 1-6 1a4 4 0 0 1 0-14z",
+  Watches: "M12 8v4l3 2M8 3h8l-1 4M8 21h8l-1-4M12 6a6 6 0 1 1 0 12 6 6 0 0 1 0-12z",
+  Games: "M4 6h16v12H4zM9 10h6M12 10v4",
+  Collectables: "M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.2l5.9-.9z",
+  Gadgets: "M7 3h10v18H7zM10 6h4",
+  Audio: "M11 5 6 9H3v6h3l5 4zM16 9a4 4 0 0 1 0 6",
+  Cookware: "M5 10h14v7a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3zM19 11h2v3h-2M8 7V4M12 7V4M16 7V4",
+  Memorabilia: "M7 4h10v7a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 16v4M9 21h6",
+  Motorcycles: "M5 17a3 3 0 1 0 0-.01M19 17a3 3 0 1 0 0-.01M5 17h7l4-7h3M9 10h5",
+  "Trading Cards": "M4 4h9v16H4zM15 7l5 2-4 11-5-2",
+};
+
+/**
+ * LA BARRA LATERAL DEL DISENO.
+ *
+ * Las tres carreras con su trofeo, el grupo de cajas, las categorias con
+ * sus contadores y los accesos.
+ *
+ * LAS CATEGORIAS SALEN DE LA BASE
+ *
+ * Con sus contadores de verdad, no escritas a mano. El prototipo las
+ * tenia fijas porque era un prototipo; acá, si se agrega una caja de una
+ * categoria nueva, aparece sola.
+ */
+export default {
+  name: "MbLateral",
+  components: { MbSelectorDeIdioma },
+
+  data() {
+    return {
+      abierta: true,
+      categoriasAbiertas: true,
+      categorias: [],
+      enlaces: [
+        { a: "/inventory", texto: "nav.inventory", icono: "M3 7h18v13H3zM3 7l2-4h14l2 4M9 11h6" },
+        { a: "/promotions", texto: "nav.promotions", icono: "M20 12v9H4v-9M2 7h20v5H2zM12 21V7" },
+        { a: "/challenges", texto: "nav.challenges", icono: "M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7z" },
+        { a: "/rewards", texto: "nav.rewards", icono: "M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.2l5.9-.9z" },
+        { a: "/vip", texto: "nav.vip", icono: "M3 8l4 4 5-7 5 7 4-4-2 11H5z" },
+        { a: "/affiliates", texto: "profile.affiliate", icono: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 20a6 6 0 0 1 12 0M19 8v6M16 11h6" },
+      ],
+    };
+  },
+
+  methods: {
+    icono(nombre) { return ICONOS[nombre] || ICONOS.Mix; },
+
+    async traerCategorias() {
+      try {
+        const { data } = await api.get("/boxes/categories");
+        this.categorias = data.data;
+      } catch {
+        /* Sin categorías la barra anda igual, con un grupo menos. */
+      }
+    },
+  },
+
+  created() { this.traerCategorias(); },
+};
+</script>
+
+<style lang="scss" scoped>
+@import "@/styles/tokens";
+
+.mb-side {
+  flex: 1 1 250px;
+  max-width: 272px;
+  box-sizing: border-box;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #0e1a2e;
+  border-right: 1px solid #1a2a45;
+  align-self: stretch;
+
+  &.is-angosta { flex: 0 0 auto; max-width: 72px; }
+
+  @include en-celular {
+    max-width: none;
+    flex: 1 1 100%;
+    border-right: 0;
+    border-bottom: 1px solid #1a2a45;
+  }
+}
+
+.mb-side__plegar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 0;
+  background: #1a2d4d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  @include foco;
+  &:hover { background: #22406f; }
+}
+
+.mb-side__cuerpo { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.mb-side__dos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; flex: none; }
+
+/* ── Las carreras ─────────────────────────────────────────────────── */
+
+.mb-race-card {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 74px;
+  border-radius: 14px;
+  border: 1px solid rgba(107, 180, 255, .32);
+  // El resplandor detrás del trofeo, del diseño.
+  background:
+    radial-gradient(60% 90% at 78% 55%, rgba(63, 124, 240, .55) 0, rgba(63, 124, 240, .18) 45%, rgba(63, 124, 240, 0) 75%),
+    linear-gradient(#173468, #12264f);
+  color: #fff;
+  text-decoration: none;
+  padding: 12px 14px;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  @include foco;
+
+  &--grande { height: 88px; }
+  &:hover { color: #fff; border-color: rgba(107, 180, 255, .6); }
+}
+
+.mb-race-card__arte {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  width: 54px;
+  height: 54px;
+  transform: translateY(-50%);
+
+  &--grande { width: 84px; height: 84px; }
+}
+
+.mb-race-card__cifra {
+  position: relative;
+  font-weight: 900;
+  font-size: 30px;
+  line-height: 1;
+  &--chica { font-size: 22px; }
+}
+
+.mb-race-card__plazo {
+  position: relative;
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/* ── Los grupos ───────────────────────────────────────────────────── */
+
+.mb-grupo { border-radius: 14px; background: #1a2d4d; overflow: hidden; }
+
+.mb-grupo__titulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding: 0 14px;
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.mb-grupo__plegable {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 50px;
+  padding: 0 10px 0 14px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  @include foco;
+}
+
+.mb-grupo__chevron {
+  margin-left: auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: #2b4c80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mb-grupo__lista {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 6px;
+  background: #132440;
+}
+
+.mb-grupo__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 42px;
+  padding: 0 16px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  @include foco;
+
+  &:hover { background: #1b3764; color: #fff; }
+  &.is-activo { background: #24467c; }
+  &--cat { height: 40px; }
+}
+
+.mb-grupo__cuenta { margin-left: auto; color: #7f93b8; font-size: 12px; font-weight: 800; }
+
+.mb-cinta-nueva {
+  padding: 2px 8px;
+  border-radius: 7px;
+  background: $amarillo-v;
+  color: $azul-tinta;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+/* ── Los accesos ──────────────────────────────────────────────────── */
+
+.mb-acceso {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
+  background: #1a2d4d;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 15px;
+  @include foco;
+
+  &:hover { background: #22406f; color: #fff; }
+  &.is-activo { background: #24467c; }
+}
+
+.mb-acceso__badge {
+  margin-left: auto;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  border-radius: 11px;
+  background: #ff5b6b;
+  font-size: 12px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mb-side__pie { margin-top: auto; padding-top: 8px; }
+</style>

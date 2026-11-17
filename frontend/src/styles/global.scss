@@ -2,16 +2,33 @@
 // componente.
 @import "./tokens";
 @import "./banderas";
+@import "./sprites";
 
 /*
-  LA FUENTE DEL SITIO.
+  EXCON, LA TIPOGRAFIA DEL DISENO.
 
-  Excon es la del diseño. Todavía no están los archivos, así que por
-  ahora cae en la del sistema, que es de la misma familia (sin serifa,
-  geométrica) y no desarma nada. Cuando el dueño pase los .otf se agrega
-  el `@font-face` acá y el sitio entero cambia de tipografía sin tocar
-  una pantalla.
+  Son los mismos archivos que usa el prototipo. `font-display: swap` deja
+  que el texto se lea con la del sistema mientras la de verdad llega: sin
+  eso, los primeros instantes el sitio aparece sin una sola palabra.
 */
+@font-face {
+  font-family: "Excon";
+  src: url("/fuentes/b80fe1a56974f9dab9270d5456a61b62.otf") format("opentype");
+  font-weight: 100 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Excon";
+  src: url("/fuentes/1181511d1676364fba3bfae47a42059b.otf") format("opentype");
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Excon";
+  src: url("/fuentes/d8f0eac2e73fa4854057f48117e0b7d9.otf") format("opentype");
+  font-weight: 800 900;
+  font-display: swap;
+}
 
 * { box-sizing: border-box; }
 

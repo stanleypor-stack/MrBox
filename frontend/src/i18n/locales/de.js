@@ -63,7 +63,8 @@ export default {
     "placeholder": "Nachricht schreiben…",
     "home": "Start",
     "messages": "Nachrichten",
-    "help": "Hilfe"
+    "help": "Hilfe",
+    "soon": "Der Live-Chat ist noch nicht aktiv."
   },
   "error": {
     "NOT_ENOUGH_COINS": "Dir fehlen noch {faltan}.",
@@ -131,5 +132,38 @@ export default {
     "promo_code": "Promo-Code",
     "creator_share": "Creator-Anteil",
     "manual": "Manuelle Anpassung"
+  },
+  "header": {
+    "notifications": "Mitteilungen",
+    "allCaughtUp": "Alles gelesen",
+    "account": "Konto",
+    "sideMenu": "Seitenmenü",
+    "collapse": "Menü einklappen",
+    "expand": "Menü ausklappen"
+  },
+  "wallet": {
+    "total": "Guthaben gesamt",
+    "withdraw": "Auszahlen",
+    "redeem": "Einlösen",
+    "items": "Artikel",
+    "depositSoon": "Einzahlungen sind noch nicht aktiv.",
+    "withdrawSoon": "Auszahlungen sind noch nicht aktiv.",
+    "redeemSoon": "Einlösungen sind noch nicht aktiv."
+  },
+  "side": {
+    "allBoxes": "Alle Boxen",
+    "categories": "Kategorien",
+    "dashboard": "Übersicht"
+  },
+  "races": {
+    "daily": "Täglich",
+    "weekly": "Wöchentlich",
+    "monthly": "Monatlich"
+  },
+  "auth": {
+    "username": "Benutzername",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "referralCode": "Empfehlungscode (optional)"
   }
 };

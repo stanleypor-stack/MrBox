@@ -63,7 +63,8 @@ export default {
     "placeholder": "Écrivez un message…",
     "home": "Accueil",
     "messages": "Messages",
-    "help": "Aide"
+    "help": "Aide",
+    "soon": "Le chat en direct n’est pas encore activé."
   },
   "error": {
     "NOT_ENOUGH_COINS": "Il vous manque {faltan}.",
@@ -131,5 +132,38 @@ export default {
     "promo_code": "Code promo",
     "creator_share": "Part du créateur",
     "manual": "Ajustement manuel"
+  },
+  "header": {
+    "notifications": "Notifications",
+    "allCaughtUp": "Vous êtes à jour",
+    "account": "Compte",
+    "sideMenu": "Menu latéral",
+    "collapse": "Réduire le menu",
+    "expand": "Agrandir le menu"
+  },
+  "wallet": {
+    "total": "Total du portefeuille",
+    "withdraw": "Retirer",
+    "redeem": "Échanger",
+    "items": "Objets",
+    "depositSoon": "Les dépôts ne sont pas encore activés.",
+    "withdrawSoon": "Les retraits ne sont pas encore activés.",
+    "redeemSoon": "Les échanges ne sont pas encore activés."
+  },
+  "side": {
+    "allBoxes": "Tous les coffrets",
+    "categories": "Catégories",
+    "dashboard": "Tableau de bord"
+  },
+  "races": {
+    "daily": "Quotidien",
+    "weekly": "Hebdo",
+    "monthly": "Mensuel"
+  },
+  "auth": {
+    "username": "Nom d’utilisateur",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "referralCode": "Code de parrainage (facultatif)"
   }
 };
