@@ -1,0 +1,142 @@
+const mongoose = require("mongoose");
+
+/**
+ * LAS PERILLAS DEL SITIO.
+ *
+ * Un solo documento. Todo lo que el dueño puede cambiar sin tocar código
+ * vive acá: el retorno de las cajas, el tope de premio, el bono por
+ * depósito, los mínimos.
+ *
+ * POR QUE UN SOLO DOCUMENTO Y NO UNA FILA POR PERILLA
+ *
+ * Porque así se leen todas de una y se pueden tener los valores por
+ * defecto en el esquema. Una perilla nueva aparece con su valor sensato
+ * sin migrar nada, y una que se borró del panel no deja la base con una
+ * fila huérfana que nadie sabe si todavía se usa.
+ */
+
+const settingsSchema = new mongoose.Schema(
+  {
+    /* Solo puede haber uno. La clave fija lo garantiza en la base. */
+    key: { type: String, default: "main", unique: true, immutable: true },
+
+    siteName: { type: String, default: "MR BOX" },
+    maintenance: { type: Boolean, default: false },
+
+    /* ── Las cajas ───────────────────────────────────────────────────── */
+
+    /** Lo que vuelve al jugador. De acá sale el precio de cada caja. */
+    retornoObjetivo: { type: Number, default: 0.92, min: 0.5, max: 1 },
+
+    /** Ningún premio puede valer más que esto. */
+    topePremioSc: { type: Number, default: 300000 },
+
+    /** Cuántas cajas se pueden abrir de una (el selector x1 a x4). */
+    cajasALaVez: { type: Number, default: 4, min: 1, max: 10 },
+
+    /** Lo que se le paga al jugador por vender un objeto, sobre su valor. */
+    tasaDeRecompra: { type: Number, default: 1, min: 0, max: 1 },
+
+    /* ── Las cajas de la comunidad ───────────────────────────────────── */
+
+    /** Lo que el creador se lleva del MARGEN de su caja, no de lo facturado. */
+    parteDelCreador: { type: Number, default: 0.5, min: 0, max: 1 },
+    objetosPorCajaDeComunidad: {
+      min: { type: Number, default: 5 },
+      max: { type: Number, default: 20 },
+    },
+
+    /* ── Regalos ─────────────────────────────────────────────────────── */
+
+    /** Aperturas gratis al registrarse. */
+    aperturasDeRegalo: { type: Number, default: 3 },
+
+    /** Aperturas de demostración para el que todavía no tiene cuenta. */
+    aperturasDeDemo: { type: Number, default: 3 },
+
+    /* ── El bono por depósito ────────────────────────────────────────── */
+
+    /**
+     * EL BONO POR CODIGO DE AFILIADO.
+     *
+     * No hay rollover en MR BOX: el jugador compra SC y los puede usar
+     * enseguida. En su lugar, el que entra con un código de afiliado se
+     * lleva un porcentaje extra en cada compra.
+     *
+     * Dos tramos, como pidió el dueño: el normal y el de los socios
+     * grandes. El tramo se decide por el código, no por el jugador.
+     */
+    bonoPorDeposito: {
+      normal: { type: Number, default: 0.05, min: 0, max: 1 },
+      destacado: { type: Number, default: 0.1, min: 0, max: 1 },
+    },
+
+    /**
+     * CUANTAS VECES HAY QUE JUGAR EL BONO ANTES DE PODER SACARLO.
+     *
+     * Esto NO es el rollover de BetSweeps, que ata TODA la compra. Acá
+     * solo ata la parte regalada, y solo para canjearla.
+     *
+     * En 1 quiere decir: el bono hay que jugarlo una vez. En 0, el bono
+     * se puede canjear de una.
+     *
+     * Por qué el valor por defecto es 1 y no 0: con 0, alguien compra
+     * SC 1.000, se le acreditan SC 1.100 y pide el canje de los SC 1.100
+     * sin abrir una sola caja. Son SC 100 regalados por operación, repetible
+     * para siempre y automatizable. Con 1, para llevarse el bono hay que
+     * haberlo jugado, y jugarlo deja el margen de la casa.
+     *
+     * Se puede poner en 0 desde el panel. Es una decisión comercial, pero
+     * conviene tomarla sabiendo la cuenta.
+     */
+    vecesAJugarElBono: { type: Number, default: 1, min: 0 },
+
+    /* ── Canjes ──────────────────────────────────────────────────────── */
+
+    canjeMinimoSc: { type: Number, default: 50 },
+
+    /** Arriba de esto, un envío pide verificación de domicilio (nivel 3). */
+    envioQuePideNivel3Sc: { type: Number, default: 1000 },
+
+    /* ── Deals ───────────────────────────────────────────────────────── */
+
+    deals: {
+      chanceMinima: { type: Number, default: 0.01 },
+      chanceMaxima: { type: Number, default: 0.8 },
+      margen: { type: Number, default: 0.08 },
+      ruedasALaVez: { type: Number, default: 4 },
+      tiradasGratisPorItem: { type: Number, default: 1 },
+    },
+
+    /* ── Soporte ─────────────────────────────────────────────────────── */
+
+    soporte: {
+      /**
+       * La respuesta automática del chat.
+       *
+       * Es lo primero que ve alguien que escribe, y existe para que no se
+       * quede mirando una pantalla muda: dice que lo leímos y que viene
+       * una persona. Se guarda como CODIGO y no como frase para que esté
+       * en el idioma del que escribe (ver utils/errors.js).
+       */
+      respuestaAutomatica: { type: Boolean, default: true },
+      horarioMostrado: { type: String, default: "24/7" },
+    },
+  },
+  { timestamps: true }
+);
+
+/**
+ * Las perillas, creándolas con sus valores por defecto la primera vez.
+ *
+ * Nunca devuelve `null`: medio sitio depende de esto y una pantalla que
+ * explota porque todavía nadie entró al panel sería un papelón evitable.
+ */
+settingsSchema.statics.leer = async function leer() {
+  const existente = await this.findOne({ key: "main" }).lean();
+  if (existente) return existente;
+  const creado = await this.create({ key: "main" });
+  return creado.toObject();
+};
+
+module.exports = mongoose.model("Settings", settingsSchema);

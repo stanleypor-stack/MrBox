@@ -56,6 +56,23 @@ const userSchema = new mongoose.Schema(
     */
     jugadoSc: { type: Number, default: 0 },
 
+    /*
+      LA PARTE DEL SALDO QUE ES BONO Y TODAVIA NO SE JUGO.
+
+      MR BOX no tiene rollover: lo que comprás lo usás enseguida. Pero el
+      bono por código de afiliado sí tiene que jugarse antes de poder
+      sacarlo, porque si no es plata regalada que se saca sin abrir una
+      sola caja (ver Settings.vecesAJugarElBono).
+
+      Sube cuando se acredita un bono y baja con cada apertura. Lo que se
+      puede canjear es `balanceSc - bonoPendienteSc`.
+
+      Es un número aparte y no un saldo aparte a propósito: dos saldos
+      obligan a preguntarse cuál tocar en cada operación, que es de donde
+      salen la mitad de los errores de la billetera de BetSweeps.
+    */
+    bonoPendienteSc: { type: Number, default: 0, select: false },
+
     verificationLevel: { type: Number, default: 0, min: 0, max: NIVEL_MAXIMO, index: true },
 
     /*
