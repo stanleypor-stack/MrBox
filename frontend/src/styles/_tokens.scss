@@ -1,0 +1,104 @@
+// =====================================================================
+//  LOS TOKENS DE MR BOX
+//
+//  Sacados del diseño (el canvas "MR BOX"), no inventados. Cada color de
+//  acá aparece en el prototipo; si hace falta uno nuevo, primero se mira
+//  el diseño.
+//
+//  La regla: en un componente NO se escribe un `#rrggbb`. Se usa un
+//  token. Así el día que se toque la marca se toca este archivo y no
+//  ochenta pantallas.
+// =====================================================================
+
+// ── Los fondos, del más hondo al más alto ────────────────────────────
+$fondo:        #0b1424; // el fondo de la página
+$panel:        #0e1a2e; // barras, tarjetas, menúes
+$panel-alto:   #12213a; // lo que flota sobre un panel (botones, campos)
+$panel-hover:  #16294a; // una fila del panel con el mouse encima
+$lateral-hover:#22406f; // el menú de la izquierda con el mouse encima
+
+// ── Los bordes ───────────────────────────────────────────────────────
+$borde:        #1f3355;
+$borde-fuerte: #22385c;
+
+// ── El azul de la marca ──────────────────────────────────────────────
+$azul:         #3f7cf0; // el que se ve: botones, foco, bordes activos
+$azul-medio:   #2c66dc;
+$azul-hondo:   #1c4fc4;
+$azul-noche:   #123a9e;
+$azul-tinta:   #0b2266; // la sombra dura del logo
+$azul-activo:  #24467c; // el ítem del menú donde estás parado
+
+// ── El texto ─────────────────────────────────────────────────────────
+$texto:        #ffffff;
+$texto-2:      #c9d7f7; // lo que se lee pero no es lo importante
+$texto-3:      #a9bbe6; // apoyo
+$texto-4:      #8ea3c7; // etiquetas, ayuda
+$texto-marca:  #b9cff5; // el degradé del logo
+$enlace:       #9fc0ff;
+$placeholder:  #5d7096;
+
+// ── Estados ──────────────────────────────────────────────────────────
+$verde:        #5dffb0; // bien, al aire, confirmado
+$amarillo:     #ffd35a; // esperando
+$amarillo-v:   #ffc83d; // la pelotita de avisos
+$rojo:         #ff9aa5; // rechazado, bloqueado, perdido
+
+// ── Las cinco rarezas ────────────────────────────────────────────────
+//  Son una etiqueta visual. Lo que hace raro a un objeto es su chance.
+$rareza-blue:   #3f7cf0;
+$rareza-purple: #8b4fe0;
+$rareza-pink:   #e0418f;
+$rareza-red:    #e2424b;
+$rareza-gold:   #f5b80a;
+
+$rarezas: (
+  "blue":   $rareza-blue,
+  "purple": $rareza-purple,
+  "pink":   $rareza-pink,
+  "red":    $rareza-red,
+  "gold":   $rareza-gold,
+);
+
+// ── La moneda ────────────────────────────────────────────────────────
+$sc-verde-claro: #7ff02a;
+$sc-verde:       #4bb300;
+$sc-texto:       #123300;
+
+// ── Tipografía ───────────────────────────────────────────────────────
+//  Excon para todo el texto. Titan One y Luckiest Guy para los carteles
+//  grandes y el logo, que es de donde sale la cara de dibujo animado que
+//  tiene el sitio.
+$fuente:         'Excon', system-ui, -apple-system, 'Segoe UI', sans-serif;
+$fuente-titulo:  'Titan One', 'Excon', system-ui, sans-serif;
+$fuente-cartel:  'Luckiest Guy', 'Titan One', system-ui, sans-serif;
+
+// ── Espacio, esquinas, sombras ───────────────────────────────────────
+$radio-chico:   8px;
+$radio:         10px;
+$radio-tarjeta: 14px;
+$radio-panel:   16px;
+
+$sombra-tarjeta: 0 8px 16px rgba(0, 0, 0, .45);
+
+// ── El corte entre celular y escritorio ──────────────────────────────
+//  760px, el mismo del diseño: abajo de eso el menú lateral se convierte
+//  en una fila que se desliza.
+$corte-celular: 760px;
+
+@mixin en-celular {
+  @media (max-width: $corte-celular) { @content; }
+}
+
+@mixin en-escritorio {
+  @media (min-width: #{$corte-celular + 1px}) { @content; }
+}
+
+// El anillo de foco. Va en TODO lo que se puede enfocar con el teclado:
+// sin esto, quien navega con Tab no sabe dónde está parado.
+@mixin foco {
+  &:focus-visible {
+    outline: 2px solid $azul;
+    outline-offset: 2px;
+  }
+}

@@ -1,0 +1,52 @@
+// Lo que vale para todo el sitio. Lo mínimo: todo lo demás vive en su
+// componente.
+@import "./tokens";
+@import "./banderas";
+
+/*
+  LA FUENTE DEL SITIO.
+
+  Excon es la del diseño. Todavía no están los archivos, así que por
+  ahora cae en la del sistema, que es de la misma familia (sin serifa,
+  geométrica) y no desarma nada. Cuando el dueño pase los .otf se agrega
+  el `@font-face` acá y el sitio entero cambia de tipografía sin tocar
+  una pantalla.
+*/
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: $fondo;
+  color: $texto;
+  font-family: $fuente;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: $enlace;
+  &:hover { color: $texto; }
+}
+
+// Quien navega con el teclado tiene que ver dónde está parado, siempre.
+:focus-visible {
+  outline: 2px solid $azul;
+  outline-offset: 2px;
+}
+
+// Las filas que se deslizan al costado no muestran barra, como el diseño.
+.mb-row {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+// Respetar a quien pidió que las cosas no se muevan.
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}

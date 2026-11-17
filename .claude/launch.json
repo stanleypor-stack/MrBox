@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "mrbox-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "serve"],
+      "cwd": "frontend",
+      "port": 8090
+    },
+    {
+      "name": "mrbox-api",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["index.js"],
+      "cwd": "backend",
+      "port": 5001
+    }
+  ]
+}
