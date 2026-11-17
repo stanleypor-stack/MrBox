@@ -55,7 +55,13 @@ export default {
     "openAgain": "再开一次",
     "demoNote": "仅为演示。不扣费，不保留。",
     "freeOpenUsed": "已使用免费开启",
-    "provablyFair": "可验证公平"
+    "provablyFair": "可验证公平",
+    "opening": "开启中",
+    "howMany": "开启数量",
+    "openFree": "免费开启",
+    "fast": "快速开启",
+    "mute": "静音",
+    "unmute": "开启声音"
   },
   "support": {
     "title": "客服",

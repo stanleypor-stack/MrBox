@@ -1,116 +1,145 @@
 <template>
-  <div class="mb-caja-pag">
+  <div class="mb-abrir">
     <p v-if="cargando" class="mb-vacio">{{ $t('common.loading') }}</p>
 
     <template v-else-if="caja">
-      <!-- ── Arriba: la caja y el botón de abrir ─────────────────── -->
-      <section class="mb-cabeza">
-        <div class="mb-cabeza__tapa" :style="estiloTapa">
-          <img v-if="caja.imageUrl" :src="caja.imageUrl" :alt="caja.name">
-          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 2.5 21 7v10l-9 4.5L3 17V7zM3 7l9 4.5L21 7M12 11.5v10" />
-          </svg>
+      <!-- ── La fila de arriba ────────────────────────────────────── -->
+      <div class="mb-abrir__barra">
+        <router-link to="/boxes" class="mb-abrir__volver">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff"
+               stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 5l-7 7 7 7" />
+          </svg>{{ $t('common.previous') }}
+        </router-link>
+
+        <div class="mb-abrir__quien">
+          <div v-if="lamina" class="mb-art mb-abrir__tapa" :class="lamina.clase"
+               :style="lamina.estilo" aria-hidden="true"></div>
+          <h1>{{ caja.name }}</h1>
         </div>
 
-        <div class="mb-cabeza__datos">
-          <h1 class="mb-cabeza__nombre">{{ caja.name }}</h1>
-
-          <div class="mb-cabeza__meta">
-            <span>{{ $t('box.items', { n: caja.prizes.length }) }}</span>
-            <span class="mb-punto" aria-hidden="true">·</span>
-            <span>{{ $t('box.returnLabel') }} <b>{{ caja.retornoMostrado }}%</b></span>
-          </div>
-
-          <!-- x1 a x4 -->
-          <div class="mb-veces" role="group" :aria-label="$t('action.open')">
-            <button
-              v-for="n in caja.maximoALaVez" :key="n" type="button"
-              class="mb-veces__b" :class="{ 'is-activo': veces === n }"
-              :aria-pressed="veces === n ? 'true' : 'false'"
-              @click="veces = n"
-            >x{{ n }}</button>
-          </div>
-
-          <div class="mb-cabeza__acciones">
-            <button
-              type="button" class="mb-boton mb-boton--primario"
-              :disabled="abriendo" @click="abrir"
-            >
-              <span v-if="usaGratis" class="mb-boton__gratis">{{ $t('box.freeOpenUsed') }}</span>
-              <template v-else>{{ $t('box.openFor', { price: totalTexto }) }}</template>
-            </button>
-
-            <button type="button" class="mb-boton" :disabled="abriendo" @click="probar">
-              {{ $t('box.demo') }}
-            </button>
-          </div>
-
-          <p class="mb-cabeza__fair">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7z" /><path d="M9 12l2 2 4-4" />
+        <div class="mb-abrir__herramientas">
+          <router-link to="/profile" class="mb-redondito" :aria-label="$t('box.provablyFair')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9d7f7"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 3" />
             </svg>
-            {{ $t('box.provablyFair') }}
-          </p>
-        </div>
-      </section>
+          </router-link>
 
-      <!-- ── Lo que puede salir, con sus chances ─────────────────── -->
+          <button
+            type="button" class="mb-redondito"
+            :aria-pressed="mudo ? 'true' : 'false'"
+            :aria-label="mudo ? $t('box.unmute') : $t('box.mute')"
+            :style="{ opacity: mudo ? .55 : 1 }"
+            @click="mudo = !mudo"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9d7f7"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M11 5 6 9H3v6h3l5 4z" />
+              <path v-if="!mudo" d="M16 9a4 4 0 0 1 0 6" />
+              <path v-else d="M16 9l5 6M21 9l-5 6" />
+            </svg>
+          </button>
+
+          <span class="mb-redondito mb-redondito--verificado" :title="$t('box.provablyFair')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#3f9bff" aria-hidden="true">
+              <path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5zm-1.2 14.2-3.5-3.5 1.4-1.4 2.1 2.1 4.6-4.6 1.4 1.4z" />
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- ── La ruleta ────────────────────────────────────────────── -->
+      <MbRuleta
+        ref="ruleta" :premios="caja.prizes" :cuantas="veces"
+        :rapido="rapido" @termino="alFrenar"
+      />
+
+      <!-- ── Los controles ────────────────────────────────────────── -->
+      <div class="mb-abrir__controles">
+        <div class="mb-veces" role="radiogroup" :aria-label="$t('box.howMany')">
+          <button
+            v-for="n in caja.maximoALaVez" :key="n" type="button" role="radio"
+            :aria-checked="veces === n ? 'true' : 'false'"
+            class="mb-veces__b" :class="{ 'is-activo': veces === n }"
+            :disabled="girando" @click="veces = n"
+          >{{ n }}</button>
+        </div>
+
+        <div class="mb-abrir__botones">
+          <button
+            v-if="aperturasGratis > 0 && entro"
+            type="button" class="mb-amarillo" :disabled="girando" @click="abrir(true)"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0b2266"
+                 stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 12v9H4v-9M2 7h20v5H2zM12 21V7" />
+            </svg>{{ $t('box.openFree') }}
+          </button>
+
+          <button type="button" class="mb-azul" :disabled="girando" @click="abrir(false)">
+            {{ $t('box.openFor', { price: 'SC ' + plata(total) }) }}
+          </button>
+
+          <button type="button" class="mb-gris" :disabled="girando" @click="probar">
+            {{ $t('box.demo') }}
+          </button>
+        </div>
+
+        <label class="mb-rapido">
+          <input v-model="rapido" type="checkbox" class="mb-chk-chico">
+          {{ $t('box.fast') }}
+        </label>
+      </div>
+
+      <!-- ── Lo que salió ─────────────────────────────────────────── -->
+      <div v-if="resultado" class="mb-salio">
+        <div class="mb-salio__texto">
+          <span class="mb-salio__titulo">{{ $t('box.youWon') }}</span>
+          <span class="mb-salio__cifra">
+            <span class="mb-sc mb-sc--20" aria-hidden="true">SC</span>{{ plata(valorGanado) }}
+          </span>
+          <span v-if="resultado.demo" class="mb-salio__demo">{{ $t('box.demoNote') }}</span>
+        </div>
+
+        <div v-if="!resultado.demo" class="mb-salio__acciones">
+          <button type="button" class="mb-azul" :disabled="vendiendo" @click="venderTodo">
+            {{ $t('box.sellFor', { amount: 'SC ' + plata(valorGanado) }) }}
+          </button>
+          <router-link to="/inventory" class="mb-gris mb-gris--enlace">{{ $t('box.keep') }}</router-link>
+        </div>
+      </div>
+
+      <!-- ── Lo que puede salir ───────────────────────────────────── -->
       <section class="mb-premios">
-        <h2 class="mb-premios__titulo">{{ $t('box.chances') }}</h2>
+        <h2 class="mb-premios__titulo">
+          {{ $t('box.chances') }}
+          <span class="mb-premios__retorno">{{ $t('box.returnLabel') }} {{ caja.retornoMostrado }}%</span>
+        </h2>
+
         <ul class="mb-premios__lista">
           <li
             v-for="(p, i) in premiosOrdenados" :key="i"
             class="mb-premio" :style="{ borderLeftColor: color(p.rarity) }"
           >
+            <span v-if="spr(p)" class="mb-prod mb-premio__foto" :style="spr(p)" aria-hidden="true"></span>
             <span class="mb-premio__nombre">{{ p.name }}</span>
             <span class="mb-premio__valor">
-              <span class="mb-sc" aria-hidden="true">SC</span>{{ plata(p.valueSc) }}
+              <span class="mb-sc mb-sc--16" aria-hidden="true">SC</span>{{ plata(p.valueSc) }}
             </span>
             <span class="mb-premio__chance">{{ chance(p.chance) }}</span>
           </li>
         </ul>
       </section>
     </template>
-
-    <!-- ── El resultado ────────────────────────────────────────────── -->
-    <div v-if="resultado" class="mb-resultado" role="dialog" aria-modal="true" :aria-label="$t('box.youWon')">
-      <div class="mb-resultado__caja">
-        <p class="mb-resultado__titulo">{{ $t('box.youWon') }}</p>
-
-        <ul class="mb-resultado__items">
-          <li
-            v-for="r in resultado.resultados" :key="r.premio._id || r.premio.name + Math.random()"
-            class="mb-ganado" :style="{ borderColor: color(r.premio.rarity) }"
-          >
-            <span class="mb-ganado__nombre">{{ r.premio.name }}</span>
-            <span class="mb-ganado__valor">
-              <span class="mb-sc" aria-hidden="true">SC</span>{{ plata(r.premio.valueSc) }}
-            </span>
-          </li>
-        </ul>
-
-        <p v-if="resultado.demo" class="mb-resultado__demo">{{ $t('box.demoNote') }}</p>
-
-        <div class="mb-resultado__acciones">
-          <button
-            v-if="!resultado.demo && vendible > 0"
-            type="button" class="mb-boton mb-boton--primario"
-            :disabled="vendiendo" @click="venderTodo"
-          >{{ $t('box.sellFor', { amount: 'SC ' + plata(vendible) }) }}</button>
-
-          <button type="button" class="mb-boton" @click="resultado = null">
-            {{ resultado.demo ? $t('common.close') : $t('box.keep') }}
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 import api from "@/api";
+import MbRuleta from "@/components/MbRuleta.vue";
+import { sprite } from "@/utils/sprite";
 
 const COLORES = {
   blue: "#3f7cf0", purple: "#8b4fe0", pink: "#e0418f", red: "#e2424b", gold: "#f5b80a",
@@ -119,78 +148,73 @@ const COLORES = {
 /**
  * ABRIR UNA CAJA.
  *
- * LAS CHANCES ESTAN A LA VISTA, SIEMPRE
+ * LA CINTA NO DECIDE NADA
  *
- * No escondidas detrás de un "ver detalles". Es la diferencia entre esto
- * y una maquinita: el jugador ve qué puede salir y con qué probabilidad
- * ANTES de poner un peso. Es también lo que hace que el sorteo
- * verificable signifique algo.
+ * Esto es lo que diferencia esta pantalla del prototipo. Allá el premio
+ * lo elegía el navegador y la cinta frenaba donde él decía. Acá se le
+ * pregunta al SERVIDOR --que cobra, sortea con la semilla comprometida
+ * y guarda el recibo-- y recién entonces la cinta arranca, con el premio
+ * de verdad puesto donde va a frenar.
  *
- * EL SALDO NO SE TOCA ACA
+ * Por eso el saldo baja apenas se toca el botón y no cuando la cinta
+ * para: la jugada ya pasó, la animación es el relato.
  *
- * La respuesta de abrir trae el saldo nuevo y se guarda ese. Restar el
- * precio en el navegador "para que se vea rápido" es cómo se termina
- * mostrando un saldo que no existe cuando algo falla a mitad de camino.
+ * LAS CHANCES ESTAN A LA VISTA
+ *
+ * Abajo, con todo lo que puede salir. Y debajo de un décimo de
+ * porciento se muestran como "1 / 250.000", porque "0.0004%" no le dice
+ * nada a nadie.
  */
 export default {
   name: "BoxView",
+  components: { MbRuleta },
 
   data() {
     return {
       caja: null,
       cargando: true,
       veces: 1,
-      abriendo: false,
+      rapido: false,
+      mudo: false,
+      girando: false,
       vendiendo: false,
       resultado: null,
     };
   },
 
   computed: {
+    ...mapGetters(["entro", "aperturasGratis"]),
+
+    lamina() { return this.caja ? sprite(this.caja.imageUrl) : null; },
+
     premiosOrdenados() {
-      /* De lo más caro a lo más barato: lo que el jugador quiere ver
-         primero es lo grande. */
-      return [...(this.caja.prizes || [])].sort((a, b) => b.valueSc - a.valueSc);
+      return [...((this.caja && this.caja.prizes) || [])].sort((a, b) => b.valueSc - a.valueSc);
     },
-    totalSc() {
+
+    total() {
       return Math.round((this.caja ? this.caja.priceSc : 0) * this.veces * 100) / 100;
     },
-    totalTexto() {
-      return "SC " + this.plata(this.totalSc);
-    },
-    /* Si le quedan gratis, la próxima no se cobra. */
-    usaGratis() {
-      return this.$store.getters.aperturasGratis > 0;
-    },
-    vendible() {
-      if (!this.resultado || this.resultado.demo) return 0;
+
+    valorGanado() {
+      if (!this.resultado) return 0;
       return Math.round(
         this.resultado.resultados.reduce((a, r) => a + r.premio.valueSc, 0) * 100
       ) / 100;
     },
-    estiloTapa() {
-      const mejor = this.premiosOrdenados[0];
-      const c = COLORES[(mejor && mejor.rarity) || "blue"] || COLORES.blue;
-      return { background: `radial-gradient(circle at 50% 40%, ${c}3a 0%, #0e1a2e 72%)` };
-    },
   },
 
   methods: {
-    color(r) { return COLORES[r] || COLORES.blue; },
-
     plata(n) {
       return Number(n || 0).toLocaleString("en-US", {
         minimumFractionDigits: 2, maximumFractionDigits: 2,
       });
     },
+    color(r) { return COLORES[r] || COLORES.blue; },
+    spr(p) {
+      const s = sprite(p.imageUrl);
+      return s ? s.estilo : null;
+    },
 
-    /**
-     * La chance, en palabras que se entiendan.
-     *
-     * Un 0,0002 mostrado como "0.02%" no le dice nada a nadie. Abajo de
-     * un décimo de porciento se muestra como "1 de cada N", que es como
-     * la gente piensa la suerte.
-     */
     chance(c) {
       const pct = c * 100;
       if (pct >= 0.1) return pct.toFixed(2) + "%";
@@ -199,6 +223,7 @@ export default {
 
     async traer() {
       this.cargando = true;
+      this.resultado = null;
       try {
         const { data } = await api.get(`/boxes/${this.$route.params.slug}`);
         this.caja = data.data;
@@ -210,32 +235,81 @@ export default {
       }
     },
 
-    async abrir() {
-      if (!this.$store.getters.entro) {
-        this.$store.dispatch("avisar", { texto: this.$t("error.NOT_LOGGED_IN"), tono: "error" });
+    /**
+     * Abre de verdad.
+     *
+     * Primero el servidor, después la cinta. Si el servidor dice que no
+     * --no alcanza el saldo, la caja se apagó-- no se anima nada: sería
+     * mentirle al jugador con un giro que no pasó.
+     */
+    async abrir(gratis) {
+      if (!this.entro) {
+        this.$router.push("/signup");
         return;
       }
-      this.abriendo = true;
+      this.girando = true;
+      this.resultado = null;
       try {
-        const { data } = await api.post(`/boxes/${this.caja.slug}/open`, { veces: this.veces });
-        this.resultado = data.data;
+        const { data } = await api.post(`/boxes/${this.caja.slug}/open`, {
+          veces: gratis ? 1 : this.veces,
+        });
         this.$store.commit("saldo", data.data);
+        this.pendiente = data.data;
+        this.$refs.ruleta.girar(data.data.resultados.map((r) => r.premio));
       } catch (err) {
+        this.girando = false;
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
-      } finally {
-        this.abriendo = false;
       }
     },
 
     async probar() {
-      this.abriendo = true;
+      this.girando = true;
+      this.resultado = null;
       try {
         const { data } = await api.post(`/boxes/${this.caja.slug}/demo`, { veces: this.veces });
-        this.resultado = data.data;
+        this.pendiente = data.data;
+        this.$refs.ruleta.girar(data.data.resultados.map((r) => r.premio));
       } catch (err) {
+        this.girando = false;
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
-      } finally {
-        this.abriendo = false;
+      }
+    },
+
+    /* La cinta frenó: recién ahora se le muestra qué salió. */
+    alFrenar() {
+      this.girando = false;
+      this.resultado = this.pendiente;
+      this.pendiente = null;
+      if (!this.mudo) this.sonar();
+    },
+
+    /**
+     * El sonidito de premio.
+     *
+     * Tres notas que suben, armadas con el sintetizador del navegador.
+     * No hay archivo de audio: son unos bytes de código contra unos
+     * cientos de kilobytes que habría que bajar.
+     */
+    sonar() {
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        this._ac = this._ac || new AC();
+        if (this._ac.state === "suspended") this._ac.resume();
+        [523.25, 659.25, 783.99].forEach((f, i) => {
+          const o = this._ac.createOscillator();
+          const g = this._ac.createGain();
+          o.type = "triangle";
+          o.frequency.setValueAtTime(f, this._ac.currentTime + i * 0.09);
+          g.gain.setValueAtTime(0.0001, this._ac.currentTime + i * 0.09);
+          g.gain.exponentialRampToValueAtTime(0.07, this._ac.currentTime + i * 0.09 + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, this._ac.currentTime + i * 0.09 + 0.3);
+          o.connect(g).connect(this._ac.destination);
+          o.start(this._ac.currentTime + i * 0.09);
+          o.stop(this._ac.currentTime + i * 0.09 + 0.32);
+        });
+      } catch {
+        /* Sin sonido el juego anda igual. */
       }
     },
 
@@ -260,8 +334,7 @@ export default {
   created() { this.traer(); },
 
   watch: {
-    /* Si se navega de una caja a otra sin pasar por la grilla. */
-    "$route.params.slug"() { this.resultado = null; this.veces = 1; this.traer(); },
+    "$route.params.slug"() { this.veces = 1; this.traer(); },
   },
 };
 </script>
@@ -269,133 +342,234 @@ export default {
 <style lang="scss" scoped>
 @import "@/styles/tokens";
 
-.mb-caja-pag {
-  padding: 24px 28px 48px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  @include en-celular { padding: 16px; }
-}
+.mb-abrir { display: flex; flex-direction: column; gap: 16px; }
 
-.mb-vacio { color: $texto-4; text-align: center; margin: 40px 0; }
+.mb-vacio { margin: 40px 0; text-align: center; color: $texto-4; }
 
 /* ── Arriba ───────────────────────────────────────────────────────── */
 
-.mb-cabeza {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  padding: 20px;
-  border: 1px solid $borde;
-  border-radius: $radio-panel;
-  background: $panel;
+.mb-abrir__barra {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  @include en-celular { grid-template-columns: auto 1fr; }
 }
 
-.mb-cabeza__tapa {
-  flex: 0 0 220px;
-  aspect-ratio: 1 / 1;
-  border-radius: $radio-tarjeta;
+.mb-abrir__volver {
+  justify-self: start;
+  height: 44px;
+  padding: 0 8px;
+  color: #fff;
+  font-weight: 900;
+  font-size: 14px;
+  letter-spacing: .04em;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  @include foco;
+  &:hover { color: #fff; opacity: .8; }
+}
+
+.mb-abrir__quien {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+
+  h1 {
+    margin: 0;
+    font-weight: 900;
+    font-size: clamp(16px, 2.4vw, 22px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.mb-abrir__tapa { width: 46px; height: 46px; flex: none; }
+
+.mb-abrir__herramientas {
+  justify-self: end;
+  display: flex;
+  gap: 8px;
+  @include en-celular { grid-column: 1 / -1; justify-self: start; }
+}
+
+.mb-redondito {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 0;
+  background: #16253f;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, .2);
-
-  img { width: 100%; height: 100%; object-fit: contain; }
-  svg { width: 44%; height: auto; }
-
-  @include en-celular { flex: 1 1 100%; }
+  @include foco;
+  &:hover { background: #1d3354; }
+  &--verificado { background: #17305e; cursor: default; }
 }
 
-.mb-cabeza__datos {
-  flex: 1 1 320px;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+/* ── Controles ────────────────────────────────────────────────────── */
 
-.mb-cabeza__nombre {
-  margin: 0;
-  font-family: $fuente-titulo;
-  font-size: 30px;
-  font-weight: 400;
-  letter-spacing: .5px;
-}
-
-.mb-cabeza__meta {
+.mb-abrir__controles {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  color: $texto-3;
-  font-weight: 700;
-  b { color: $texto; }
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.mb-punto { color: $texto-4; }
-
-.mb-veces { display: flex; gap: 8px; }
+.mb-veces {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #12213a;
+}
 
 .mb-veces__b {
-  width: 52px;
-  height: 40px;
-  border: 1px solid $borde-fuerte;
-  border-radius: $radio-chico;
-  background: $panel-alto;
+  width: 40px;
+  height: 38px;
+  border-radius: 9px;
+  border: 0;
+  background: transparent;
   color: $texto-2;
-  font-family: inherit;
-  font-weight: 900;
-  cursor: pointer;
-  @include foco;
-
-  &:hover { background: $lateral-hover; color: $texto; }
-  &.is-activo { background: $azul; border-color: $azul; color: #fff; }
-}
-
-.mb-cabeza__acciones { display: flex; flex-wrap: wrap; gap: 10px; }
-
-.mb-boton {
-  min-height: 48px;
-  padding: 0 20px;
-  border: 1px solid $borde-fuerte;
-  border-radius: $radio;
-  background: $panel-alto;
-  color: $texto;
   font-family: inherit;
   font-weight: 900;
   font-size: 15px;
   cursor: pointer;
   @include foco;
 
-  &:hover:not(:disabled) { background: $lateral-hover; }
+  &:hover:not(:disabled) { background: #1d3354; color: #fff; }
+  &.is-activo { background: $azul; color: #fff; }
   &:disabled { opacity: .5; cursor: default; }
+}
 
-  &--primario {
-    background: $azul;
-    border-color: $azul;
-    color: #fff;
-    &:hover:not(:disabled) { background: $azul-medio; }
+.mb-abrir__botones { display: flex; flex-wrap: wrap; gap: 10px; }
+
+%boton {
+  height: 50px;
+  padding: 0 22px;
+  border-radius: 25px;
+  font-family: $fuente-cartel;
+  font-size: 20px;
+  letter-spacing: .03em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  @include foco;
+  &:disabled { opacity: .55; cursor: default; }
+}
+
+/* El botón de las gratis: el amarillo del diseño con su sombra dura. */
+.mb-amarillo {
+  @extend %boton;
+  border: 3px solid #fff;
+  background: linear-gradient(180deg, #ffd65a 0%, #f2a91c 100%);
+  color: $azul-tinta;
+  box-shadow: 0 4px 0 #b9780c;
+  &:hover:not(:disabled) { filter: brightness(1.05); }
+}
+
+.mb-azul {
+  @extend %boton;
+  border: 3px solid #fff;
+  background: linear-gradient(180deg, #5b9bff 0%, #2f6fe0 100%);
+  color: #fff;
+  box-shadow: 0 4px 0 #1c4fc4;
+  &:hover:not(:disabled) { filter: brightness(1.07); }
+}
+
+.mb-gris {
+  @extend %boton;
+  border: 2px solid #2a4170;
+  background: #16253f;
+  color: #fff;
+  font-size: 17px;
+  &:hover:not(:disabled) { background: #1d3354; color: #fff; }
+}
+
+.mb-rapido {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: $texto-3;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.mb-chk-chico {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border-radius: 5px;
+  border: 2px solid #3a5687;
+  background: #0e1a2e;
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+  @include foco;
+
+  &:checked { background: $azul; border-color: $azul; }
+  &:checked::after {
+    content: "";
+    width: 5px;
+    height: 9px;
+    border: solid #fff;
+    border-width: 0 2.5px 2.5px 0;
+    transform: translateY(-1px) rotate(45deg);
   }
 }
 
-.mb-boton__gratis { color: #06301d; }
-.mb-boton--primario .mb-boton__gratis { color: #fff; }
+/* ── Lo que salió ─────────────────────────────────────────────────── */
 
-.mb-cabeza__fair {
-  margin: 0;
+.mb-salio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 20px;
+  border: 2px solid #24365e;
+  border-radius: 16px;
+  background: #12213a;
+}
+
+.mb-salio__texto { display: flex; flex-direction: column; gap: 2px; }
+
+.mb-salio__titulo {
+  font-family: $fuente-cartel;
+  font-size: 20px;
+  letter-spacing: .5px;
+}
+
+.mb-salio__cifra {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: $verde;
-  font-weight: 800;
-  font-size: 12px;
+  gap: 8px;
+  font-weight: 900;
+  font-size: 26px;
 }
+
+.mb-salio__demo { color: $amarillo; font-size: 12px; font-weight: 700; }
+
+.mb-salio__acciones { display: flex; flex-wrap: wrap; gap: 10px; }
+.mb-gris--enlace { font-family: $fuente-cartel; }
 
 /* ── Los premios ──────────────────────────────────────────────────── */
 
 .mb-premios {
   border: 1px solid $borde;
-  border-radius: $radio-panel;
+  border-radius: 16px;
   background: $panel;
   overflow: hidden;
 }
@@ -406,16 +580,23 @@ export default {
   border-bottom: 1px solid $borde;
   font-size: 15px;
   font-weight: 900;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
 }
+
+.mb-premios__retorno { color: $texto-3; font-weight: 800; font-size: 13px; }
 
 .mb-premios__lista { margin: 0; padding: 0; list-style: none; }
 
 .mb-premio {
   display: grid;
-  grid-template-columns: 1fr auto 92px;
+  grid-template-columns: 40px 1fr auto 100px;
   align-items: center;
   gap: 12px;
-  padding: 12px 20px;
+  padding: 10px 20px;
   border-bottom: 1px solid rgba(31, 51, 85, .6);
   border-left: 3px solid transparent;
 
@@ -423,116 +604,20 @@ export default {
   &:hover { background: $panel-hover; }
 
   @include en-celular {
-    grid-template-columns: 1fr auto;
-    row-gap: 4px;
+    grid-template-columns: 34px 1fr auto;
+    row-gap: 2px;
   }
 }
 
-.mb-premio__nombre {
-  font-weight: 700;
-  @include en-celular { grid-column: 1 / -1; }
-}
-
-.mb-premio__valor {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-weight: 900;
-}
+.mb-premio__foto { width: 40px; height: 40px; @include en-celular { width: 34px; height: 34px; } }
+.mb-premio__nombre { font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.mb-premio__valor { display: flex; align-items: center; gap: 5px; font-weight: 900; }
 
 .mb-premio__chance {
   text-align: right;
   color: $texto-3;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-}
-
-/* ── El resultado ─────────────────────────────────────────────────── */
-
-.mb-resultado {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: rgba(5, 9, 17, .78);
-}
-
-.mb-resultado__caja {
-  width: 100%;
-  max-width: 440px;
-  max-height: 86vh;
-  overflow-y: auto;
-  padding: 24px;
-  border: 1px solid $borde-fuerte;
-  border-radius: $radio-panel;
-  background: $panel;
-  box-shadow: $sombra-tarjeta;
-}
-
-.mb-resultado__titulo {
-  margin: 0 0 16px;
-  text-align: center;
-  font-family: $fuente-cartel;
-  font-size: 26px;
-  letter-spacing: 1px;
-}
-
-.mb-resultado__items {
-  margin: 0 0 16px;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.mb-ganado {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 14px;
-  border: 2px solid;
-  border-radius: $radio;
-  background: $panel-alto;
-}
-
-.mb-ganado__nombre { font-weight: 800; }
-.mb-ganado__valor { display: flex; align-items: center; gap: 5px; font-weight: 900; }
-
-.mb-resultado__demo {
-  margin: 0 0 16px;
-  padding: 10px 12px;
-  border-radius: $radio-chico;
-  background: rgba(255, 211, 90, .12);
-  color: $amarillo;
-  font-size: 12px;
-  font-weight: 700;
-  text-align: center;
-}
-
-.mb-resultado__acciones {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  > * { flex: 1 1 140px; }
-}
-
-.mb-sc {
-  display: inline-flex;
-  flex: none;
-  width: 18px;
-  height: 18px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: linear-gradient($sc-verde-claro, $sc-verde);
-  color: $sc-texto;
-  font-weight: 900;
-  font-size: 8px;
-  line-height: 1;
+  @include en-celular { grid-column: 2 / -1; text-align: left; font-size: 12px; }
 }
 </style>

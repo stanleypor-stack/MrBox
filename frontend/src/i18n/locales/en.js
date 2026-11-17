@@ -55,7 +55,13 @@ export default {
     "openAgain": "Open again",
     "demoNote": "Demo only. Nothing is charged and nothing is kept.",
     "freeOpenUsed": "Used a free open",
-    "provablyFair": "Provably fair"
+    "provablyFair": "Provably fair",
+    "opening": "Opening",
+    "howMany": "How many to open",
+    "openFree": "OPEN FREE",
+    "fast": "Fast open",
+    "mute": "Mute sound",
+    "unmute": "Turn sound on"
   },
   "support": {
     "title": "Support",

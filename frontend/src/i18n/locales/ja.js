@@ -55,7 +55,13 @@ export default {
     "openAgain": "もう一度開ける",
     "demoNote": "デモです。課金も保存もされません。",
     "freeOpenUsed": "無料オープンを使用",
-    "provablyFair": "検証可能な公平性"
+    "provablyFair": "検証可能な公平性",
+    "opening": "開封中",
+    "howMany": "開封数",
+    "openFree": "無料で開ける",
+    "fast": "ファストオープン",
+    "mute": "ミュート",
+    "unmute": "ミュート解除"
   },
   "support": {
     "title": "サポート",

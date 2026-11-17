@@ -55,7 +55,13 @@ export default {
     "openAgain": "Abrir otra",
     "demoNote": "Solo demostración. No se cobra ni se queda nada.",
     "freeOpenUsed": "Usaste una apertura gratis",
-    "provablyFair": "Sorteo verificable"
+    "provablyFair": "Sorteo verificable",
+    "opening": "Apertura",
+    "howMany": "Cuántas abrir",
+    "openFree": "ABRIR GRATIS",
+    "fast": "Apertura rápida",
+    "mute": "Silenciar",
+    "unmute": "Activar el sonido"
   },
   "support": {
     "title": "Soporte",
