@@ -91,6 +91,23 @@ const settingsSchema = new mongoose.Schema(
      */
     vecesAJugarElBono: { type: Number, default: 1, min: 0 },
 
+    /*
+      LOS POZOS DE LAS TRES CARRERAS.
+
+      Los del diseno. Se tocan desde el panel sin desplegar nada, y
+      viven aca y no en el codigo porque es una decision de negocio que
+      cambia solita cada temporada.
+
+      Lo que se cambie vale para la carrera SIGUIENTE: la que esta al
+      aire ya guardo su pozo, y moverselo a mitad de camino le
+      cambiaria el premio a gente que ya jugo por el.
+    */
+    pozosDeCarrera: {
+      daily: { type: Number, default: 2000, min: 0 },
+      weekly: { type: Number, default: 10000, min: 0 },
+      monthly: { type: Number, default: 30000, min: 0 },
+    },
+
     /* ── Canjes ──────────────────────────────────────────────────────── */
 
     canjeMinimoSc: { type: Number, default: 50 },

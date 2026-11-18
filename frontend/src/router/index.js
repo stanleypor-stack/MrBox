@@ -33,6 +33,13 @@ const routes = [
     component: () => import(/* webpackChunkName: "deals" */ "@/views/DealsView.vue"),
   },
   {
+    /* Las tres carreras son la misma pantalla con otro `tipo`. */
+    path: "/races/:tipo",
+    name: "race",
+    component: () => import(/* webpackChunkName: "carreras" */ "@/views/RaceView.vue"),
+  },
+  { path: "/races", redirect: "/races/weekly" },
+  {
     path: "/community",
     name: "community",
     component: () => import(/* webpackChunkName: "comunidad" */ "@/views/CommunityView.vue"),
@@ -46,6 +53,26 @@ const routes = [
     path: "/dashboard",
     name: "dashboard",
     component: () => import(/* webpackChunkName: "comunidad" */ "@/views/DashboardView.vue"),
+  },
+  {
+    path: "/promotions",
+    name: "promotions",
+    component: () => import(/* webpackChunkName: "extras" */ "@/views/PromotionsView.vue"),
+  },
+  {
+    path: "/challenges",
+    name: "challenges",
+    component: () => import(/* webpackChunkName: "extras" */ "@/views/ChallengesView.vue"),
+  },
+  {
+    path: "/rewards",
+    name: "rewards",
+    component: () => import(/* webpackChunkName: "extras" */ "@/views/RewardsView.vue"),
+  },
+  {
+    path: "/vip",
+    name: "vip",
+    component: () => import(/* webpackChunkName: "extras" */ "@/views/VipView.vue"),
   },
   {
     path: "/inventory",

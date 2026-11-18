@@ -122,7 +122,11 @@ export default {
     "TOO_FEW_ITEMS": "一个盒子至少要 {minimo} 件。",
     "TOO_MANY_ITEMS": "一个盒子最多 {maximo} 件。",
     "DUPLICATE_ITEM": "同一件物品放了两次。",
-    "TOO_MANY_BOXES": "你已经有 {maximo} 个盒子了。"
+    "TOO_MANY_BOXES": "你已经有 {maximo} 个盒子了。",
+    "RACE_NOT_FOUND": "该竞赛不存在。",
+    "RANK_TOO_LOW": "你的等级还没解锁。",
+    "NOTHING_TO_CLAIM": "现在还没有可领的。",
+    "ALREADY_CLAIMED": "这个你已经领过了。"
   },
   "boxes": {
     "title": "盲盒",
@@ -300,9 +304,33 @@ export default {
     "dashboard": "控制台"
   },
   "races": {
-    "daily": "每日",
-    "weekly": "每周",
-    "monthly": "每月"
+    "daily": "每日竞赛",
+    "weekly": "每周竞赛",
+    "monthly": "每月竞赛",
+    "dailyShort": "日",
+    "weeklyShort": "周",
+    "monthlyShort": "月",
+    "endsIn": "距结束",
+    "days": "天",
+    "hours": "时",
+    "minutes": "分",
+    "seconds": "秒",
+    "howItWorks": "规则",
+    "step1": "开盒",
+    "step1Sub": "你在盒子和 Deals 上花的每一枚币都计入竞赛。",
+    "step2": "往上爬",
+    "step2Sub": "榜单实时更新，玩得越多排得越高。",
+    "step3": "拿奖",
+    "step3Sub": "倒计时归零时，前十名自动平分奖池。",
+    "top3": "前三名",
+    "wagered": "投注",
+    "wageredShort": "投注",
+    "player": "玩家",
+    "prize": "奖金",
+    "yourWager": "你的投注",
+    "yourPosition": "你的排名",
+    "nobodyYet": "还没人玩。第一个开始的就是第一名。",
+    "past": "往期竞赛"
   },
   "auth": {
     "username": "用户名",
@@ -605,6 +633,83 @@ export default {
     "track": {
       "q": "能查订单吗？",
       "a": "可以。寄出后，在个人资料的「我的订单」里看状态和快递单号。"
+    }
+  },
+  "promos": {
+    "sub": "正在进行的活动。点一个看怎么参加。",
+    "empty": "现在没有活动，过几天再来看看。",
+    "endsOn": "{fecha} 结束",
+    "go": "参加"
+  },
+  "challenges": {
+    "title": "每日挑战",
+    "sub": "在指定盒子里达成目标就能拿奖。名额有限，先到先得。",
+    "empty": "现在没有挑战，每天都会上新的。",
+    "newIn": "新挑战倒计时",
+    "hit": "开出 {x}x 或更高",
+    "target": "开出 SC {amount} 以上",
+    "minPlay": "每次 SC {amount}",
+    "rewardsLeft": "剩余名额",
+    "play": "开 {name}",
+    "won": "已到手",
+    "allGone": "已抢完"
+  },
+  "rewards": {
+    "sub": "返水会随着你游玩积累，在这里领取。",
+    "progressTo": "进度至 {rango}",
+    "playBoost": "游玩加成",
+    "boostHelp": "你的等级最多返还投注的 {pct}%，每个周期领一次。",
+    "daily": "每日",
+    "weekly": "每周",
+    "monthly": "每月",
+    "fromPlay": "投注 SC {amount} 的 {pct}%",
+    "claim": "领取",
+    "claimed": "已领",
+    "claimedFor": "已领取 {amount}",
+    "lockedUntil": "Silver 等级解锁",
+    "keepPlaying": "继续玩",
+    "promoCode": "优惠码",
+    "promoHelp": "有我们社交平台或邮件里的码？输入即可入账。",
+    "enterCode": "输入代码",
+    "redeemCode": "兑换",
+    "claimedSoFar": "已领总计"
+  },
+  "vip": {
+    "sub": "等级看你玩了多少，不看你花了多少。每一枚 SC 都算，且到手的等级永不降。",
+    "rankSystem": "等级体系",
+    "rankSystemSub": "九个等级，逐级解锁更多。按累计投注算，永不清零。",
+    "startingTier": "起始等级",
+    "fromPlayed": "投注满 {amount}",
+    "nextIs": "下一级：{rango}",
+    "topTier": "已是最高级",
+    "played": "已投注 SC {amount}",
+    "rakeback": "月度返水",
+    "perk": {
+      "levelUpBox": "升级免费盒",
+      "welcomeBalance": "欢迎余额",
+      "monthlyBox": "每月免费盒",
+      "weeklyBox": "每周免费盒",
+      "rakeback": "开盒返水",
+      "vipManager": "专属经理",
+      "reload": "客服充值"
+    }
+  },
+  "vipFaq": {
+    "counts": {
+      "q": "什么算进等级？",
+      "a": "开盒和 Deals 花的每一枚 SC。这个数字只增不减。"
+    },
+    "lose": {
+      "q": "等级会掉吗？",
+      "a": "不会。到手的等级是永久的，哪怕你几个月不玩。"
+    },
+    "signup": {
+      "q": "VIP 俱乐部需要报名吗？",
+      "a": "不需要。开第一个盒子起就自动参与。"
+    },
+    "rakeback": {
+      "q": "返水怎么算？",
+      "a": "投注的一部分会返给你。分每日、每周、每月三个周期积累，每个在「奖励」里领一次。"
     }
   }
 };

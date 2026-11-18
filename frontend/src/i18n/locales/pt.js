@@ -122,7 +122,11 @@ export default {
     "TOO_FEW_ITEMS": "Uma caixa precisa de ao menos {minimo} itens.",
     "TOO_MANY_ITEMS": "Uma caixa comporta no máximo {maximo} itens.",
     "DUPLICATE_ITEM": "O mesmo item está duas vezes.",
-    "TOO_MANY_BOXES": "Você já tem {maximo} caixas."
+    "TOO_MANY_BOXES": "Você já tem {maximo} caixas.",
+    "RACE_NOT_FOUND": "Essa corrida não existe.",
+    "RANK_TOO_LOW": "Seu rank ainda não libera isso.",
+    "NOTHING_TO_CLAIM": "Ainda não há nada para resgatar.",
+    "ALREADY_CLAIMED": "Esse você já resgatou."
   },
   "boxes": {
     "title": "Caixas",
@@ -300,9 +304,33 @@ export default {
     "dashboard": "Painel"
   },
   "races": {
-    "daily": "Diária",
-    "weekly": "Semanal",
-    "monthly": "Mensal"
+    "daily": "CORRIDA DIÁRIA",
+    "weekly": "CORRIDA SEMANAL",
+    "monthly": "CORRIDA MENSAL",
+    "dailyShort": "Diária",
+    "weeklyShort": "Semanal",
+    "monthlyShort": "Mensal",
+    "endsIn": "TERMINA EM",
+    "days": "DIAS",
+    "hours": "HS",
+    "minutes": "MIN",
+    "seconds": "SEG",
+    "howItWorks": "Como funciona",
+    "step1": "Abra caixas",
+    "step1Sub": "Cada moeda gasta em caixas e deals conta para a corrida.",
+    "step2": "Suba no ranking",
+    "step2Sub": "O ranking atualiza ao vivo. Quanto mais joga, mais sobe.",
+    "step3": "Receba",
+    "step3Sub": "No zero, os dez primeiros dividem o prêmio automaticamente.",
+    "top3": "Os três primeiros",
+    "wagered": "APOSTADO",
+    "wageredShort": "Apostado",
+    "player": "Jogador",
+    "prize": "Prêmio",
+    "yourWager": "Seu total apostado",
+    "yourPosition": "Sua posição",
+    "nobodyYet": "Ninguém jogou ainda. O primeiro assume a liderança.",
+    "past": "Corridas anteriores"
   },
   "auth": {
     "username": "Nome de usuário",
@@ -605,6 +633,83 @@ export default {
     "track": {
       "q": "Posso rastrear meu pedido?",
       "a": "Sim. O status e o código de rastreio ficam em Meus pedidos, no seu perfil."
+    }
+  },
+  "promos": {
+    "sub": "Ofertas no ar agora. Toque em uma para participar.",
+    "empty": "Nada rolando agora. Volte em breve.",
+    "endsOn": "Termina em {fecha}",
+    "go": "Participar"
+  },
+  "challenges": {
+    "title": "Desafios do dia",
+    "sub": "Acerte o alvo na caixa indicada e o prêmio é seu. As vagas são limitadas.",
+    "empty": "Sem desafios agora. Novos entram todo dia.",
+    "newIn": "NOVOS DESAFIOS EM",
+    "hit": "Acerte {x}x ou mais",
+    "target": "Ganhar SC {amount}+",
+    "minPlay": "SC {amount} por rodada",
+    "rewardsLeft": "Vagas restantes",
+    "play": "Abrir {name}",
+    "won": "Você já ganhou",
+    "allGone": "Esgotado"
+  },
+  "rewards": {
+    "sub": "O rakeback acumula enquanto você joga. Resgate aqui.",
+    "progressTo": "Progresso para {rango}",
+    "playBoost": "Play Boost",
+    "boostHelp": "Seu rank devolve até {pct}% do que você joga. Cada janela é uma vez.",
+    "daily": "Diário",
+    "weekly": "Semanal",
+    "monthly": "Mensal",
+    "fromPlay": "{pct}% de SC {amount} jogados",
+    "claim": "Resgatar",
+    "claimed": "Resgatado",
+    "claimedFor": "Resgatou {amount}",
+    "lockedUntil": "Abre no Silver",
+    "keepPlaying": "Continue jogando",
+    "promoCode": "Código promocional",
+    "promoHelp": "Tem um código das redes ou de um e-mail? Digite e o bônus cai no saldo.",
+    "enterCode": "Digite o código",
+    "redeemCode": "Resgatar",
+    "claimedSoFar": "Resgatado até agora"
+  },
+  "vip": {
+    "sub": "Seu nível sobe com o quanto você joga, não com quanto gasta. Cada SC jogado conta, e o nível alcançado é seu para sempre.",
+    "rankSystem": "Sistema de níveis",
+    "rankSystemSub": "Nove níveis, cada um libera mais. Medido pelo total jogado na vida, sem nunca zerar.",
+    "startingTier": "Nível inicial",
+    "fromPlayed": "A partir de {amount} jogados",
+    "nextIs": "Próximo: {rango}",
+    "topTier": "Nível máximo",
+    "played": "SC {amount} jogados",
+    "rakeback": "Rakeback mensal",
+    "perk": {
+      "levelUpBox": "Caixa grátis ao subir",
+      "welcomeBalance": "Saldo de boas-vindas",
+      "monthlyBox": "Caixa grátis mensal",
+      "weeklyBox": "Caixa grátis semanal",
+      "rakeback": "Rakeback de caixas",
+      "vipManager": "Gerente VIP",
+      "reload": "Recarga pelo suporte"
+    }
+  },
+  "vipFaq": {
+    "counts": {
+      "q": "O que conta para o meu nível?",
+      "a": "Cada SC gasto abrindo caixas e em Deals. O número só sobe."
+    },
+    "lose": {
+      "q": "Posso perder meu nível?",
+      "a": "Não. O nível alcançado é permanente, jogando todo dia ou sumindo por meses."
+    },
+    "signup": {
+      "q": "Preciso me inscrever no Clube VIP?",
+      "a": "Não. Toda conta entra desde a primeira caixa aberta."
+    },
+    "rakeback": {
+      "q": "Como funciona o rakeback?",
+      "a": "Parte do que você joga volta. Acumula em três janelas — diária, semanal e mensal — e cada uma é resgatada uma vez em Recompensas."
     }
   }
 };

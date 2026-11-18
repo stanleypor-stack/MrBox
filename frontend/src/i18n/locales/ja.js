@@ -122,7 +122,11 @@ export default {
     "TOO_FEW_ITEMS": "ボックスには最低 {minimo} 点必要です。",
     "TOO_MANY_ITEMS": "ボックスに入るのは最大 {maximo} 点です。",
     "DUPLICATE_ITEM": "同じアイテムが2回入っています。",
-    "TOO_MANY_BOXES": "すでに {maximo} 個あります。"
+    "TOO_MANY_BOXES": "すでに {maximo} 個あります。",
+    "RACE_NOT_FOUND": "そのレースはありません。",
+    "RANK_TOO_LOW": "現在のランクではまだ解放されません。",
+    "NOTHING_TO_CLAIM": "まだ受け取れるものがありません。",
+    "ALREADY_CLAIMED": "すでに受け取り済みです。"
   },
   "boxes": {
     "title": "ボックス",
@@ -300,9 +304,33 @@ export default {
     "dashboard": "ダッシュボード"
   },
   "races": {
-    "daily": "デイリー",
-    "weekly": "ウィークリー",
-    "monthly": "マンスリー"
+    "daily": "デイリーレース",
+    "weekly": "ウィークリーレース",
+    "monthly": "マンスリーレース",
+    "dailyShort": "毎日",
+    "weeklyShort": "毎週",
+    "monthlyShort": "毎月",
+    "endsIn": "終了まで",
+    "days": "日",
+    "hours": "時",
+    "minutes": "分",
+    "seconds": "秒",
+    "howItWorks": "仕組み",
+    "step1": "ボックスを開ける",
+    "step1Sub": "ボックスやDealsに使った額がそのままレースに加算されます。",
+    "step2": "順位を上げる",
+    "step2Sub": "ボードはリアルタイム更新。遊ぶほど上に行けます。",
+    "step3": "受け取る",
+    "step3Sub": "ゼロになった瞬間、上位10人で賞金を自動分配。",
+    "top3": "上位3人",
+    "wagered": "プレイ額",
+    "wageredShort": "プレイ額",
+    "player": "プレイヤー",
+    "prize": "賞金",
+    "yourWager": "あなたのプレイ額",
+    "yourPosition": "あなたの順位",
+    "nobodyYet": "まだ誰もプレイしていません。最初の人が首位です。",
+    "past": "過去のレース"
   },
   "auth": {
     "username": "ユーザー名",
@@ -605,6 +633,83 @@ export default {
     "track": {
       "q": "配送状況は見られますか？",
       "a": "はい。プロフィールの「注文履歴」で状態と追跡番号を確認できます。"
+    }
+  },
+  "promos": {
+    "sub": "開催中のキャンペーン。タップで参加方法を見られます。",
+    "empty": "今は開催中のものがありません。また見てね。",
+    "endsOn": "{fecha} まで",
+    "go": "参加する"
+  },
+  "challenges": {
+    "title": "デイリーチャレンジ",
+    "sub": "指定のボックスで目標を達成すれば報酬がもらえます。枠は限られています。",
+    "empty": "今はチャレンジがありません。毎日新しいものが出ます。",
+    "newIn": "次の更新まで",
+    "hit": "{x}x 以上を出す",
+    "target": "SC {amount} 以上",
+    "minPlay": "1回 SC {amount}",
+    "rewardsLeft": "残り枠",
+    "play": "{name} を開ける",
+    "won": "獲得済み",
+    "allGone": "完売"
+  },
+  "rewards": {
+    "sub": "プレイするほどレーキバックが溜まります。ここで受け取れます。",
+    "progressTo": "{rango} まで",
+    "playBoost": "プレイブースト",
+    "boostHelp": "ランクに応じてプレイ額の最大 {pct}% が戻ります。",
+    "daily": "毎日",
+    "weekly": "毎週",
+    "monthly": "毎月",
+    "fromPlay": "プレイ額 SC {amount} の {pct}%",
+    "claim": "受け取る",
+    "claimed": "受領済み",
+    "claimedFor": "{amount} を受け取りました",
+    "lockedUntil": "Silver から",
+    "keepPlaying": "プレイを続けよう",
+    "promoCode": "プロモコード",
+    "promoHelp": "SNSやメールのコードを入力するとボーナスが残高に入ります。",
+    "enterCode": "コードを入力",
+    "redeemCode": "使う",
+    "claimedSoFar": "これまでの受領額"
+  },
+  "vip": {
+    "sub": "ランクは「いくら使ったか」ではなく「どれだけ遊んだか」で上がります。一度到達したランクは下がりません。",
+    "rankSystem": "ランク制度",
+    "rankSystemSub": "9段階。累計のプレイ額で決まり、リセットはありません。",
+    "startingTier": "開始ランク",
+    "fromPlayed": "プレイ額 {amount} から",
+    "nextIs": "次：{rango}",
+    "topTier": "最高ランク",
+    "played": "プレイ額 SC {amount}",
+    "rakeback": "月次レーキバック",
+    "perk": {
+      "levelUpBox": "ランクアップ無料ボックス",
+      "welcomeBalance": "ウェルカム残高",
+      "monthlyBox": "月次無料ボックス",
+      "weeklyBox": "週次無料ボックス",
+      "rakeback": "ボックスレーキバック",
+      "vipManager": "専任マネージャー",
+      "reload": "サポート経由のリロード"
+    }
+  },
+  "vipFaq": {
+    "counts": {
+      "q": "ランクには何が加算されますか？",
+      "a": "ボックスとDealsに使ったSCすべて。数字は増えるだけです。"
+    },
+    "lose": {
+      "q": "ランクは下がりますか？",
+      "a": "下がりません。一度到達したランクはずっとあなたのものです。"
+    },
+    "signup": {
+      "q": "VIPクラブに登録が必要ですか？",
+      "a": "不要です。最初の1箱を開けた時点で参加しています。"
+    },
+    "rakeback": {
+      "q": "レーキバックの仕組みは？",
+      "a": "プレイ額の一部が戻ります。毎日・毎週・毎月の3つに溜まり、それぞれリワードで一度受け取れます。"
     }
   }
 };

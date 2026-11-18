@@ -122,7 +122,11 @@ export default {
     "TOO_FEW_ITEMS": "Eine Box braucht mindestens {minimo} Artikel.",
     "TOO_MANY_ITEMS": "Eine Box fasst höchstens {maximo} Artikel.",
     "DUPLICATE_ITEM": "Derselbe Artikel ist zweimal drin.",
-    "TOO_MANY_BOXES": "Du hast schon {maximo} Boxen."
+    "TOO_MANY_BOXES": "Du hast schon {maximo} Boxen.",
+    "RACE_NOT_FOUND": "Dieses Rennen gibt es nicht.",
+    "RANK_TOO_LOW": "Dein Rang schaltet das noch nicht frei.",
+    "NOTHING_TO_CLAIM": "Es gibt noch nichts abzuholen.",
+    "ALREADY_CLAIMED": "Das hast du schon abgeholt."
   },
   "boxes": {
     "title": "Boxen",
@@ -300,9 +304,33 @@ export default {
     "dashboard": "Übersicht"
   },
   "races": {
-    "daily": "Täglich",
-    "weekly": "Wöchentlich",
-    "monthly": "Monatlich"
+    "daily": "TAGESRENNEN",
+    "weekly": "WOCHENRENNEN",
+    "monthly": "MONATSRENNEN",
+    "dailyShort": "Täglich",
+    "weeklyShort": "Wöchentlich",
+    "monthlyShort": "Monatlich",
+    "endsIn": "RENNEN ENDET IN",
+    "days": "TAGE",
+    "hours": "STD",
+    "minutes": "MIN",
+    "seconds": "SEK",
+    "howItWorks": "So geht das",
+    "step1": "Boxen öffnen",
+    "step1Sub": "Jede Münze, die du für Boxen und Deals ausgibst, zählt.",
+    "step2": "Steig im Ranking",
+    "step2Sub": "Das Ranking aktualisiert sich live. Je mehr du spielst, desto höher.",
+    "step3": "Kassieren",
+    "step3Sub": "Bei null teilen sich die ersten zehn den Pot automatisch.",
+    "top3": "Top 3",
+    "wagered": "EINGESETZT",
+    "wageredShort": "Einsatz",
+    "player": "Spieler",
+    "prize": "Preis",
+    "yourWager": "Dein Einsatz",
+    "yourPosition": "Dein Platz",
+    "nobodyYet": "Noch niemand dabei. Wer zuerst spielt, führt.",
+    "past": "Frühere Rennen"
   },
   "auth": {
     "username": "Benutzername",
@@ -605,6 +633,83 @@ export default {
     "track": {
       "q": "Kann ich meine Bestellung verfolgen?",
       "a": "Ja. Status und Sendungsnummer findest du unter Meine Bestellungen in deinem Profil."
+    }
+  },
+  "promos": {
+    "sub": "Aktuelle Angebote. Tippe eins an, um mitzumachen.",
+    "empty": "Gerade läuft nichts. Schau bald wieder vorbei.",
+    "endsOn": "Endet am {fecha}",
+    "go": "Mitmachen"
+  },
+  "challenges": {
+    "title": "Tages-Challenges",
+    "sub": "Triff das Ziel in der gezeigten Box und die Belohnung gehört dir. Die Plätze sind begrenzt.",
+    "empty": "Gerade keine Challenges. Täglich kommen neue.",
+    "newIn": "NEUE CHALLENGES IN",
+    "hit": "Erreiche {x}x oder mehr",
+    "target": "Gewinne SC {amount}+",
+    "minPlay": "SC {amount} pro Runde",
+    "rewardsLeft": "Noch frei",
+    "play": "{name} öffnen",
+    "won": "Hast du schon",
+    "allGone": "Alle weg"
+  },
+  "rewards": {
+    "sub": "Rakeback sammelt sich beim Spielen. Hol es dir hier ab.",
+    "progressTo": "Fortschritt zu {rango}",
+    "playBoost": "Play Boost",
+    "boostHelp": "Dein Rang gibt bis zu {pct}% deines Einsatzes zurück. Jedes Fenster einmal.",
+    "daily": "Täglich",
+    "weekly": "Wöchentlich",
+    "monthly": "Monatlich",
+    "fromPlay": "{pct}% von SC {amount} gespielt",
+    "claim": "Abholen",
+    "claimed": "Abgeholt",
+    "claimedFor": "{amount} abgeholt",
+    "lockedUntil": "Ab Silber",
+    "keepPlaying": "Weiterspielen",
+    "promoCode": "Promo-Code",
+    "promoHelp": "Code aus Social Media oder E-Mail? Gib ihn ein und der Bonus landet im Guthaben.",
+    "enterCode": "Code eingeben",
+    "redeemCode": "Code einlösen",
+    "claimedSoFar": "Bisher abgeholt"
+  },
+  "vip": {
+    "sub": "Dein Rang wächst mit dem Spielen, nicht mit dem Ausgeben. Jeder gespielte Sweeps Coin zählt, und der erreichte Rang bleibt dir.",
+    "rankSystem": "Rangsystem",
+    "rankSystemSub": "Neun Stufen, jede schaltet mehr frei. Gemessen wird dein Lebenseinsatz, und der wird nie zurückgesetzt.",
+    "startingTier": "Startstufe",
+    "fromPlayed": "Ab {amount} gespielt",
+    "nextIs": "Nächste: {rango}",
+    "topTier": "Höchste Stufe erreicht",
+    "played": "SC {amount} gespielt",
+    "rakeback": "Monats-Rakeback",
+    "perk": {
+      "levelUpBox": "Gratis-Box beim Aufstieg",
+      "welcomeBalance": "Startguthaben",
+      "monthlyBox": "Monatliche Gratis-Box",
+      "weeklyBox": "Wöchentliche Gratis-Box",
+      "rakeback": "Box-Rakeback",
+      "vipManager": "VIP-Betreuer",
+      "reload": "Reload über den Support"
+    }
+  },
+  "vipFaq": {
+    "counts": {
+      "q": "Was zählt für meinen Rang?",
+      "a": "Jeder Sweeps Coin für Boxen und Deals. Die Zahl steigt nur."
+    },
+    "lose": {
+      "q": "Kann ich meinen Rang verlieren?",
+      "a": "Nein. Eine erreichte Stufe bleibt, ob du täglich spielst oder monatelang pausierst."
+    },
+    "signup": {
+      "q": "Muss ich mich für den VIP-Club anmelden?",
+      "a": "Nein. Jedes Konto ist ab der ersten Box dabei."
+    },
+    "rakeback": {
+      "q": "Wie funktioniert Rakeback?",
+      "a": "Ein Teil deines Einsatzes kommt zurück. Er sammelt sich in drei Fenstern — täglich, wöchentlich, monatlich — und jedes wird einmal unter Belohnungen abgeholt."
     }
   }
 };

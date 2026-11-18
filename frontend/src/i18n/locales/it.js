@@ -122,7 +122,11 @@ export default {
     "TOO_FEW_ITEMS": "Una box ha bisogno di almeno {minimo} oggetti.",
     "TOO_MANY_ITEMS": "Una box può contenere al massimo {maximo} oggetti.",
     "DUPLICATE_ITEM": "Lo stesso oggetto c’è due volte.",
-    "TOO_MANY_BOXES": "Hai già {maximo} box."
+    "TOO_MANY_BOXES": "Hai già {maximo} box.",
+    "RACE_NOT_FOUND": "Quella gara non esiste.",
+    "RANK_TOO_LOW": "Il tuo grado non lo sblocca ancora.",
+    "NOTHING_TO_CLAIM": "Non c’è ancora nulla da riscuotere.",
+    "ALREADY_CLAIMED": "Quello l’hai già riscosso."
   },
   "boxes": {
     "title": "Box",
@@ -300,9 +304,33 @@ export default {
     "dashboard": "Pannello"
   },
   "races": {
-    "daily": "Giornaliera",
-    "weekly": "Settimanale",
-    "monthly": "Mensile"
+    "daily": "GARA DEL GIORNO",
+    "weekly": "GARA SETTIMANALE",
+    "monthly": "GARA DEL MESE",
+    "dailyShort": "Giorno",
+    "weeklyShort": "Settimana",
+    "monthlyShort": "Mese",
+    "endsIn": "FINISCE TRA",
+    "days": "GIORNI",
+    "hours": "ORE",
+    "minutes": "MIN",
+    "seconds": "SEC",
+    "howItWorks": "Come funziona",
+    "step1": "Apri box",
+    "step1Sub": "Ogni moneta spesa in box e deal conta per la gara.",
+    "step2": "Sali in classifica",
+    "step2Sub": "La classifica si aggiorna dal vivo. Più giochi, più sali.",
+    "step3": "Incassa",
+    "step3Sub": "A zero, i primi dieci si dividono il montepremi in automatico.",
+    "top3": "I primi tre",
+    "wagered": "GIOCATO",
+    "wageredShort": "Giocato",
+    "player": "Giocatore",
+    "prize": "Premio",
+    "yourWager": "Il tuo giocato",
+    "yourPosition": "La tua posizione",
+    "nobodyYet": "Non ha ancora giocato nessuno. Il primo va in testa.",
+    "past": "Gare passate"
   },
   "auth": {
     "username": "Nome utente",
@@ -605,6 +633,83 @@ export default {
     "track": {
       "q": "Posso seguire il mio ordine?",
       "a": "Sì. Stato e numero di tracciamento sono in I miei ordini, nel profilo."
+    }
+  },
+  "promos": {
+    "sub": "Offerte attive adesso. Toccane una per partecipare.",
+    "empty": "Al momento non c’è nulla. Torna presto.",
+    "endsOn": "Finisce il {fecha}",
+    "go": "Partecipa"
+  },
+  "challenges": {
+    "title": "Sfide del giorno",
+    "sub": "Centra l’obiettivo nella box indicata e il premio è tuo. I posti sono limitati.",
+    "empty": "Nessuna sfida ora. Ne arrivano ogni giorno.",
+    "newIn": "NUOVE SFIDE TRA",
+    "hit": "Fai {x}x o meglio",
+    "target": "Vinci SC {amount}+",
+    "minPlay": "SC {amount} a giro",
+    "rewardsLeft": "Premi rimasti",
+    "play": "Apri {name}",
+    "won": "Già vinta",
+    "allGone": "Esauriti"
+  },
+  "rewards": {
+    "sub": "Il rakeback si accumula mentre giochi. Riscuotilo qui.",
+    "progressTo": "Progressi verso {rango}",
+    "playBoost": "Play Boost",
+    "boostHelp": "Il tuo grado restituisce fino al {pct}% del giocato. Una volta per finestra.",
+    "daily": "Giornaliero",
+    "weekly": "Settimanale",
+    "monthly": "Mensile",
+    "fromPlay": "{pct}% di SC {amount} giocati",
+    "claim": "Riscuoti",
+    "claimed": "Riscosso",
+    "claimedFor": "Riscossi {amount}",
+    "lockedUntil": "Dal grado Silver",
+    "keepPlaying": "Continua a giocare",
+    "promoCode": "Codice promo",
+    "promoHelp": "Hai un codice dai social o da una mail? Inseriscilo e il bonus va nel saldo.",
+    "enterCode": "Inserisci il codice",
+    "redeemCode": "Riscatta",
+    "claimedSoFar": "Riscosso finora"
+  },
+  "vip": {
+    "sub": "Il tuo livello cresce con quanto giochi, non con quanto spendi. Ogni Sweeps Coin giocato conta, e il livello raggiunto resta tuo.",
+    "rankSystem": "Sistema dei gradi",
+    "rankSystemSub": "Nove gradi, ognuno sblocca di più. Si misura sul totale giocato e non si azzera mai.",
+    "startingTier": "Grado iniziale",
+    "fromPlayed": "Da {amount} giocati",
+    "nextIs": "Prossimo: {rango}",
+    "topTier": "Grado massimo",
+    "played": "SC {amount} giocati",
+    "rakeback": "Rakeback mensile",
+    "perk": {
+      "levelUpBox": "Box gratis al passaggio",
+      "welcomeBalance": "Saldo di benvenuto",
+      "monthlyBox": "Box gratis mensile",
+      "weeklyBox": "Box gratis settimanale",
+      "rakeback": "Rakeback sulle box",
+      "vipManager": "Manager VIP",
+      "reload": "Ricarica dal supporto"
+    }
+  },
+  "vipFaq": {
+    "counts": {
+      "q": "Cosa conta per il mio grado?",
+      "a": "Ogni SC speso aprendo box e in Deals. Il numero sale soltanto."
+    },
+    "lose": {
+      "q": "Posso perdere il grado?",
+      "a": "No. Il grado raggiunto è permanente, che tu giochi ogni giorno o sparisca per mesi."
+    },
+    "signup": {
+      "q": "Devo iscrivermi al Club VIP?",
+      "a": "No. Ogni account è dentro dalla prima box aperta."
+    },
+    "rakeback": {
+      "q": "Come funziona il rakeback?",
+      "a": "Una parte del giocato torna indietro. Si accumula in tre finestre — giorno, settimana, mese — ognuna riscuotibile una volta in Premi."
     }
   }
 };

@@ -52,6 +52,14 @@ const CODIGOS = {
   TOO_MANY_AT_ONCE: "You cannot open that many at once.",
   NO_SEED: "No seed to play with.",
 
+  /* VIP y rakeback */
+  RANK_TOO_LOW: "Your rank does not unlock that yet.",
+  NOTHING_TO_CLAIM: "There is nothing to claim yet.",
+  ALREADY_CLAIMED: "You already claimed that one.",
+
+  /* Carreras */
+  RACE_NOT_FOUND: "That race does not exist.",
+
   /* Limites que se puso el jugador */
   ON_A_BREAK: "You are on a break.",
   DAILY_PLAY_LIMIT: "You reached your daily play limit.",

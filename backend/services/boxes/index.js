@@ -36,6 +36,7 @@ const eco = require("./economia");
 const wallet = require("../wallet");
 const afiliados = require("../affiliates");
 const comunidad = require("../community");
+const retos = require("../challenges");
 const controles = require("../controls");
 const { sc } = require("../../utils/money");
 const { errorDe } = require("../../utils/errors");
@@ -255,7 +256,28 @@ async function abrir({ user, slug, veces = 1, demo = false }) {
       }
     }
 
+    /*
+      LOS DESAFIOS DEL DIA.
+
+      Se revisan DESPUES de entregar: si pego el multiplicador, el
+      premio entra en esta misma apertura y se lo cuenta abajo. En su
+      propio try, como todo lo que viene despues de cobrar.
+    */
+    let desafios = [];
+    try {
+      desafios = await retos.revisar({
+        user,
+        caja,
+        precioSc: precio,
+        premioSc: sc(premio.valueSc),
+        boxOpenId: recibo._id,
+      });
+    } catch (err) {
+      logger.error(`[boxes] desafios: ${err.message}`);
+    }
+
     resultados.push({
+      desafios,
       premio: {
         _id: guardado._id,
         item: premio.item,

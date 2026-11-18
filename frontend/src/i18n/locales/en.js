@@ -122,7 +122,11 @@ export default {
     "TOO_FEW_ITEMS": "A box needs at least {minimo} items.",
     "TOO_MANY_ITEMS": "A box can hold at most {maximo} items.",
     "DUPLICATE_ITEM": "The same item is in the box twice.",
-    "TOO_MANY_BOXES": "You already have {maximo} boxes."
+    "TOO_MANY_BOXES": "You already have {maximo} boxes.",
+    "RACE_NOT_FOUND": "That race does not exist.",
+    "RANK_TOO_LOW": "Your rank does not unlock that yet.",
+    "NOTHING_TO_CLAIM": "There is nothing to claim yet.",
+    "ALREADY_CLAIMED": "You already claimed that one."
   },
   "boxes": {
     "title": "Boxes",
@@ -300,9 +304,33 @@ export default {
     "dashboard": "Dashboard"
   },
   "races": {
-    "daily": "Daily",
-    "weekly": "Weekly",
-    "monthly": "Monthly"
+    "daily": "DAILY RACE",
+    "weekly": "WEEKLY RACE",
+    "monthly": "MONTHLY RACE",
+    "dailyShort": "Daily",
+    "weeklyShort": "Weekly",
+    "monthlyShort": "Monthly",
+    "endsIn": "RACE ENDS IN",
+    "days": "DAYS",
+    "hours": "HRS",
+    "minutes": "MIN",
+    "seconds": "SEC",
+    "howItWorks": "How it works",
+    "step1": "Open boxes",
+    "step1Sub": "Every coin you spend on boxes and deals counts towards the race.",
+    "step2": "Climb the board",
+    "step2Sub": "The board updates live. The more you play, the higher you climb.",
+    "step3": "Get paid",
+    "step3Sub": "When the clock hits zero, the top ten split the pool automatically.",
+    "top3": "Top 3",
+    "wagered": "WAGERED",
+    "wageredShort": "Wagered",
+    "player": "Player",
+    "prize": "Prize",
+    "yourWager": "Your wager",
+    "yourPosition": "Your position",
+    "nobodyYet": "Nobody has played yet. First one in takes the lead.",
+    "past": "Past races"
   },
   "auth": {
     "username": "Username",
@@ -605,6 +633,83 @@ export default {
     "track": {
       "q": "Can I track my order?",
       "a": "Yes. Once you ship an item home, you can follow its status and tracking number in My Orders inside your profile."
+    }
+  },
+  "promos": {
+    "sub": "Offers running right now. Tap one to see how to take part.",
+    "empty": "Nothing running right now. Check back soon.",
+    "endsOn": "Ends on {fecha}",
+    "go": "Take part"
+  },
+  "challenges": {
+    "title": "Daily challenges",
+    "sub": "Hit the target on the box shown and the reward is yours. Rewards are limited, so the first players to land it take them.",
+    "empty": "No challenges right now. New ones land every day.",
+    "newIn": "NEW CHALLENGES IN",
+    "hit": "Hit {x}x or better",
+    "target": "Win SC {amount}+",
+    "minPlay": "SC {amount} a go",
+    "rewardsLeft": "Rewards left",
+    "play": "Open {name}",
+    "won": "You got this one",
+    "allGone": "All taken"
+  },
+  "rewards": {
+    "sub": "Rakeback builds up as you play. Claim it here when each one opens.",
+    "progressTo": "Progress to {rango}",
+    "playBoost": "Play boost",
+    "boostHelp": "Your rank gives back up to {pct}% of what you play. Each window can be claimed once.",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "fromPlay": "{pct}% of SC {amount} played",
+    "claim": "Claim",
+    "claimed": "Claimed",
+    "claimedFor": "Claimed {amount}",
+    "lockedUntil": "Unlocks at Silver",
+    "keepPlaying": "Keep playing",
+    "promoCode": "Promo code",
+    "promoHelp": "Got a code from our socials or an email? Enter it to add the bonus to your balance.",
+    "enterCode": "Enter code",
+    "redeemCode": "Redeem code",
+    "claimedSoFar": "Claimed so far"
+  },
+  "vip": {
+    "sub": "Your tier grows with how much you play, not with how much you spend. Every Sweeps Coin you play adds to your progress, and the tier you reach is yours to keep.",
+    "rankSystem": "Rank system",
+    "rankSystemSub": "Nine tiers, each unlocking more. Progress is measured on your lifetime amount played and never resets.",
+    "startingTier": "Starting tier",
+    "fromPlayed": "From {amount} played",
+    "nextIs": "Next: {rango}",
+    "topTier": "Top tier reached",
+    "played": "SC {amount} played",
+    "rakeback": "Monthly rakeback",
+    "perk": {
+      "levelUpBox": "Level-up free box",
+      "welcomeBalance": "Welcome balance",
+      "monthlyBox": "Monthly free box",
+      "weeklyBox": "Weekly free box",
+      "rakeback": "Box rakeback",
+      "vipManager": "VIP manager",
+      "reload": "Reload by support"
+    }
+  },
+  "vipFaq": {
+    "counts": {
+      "q": "What counts towards my rank?",
+      "a": "Every Sweeps Coin you spend opening boxes and on Deals. The figure only ever increases."
+    },
+    "lose": {
+      "q": "Can I lose my rank?",
+      "a": "No. Once you reach a tier it is permanent, whether you play daily or step away for months."
+    },
+    "signup": {
+      "q": "Do I need to sign up for the VIP Club?",
+      "a": "No. Every account is in from the first box opened."
+    },
+    "rakeback": {
+      "q": "How does rakeback work?",
+      "a": "A share of what you play comes back to you. It builds up in three windows — daily, weekly and monthly — and each one can be claimed once in Rewards."
     }
   }
 };

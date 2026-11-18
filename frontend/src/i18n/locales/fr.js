@@ -122,7 +122,11 @@ export default {
     "TOO_FEW_ITEMS": "Un coffret doit contenir au moins {minimo} objets.",
     "TOO_MANY_ITEMS": "Un coffret contient au plus {maximo} objets.",
     "DUPLICATE_ITEM": "Le même objet est présent deux fois.",
-    "TOO_MANY_BOXES": "Vous avez déjà {maximo} coffrets."
+    "TOO_MANY_BOXES": "Vous avez déjà {maximo} coffrets.",
+    "RACE_NOT_FOUND": "Cette course n’existe pas.",
+    "RANK_TOO_LOW": "Votre rang ne débloque pas encore ça.",
+    "NOTHING_TO_CLAIM": "Rien à réclamer pour l’instant.",
+    "ALREADY_CLAIMED": "Vous l’avez déjà réclamé."
   },
   "boxes": {
     "title": "Coffrets",
@@ -300,9 +304,33 @@ export default {
     "dashboard": "Tableau de bord"
   },
   "races": {
-    "daily": "Quotidien",
-    "weekly": "Hebdo",
-    "monthly": "Mensuel"
+    "daily": "COURSE DU JOUR",
+    "weekly": "COURSE DE LA SEMAINE",
+    "monthly": "COURSE DU MOIS",
+    "dailyShort": "Jour",
+    "weeklyShort": "Semaine",
+    "monthlyShort": "Mois",
+    "endsIn": "FIN DE LA COURSE DANS",
+    "days": "JOURS",
+    "hours": "H",
+    "minutes": "MIN",
+    "seconds": "SEC",
+    "howItWorks": "Comment ça marche",
+    "step1": "Ouvre des coffrets",
+    "step1Sub": "Chaque pièce dépensée en coffrets et en deals compte.",
+    "step2": "Monte au classement",
+    "step2Sub": "Le classement est en direct. Plus tu joues, plus tu montes.",
+    "step3": "Encaisse",
+    "step3Sub": "À zéro, les dix premiers se partagent la cagnotte automatiquement.",
+    "top3": "Top 3",
+    "wagered": "MISÉ",
+    "wageredShort": "Misé",
+    "player": "Joueur",
+    "prize": "Gain",
+    "yourWager": "Votre mise",
+    "yourPosition": "Votre place",
+    "nobodyYet": "Personne n’a encore joué. Le premier prend la tête.",
+    "past": "Courses passées"
   },
   "auth": {
     "username": "Nom d’utilisateur",
@@ -605,6 +633,83 @@ export default {
     "track": {
       "q": "Puis-je suivre ma commande ?",
       "a": "Oui. Le statut et le numéro de suivi sont dans Mes commandes, dans votre profil."
+    }
+  },
+  "promos": {
+    "sub": "Offres en cours. Touchez-en une pour participer.",
+    "empty": "Rien en cours. Revenez bientôt.",
+    "endsOn": "Se termine le {fecha}",
+    "go": "Participer"
+  },
+  "challenges": {
+    "title": "Défis du jour",
+    "sub": "Atteignez l’objectif sur le coffret indiqué et la récompense est à vous. Les places sont limitées.",
+    "empty": "Aucun défi pour l’instant. De nouveaux arrivent chaque jour.",
+    "newIn": "NOUVEAUX DÉFIS DANS",
+    "hit": "Atteins {x}x ou mieux",
+    "target": "Gagnez SC {amount}+",
+    "minPlay": "SC {amount} la partie",
+    "rewardsLeft": "Récompenses restantes",
+    "play": "Ouvrir {name}",
+    "won": "Déjà gagné",
+    "allGone": "Tout est pris"
+  },
+  "rewards": {
+    "sub": "Le rakeback s’accumule en jouant. Réclamez-le ici.",
+    "progressTo": "Progression vers {rango}",
+    "playBoost": "Play Boost",
+    "boostHelp": "Votre rang rend jusqu’à {pct}% de vos mises. Une fois par fenêtre.",
+    "daily": "Quotidien",
+    "weekly": "Hebdomadaire",
+    "monthly": "Mensuel",
+    "fromPlay": "{pct}% de SC {amount} misés",
+    "claim": "Réclamer",
+    "claimed": "Réclamé",
+    "claimedFor": "{amount} réclamés",
+    "lockedUntil": "Dès Argent",
+    "keepPlaying": "Continuez à jouer",
+    "promoCode": "Code promo",
+    "promoHelp": "Un code reçu sur nos réseaux ou par e-mail ? Saisissez-le pour créditer le bonus.",
+    "enterCode": "Entrer le code",
+    "redeemCode": "Valider le code",
+    "claimedSoFar": "Réclamé à ce jour"
+  },
+  "vip": {
+    "sub": "Votre palier monte avec ce que vous jouez, pas avec ce que vous dépensez. Chaque Sweeps Coin joué compte, et le palier atteint est acquis.",
+    "rankSystem": "Système de paliers",
+    "rankSystemSub": "Neuf paliers, chacun débloquant plus. Mesuré sur votre total joué, qui ne se réinitialise jamais.",
+    "startingTier": "Palier de départ",
+    "fromPlayed": "À partir de {amount} joués",
+    "nextIs": "Suivant : {rango}",
+    "topTier": "Palier maximal atteint",
+    "played": "SC {amount} joués",
+    "rakeback": "Rakeback mensuel",
+    "perk": {
+      "levelUpBox": "Coffret offert à la montée",
+      "welcomeBalance": "Solde de bienvenue",
+      "monthlyBox": "Coffret mensuel offert",
+      "weeklyBox": "Coffret hebdo offert",
+      "rakeback": "Rakeback coffrets",
+      "vipManager": "Responsable VIP",
+      "reload": "Recharge via le support"
+    }
+  },
+  "vipFaq": {
+    "counts": {
+      "q": "Qu’est-ce qui compte pour mon palier ?",
+      "a": "Chaque Sweeps Coin dépensé en coffrets et en Deals. Le total ne fait que monter."
+    },
+    "lose": {
+      "q": "Puis-je perdre mon palier ?",
+      "a": "Non. Un palier atteint est permanent, que vous jouiez tous les jours ou pas du tout."
+    },
+    "signup": {
+      "q": "Dois-je m’inscrire au Club VIP ?",
+      "a": "Non. Chaque compte y est dès le premier coffret ouvert."
+    },
+    "rakeback": {
+      "q": "Comment marche le rakeback ?",
+      "a": "Une part de vos mises revient. Elle s’accumule sur trois fenêtres — jour, semaine, mois — chacune réclamable une fois dans Récompenses."
     }
   }
 };

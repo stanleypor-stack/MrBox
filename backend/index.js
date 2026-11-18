@@ -11,6 +11,7 @@ const express = require("express");
 const cors = require("cors");
 
 const { conectar } = require("./database");
+const carreras = require("./services/races");
 const { logger } = require("./utils/logger");
 const { errorDe } = require("./utils/errors");
 
@@ -50,11 +51,41 @@ app.use((err, req, res, _next) => {
   res.status(500).json(errorDe("SOMETHING_WENT_WRONG", {}, 500).aRespuesta());
 });
 
+/*
+  EL PISO DE LAS CARRERAS.
+
+  Una carrera se cierra sola cuando alguien la mira despues de su hora,
+  que cubre el 99% de los casos. Esto es para el 1%: la diaria que
+  vence a las tres de la manana de un martes sin nadie conectado.
+
+  Una vuelta por hora alcanza y no cuesta nada: cuando no hay nada
+  vencido es una consulta que no devuelve filas.
+
+  `unref()` para que este reloj no sea razon suficiente para que el
+  proceso siga vivo: si todo lo demas termino, que termine.
+*/
+function revisarLasCarreras() {
+  const UNA_HORA = 60 * 60 * 1000;
+
+  const vuelta = async () => {
+    try {
+      await carreras.ponerAlDia();
+    } catch (err) {
+      logger.error(`[races] la vuelta de la hora: ${err.message}`);
+    }
+  };
+
+  vuelta();
+  const reloj = setInterval(vuelta, UNA_HORA);
+  if (reloj.unref) reloj.unref();
+}
+
 async function arrancar() {
   const base = await conectar();
   const puerto = Number(process.env.PORT) || 5001;
   app.listen(puerto, () => {
     logger.info(`MR BOX escuchando en ${puerto}, contra la base "${base}"`);
+    revisarLasCarreras();
   });
 }
 
