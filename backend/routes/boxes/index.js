@@ -189,14 +189,33 @@ router.get("/rows", autorizar(false), async (req, res) => {
       Box.find({ ...comun, priceSc: { $lt: 5 } }).sort({ priceSc: 1 }).limit(14).select(campos).lean(),
     ]);
 
+    /*
+      EL ORDEN Y LO QUE SE MUESTRA LO DICE EL PANEL.
+
+      La REGLA de cada fila sigue acá --"las 14 más abiertas" es una
+      consulta, no un dato-- pero esconder una fila o moverla se hace
+      desde Settings.portada, sin desplegar nada.
+    */
+    const cfgPortada = (await Settings.leer()).portada || [];
+    const puesto = new Map(cfgPortada.map((f) => [f.id, f]));
+
+    const todas = [
+      { id: "popular", titulo: "rows.popular", regla: "rows.popularRule", items: resumir(populares) },
+      { id: "featured", titulo: "rows.featured", regla: "rows.featuredRule", items: resumir(destacadas) },
+      { id: "luxury", titulo: "rows.luxury", regla: "rows.luxuryRule", items: resumir(lujo) },
+      { id: "cheap", titulo: "rows.cheap", regla: "rows.cheapRule", items: resumir(baratas) },
+    ];
+
     return res.json({
       success: true,
-      data: [
-        { id: "popular", titulo: "rows.popular", regla: "rows.popularRule", items: resumir(populares) },
-        { id: "featured", titulo: "rows.featured", regla: "rows.featuredRule", items: resumir(destacadas) },
-        { id: "luxury", titulo: "rows.luxury", regla: "rows.luxuryRule", items: resumir(lujo) },
-        { id: "cheap", titulo: "rows.cheap", regla: "rows.cheapRule", items: resumir(baratas) },
-      ].filter((f) => f.items.length),
+      data: todas
+        .filter((f) => f.items.length)
+        .filter((f) => !puesto.has(f.id) || puesto.get(f.id).visible !== false)
+        .sort((a, b) => {
+          const pa = puesto.has(a.id) ? puesto.get(a.id).orden : 99;
+          const pb = puesto.has(b.id) ? puesto.get(b.id).orden : 99;
+          return pa - pb;
+        }),
     });
   } catch (err) {
     return responderError(res, err, "rows");

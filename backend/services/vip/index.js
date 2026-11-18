@@ -30,6 +30,7 @@ const BalanceTransaction = require("../../database/models/BalanceTransaction");
 const User = require("../../database/models/User");
 
 const wallet = require("../wallet");
+const Settings = require("../../database/models/Settings");
 const { sc } = require("../../utils/money");
 const { errorDe } = require("../../utils/errors");
 
@@ -73,20 +74,70 @@ const PERIODOS = ["daily", "weekly", "monthly"];
 /* Los tipos de movimiento que cuentan como jugar. */
 const JUGAR = ["box_open", "deal"];
 
+/*
+  LOS DE ARRIBA SON LOS DE FABRICA.
+
+  El panel los puede mover (Settings.rangosVip) y entonces mandan esos.
+  Se guardan en memoria un minuto: `rangoDe` se llama en cada apertura
+  y cada carrera, y leer las perillas en cada llamada seria un viaje a
+  la base por apertura.
+
+  Del panel viene el rakeback SEMANAL; el diario y el mensual salen de
+  ahi con la misma proporcion que tienen los de fabrica. Es para que
+  nadie tenga que entender tres numeros para mover uno, y para que la
+  suma de los tres no se despegue del margen sin que se note.
+*/
+let enMemoria = { cuando: 0, rangos: RANGOS };
+
+function rangos() {
+  if (Date.now() - enMemoria.cuando < 60000) return enMemoria.rangos;
+
+  /* Lectura al vuelo: si todavia no llego, se usa lo ultimo que haya. */
+  Settings.leer()
+    .then((cfg) => {
+      const puestos = (cfg && cfg.rangosVip) || [];
+      enMemoria = {
+        cuando: Date.now(),
+        rangos: puestos.length
+          ? puestos.map((r, i) => {
+            const base = RANGOS[Math.min(i, RANGOS.length - 1)];
+            const semanal = Number(r.rakebackSemanal) || 0;
+            const proporcion = base.rakeback.weekly > 0 ? semanal / base.rakeback.weekly : 0;
+
+            return {
+              nombre: r.nombre,
+              desde: r.desde,
+              color: r.color || base.color,
+              rakeback: {
+                daily: Math.round(base.rakeback.daily * proporcion * 1e6) / 1e6,
+                weekly: semanal,
+                monthly: Math.round(base.rakeback.monthly * proporcion * 1e6) / 1e6,
+              },
+            };
+          })
+          : RANGOS,
+      };
+    })
+    .catch(() => {});
+
+  return enMemoria.rangos;
+}
+
 /** En qué rango cae alguien que jugó tanto. */
 function rangoDe(jugadoSc) {
+  const R = rangos();
   const j = Number(jugadoSc) || 0;
   let i = 0;
-  for (let k = 0; k < RANGOS.length; k += 1) if (j >= RANGOS[k].desde) i = k;
-  const siguiente = RANGOS[Math.min(i + 1, RANGOS.length - 1)];
-  const esElUltimo = i === RANGOS.length - 1;
+  for (let k = 0; k < R.length; k += 1) if (j >= R[k].desde) i = k;
+  const siguiente = R[Math.min(i + 1, R.length - 1)];
+  const esElUltimo = i === R.length - 1;
 
-  const desde = RANGOS[i].desde;
+  const desde = R[i].desde;
   const hasta = siguiente.desde;
   const pct = esElUltimo || hasta <= desde ? 100 : ((j - desde) / (hasta - desde)) * 100;
 
   return {
-    ...RANGOS[i],
+    ...R[i],
     numero: i + 1,
     cuantosBeneficios: CUANTOS_BENEFICIOS[i],
     siguiente: esElUltimo ? null : siguiente.nombre,
@@ -97,7 +148,7 @@ function rangoDe(jugadoSc) {
 
 /** La lista entera, para la pantalla del club. */
 function tabla() {
-  return RANGOS.map((r, i) => ({
+  return rangos().map((r, i) => ({
     numero: i + 1,
     nombre: r.nombre,
     desde: r.desde,

@@ -521,7 +521,7 @@ export default {
   /**
    * LA CINTA SE MUEVE SOLA.
    *
-   * Cada cuatro segundos pide las ultimas y `:key` hace el resto: las
+   * Cada segundo y medio pide las ultimas y `:key` hace el resto: las
    * que ya estaban no se vuelven a dibujar y la nueva entra con su
    * animacion. Con la pestaña escondida no pide nada: un sitio abierto
    * en una pestaña olvidada no tiene por que pedir toda la noche.
@@ -530,7 +530,7 @@ export default {
     this.traer();
     this.relojPulls = window.setInterval(() => {
       if (!document.hidden) this.traerPulls();
-    }, 4000);
+    }, 1500);
   },
 
   beforeDestroy() { window.clearInterval(this.relojPulls); },

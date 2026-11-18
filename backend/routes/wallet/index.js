@@ -9,6 +9,8 @@ const Settings = require("../../database/models/Settings");
 const BalanceTransaction = require("../../database/models/BalanceTransaction");
 const User = require("../../database/models/User");
 const afiliados = require("../../services/affiliates");
+const cajas = require("../../services/boxes");
+const PromoCode = require("../../database/models/PromoCode");
 const { sc } = require("../../utils/money");
 const { errorDe, esDeJugador } = require("../../utils/errors");
 const { logger } = require("../../utils/logger");
@@ -131,6 +133,81 @@ router.post("/code", freno, async (req, res) => {
     });
   } catch (err) {
     return responderError(res, err, "code");
+  }
+});
+
+/**
+ * CANJEAR UN CODIGO PROMOCIONAL.
+ *
+ * El de una campaña: da saldo o cajas gratis, una sola vez por persona.
+ *
+ * LO QUE IMPIDE EL DOBLE CANJE ES EL INDICE, NO UN `IF`
+ *
+ * La fila de uso se crea ANTES de mover la plata, con un índice único
+ * por (código, jugador). Dos clics al mismo tiempo: el segundo choca
+ * contra el índice y no acredita. Preguntando "¿ya lo usó?" y después
+ * acreditando, los dos pasan.
+ */
+router.post("/promo", freno, async (req, res) => {
+  try {
+    const texto = String(req.body.code || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 24);
+    if (!texto) throw errorDe("CODE_NOT_FOUND");
+
+    const codigo = await PromoCode.findOne({ codigo: texto });
+    if (!codigo) throw errorDe("CODE_NOT_FOUND");
+    if (!codigo.sirve()) throw errorDe("CODE_EXPIRED");
+
+    if (codigo.minimoJugadoSc > 0 && sc(req.user.jugadoSc) < codigo.minimoJugadoSc) {
+      throw errorDe("BELOW_MINIMUM", { minimoJugadoSc: codigo.minimoJugadoSc });
+    }
+
+    /* La marca primero: es la que decide quién gana la carrera. */
+    let uso;
+    try {
+      uso = await PromoCode.PromoUse.create({
+        code: codigo._id,
+        user: req.user._id,
+        montoSc: codigo.montoSc,
+        aperturas: codigo.aperturas,
+      });
+    } catch (err) {
+      if (err && err.code === 11000) throw errorDe("CODE_ALREADY_USED");
+      throw err;
+    }
+
+    try {
+      if (codigo.tipo === "saldo" && codigo.montoSc > 0) {
+        await wallet.mover({
+          userId: req.user._id,
+          amountSc: sc(codigo.montoSc),
+          type: "promo_code",
+          reference: { kind: "promoCode", id: codigo._id, label: codigo.codigo },
+        });
+      }
+
+      if (codigo.tipo === "aperturas" && codigo.aperturas > 0) {
+        await cajas.regalarCajasDeBienvenida(req.user._id);
+      }
+    } catch (err) {
+      /* No se pudo dar: se borra la marca para que lo pueda reintentar. */
+      await PromoCode.PromoUse.deleteOne({ _id: uso._id });
+      throw err;
+    }
+
+    await PromoCode.updateOne({ _id: codigo._id }, { $inc: { usos: 1 } });
+
+    return res.json({
+      success: true,
+      data: {
+        codigo: codigo.codigo,
+        tipo: codigo.tipo,
+        montoSc: sc(codigo.montoSc),
+        aperturas: codigo.aperturas,
+        ...(await wallet.saldoDe(req.user._id)),
+      },
+    });
+  } catch (err) {
+    return responderError(res, err, "promo");
   }
 });
 

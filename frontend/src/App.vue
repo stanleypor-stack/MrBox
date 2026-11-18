@@ -194,6 +194,24 @@ export default {
 @import "@/styles/tokens";
 
 .mb-app {
+  /*
+    LA ESCALA DEL SITIO EN LA PC.
+
+    A 1.366px, el diseño del prototipo --dibujado a 1.440-- entraba un
+    quinto más grande de lo que debía: ocho tarjetas de Live Pulls
+    donde mrloot muestra doce, el banner altísimo y la barra lateral
+    comiéndose la pantalla.
+
+    `zoom` y no `transform: scale()`: zoom cambia el tamaño de la caja,
+    así que el resto de la página se reacomoda sola y las medidas de
+    `100vh` y las barras fijas siguen cayendo donde tienen que caer.
+    Con `scale` el contenido se achica pero deja el hueco del tamaño
+    viejo.
+
+    En el teléfono queda en 1: ahí el diseño ya entra como debe.
+  */
+  @media (min-width: 1100px) { zoom: .84; }
+
   min-height: 100vh;
   background: $fondo;
   /* Para que el cajón se pueda plantar sobre el cuerpo sin tapar la

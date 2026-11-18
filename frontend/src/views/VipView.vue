@@ -15,15 +15,36 @@
               <b>{{ (usuario && usuario.username) || $t('nav.vip') }}</b>
               <span :style="{ color: miRango.color }">{{ miRango.nombre }}</span>
             </span>
-            <span class="mb-vcartel__pct">{{ miRango.progreso }}%</span>
+            <span class="mb-vcartel__pct" :style="{ color: miRango.color }">{{ miRango.progreso.toFixed(1) }}%</span>
           </div>
 
-          <div class="mb-vcartel__barra"><div :style="{ width: miRango.progreso + '%' }"></div></div>
+          <!--
+            LO JUGADO SOBRE LO QUE FALTA.
 
-          <div class="mb-vcartel__fila mb-tenue">
-            <span>{{ $t('vip.played', { amount: plata(jugado) }) }}</span>
-            <span v-if="miRango.faltaPara">{{ $t('vip.nextAt', { amount: corto(miRango.faltaPara), rango: miRango.siguiente }) }}</span>
-            <span v-else>{{ $t('vip.topTier') }}</span>
+            El numero de arriba es el que se mira: "467.578 de 500.000"
+            dice cuanto falta; "87%" solo dice que falta poco. Van los
+            dos, como en mrloot.
+          -->
+          <div class="mb-vcartel__fila">
+            <span class="mb-tenue">{{ $t('vip.amountPlayed') }}</span>
+            <span v-if="miRango.faltaPara" class="mb-vcartel__cuenta">
+              {{ plata(jugado) }} <span class="mb-tenue">/ {{ num(miRango.faltaPara) }}</span>
+            </span>
+            <span v-else class="mb-vcartel__cuenta">{{ plata(jugado) }}</span>
+          </div>
+
+          <div class="mb-vcartel__barra">
+            <div :style="{ width: anchoDeLaBarra }"></div>
+          </div>
+
+          <!-- El rango de ahora y el que sigue, uno en cada punta. -->
+          <div class="mb-vcartel__fila">
+            <span class="mb-vcartel__rango" :style="{ color: miRango.color }">
+              <span class="mb-vcartel__gemita" :style="{ background: miRango.color }" aria-hidden="true"></span>
+              {{ miRango.nombre }}
+            </span>
+            <span v-if="miRango.siguiente" class="mb-tenue">{{ miRango.siguiente }}</span>
+            <span v-else class="mb-tenue">{{ $t('vip.topTier') }}</span>
           </div>
         </div>
       </div>
@@ -271,6 +292,20 @@ export default {
     ...mapState(["usuario"]),
     ...mapGetters(["entro"]),
 
+    /**
+     * EL ANCHO DEL RELLENO.
+     *
+     * Con 3,54 jugados de 25.000, el progreso es 0,01%: un relleno de
+     * ese ancho no se ve y la barra parece rota. Arranca en 2% para
+     * que SIEMPRE se vea que empezo, que es lo que esa barra tiene que
+     * contar.
+     */
+    anchoDeLaBarra() {
+      if (!this.miRango) return "0%";
+      if (this.miRango.progreso <= 0 && !this.jugado) return "0%";
+      return Math.max(2, this.miRango.progreso) + "%";
+    },
+
     inicial() {
       return String((this.usuario && this.usuario.username) || "?").charAt(0).toUpperCase();
     },
@@ -283,6 +318,8 @@ export default {
   },
 
   methods: {
+    num(n) { return Number(n || 0).toLocaleString("en-US"); },
+
     plata(n) {
       return Number(n || 0).toLocaleString("en-US", {
         minimumFractionDigits: 2, maximumFractionDigits: 2,
@@ -440,12 +477,24 @@ export default {
 .mb-vcartel__pct { margin-left: auto; font-weight: 900; font-size: 20px; }
 
 .mb-vcartel__barra {
-  height: 8px;
-  border-radius: 4px;
-  background: #0b1730;
+  height: 10px;
+  border-radius: 5px;
+  /* Mas claro que el fondo de la tarjeta: si no, con la barra casi
+     vacia no se ve ni el riel y la tarjeta parece cortada. */
+  background: rgba(255, 255, 255, .12);
   overflow: hidden;
-  div { height: 100%; background: $amarillo-v; }
+
+  div {
+    height: 100%;
+    border-radius: 5px;
+    background: linear-gradient(90deg, $amarillo-v, #ffe9a8);
+    transition: width .4s ease;
+  }
 }
+
+.mb-vcartel__cuenta { font-weight: 900; font-size: 14px; font-variant-numeric: tabular-nums; }
+.mb-vcartel__rango { display: flex; align-items: center; gap: 6px; font-weight: 900; }
+.mb-vcartel__gemita { width: 10px; height: 10px; border-radius: 3px; transform: rotate(45deg); }
 
 .mb-tenue { color: $texto-3; }
 

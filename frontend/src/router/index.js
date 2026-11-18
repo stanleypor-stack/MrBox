@@ -153,6 +153,22 @@ const routes = [
         name: "adminSettings",
         component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminSettings.vue"),
       },
+      /*
+        Las dos que son UNA tabla y no filas sueltas: los nueve rangos
+        VIP y las filas de la portada. Se editan enteras y se guardan
+        de una, porque sus valores se miran entre ellos.
+      */
+      {
+        path: "ranks",
+        name: "adminRanks",
+        component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminTabla.vue"),
+      },
+      {
+        path: "home",
+        name: "adminHome",
+        component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminTabla.vue"),
+      },
+
       /* Y el resto: una lista, la que diga la direccion. */
       {
         path: ":seccion",

@@ -169,7 +169,7 @@ async function config() {
   const p = (s && s.pulls) || {};
   return {
     relleno: p.relleno !== false,
-    porMinuto: p.porMinuto || 60,
+    porMinuto: p.porMinuto || 90,
     baratosPct: (p.baratosPct == null ? 85 : p.baratosPct) / 100,
     topeSc: p.topeSc || 10,
   };

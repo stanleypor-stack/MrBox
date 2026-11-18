@@ -7,6 +7,10 @@
         <span class="adl__que">{{ $t('admin.what.' + seccion) }}</span>
       </div>
 
+      <button v-if="cfg.editor" type="button" class="ad-b ad-b--grande" @click="editando = { nueva: true }">
+        + {{ $t('admin.new', { que: $t('admin.nav.' + seccion) }) }}
+      </button>
+
       <button v-if="cfg.accion" type="button" class="ad-b ad-b--grande" @click="hacerLoDeArriba">
         {{ $t(cfg.accion.texto) }}
       </button>
@@ -52,7 +56,7 @@
             <span v-for="c in cfg.columnas" :key="c.campo" :class="{ 'ad-der': c.der }">
               {{ $t('admin.col.' + c.campo) }}
             </span>
-            <span v-if="cfg.acciones"></span>
+            <span v-if="cfg.acciones || cfg.editor"></span>
           </div>
 
           <div v-for="(f, i) in filas" :key="f._id || i" class="ad-t__fila" :style="{ gridTemplateColumns: columnas }">
@@ -76,12 +80,17 @@
               <span v-else>{{ texto(c, f) }}</span>
             </span>
 
-            <span v-if="cfg.acciones" class="adl__acciones">
+            <span v-if="cfg.acciones || cfg.editor" class="adl__acciones">
               <button
-                v-for="a in cfg.acciones(f)" :key="a.clave" type="button"
+                v-for="a in (cfg.acciones ? cfg.acciones(f) : [])" :key="a.clave" type="button"
                 class="ad-b ad-b--chico" :class="a.clase"
                 :disabled="ocupado === f._id" @click="hacer(a, f)"
               >{{ $t(a.texto) }}</button>
+
+              <button
+                v-if="cfg.editor" type="button" class="ad-b ad-b--chico ad-b--suave"
+                @click="editando = { fila: f }"
+              >{{ $t('admin.act.edit') }}</button>
             </span>
           </div>
         </div>
@@ -99,12 +108,19 @@
         </button>
       </nav>
     </div>
+
+    <!-- Crear o editar: el mismo formulario para todas las secciones. -->
+    <AdminEditor
+      v-if="editando && cfg.editor" :cfg="cfg" :fila="editando.fila || null"
+      @cerrar="editando = null" @listo="editando = null; traer(pagina)"
+    />
   </div>
 </template>
 
 <script>
 import api from "@/api";
 import { sprite } from "@/utils/sprite";
+import AdminEditor from "./AdminEditor.vue";
 import SECCIONES from "./secciones";
 
 /** Un estado verde, amarillo o rojo, como en el diseño. */
@@ -135,6 +151,7 @@ const MAL = /^(rejected|cancelled|failed|off|false|banned|ended|expired|hidden|l
  */
 export default {
   name: "AdminLista",
+  components: { AdminEditor },
 
   data() {
     return {
@@ -147,6 +164,7 @@ export default {
       busqueda: "",
       filtros: {},
       ocupado: "",
+      editando: null,
       reloj: null,
     };
   },
@@ -158,7 +176,8 @@ export default {
     /** Los anchos del diseño, más una columna para los botones. */
     columnas() {
       const base = this.cfg.w || this.cfg.columnas.map(() => "1fr").join(" ");
-      return this.cfg.acciones ? `${base} ${this.cfg.anchoDeAcciones || "150px"}` : base;
+      const hayBotones = this.cfg.acciones || this.cfg.editor;
+      return hayBotones ? `${base} ${this.cfg.anchoDeAcciones || "150px"}` : base;
     },
   },
 

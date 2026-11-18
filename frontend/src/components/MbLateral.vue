@@ -3,14 +3,23 @@
     class="mb-side" :class="{ 'is-angosta': !abierta && !cajon, 'is-cajon': cajon }"
     :aria-label="$t('header.sideMenu')"
   >
+    <!--
+      PLEGAR LA BARRA.
+
+      Una flechita contra una pared, como en mrloot: dice hacia donde
+      se va a ir la barra. Antes era un dibujo de dos paneles que no
+      decia nada y ademas ocupaba como un boton grande.
+
+      De cajon --en el telefono-- el mismo boton la cierra.
+    -->
     <button
-      v-if="!cajon" type="button" class="mb-side__plegar"
-      :aria-label="abierta ? $t('header.collapse') : $t('header.expand')"
-      @click="abierta = !abierta"
+      type="button" class="mb-side__plegar"
+      :aria-label="cajon ? $t('header.closeMenu') : (abierta ? $t('header.collapse') : $t('header.expand'))"
+      @click="plegar"
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff"
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path :d="abierta ? 'M15 4H4v16h11M15 4h5v16h-5M11 9l-3 3 3 3' : 'M9 4H4v16h5M9 4h11v16H9M14 9l3 3-3 3'" />
+        <path :d="abierta || cajon ? 'M4 5v14M20 12H9M13 8l-4 4 4 4' : 'M20 5v14M4 12h11M11 8l4 4-4 4'" />
       </svg>
     </button>
 
@@ -210,6 +219,12 @@ export default {
   },
 
   methods: {
+    /** Plegada en la pc; en el telefono, el mismo boton cierra el cajon. */
+    plegar() {
+      if (this.cajon) { this.$store.commit("abrir", null); return; }
+      this.abierta = !this.abierta;
+    },
+
     icono(nombre) { return ICONOS[nombre] || ICONOS.Mix; },
 
     async traerCategorias() {
@@ -314,18 +329,21 @@ export default {
 }
 
 .mb-side__plegar {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 0;
-  background: #1a2d4d;
+  align-self: flex-start;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid #22385c;
+  background: #14243f;
+  color: #c9d7f7;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   @include foco;
-  &:hover { background: #22406f; }
+  &:hover { background: #22406f; color: #fff; }
 }
+
 
 .mb-side__cuerpo { display: flex; flex-direction: column; gap: 10px; flex: 1; }
 .mb-side__dos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; flex: none; }

@@ -3,6 +3,7 @@ const express = require("express");
 const User = require("../../database/models/User");
 const Box = require("../../database/models/Box");
 const Banner = require("../../database/models/Banner");
+const PromoCode = require("../../database/models/PromoCode");
 const BalanceTransaction = require("../../database/models/BalanceTransaction");
 const SessionEvent = require("../../database/models/SessionEvent");
 const RakebackClaim = require("../../database/models/RakebackClaim");
@@ -618,7 +619,51 @@ router.get("/coins", async (req, res) => {
     return responderError(res, err, "coins");
   }
 });
-router.get("/promo", pendiente("promoCodes"));
+/**
+ * LOS CODIGOS PROMOCIONALES.
+ *
+ * `usos` sale de contar las filas de uso, no de un contador: un
+ * contador se puede desincronizar y entonces el panel dice que un
+ * codigo se uso ochenta veces cuando se uso ochenta y dos.
+ */
+router.get("/promo", async (req, res) => {
+  try {
+    const items = await PromoCode.find({}).sort({ createdAt: -1 }).limit(100).lean();
+    const usos = await PromoCode.PromoUse.aggregate([
+      { $group: { _id: "$code", n: { $sum: 1 } } },
+    ]);
+    const porCodigo = new Map(usos.map((u) => [String(u._id), u.n]));
+
+    const dados = await PromoCode.PromoUse.aggregate([
+      { $group: { _id: null, sc: { $sum: "$montoSc" } } },
+    ]);
+
+    return res.json({
+      success: true,
+      data: {
+        items: items.map((c) => ({
+          _id: c._id,
+          codigo: c.codigo,
+          tipo: c.tipo,
+          premio: c.tipo === "saldo" ? `SC ${sc(c.montoSc)}` : `${c.aperturas} cajas`,
+          montoSc: sc(c.montoSc),
+          aperturas: c.aperturas,
+          usos: porCodigo.get(String(c._id)) || 0,
+          usosMaximos: c.usosMaximos,
+          minimoSc: sc(c.minimoJugadoSc),
+          minimoJugadoSc: sc(c.minimoJugadoSc),
+          hasta: c.hasta,
+          activo: c.activo,
+        })),
+        total: items.length,
+        vivos: items.filter((c) => c.activo).length,
+        dadoSc: sc(dados.length ? dados[0].sc : 0),
+      },
+    });
+  } catch (err) {
+    return responderError(res, err, "promo");
+  }
+});
 router.get("/legal", pendiente("legalPages"));
 router.get("/seo", pendiente("seo"));
 

@@ -1270,4 +1270,10 @@ router.post("/support/:id/state", async (req, res) => {
 */
 router.use(require("./extra"));
 
+/*
+  Y lo que se CREA y se EDITA desde el panel: carreras, promociones,
+  codigos, desafios, banners, las filas de la portada y los rangos.
+*/
+router.use(require("./editar"));
+
 module.exports = router;

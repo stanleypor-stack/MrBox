@@ -296,6 +296,26 @@ const SECCIONES = {
   },
 
   items: {
+    /*
+      EL CATALOGO SE EDITA ACA.
+
+      Y cambiar el VALOR de un objeto repreciar todas las cajas que lo
+      contienen: el precio sale de los premios, asi que si cambia uno,
+      cambian las cajas. Lo hace el servidor y avisa cuantas toco.
+    */
+    editor: {
+      cosa: "items",
+      campos: [
+        { campo: "name", rotulo: "admin.field.name", ancho: true },
+        { campo: "brand" },
+        { campo: "category" },
+        { campo: "valueSc", tipo: "sc", ayuda: "admin.help.valor" },
+        { campo: "rarity", opciones: ["blue", "purple", "pink", "red", "gold"] },
+        { campo: "shippable", tipo: "siNo" },
+        { campo: "active", rotulo: "admin.field.live", tipo: "siNo" },
+      ],
+    },
+
     ruta: "/admin/items",
     busca: true,
     porPagina: 50,
@@ -433,6 +453,24 @@ const SECCIONES = {
   /* ══ Marketing ═══════════════════════════════════════════════════ */
 
   races: {
+    /*
+      LAS CARRERAS SE CREAN Y SE EDITAN.
+
+      Mientras estan al aire. Una cerrada ya pago: el servidor no deja
+      tocarla, porque los premios pagados tienen que seguir cuadrando
+      con lo que dice la fila.
+    */
+    editor: {
+      cosa: "races",
+      borrar: true,
+      campos: [
+        { campo: "tipo", rotulo: "admin.field.raceKind", opciones: ["daily", "weekly", "monthly"] },
+        { campo: "premioTotalSc", tipo: "sc", ejemplo: "10000" },
+        { campo: "desde", tipo: "fecha" },
+        { campo: "hasta", tipo: "fecha" },
+        { campo: "reparto", ancho: true, ejemplo: "30, 18, 12, 9, 7, 6, 5, 5, 4, 4", ayuda: "admin.help.reparto" },
+      ],
+    },
     ruta: "/admin/races",
     ancho: "1000px",
     w: "1fr 1fr .9fr 1.4fr 1fr 1.1fr .9fr",
@@ -448,6 +486,19 @@ const SECCIONES = {
   },
 
   challenges: {
+    editor: {
+      cosa: "challenges",
+      borrar: true,
+      campos: [
+        { campo: "caja", campoReal: "box", ejemplo: "black-card", ayuda: "admin.help.caja" },
+        { campo: "multiplicador", tipo: "numero", ejemplo: "100" },
+        { campo: "premioSc", tipo: "sc", ejemplo: "300" },
+        { campo: "cupos", tipo: "numero", ejemplo: "3" },
+        { campo: "desde", tipo: "fecha" },
+        { campo: "hasta", tipo: "fecha" },
+        { campo: "activo", rotulo: "admin.field.live", tipo: "siNo", porDefecto: true },
+      ],
+    },
     ruta: "/admin/challenges",
     ancho: "900px",
     w: "2fr .8fr 1fr 1fr 1.2fr .9fr",
@@ -496,6 +547,21 @@ const SECCIONES = {
   },
 
   promotions: {
+    editor: {
+      cosa: "promotions",
+      borrar: true,
+      campos: [
+        { campo: "clave", rotulo: "admin.field.key", ejemplo: "vip-boost" },
+        { campo: "orden", tipo: "numero", porDefecto: 1 },
+        { campo: "titulo", tipo: "idiomas", ancho: true, ayuda: "admin.help.idiomas" },
+        { campo: "texto", tipo: "idiomas", ancho: true },
+        { campo: "boton", tipo: "idiomas" },
+        { campo: "destino", ejemplo: "/vip" },
+        { campo: "desde", tipo: "fecha" },
+        { campo: "hasta", tipo: "fecha" },
+        { campo: "activa", rotulo: "admin.field.live", tipo: "siNo", porDefecto: true },
+      ],
+    },
     ruta: "/admin/promotions",
     ancho: "900px",
     w: ".6fr 1.2fr 2fr 1fr 1fr .8fr",
@@ -510,6 +576,25 @@ const SECCIONES = {
   },
 
   promo: {
+    numeros: (d, vm) => [
+      { rotulo: vm.$t("admin.num.liveCodes"), valor: vm.num(d.vivos) },
+      { rotulo: vm.$t("admin.num.given"), valor: "SC " + vm.plata(d.dadoSc) },
+    ],
+
+    editor: {
+      cosa: "promo",
+      borrar: true,
+      campos: [
+        { campo: "codigo", rotulo: "admin.field.code", ejemplo: "WELCOME3" },
+        { campo: "tipo", rotulo: "admin.field.kind", opciones: ["saldo", "aperturas"], porDefecto: "saldo" },
+        { campo: "montoSc", tipo: "sc", ejemplo: "5" },
+        { campo: "aperturas", tipo: "numero", ejemplo: "3" },
+        { campo: "usosMaximos", tipo: "numero", ejemplo: "1000", ayuda: "admin.help.sinTope" },
+        { campo: "minimoJugadoSc", tipo: "sc", ejemplo: "50" },
+        { campo: "hasta", tipo: "fecha" },
+        { campo: "activo", rotulo: "admin.field.live", tipo: "siNo", porDefecto: true },
+      ],
+    },
     ruta: "/admin/promo",
     ancho: "800px",
     w: "1fr 1.4fr 1fr 1fr 1fr .8fr",
@@ -524,6 +609,20 @@ const SECCIONES = {
   },
 
   banners: {
+    editor: {
+      cosa: "banners",
+      borrar: true,
+      campos: [
+        { campo: "clave", rotulo: "admin.field.key", ejemplo: "reward" },
+        { campo: "orden", tipo: "numero", porDefecto: 1 },
+        { campo: "foto", ancho: true, ejemplo: "/img/banners/banner-50k.png" },
+        { campo: "titulo", rotulo: "admin.field.titleKey", ejemplo: "banners.rewardTitle", ayuda: "admin.help.claveDeIdioma" },
+        { campo: "sub", ejemplo: "banners.rewardSub" },
+        { campo: "cta", ejemplo: "banners.rewardCta" },
+        { campo: "destino", ejemplo: "/vip" },
+        { campo: "visible", rotulo: "admin.field.shown", tipo: "siNo", porDefecto: true },
+      ],
+    },
     ruta: "/admin/banners",
     ancho: "860px",
     w: ".6fr 2fr 1.4fr 1.6fr .8fr",
@@ -628,6 +727,18 @@ const SECCIONES = {
 
   team: {
     ruta: "/admin/team",
+    anchoDeAcciones: "260px",
+    /*
+      EL RANGO SE CAMBIA DESDE ACA.
+
+      Solo el dueno, y nunca sobre uno mismo: el servidor lo rebota. Un
+      dueno que se saca el rango por error deja el panel sin dueno.
+    */
+    acciones: (f) => (f.rank === "owner" ? [] : [
+      { clave: "admin", texto: "admin.act.makeAdmin", ruta: (x) => `/admin/team/${x._id}`, cuerpo: () => ({ rank: "admin" }) },
+      { clave: "support", texto: "admin.act.makeSupport", clase: "ad-b--suave", ruta: (x) => `/admin/team/${x._id}`, cuerpo: () => ({ rank: "support" }) },
+      { clave: "quitar", texto: "admin.act.makePlayer", clase: "ad-b--mal", ruta: (x) => `/admin/team/${x._id}`, cuerpo: () => ({ rank: "user" }) },
+    ]),
     ancho: "800px",
     w: "1fr 1.6fr .8fr 1.2fr",
     columnas: [

@@ -192,6 +192,43 @@ const settingsSchema = new mongoose.Schema(
       tiradasGratisPorItem: { type: Number, default: 1 },
     },
 
+    /*
+      LOS NUEVE RANGOS VIP.
+
+      Estaban en el codigo. Aca se pueden mover sin desplegar: cuanto
+      hay que jugar para cada uno, su color y cuanto devuelve por
+      semana. Vacio quiere decir "los de fabrica" (ver services/vip).
+    */
+    rangosVip: {
+      type: [
+        {
+          nombre: { type: String, required: true },
+          desde: { type: Number, required: true, min: 0 },
+          color: { type: String, default: "#3f7cf0" },
+          rakebackSemanal: { type: Number, default: 0, min: 0, max: 0.5 },
+        },
+      ],
+      default: [],
+    },
+
+    /*
+      LAS FILAS DE LA PORTADA.
+
+      Que se muestra y en que orden. La REGLA de cada fila sigue en el
+      codigo --"las 14 mas abiertas" es una consulta-- pero esconder
+      una o moverla no necesita desplegar nada.
+    */
+    portada: {
+      type: [
+        {
+          id: { type: String, required: true },
+          orden: { type: Number, default: 0 },
+          visible: { type: Boolean, default: true },
+        },
+      ],
+      default: [],
+    },
+
     /* ── La cinta de Live Pulls ──────────────────────────────────────── */
 
     /**
