@@ -18,6 +18,8 @@ router.use("/races", require("./races"));
 router.use("/vip", require("./vip"));
 router.use("/promotions", require("./promotions"));
 router.use("/challenges", require("./challenges"));
+router.use("/support", require("./support"));
+router.use("/admin", require("./admin"));
 
 /* Para saber si el servidor esta vivo sin tener que mirar un registro. */
 router.get("/health", (req, res) => res.json({ success: true, ok: true, at: new Date() }));

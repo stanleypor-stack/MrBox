@@ -15,12 +15,48 @@ const mongoose = require("mongoose");
  * fila huérfana que nadie sabe si todavía se usa.
  */
 
+/*
+  LAS RESPUESTAS GUARDADAS QUE VIENEN DE FABRICA.
+
+  Viven afuera del esquema porque el `default` de mongoose solo corre
+  cuando se CREA el documento, y el documento de perillas se creo el
+  primer dia: una perilla agregada despues nunca ve su valor por
+  defecto. El servicio las usa cuando la lista esta vacia.
+*/
+const RESPUESTAS_POR_DEFECTO = [
+  {
+    titulo: "Where is my order?",
+    texto: "Thanks for writing. Your order is being packed and you will get the tracking number here as soon as it ships.",
+  },
+  {
+    titulo: "Why do I need to verify?",
+    texto: "Verification protects your account and is required before any redemption or shipment. You can do it in Profile, then Verification.",
+  },
+  {
+    titulo: "How long does a redemption take?",
+    texto: "Redemptions are reviewed and paid within 24 hours once your verification is approved.",
+  },
+  {
+    titulo: "Closing",
+    texto: "Happy to help. I am closing this conversation, but write again any time and it reopens.",
+  },
+];
+
 const settingsSchema = new mongoose.Schema(
   {
     /* Solo puede haber uno. La clave fija lo garantiza en la base. */
     key: { type: String, default: "main", unique: true, immutable: true },
 
-    siteName: { type: String, default: "MR BOX" },
+    /*
+      EL NOMBRE Y EL MANTENIMIENTO, UNA SOLA VEZ.
+
+      Estaban dos veces --`siteName` y `nombreDelSitio`, `maintenance` y
+      `mantenimiento`-- porque la segunda se agrego despues sin mirar la
+      primera. Dos campos para lo mismo terminan con el panel guardando
+      en uno y el sitio leyendo el otro, que es exactamente lo que
+      pasaba: el panel mostraba el nombre vacio.
+    */
+    siteName: { type: String, default: "MR BOX", trim: true, maxlength: 60 },
     maintenance: { type: Boolean, default: false },
 
     /* ── Las cajas ───────────────────────────────────────────────────── */
@@ -91,6 +127,15 @@ const settingsSchema = new mongoose.Schema(
      */
     vecesAJugarElBono: { type: Number, default: 1, min: 0 },
 
+
+    /*
+      MODO MANTENIMIENTO: `maintenance`, arriba.
+
+      Prendido, el sitio se ve pero no se puede abrir ni jugar nada. Es
+      lo que se usa para migrar la base sin que una apertura quede a
+      medio hacer en el medio.
+    */
+
     /*
       LOS POZOS DE LAS TRES CARRERAS.
 
@@ -125,6 +170,29 @@ const settingsSchema = new mongoose.Schema(
       tiradasGratisPorItem: { type: Number, default: 1 },
     },
 
+    /* ── La cinta de Live Pulls ──────────────────────────────────────── */
+
+    /**
+     * EL VOLUMEN DE LA CINTA.
+     *
+     * La cinta de la portada muestra lo que se gana en el sitio. Con el
+     * sitio recien abierto esta quieta, y una cinta quieta no invita a
+     * nadie: `relleno` la llena con aperturas de adorno mientras tanto.
+     *
+     * No tocan la base ni el libro: viven en memoria y no le dan un
+     * premio a nadie (ver services/feed). El dia que haya aperturas de
+     * verdad se apaga aca y la cinta sigue sola.
+     */
+    pulls: {
+      relleno: { type: Boolean, default: true },
+      /** Cuantas por minuto. El prototipo hace una por segundo. */
+      porMinuto: { type: Number, default: 60, min: 1, max: 600 },
+      /** Cada cuantas de cada cien son de un premio barato. */
+      baratosPct: { type: Number, default: 85, min: 0, max: 100 },
+      /** Hasta cuanto vale "barato". */
+      topeSc: { type: Number, default: 10, min: 0 },
+    },
+
     /* ── Soporte ─────────────────────────────────────────────────────── */
 
     soporte: {
@@ -138,6 +206,28 @@ const settingsSchema = new mongoose.Schema(
        */
       respuestaAutomatica: { type: Boolean, default: true },
       horarioMostrado: { type: String, default: "24/7" },
+
+      /**
+       * LAS RESPUESTAS GUARDADAS.
+       *
+       * Las cuatro preguntas que se repiten --donde esta mi pedido, por
+       * que pide verificacion, cuanto tarda un canje-- se contestan
+       * veinte veces por dia. Guardarlas no es pereza: es que la
+       * vigesima persona reciba la misma respuesta correcta que la
+       * primera, y no una version apurada de las seis de la tarde.
+       *
+       * Se editan desde el panel y se insertan en el cuadro de texto:
+       * nunca se mandan solas.
+       */
+      respuestas: {
+        type: [
+          {
+            titulo: { type: String, default: "", trim: true, maxlength: 60 },
+            texto: { type: String, default: "", trim: true, maxlength: 2000 },
+          },
+        ],
+        default: () => RESPUESTAS_POR_DEFECTO.map((r) => ({ ...r })),
+      },
     },
   },
   { timestamps: true }
@@ -157,3 +247,4 @@ settingsSchema.statics.leer = async function leer() {
 };
 
 module.exports = mongoose.model("Settings", settingsSchema);
+module.exports.RESPUESTAS_POR_DEFECTO = RESPUESTAS_POR_DEFECTO;

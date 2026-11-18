@@ -1,0 +1,295 @@
+const SupportThread = require("../../database/models/SupportThread");
+const Settings = require("../../database/models/Settings");
+const { errorDe } = require("../../utils/errors");
+
+/**
+ * SOPORTE.
+ *
+ * El globito del sitio y la bandeja del panel son el mismo mostrador
+ * visto de los dos lados: acá están las reglas y las dos pantallas solo
+ * las usan.
+ *
+ * LA RESPUESTA AUTOMATICA ES UN CODIGO
+ *
+ * "Gracias, te contestamos en unos minutos" no se guarda como frase: se
+ * guarda `SUPPORT_AUTO_REPLY` y la pantalla lo dice en el idioma del que
+ * escribió. Alguien que escribe en alemán y recibe la respuesta
+ * automática en inglés ya entendió que del otro lado no hay nadie.
+ *
+ * UNA CONVERSACION ABIERTA POR VEZ
+ *
+ * Abrir diez conversaciones por el mismo problema no ayuda a nadie: ni
+ * al que escribe --le contestan en tres lugares-- ni al equipo. Si hay
+ * una abierta, el mensaje nuevo va ahí.
+ */
+
+/* Cuántas conversaciones puede llegar a tener una cuenta. */
+const TOPE_POR_JUGADOR = 50;
+
+/** El resumen que va en la lista. */
+function resumir(hilo, opciones) {
+  const paraElEquipo = !!(opciones && opciones.paraElEquipo);
+  const ultimo = hilo.mensajes.length ? hilo.mensajes[hilo.mensajes.length - 1] : null;
+  const visto = paraElEquipo ? hilo.leidoPorElEquipoEl : hilo.leidoPorElJugadorEl;
+  const esperaRespuesta = paraElEquipo ? hilo.ultimoFueDelJugador : !hilo.ultimoFueDelJugador;
+
+  return {
+    _id: hilo._id,
+    asunto: hilo.asunto,
+    estado: hilo.estado,
+    ultimo: ultimo ? { texto: ultimo.texto, codigo: ultimo.codigo, deAdmin: ultimo.deAdmin } : null,
+    ultimoMensajeEl: hilo.ultimoMensajeEl,
+    /* El puntito: hay algo que no vi y que no escribí yo. */
+    sinLeer: esperaRespuesta && (!visto || visto < hilo.ultimoMensajeEl),
+    cuantosMensajes: hilo.mensajes.length,
+  };
+}
+
+/** La conversación entera, para dibujarla. */
+function completo(hilo) {
+  return Object.assign(resumir(hilo), {
+    asignado: hilo.asignado || null,
+    mensajes: hilo.mensajes.map((m) => ({
+      _id: m._id,
+      deAdmin: m.deAdmin,
+      nombre: m.nombre,
+      texto: m.texto,
+      codigo: m.codigo,
+      createdAt: m.createdAt,
+    })),
+  });
+}
+
+/* ── Lo que hace el jugador ────────────────────────────────────────── */
+
+async function mias(userId) {
+  const hilos = await SupportThread.find({ user: userId })
+    .sort({ ultimoMensajeEl: -1 })
+    .limit(TOPE_POR_JUGADOR)
+    .lean();
+
+  return hilos.map((h) => resumir(h));
+}
+
+async function ver(userId, hiloId) {
+  const hilo = await SupportThread.findOne({ _id: hiloId, user: userId });
+  if (!hilo) throw errorDe("NOT_FOUND");
+
+  /* Abrirlo es haberlo leído. */
+  hilo.leidoPorElJugadorEl = new Date();
+  await hilo.save();
+
+  return completo(hilo);
+}
+
+/**
+ * Escribe el jugador.
+ *
+ * Sin `hiloId`, sigue la conversación abierta si hay una y abre una
+ * nueva si no. Con `hiloId`, escribe en esa.
+ */
+async function escribir(datos) {
+  const texto = String(datos.texto || "").trim();
+  if (!texto) throw errorDe("MESSAGE_REQUIRED");
+
+  let hilo = null;
+
+  if (datos.hiloId) {
+    hilo = await SupportThread.findOne({ _id: datos.hiloId, user: datos.userId });
+    if (!hilo) throw errorDe("NOT_FOUND");
+  } else if (!datos.nueva) {
+    /* Sin decir cuál y sin pedir una nueva: sigue la que está abierta. */
+    hilo = await SupportThread.findOne({ user: datos.userId, estado: { $ne: "closed" } })
+      .sort({ ultimoMensajeEl: -1 });
+  }
+
+  if (!hilo) {
+    const cuantos = await SupportThread.countDocuments({ user: datos.userId });
+    if (cuantos >= TOPE_POR_JUGADOR) throw errorDe("TOO_MANY_THREADS");
+
+    hilo = new SupportThread({ user: datos.userId, asunto: texto.slice(0, 120) });
+  }
+
+  /*
+    DONDE CAE UN MENSAJE.
+
+    Con un hilo: ahí, aunque esté cerrado --y volverlo a abrir es lo
+    correcto: "volvió a pasar lo del pedido" tiene que seguir donde
+    está el contexto, no en una conversación nueva vacía.
+
+    Con "Nueva": una nueva, siempre. Es un tema distinto.
+
+    Sin nada: la que esté abierta. Es el caso del que escribe desde el
+    inicio del globito sin mirar la lista.
+
+    Pero solo si se escribe ADENTRO de esa conversación: "volvió a
+    pasar lo del pedido" sigue el hilo donde está todo el contexto. El
+    botón "Nueva" del globito no manda ningún hilo y entonces abre una
+    nueva, que es lo correcto para un problema distinto: una sola
+    conversación eterna con cuatro temas mezclados no la puede contestar
+    nadie.
+  */
+  hilo.agregar({ deAdmin: false, autor: datos.userId, nombre: datos.nombre || "", texto });
+  hilo.leidoPorElJugadorEl = new Date();
+
+  /* Y la respuesta automática, una sola vez por conversación: en cada
+     mensaje sería un loro. */
+  const cfg = await Settings.leer();
+  const prendida = !(cfg && cfg.soporte && cfg.soporte.respuestaAutomatica === false);
+  const yaEsta = hilo.mensajes.some((m) => m.codigo === "SUPPORT_AUTO_REPLY");
+
+  if (prendida && !yaEsta) {
+    hilo.agregar({
+      deAdmin: true,
+      texto: "Thanks! An agent will reply here shortly.",
+      codigo: "SUPPORT_AUTO_REPLY",
+    });
+  }
+
+  await hilo.save();
+  return completo(hilo);
+}
+
+async function cerrarDelJugador(userId, hiloId) {
+  const hilo = await SupportThread.findOne({ _id: hiloId, user: userId });
+  if (!hilo) throw errorDe("NOT_FOUND");
+
+  hilo.estado = "closed";
+  await hilo.save();
+  return completo(hilo);
+}
+
+/** Para el puntito del globito, sin traerse las conversaciones. */
+async function sinLeer(userId) {
+  const hilos = await SupportThread.find({ user: userId })
+    .select("ultimoMensajeEl ultimoFueDelJugador leidoPorElJugadorEl")
+    .lean();
+
+  return hilos.filter((h) => !h.ultimoFueDelJugador
+    && (!h.leidoPorElJugadorEl || h.leidoPorElJugadorEl < h.ultimoMensajeEl)).length;
+}
+
+/* ── Lo que hace el equipo ─────────────────────────────────────────── */
+
+async function bandeja(opciones) {
+  const o = opciones || {};
+  const perPage = Math.min(100, Math.max(1, Number(o.perPage) || 25));
+  const page = Math.max(1, Number(o.page) || 1);
+
+  const filtro = {};
+  if (o.estado) filtro.estado = o.estado;
+  if (o.asignado === "nadie") filtro.asignado = null;
+  else if (o.asignado) filtro.asignado = o.asignado;
+  if (o.q) filtro.asunto = { $regex: String(o.q).slice(0, 60), $options: "i" };
+
+  const [hilos, total, porEstado] = await Promise.all([
+    SupportThread.find(filtro)
+      .sort({ ultimoMensajeEl: -1 })
+      .skip((page - 1) * perPage)
+      .limit(perPage)
+      .populate("user", "username email")
+      .populate("asignado", "username")
+      .lean(),
+    SupportThread.countDocuments(filtro),
+    SupportThread.aggregate([{ $group: { _id: "$estado", n: { $sum: 1 } } }]),
+  ]);
+
+  const cuenta = {};
+  for (const f of porEstado) cuenta[f._id] = f.n;
+
+  return {
+    items: hilos.map((h) => Object.assign(resumir(h, { paraElEquipo: true }), {
+      userId: h.user && h.user._id,
+      username: (h.user && h.user.username) || "",
+      email: (h.user && h.user.email) || "",
+      asignadoA: (h.asignado && h.asignado.username) || "",
+    })),
+    total,
+    page,
+    pages: Math.max(1, Math.ceil(total / perPage)),
+    porEstado: cuenta,
+    esperando: cuenta.waiting_us || 0,
+  };
+}
+
+async function verDelEquipo(hiloId) {
+  const hilo = await SupportThread.findById(hiloId)
+    .populate("user", "username email jugadoSc verificationLevel banned createdAt")
+    .populate("asignado", "username");
+  if (!hilo) throw errorDe("NOT_FOUND");
+
+  hilo.leidoPorElEquipoEl = new Date();
+  await hilo.save();
+
+  const j = hilo.user || {};
+  return Object.assign(completo(hilo), {
+    asignadoA: (hilo.asignado && hilo.asignado.username) || "",
+    jugador: {
+      _id: j._id,
+      username: j.username,
+      email: j.email,
+      jugadoSc: j.jugadoSc,
+      verificationLevel: j.verificationLevel,
+      banned: j.banned,
+      createdAt: j.createdAt,
+    },
+  });
+}
+
+async function responder(datos) {
+  const texto = String(datos.texto || "").trim();
+  if (!texto) throw errorDe("MESSAGE_REQUIRED");
+
+  const hilo = await SupportThread.findById(datos.hiloId);
+  if (!hilo) throw errorDe("NOT_FOUND");
+
+  hilo.agregar({
+    deAdmin: true,
+    autor: datos.admin._id,
+    nombre: datos.admin.username,
+    texto,
+  });
+
+  /* Contestar es hacerse cargo: si no lo tenía nadie, queda suyo. */
+  if (!hilo.asignado) hilo.asignado = datos.admin._id;
+  hilo.leidoPorElEquipoEl = new Date();
+  if (datos.cerrar) hilo.estado = "closed";
+
+  await hilo.save();
+  return completo(hilo);
+}
+
+async function mover(datos) {
+  const hilo = await SupportThread.findById(datos.hiloId);
+  if (!hilo) throw errorDe("NOT_FOUND");
+
+  if (datos.estado) hilo.estado = datos.estado;
+  if (datos.asignado !== undefined) hilo.asignado = datos.asignado || null;
+  hilo.leidoPorElEquipoEl = new Date();
+
+  await hilo.save();
+  return completo(hilo);
+}
+
+/** Las respuestas guardadas, que viven en las perillas del sitio. */
+async function respuestasGuardadas() {
+  const cfg = await Settings.leer();
+  const guardadas = (cfg && cfg.soporte && cfg.soporte.respuestas) || [];
+  /* Vacia quiere decir "nadie las toco todavia", no "no quiero
+     ninguna": el documento de perillas es mas viejo que el campo. */
+  return guardadas.length ? guardadas : Settings.RESPUESTAS_POR_DEFECTO;
+}
+
+module.exports = {
+  mias,
+  ver,
+  escribir,
+  cerrarDelJugador,
+  sinLeer,
+  bandeja,
+  verDelEquipo,
+  responder,
+  mover,
+  respuestasGuardadas,
+  TOPE_POR_JUGADOR,
+};

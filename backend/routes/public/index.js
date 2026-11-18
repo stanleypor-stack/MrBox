@@ -1,5 +1,6 @@
 const express = require("express");
 const Settings = require("../../database/models/Settings");
+const Banner = require("../../database/models/Banner");
 const { errorDe } = require("../../utils/errors");
 const { logger } = require("../../utils/logger");
 
@@ -32,11 +33,43 @@ router.get("/settings", async (req, res) => {
         tasaDeRecompra: cfg.tasaDeRecompra,
         bonoPorDeposito: cfg.bonoPorDeposito,
         envioQuePideNivel3Sc: cfg.envioQuePideNivel3Sc,
-        soporte: cfg.soporte,
+        /*
+          De soporte sale el horario y nada mas.
+
+          Antes salia `cfg.soporte` entero, que desde que existen las
+          respuestas guardadas incluye el texto con el que contesta el
+          equipo. Eso es de adentro: no hace mal, pero no tiene por que
+          estar en una respuesta publica.
+        */
+        soporte: {
+          horarioMostrado: (cfg.soporte && cfg.soporte.horarioMostrado) || "24/7",
+          respuestaAutomatica: !(cfg.soporte && cfg.soporte.respuestaAutomatica === false),
+        },
       },
     });
   } catch (err) {
     logger.error("[public] settings:", err.message);
+    return res.status(500).json(errorDe("SOMETHING_WENT_WRONG", {}, 500).aRespuesta());
+  }
+});
+
+/**
+ * LOS BANNERS DE LA PORTADA.
+ *
+ * Vienen de la base para que cambiarlos sea cambiar una fila y no
+ * desplegar el sitio. El texto son CLAVES de idioma: el que mira los
+ * lee en el suyo (ver database/models/Banner).
+ */
+router.get("/banners", async (req, res) => {
+  try {
+    const items = await Banner.find({ visible: true })
+      .sort({ orden: 1 })
+      .select("clave foto titulo sub cta destino")
+      .lean();
+
+    return res.json({ success: true, data: { items } });
+  } catch (err) {
+    logger.error("[public] banners:", err.message);
     return res.status(500).json(errorDe("SOMETHING_WENT_WRONG", {}, 500).aRespuesta());
   }
 });

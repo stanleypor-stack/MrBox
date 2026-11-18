@@ -39,23 +39,21 @@
     <!-- ── El carrusel ──────────────────────────────────────────── -->
     <section class="mb-banners" :aria-label="$t('home.highlights')" aria-roledescription="carousel">
       <div ref="tira" class="mb-banners__tira mb-snap" @scroll.passive="alDeslizar">
-        <div v-for="(b, i) in bannersConArte" :key="i" class="mb-banner" :style="{ background: b.bg }">
-          <div class="mb-rays mb-banner__rayos" aria-hidden="true"></div>
+        <router-link v-for="(b, i) in banners" :key="b.foto" :to="b.a" class="mb-banner">
+          <img
+            class="mb-banner__foto" :src="b.foto" :alt="$t(b.title)"
+            :loading="i === 0 ? 'eager' : 'lazy'" :fetchpriority="i === 0 ? 'high' : 'auto'"
+          >
 
-          <div class="mb-banner__arte" aria-hidden="true">
-            <div class="mb-banner__halo" :style="{ background: b.glow }"></div>
-            <div class="mb-art mb-float2 mb-banner__p1" :style="{ backgroundPosition: b.p1 }"></div>
-            <div class="mb-art mb-float mb-banner__p2" :style="{ backgroundPosition: b.p2 }"></div>
-            <div class="mb-art mb-float3 mb-banner__p3" :style="{ backgroundPosition: b.p3 }"></div>
-          </div>
-
-          <div class="mb-banner__texto">
-            <span class="mb-banner__kicker">{{ $t(b.kicker) }}</span>
+          <!-- En el telefono la foto se recorta al arte y el texto va
+               encima: entera, la letra del banner queda de 4px. -->
+          <span class="mb-banner__velo" aria-hidden="true"></span>
+          <span class="mb-banner__texto">
             <span class="mb-banner__titulo">{{ $t(b.title) }}</span>
             <span class="mb-banner__sub">{{ $t(b.sub) }}</span>
-            <router-link :to="b.a" class="mb-banner__cta">{{ $t(b.cta) }}</router-link>
-          </div>
-        </div>
+            <span class="mb-banner__cta">{{ $t(b.cta) }}</span>
+          </span>
+        </router-link>
       </div>
 
       <div class="mb-banners__puntos">
@@ -94,7 +92,7 @@
       </div>
 
       <div class="mb-pulls__via">
-        <div class="mb-row mb-pulls__fila">
+        <transition-group name="mb-pull" tag="div" class="mb-row mb-pulls__fila">
           <router-link
             v-for="p in pulls" :key="p._id" :to="`/boxes/${p.boxSlug}`" class="mb-pull-card"
           >
@@ -115,7 +113,7 @@
               <span class="mb-sc mb-sc--13" aria-hidden="true">SC</span>{{ corto(p.premio.valueSc) }}
             </span>
           </router-link>
-        </div>
+        </transition-group>
         <div class="mb-pulls__desvanece" aria-hidden="true"></div>
       </div>
     </section>
@@ -326,24 +324,28 @@ export default {
       abierta: -1,
       filas: [],
       pulls: [],
+      relojPulls: null,
       tickets: [],
       cargando: true,
       regalo: 3,
       actual: 0,
-      /* Los cuatro banners del diseño, con su color y su destino. */
+      /*
+        LOS CUATRO BANNERS.
+
+        El arte es el que mando Dani, tal cual, y por eso NO se dibuja
+        con sprites como antes: es una foto por banner. El texto sigue
+        viviendo en los idiomas porque la foto solo se lee en el
+        telefono, donde se recorta al arte y el titulo va encima.
+      */
       banners: [
-        { kicker: "banners.carsKicker", title: "banners.carsTitle", sub: "banners.carsSub",
-          cta: "banners.carsCta", bg: "#14306a", glow: "#d24a55", a: "/boxes?sort=caras",
-          filtro: (c) => /car|auto|porsche|audi|bmw|moto|harley|gta/i.test(c.name + c.category) },
-        { kicker: "banners.goldKicker", title: "banners.goldTitle", sub: "banners.goldSub",
-          cta: "banners.goldCta", bg: "#2a2a5e", glow: "#e0a21a", a: "/boxes?search=gold",
-          filtro: (c) => /gold|bullion|diamond|ice/i.test(c.name) },
-        { kicker: "banners.watchKicker", title: "banners.watchTitle", sub: "banners.watchSub",
-          cta: "banners.watchCta", bg: "#0f2f58", glow: "#1d7fbf", a: "/boxes?category=Watches",
-          filtro: (c) => /watch|rolex|hublot|heuer|first class/i.test(c.name + c.category) },
-        { kicker: "banners.luxKicker", title: "banners.luxTitle", sub: "banners.luxSub",
-          cta: "banners.luxCta", bg: "#1b2457", glow: "#6a4fe0", a: "/boxes?min=200&sort=caras",
-          filtro: (c) => c.priceSc >= 100 },
+        { foto: "/img/banners/banner-50k.png", title: "banners.rewardTitle",
+          sub: "banners.rewardSub", cta: "banners.rewardCta", a: "/vip" },
+        { foto: "/img/banners/banner-luxury.png", title: "banners.luxTitle",
+          sub: "banners.luxSub", cta: "banners.luxCta", a: "/boxes?sort=caras" },
+        { foto: "/img/banners/banner-race.png", title: "banners.raceTitle",
+          sub: "banners.raceSub", cta: "banners.raceCta", a: "/races/weekly" },
+        { foto: "/img/banners/banner-gta.png", title: "banners.gtaTitle",
+          sub: "banners.gtaSub", cta: "banners.gtaCta", a: "/promotions" },
       ],
     };
   },
@@ -383,46 +385,6 @@ export default {
       ];
     },
 
-    /**
-     * Los banners, con el arte de cajas DE VERDAD.
-     *
-     * Derivado y no guardado: calculado una vez al cargar quedaba viejo
-     * --y si fallaba, los tres huecos caían en la posición 0% 0% de la
-     * lámina, que es la primera caja: por eso salían tres Black Card
-     * iguales en vez de tres cajas distintas.
-     *
-     * Cada banner busca cajas de su tema, como el diseño, y si no
-     * encuentra sigue con las que haya: un banner con arte repetido es
-     * feo, pero uno vacío es peor.
-     */
-    bannersConArte() {
-      const todas = this.filas.flatMap((f) => f.items);
-      if (!todas.length) return this.banners;
-
-      const pos = (c) => {
-        const s = c && sprite(c.imageUrl);
-        return s ? s.estilo.backgroundPosition : null;
-      };
-
-      return this.banners.map((b, i) => {
-        /* Primero las de su tema; después, cualquiera, salteando las ya
-           usadas para que no se repitan dentro del mismo banner. */
-        const suyas = todas.filter(b.filtro);
-        const resto = todas.filter((c) => !suyas.includes(c));
-        const fuente = [...suyas, ...resto];
-        const usadas = [];
-
-        const elegir = (n) => {
-          for (let k = 0; k < fuente.length; k += 1) {
-            const c = fuente[(n * 7 + k + i * 3) % fuente.length];
-            if (!usadas.includes(c)) { usadas.push(c); return pos(c); }
-          }
-          return pos(fuente[0]);
-        };
-
-        return { ...b, p1: elegir(0), p2: elegir(1), p3: elegir(2) };
-      });
-    },
   },
 
   methods: {
@@ -450,6 +412,17 @@ export default {
     corto(n) {
       const v = Number(n || 0);
       return v >= 1000 ? (v / 1000).toFixed(1) + "K" : v.toFixed(2);
+    },
+
+    async traerPulls() {
+      try {
+        const { data } = await api.get("/boxes/feed/latest", { params: { limit: 24 } });
+        this.pulls = data.data;
+      } catch (err) {
+        /* La cinta es decoracion: si falla, se queda con lo que tenia.
+           Un cartel rojo en la portada porque no entro un pull seria
+           peor que la cinta quieta. */
+      }
     },
 
     /** Mueve una fila de cajas con las flechas de su cabecera. */
@@ -495,14 +468,28 @@ export default {
     async traer() {
       this.cargando = true;
       try {
-        const [filas, feed, cfg] = await Promise.all([
+        const [filas, feed, cfg, banners] = await Promise.all([
           api.get("/boxes/rows"),
           api.get("/boxes/feed/latest", { params: { limit: 24 } }),
           api.get("/public/settings").catch(() => null),
+          api.get("/public/banners").catch(() => null),
         ]);
         this.filas = filas.data.data;
         this.pulls = feed.data.data;
         if (cfg) this.regalo = cfg.data.data.aperturasDeRegalo;
+
+        /*
+          Los banners los manda el servidor para que cambiarlos no sea
+          desplegar el sitio. Si el pedido falla quedan los de adentro:
+          una portada sin el carrusel se ve rota, y el respaldo son
+          exactamente los mismos cuatro.
+        */
+        const deLaBase = banners && banners.data.data.items;
+        if (deLaBase && deLaBase.length) {
+          this.banners = deLaBase.map((b) => ({
+            foto: b.foto, title: b.titulo, sub: b.sub, cta: b.cta, a: b.destino,
+          }));
+        }
 
         /* Los tickets de las gratis: las cajas baratas, que es lo que
            conviene abrir con un regalo. */
@@ -517,7 +504,22 @@ export default {
     },
   },
 
-  created() { this.traer(); },
+  /**
+   * LA CINTA SE MUEVE SOLA.
+   *
+   * Cada cuatro segundos pide las ultimas y `:key` hace el resto: las
+   * que ya estaban no se vuelven a dibujar y la nueva entra con su
+   * animacion. Con la pestaña escondida no pide nada: un sitio abierto
+   * en una pestaña olvidada no tiene por que pedir toda la noche.
+   */
+  created() {
+    this.traer();
+    this.relojPulls = window.setInterval(() => {
+      if (!document.hidden) this.traerPulls();
+    }, 4000);
+  },
+
+  beforeDestroy() { window.clearInterval(this.relojPulls); },
 };
 </script>
 
@@ -718,11 +720,18 @@ export default {
 .mb-banners {
   position: relative;
   margin-top: 18px;
-  height: 300px;
+  /* La proporcion del arte, para que entre entero y sin recortes. */
+  aspect-ratio: 1326 / 281;
+  max-height: 300px;
   border-radius: 24px;
   overflow: hidden;
   border: 1px solid #2a4a85;
-  @include en-celular { height: 230px; }
+  background: #150b2e;
+
+  @include en-celular {
+    aspect-ratio: auto;
+    height: 188px;
+  }
 }
 
 .mb-banners__tira {
@@ -742,84 +751,71 @@ export default {
   height: 100%;
   overflow: hidden;
   scroll-snap-align: start;
+  color: #fff;
+  text-decoration: none;
+  @include foco;
 }
 
-// Los rayos que giran despacio detrás del arte.
-.mb-banner__rayos {
-  position: absolute;
-  left: 72%;
-  top: 50%;
-  width: 1100px;
-  height: 1100px;
-  margin: -550px 0 0 -550px;
-  background: repeating-conic-gradient(from 0deg, rgba(255, 255, 255, .07) 0deg 6deg, rgba(255, 255, 255, 0) 6deg 18deg);
+.mb-banner__foto {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /*
+    En la pc la caja tiene la proporcion del arte, asi que `cover` no
+    recorta nada; solo entra a jugar arriba de 1.416px de ancho, donde
+    el alto queda clavado en 300.
+  */
+  object-fit: cover;
+  object-position: center;
+
+  /* En el telefono la foto entera serian 76px de alto: se recorta al
+     arte de la derecha y el texto del banner lo pone el sitio. */
+  @include en-celular { object-position: 78% center; }
 }
 
-.mb-banner__arte { position: absolute; top: 0; right: 0; bottom: 0; width: 56%; }
+.mb-banner__velo,
+.mb-banner__texto { display: none; }
 
-.mb-banner__halo {
-  position: absolute;
-  right: -60px;
-  top: -60px;
-  width: 420px;
-  height: 420px;
-  border-radius: 50%;
-  opacity: .55;
-}
+@include en-celular {
+  .mb-banner__velo {
+    display: block;
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(8, 6, 26, .94) 0%, rgba(8, 6, 26, .86) 42%, rgba(8, 6, 26, 0) 86%);
+  }
 
-.mb-banner__p1 { position: absolute; left: 6%; top: 70px; width: 190px; height: 190px; }
-.mb-banner__p2 { position: absolute; left: 34%; top: 22px; width: 240px; height: 240px; }
-.mb-banner__p3 { position: absolute; left: 66%; top: 92px; width: 180px; height: 180px; }
-
-.mb-banner__texto {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 52%;
-  min-width: 320px;
-  box-sizing: border-box;
-  padding: 36px 48px 56px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 12px;
-
-  @include en-celular { width: 78%; min-width: 0; padding: 20px 22px 44px; }
-}
-
-.mb-banner__kicker {
-  align-self: flex-start;
-  padding: 5px 12px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, .14);
-  font-weight: 800;
-  font-size: 13px;
-  letter-spacing: .08em;
+  .mb-banner__texto {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 74%;
+    box-sizing: border-box;
+    padding: 18px 20px 34px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 9px;
+  }
 }
 
 .mb-banner__titulo {
   font-family: $fuente-cartel;
-  font-size: 52px;
-  line-height: 1.02;
-  white-space: nowrap;
-  text-shadow: 0 4px 0 #1c4fc4, 0 8px 0 #0b2266;
-  @include en-celular { font-size: 30px; white-space: normal; }
+  font-size: 26px;
+  line-height: 1.04;
+  text-shadow: 0 3px 0 #1c4fc4, 0 6px 0 #0b2266;
 }
 
-.mb-banner__sub { font-weight: 700; font-size: 15px; color: #d7e4ff; @include en-celular { font-size: 13px; } }
+.mb-banner__sub { font-weight: 700; font-size: 12px; line-height: 1.35; color: #d7e4ff; }
 
 .mb-banner__cta {
   align-self: flex-start;
-  padding: 14px 24px;
-  border-radius: 14px;
+  padding: 9px 16px;
+  border-radius: 12px;
   background: $amarillo-v;
   color: $azul-tinta;
   font-weight: 900;
-  font-size: 15px;
-  text-decoration: none;
-  @include foco;
-  &:hover { color: $azul-tinta; filter: brightness(1.06); }
+  font-size: 13px;
 }
 
 .mb-banners__puntos {
@@ -896,6 +892,11 @@ export default {
   .mb-pulls__dos { display: none; }
   .mb-pulls__una, .mb-pulls__punto { display: block; }
 }
+
+/* La que llega entra corriendo desde la izquierda, como el prototipo. */
+.mb-pull-enter-active { transition: transform .32s ease, opacity .32s ease; }
+.mb-pull-enter { transform: translateX(-26px) scale(.96); opacity: 0; }
+.mb-pull-move { transition: transform .32s ease; }
 
 .mb-pulls__via { position: relative; flex: 1; min-width: 0; }
 

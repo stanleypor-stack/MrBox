@@ -102,6 +102,61 @@ const routes = [
     component: () => import(/* webpackChunkName: "entrar" */ "@/views/AuthView.vue"),
   },
 
+  /*
+    EL PANEL.
+
+    Cuelga todo de /admin con el armazon afuera y la pantalla adentro,
+    asi el menu lateral no se vuelve a dibujar al cambiar de seccion.
+
+    LAS VEINTITANTAS LISTAS SON UNA SOLA PANTALLA
+
+    `AdminLista` las dibuja a todas desde `secciones.js` (ver el
+    comentario de ese archivo). Las que de verdad son otra cosa --el
+    tablero, un jugador, una caja, soporte, la configuracion-- tienen
+    su componente.
+
+    El guardia de verdad esta en el SERVIDOR: cada ruta de /api/admin
+    pide rango. Esto solo decide que se dibuja.
+  */
+  {
+    path: "/admin",
+    component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminShell.vue"),
+    children: [
+      { path: "", redirect: "dashboard" },
+      {
+        path: "dashboard",
+        name: "admin",
+        component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminDashboard.vue"),
+      },
+      {
+        path: "players/:id",
+        name: "adminPlayer",
+        component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminJugador.vue"),
+      },
+      {
+        path: "boxes/:id",
+        name: "adminBox",
+        component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminCaja.vue"),
+      },
+      {
+        path: "support",
+        name: "adminSupport",
+        component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminSoporte.vue"),
+      },
+      {
+        path: "settings",
+        name: "adminSettings",
+        component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminSettings.vue"),
+      },
+      /* Y el resto: una lista, la que diga la direccion. */
+      {
+        path: ":seccion",
+        name: "adminList",
+        component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminLista.vue"),
+      },
+    ],
+  },
+
   /* Lo que no existe vuelve al catalogo, que es de donde arranca todo. */
   { path: "*", redirect: "/boxes" },
 ];

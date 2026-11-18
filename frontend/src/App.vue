@@ -12,7 +12,7 @@
         @depositar="avisarPendiente('wallet.depositSoon')"
         @retirar="avisarPendiente('wallet.withdrawSoon')"
         @canjear="avisarPendiente('wallet.redeemSoon')"
-        @soporte="avisarPendiente('support.soon')"
+        @soporte="pedirSoporte"
       />
 
       <!--
@@ -32,7 +32,7 @@
             por debajo de la barra lateral, que es como lo dibuja el
             diseno.
           -->
-          <MbPie @soporte="avisarPendiente('support.soon')" />
+          <MbPie @soporte="pedirSoporte" />
         </main>
       </div>
 
@@ -46,9 +46,13 @@
         <MbLateral cajon @click.native="talVezCerrar" />
       </div>
 
-      <MbMenuDeCuenta v-if="abierto.cuenta" @soporte="avisarPendiente('support.soon')" />
+      <MbMenuDeCuenta v-if="abierto.cuenta" @soporte="pedirSoporte" />
 
       <MbBarraDeAbajo />
+
+      <!-- El globito de soporte: en todas las pantallas del sitio,
+           nunca en el panel, que tiene su propia bandeja. -->
+      <MbSoporte :abrir="pedidos" />
     </template>
 
     <output v-if="aviso" class="mb-aviso" :class="'mb-aviso--' + aviso.tono" aria-live="polite">
@@ -64,6 +68,7 @@ import MbLateral from "@/components/MbLateral.vue";
 import MbBarraDeAbajo from "@/components/MbBarraDeAbajo.vue";
 import MbMenuDeCuenta from "@/components/MbMenuDeCuenta.vue";
 import MbPie from "@/components/MbPie.vue";
+import MbSoporte from "@/components/MbSoporte.vue";
 
 /**
  * EL ARMAZON DEL SITIO.
@@ -90,14 +95,28 @@ import MbPie from "@/components/MbPie.vue";
  */
 export default {
   name: "App",
-  components: { MbCabecera, MbLateral, MbBarraDeAbajo, MbMenuDeCuenta, MbPie },
+  components: { MbCabecera, MbLateral, MbBarraDeAbajo, MbMenuDeCuenta, MbPie, MbSoporte },
+
+  /*
+    `pedidos` es un contador y no un booleano a proposito: con un
+    booleano, cerrar el globito y volver a tocar "Soporte" en el menu no
+    lo abriria otra vez, porque el valor ya estaba en `true`.
+  */
+  data() { return { pedidos: 0 }; },
 
   computed: {
     ...mapState(["aviso", "abierto"]),
 
-    /** Las pantallas que se dibujan solas, sin cabecera ni lateral. */
+    /**
+     * Las pantallas que se dibujan solas, sin cabecera ni lateral.
+     *
+     * Registrarse y entrar, que en el diseño son una tarjeta sola; y el
+     * PANEL entero, que tiene su propio armazón: con la cabecera del
+     * sitio arriba quedarían dos barras, dos menúes y dos buscadores.
+     */
     sinArmazon() {
-      return ["signup", "login"].includes(this.$route.name);
+      return ["signup", "login"].includes(this.$route.name)
+        || this.$route.path.startsWith("/admin");
     },
   },
 
@@ -135,6 +154,12 @@ export default {
      */
     talVezCerrar(e) {
       if (e.target.closest("a, button")) this.cerrar();
+    },
+
+    /* Cabecera, pie y menú de cuenta abren el mismo globito. */
+    pedirSoporte() {
+      this.pedidos += 1;
+      this.cerrar();
     },
 
     /* Lo que todavía no está: se avisa, en vez de un botón mudo. */

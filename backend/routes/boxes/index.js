@@ -4,6 +4,7 @@ const rateLimit = require("express-rate-limit");
 const Box = require("../../database/models/Box");
 const BoxOpen = require("../../database/models/BoxOpen");
 const Item = require("../../database/models/Item");
+const feed = require("../../services/feed");
 const InventoryItem = require("../../database/models/InventoryItem");
 const UserSeed = require("../../database/models/UserSeed");
 const Settings = require("../../database/models/Settings");
@@ -274,37 +275,56 @@ router.get("/feed/latest", autorizar(false), async (req, res) => {
       `find` por los objetos que hagan falta es un pedido mas; uno por
       cada fila serian veinte.
     */
-    const faltan = filas
-      .filter((f) => f.premio && !f.premio.imageUrl && f.premio.item)
-      .map((f) => f.premio.item);
+    const sinFoto = filas.filter((f) => f.premio && !f.premio.imageUrl);
+    const porId = sinFoto.filter((f) => f.premio.item).map((f) => f.premio.item);
+    const porNombre = sinFoto.filter((f) => !f.premio.item).map((f) => f.premio.name);
 
     const arte = new Map();
-    if (faltan.length) {
-      const objetos = await Item.find({ _id: { $in: faltan } }).select("imageUrl").lean();
-      for (const o of objetos) arte.set(String(o._id), o.imageUrl || "");
+    if (porId.length || porNombre.length) {
+      /* Por id, y los mas viejos --que ni id guardaban-- por nombre: una
+         tarjeta sin foto se ve como un error del sitio. */
+      const objetos = await Item.find({
+        $or: [{ _id: { $in: porId } }, { name: { $in: porNombre } }],
+      }).select("name imageUrl").lean();
+
+      for (const o of objetos) {
+        arte.set(String(o._id), o.imageUrl || "");
+        arte.set(o.name, o.imageUrl || "");
+      }
     }
 
-    return res.json({
-      success: true,
-      data: filas.map((f) => ({
-        _id: f._id,
-        /* El nombre se tapa a medias, como en el diseno: se reconoce el
-           propio sin exponer el de los demas. */
-        username: enmascarar(f.user && f.user.username),
-        avatarUrl: (f.user && f.user.avatarUrl) || "",
-        boxName: f.boxName,
-        boxSlug: f.boxSlug,
-        premio: {
-          name: f.premio.name,
-          valueSc: sc(f.premio.valueSc),
-          rarity: f.premio.rarity,
-          /* Si el recibo es viejo y no la trae, se busca en el
-             catalogo: mejor una foto de hoy que un hueco. */
-          imageUrl: f.premio.imageUrl || arte.get(String(f.premio.item || "")) || "",
-        },
-        createdAt: f.createdAt,
-      })),
-    });
+    const reales = filas.map((f) => ({
+      _id: f._id,
+      /* El nombre se tapa a medias, como en el diseno: se reconoce el
+         propio sin exponer el de los demas. */
+      username: enmascarar(f.user && f.user.username),
+      avatarUrl: (f.user && f.user.avatarUrl) || "",
+      boxName: f.boxName,
+      boxSlug: f.boxSlug,
+      premio: {
+        name: f.premio.name,
+        valueSc: sc(f.premio.valueSc),
+        rarity: f.premio.rarity,
+        /* Si el recibo es viejo y no la trae, se busca en el
+           catalogo: mejor una foto de hoy que un hueco. */
+        imageUrl: f.premio.imageUrl
+          || arte.get(String(f.premio.item || ""))
+          || arte.get(f.premio.name)
+          || "",
+      },
+      createdAt: f.createdAt,
+    }));
+
+    /*
+      Y el relleno, SOLO para llenar la cinta.
+
+      Lo de verdad va siempre primero: si hubo veinte aperturas en el
+      ultimo minuto, la cinta es de verdad entera y esto no se ve. Lo de
+      relleno no toca la base ni el libro (ver services/feed).
+    */
+    const relleno = await feed.ambiente(Math.max(0, cuantas - reales.length));
+
+    return res.json({ success: true, data: reales.concat(relleno) });
   } catch (err) {
     return responderError(res, err, "feed");
   }

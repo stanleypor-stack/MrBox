@@ -57,6 +57,11 @@ const CODIGOS = {
   NOTHING_TO_CLAIM: "There is nothing to claim yet.",
   ALREADY_CLAIMED: "You already claimed that one.",
 
+  /* Panel */
+  REASON_REQUIRED: "A reason is required.",
+  NOT_ON_YOURSELF: "You cannot do that to your own account.",
+  TRACKING_REQUIRED: "A carrier and a tracking number are required.",
+
   /* Carreras */
   RACE_NOT_FOUND: "That race does not exist.",
 
@@ -96,7 +101,12 @@ const CODIGOS = {
   CODE_ALREADY_USED: "You already used that code.",
   OWN_CODE: "You cannot use your own code.",
 
+  /* Soporte */
+  MESSAGE_REQUIRED: "Write a message first.",
+  TOO_MANY_THREADS: "You have too many open conversations.",
+
   /* General */
+  NOT_FOUND: "That does not exist.",
   RATE_LIMITED: "Too many tries. Wait a moment.",
   SOMETHING_WENT_WRONG: "Something went wrong.",
 };
