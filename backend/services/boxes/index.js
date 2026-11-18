@@ -205,7 +205,14 @@ async function abrir({ user, slug, veces = 1, demo = false }) {
         name: p.name, valueSc: p.valueSc, chance: p.chance, rarity: p.rarity,
       })),
       indicePremio: indice,
-      premio: { name: premio.name, valueSc: sc(premio.valueSc), chance: premio.chance, rarity: premio.rarity },
+      premio: {
+        name: premio.name,
+        valueSc: sc(premio.valueSc),
+        chance: premio.chance,
+        rarity: premio.rarity,
+        item: premio.item || null,
+        imageUrl: premio.imageUrl || "",
+      },
       inventoryItem: guardado._id,
     });
 

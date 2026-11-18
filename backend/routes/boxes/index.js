@@ -3,6 +3,7 @@ const rateLimit = require("express-rate-limit");
 
 const Box = require("../../database/models/Box");
 const BoxOpen = require("../../database/models/BoxOpen");
+const Item = require("../../database/models/Item");
 const InventoryItem = require("../../database/models/InventoryItem");
 const UserSeed = require("../../database/models/UserSeed");
 const Settings = require("../../database/models/Settings");
@@ -266,6 +267,23 @@ router.get("/feed/latest", autorizar(false), async (req, res) => {
       .select("boxName boxSlug premio createdAt user")
       .lean();
 
+    /*
+      Las fotos que falten, de una sola vez.
+
+      Los recibos de antes de que se copiara el arte no la tienen. Un
+      `find` por los objetos que hagan falta es un pedido mas; uno por
+      cada fila serian veinte.
+    */
+    const faltan = filas
+      .filter((f) => f.premio && !f.premio.imageUrl && f.premio.item)
+      .map((f) => f.premio.item);
+
+    const arte = new Map();
+    if (faltan.length) {
+      const objetos = await Item.find({ _id: { $in: faltan } }).select("imageUrl").lean();
+      for (const o of objetos) arte.set(String(o._id), o.imageUrl || "");
+    }
+
     return res.json({
       success: true,
       data: filas.map((f) => ({
@@ -276,7 +294,14 @@ router.get("/feed/latest", autorizar(false), async (req, res) => {
         avatarUrl: (f.user && f.user.avatarUrl) || "",
         boxName: f.boxName,
         boxSlug: f.boxSlug,
-        premio: { name: f.premio.name, valueSc: sc(f.premio.valueSc), rarity: f.premio.rarity },
+        premio: {
+          name: f.premio.name,
+          valueSc: sc(f.premio.valueSc),
+          rarity: f.premio.rarity,
+          /* Si el recibo es viejo y no la trae, se busca en el
+             catalogo: mejor una foto de hoy que un hueco. */
+          imageUrl: f.premio.imageUrl || arte.get(String(f.premio.item || "")) || "",
+        },
         createdAt: f.createdAt,
       })),
     });

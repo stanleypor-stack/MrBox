@@ -94,10 +94,26 @@ export default {
   watch: {
     /* Cambiar de pantalla cierra todo lo que esté abierto encima. */
     $route() { this.cerrar(); },
+
+    "abierto.cajon": function (v) { this.trabarElFondo(v); },
   },
+
+  beforeDestroy() { this.trabarElFondo(false); },
 
   methods: {
     cerrar() { this.$store.commit("abrir", null); },
+
+    /**
+     * Con el cajon abierto, la pagina de atras se queda quieta.
+     *
+     * Sin esto, el dedo que quiere deslizar el menu termina moviendo
+     * el catalogo que esta abajo, y al cerrar el menu la pagina quedo
+     * en otro lado.
+     */
+    trabarElFondo(trabar) {
+      if (typeof document === "undefined") return;
+      document.body.style.overflow = trabar ? "hidden" : "";
+    },
 
     /**
      * Tocar un enlace del cajón lo cierra.
@@ -154,9 +170,24 @@ export default {
 
 /* ── El cajón del menú ────────────────────────────────────────────── */
 
+/*
+  EL CAJON VA FIJO A LA PANTALLA, NO AL LARGO DE LA PAGINA.
+
+  Estaba `absolute` adentro del cuerpo, que mide lo que mida el
+  contenido. En una pagina larga el cajon medía dos mil pixeles: su
+  propio scroll no servia para nada, y al bajar aparecia la pagina de
+  atras debajo del menu.
+
+  Fijo al hueco entre la cabecera y la barra de abajo, siempre tapa lo
+  que tiene que tapar y se desliza solo.
+*/
 .mb-cajon {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  top: 72px;
+  bottom: 72px;
+  left: 50%;
+  width: min(480px, 100%);
+  transform: translateX(-50%);
   z-index: 20;
   overflow: hidden;
   @include en-escritorio { display: none; }

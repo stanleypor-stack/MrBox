@@ -45,7 +45,8 @@ export default {
     "next": "Próximo",
     "close": "Fechar",
     "total": "Total",
-    "freeOpens": "grátis"
+    "freeOpens": "grátis",
+    "back": "Voltar"
   },
   "box": {
     "openFor": "Abrir por {price}",
@@ -74,7 +75,15 @@ export default {
       "medium": "Médio",
       "high": "Alto",
       "extreme": "Extremo"
-    }
+    },
+    "reelAria": "Abrindo {name}",
+    "contents": "O que pode sair",
+    "rarity": "Raridade",
+    "bestOdds": "Melhores chances",
+    "on": "Sim",
+    "off": "Não",
+    "open": "ABRIR",
+    "highestValue": "Mais valiosos"
   },
   "support": {
     "title": "Suporte",
@@ -332,7 +341,19 @@ export default {
     "highlights": "Destaques",
     "livePulls": "AO VIVO",
     "viewAll": "Ver todas",
-    "livePullsTwoLines": "SAÍDAS<br>AO VIVO"
+    "livePullsTwoLines": "SAÍDAS<br>AO VIVO",
+    "top10": "Top 10",
+    "topAria": "Número {n}: {name}",
+    "brands": "Marcas",
+    "brandAria": "Ver caixas de {name}",
+    "howTitle": "Como funciona o MR BOX",
+    "how1": "Escolha uma caixa",
+    "how1Sub": "Veja caixas misteriosas cheias de itens de primeira.",
+    "how2": "Abra",
+    "how2Sub": "Abra itens de verdade das marcas que você ama.",
+    "how3": "Fique ou venda",
+    "how3Sub": "Troque por saldo o que não quiser, ou peça o envio.",
+    "faqTitle": "Perguntas frequentes"
   },
   "rows": {
     "popular": "As mais abertas",
@@ -437,7 +458,9 @@ export default {
     "publish": "Enviar para revisão",
     "signUpToPublish": "Cadastre-se para publicar",
     "sentForReview": "Enviada para revisão",
-    "reviewNote": "Revisamos cada caixa antes de publicar. Prêmios e chances aparecem para o jogador antes de abrir."
+    "reviewNote": "Revisamos cada caixa antes de publicar. Prêmios e chances aparecem para o jogador antes de abrir.",
+    "chanceFor": "Chance de {name}",
+    "payout": "soma SC {amount} ao preço"
   },
   "dashboard": {
     "creator": "CRIADOR",
@@ -541,6 +564,47 @@ export default {
       "passport": "Passaporte",
       "id": "RG",
       "licence": "CNH"
+    }
+  },
+  "rarity": {
+    "blue": "Azul",
+    "purple": "Roxo",
+    "pink": "Rosa",
+    "red": "Vermelho",
+    "gold": "Dourado"
+  },
+  "faq": {
+    "what": {
+      "q": "O que é o MR BOX?",
+      "a": "Um site de caixas misteriosas. Escolha, abra e ganhe itens de verdade de marcas como Rolex, Apple, Nike e Pokemon. Cada prêmio e sua chance aparecem antes."
+    },
+    "fair": {
+      "q": "O MR BOX é justo?",
+      "a": "Cada caixa mostra todos os prêmios e as chances exatas, e cada abertura usa um sorteio verificável que você mesmo pode conferir."
+    },
+    "deposit": {
+      "q": "Como adiciono saldo?",
+      "a": "Toque no + ao lado do seu saldo, escolha a moeda e a rede, e envie para o endereço mostrado. O saldo atualiza sozinho."
+    },
+    "missing": {
+      "q": "Meu depósito não chegou",
+      "a": "Confira a moeda, a rede e o valor mínimo. Depósitos precisam de algumas confirmações. Se ainda assim não chegou, fale com o suporte com o ID da transação."
+    },
+    "howOpen": {
+      "q": "Como abro uma caixa?",
+      "a": "Escolha uma caixa, veja os prêmios e as chances e toque em Abrir. Dá para abrir até 4 de uma vez, usar o modo rápido ou testar grátis."
+    },
+    "support": {
+      "q": "Como falo com o suporte?",
+      "a": "O suporte atende 24/7 pelo chat. Toque no balãozinho no canto inferior direito."
+    },
+    "afterWin": {
+      "q": "O que acontece quando eu ganho?",
+      "a": "Tudo o que você ganha vai direto para o inventário. De lá dá para vender, pedir envio ou guardar."
+    },
+    "track": {
+      "q": "Posso rastrear meu pedido?",
+      "a": "Sim. O status e o código de rastreio ficam em Meus pedidos, no seu perfil."
     }
   }
 };

@@ -45,7 +45,8 @@ export default {
     "next": "Successivo",
     "close": "Chiudi",
     "total": "Totale",
-    "freeOpens": "gratis"
+    "freeOpens": "gratis",
+    "back": "Indietro"
   },
   "box": {
     "openFor": "Apri per {price}",
@@ -74,7 +75,15 @@ export default {
       "medium": "Medio",
       "high": "Alto",
       "extreme": "Estremo"
-    }
+    },
+    "reelAria": "Apertura di {name}",
+    "contents": "Cosa c’è dentro",
+    "rarity": "Rarità",
+    "bestOdds": "Probabilità migliori",
+    "on": "Sì",
+    "off": "No",
+    "open": "APRI",
+    "highestValue": "Più preziosi"
   },
   "support": {
     "title": "Assistenza",
@@ -332,7 +341,19 @@ export default {
     "highlights": "In evidenza",
     "livePulls": "IN DIRETTA",
     "viewAll": "Vedi tutte",
-    "livePullsTwoLines": "USCITE<br>LIVE"
+    "livePullsTwoLines": "USCITE<br>LIVE",
+    "top10": "Top 10",
+    "topAria": "Numero {n}: {name}",
+    "brands": "Marchi",
+    "brandAria": "Vedi le box {name}",
+    "howTitle": "Come funziona MR BOX",
+    "how1": "Scegli una box",
+    "how1Sub": "Sfoglia box misteriose piene di oggetti di prima qualità.",
+    "how2": "Aprila",
+    "how2Sub": "Apri oggetti veri dei marchi che ami.",
+    "how3": "Tienilo o vendilo",
+    "how3Sub": "Scambia con saldo quello che non vuoi, o fattelo spedire.",
+    "faqTitle": "Domande frequenti"
   },
   "rows": {
     "popular": "Le più aperte",
@@ -437,7 +458,9 @@ export default {
     "publish": "Manda in revisione",
     "signUpToPublish": "Registrati per pubblicare",
     "sentForReview": "Inviata in revisione",
-    "reviewNote": "Controlliamo ogni box prima di pubblicarla. Premi e probabilità sono visibili prima dell’apertura."
+    "reviewNote": "Controlliamo ogni box prima di pubblicarla. Premi e probabilità sono visibili prima dell’apertura.",
+    "chanceFor": "Probabilità di {name}",
+    "payout": "aggiunge SC {amount} al prezzo"
   },
   "dashboard": {
     "creator": "CREATOR",
@@ -541,6 +564,47 @@ export default {
       "passport": "Passaporto",
       "id": "Carta d’identità",
       "licence": "Patente"
+    }
+  },
+  "rarity": {
+    "blue": "Blu",
+    "purple": "Viola",
+    "pink": "Rosa",
+    "red": "Rosso",
+    "gold": "Oro"
+  },
+  "faq": {
+    "what": {
+      "q": "Cos’è MR BOX?",
+      "a": "Un sito di box misteriose. Scegli, apri e vinci oggetti veri di Rolex, Apple, Nike o Pokemon. Ogni premio e la sua probabilità si vedono prima."
+    },
+    "fair": {
+      "q": "MR BOX è equo?",
+      "a": "Ogni box mostra tutti i premi e le probabilità esatte, e ogni apertura usa un sorteggio verificabile che puoi controllare tu."
+    },
+    "deposit": {
+      "q": "Come ricarico?",
+      "a": "Tocca il + accanto al saldo in alto, scegli moneta e rete e invia all’indirizzo mostrato. Il saldo si aggiorna da solo."
+    },
+    "missing": {
+      "q": "Il mio deposito non è arrivato",
+      "a": "Controlla moneta, rete e importo minimo. I depositi richiedono alcune conferme. Se ancora non arriva, scrivi al supporto con l’ID della transazione."
+    },
+    "howOpen": {
+      "q": "Come apro una box?",
+      "a": "Scegli una box, guarda premi e probabilità e premi Apri. Fino a 4 per volta, con modalità veloce, o prova prima gratis."
+    },
+    "support": {
+      "q": "Come contatto l’assistenza?",
+      "a": "L’assistenza è attiva 24/7 in chat. Tocca la nuvoletta in basso a destra."
+    },
+    "afterWin": {
+      "q": "Cosa succede quando vinco?",
+      "a": "Ogni oggetto vinto va nel tuo inventario. Da lì puoi venderlo, fartelo spedire o tenerlo."
+    },
+    "track": {
+      "q": "Posso seguire il mio ordine?",
+      "a": "Sì. Stato e numero di tracciamento sono in I miei ordini, nel profilo."
     }
   }
 };

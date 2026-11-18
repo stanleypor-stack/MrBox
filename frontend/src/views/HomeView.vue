@@ -100,6 +100,16 @@
           >
             <span class="mb-pull-card__marca">MB</span>
             <span v-if="sprPremio(p)" class="mb-prod mb-pull-card__foto" :style="sprPremio(p)" aria-hidden="true"></span>
+            <img
+              v-else-if="p.premio.imageUrl" class="mb-pull-card__foto"
+              :src="p.premio.imageUrl" :alt="p.premio.name"
+            >
+            <span v-else class="mb-pull-card__foto mb-pull-card__sinfoto" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2.5 21 7v10l-9 4.5L3 17V7zM3 7l9 4.5L21 7M12 11.5v10" />
+              </svg>
+            </span>
             <span class="mb-pull-card__nombre">{{ p.premio.name }}</span>
             <span class="mb-pull-card__valor">
               <span class="mb-sc mb-sc--13" aria-hidden="true">SC</span>{{ corto(p.premio.valueSc) }}
@@ -134,6 +144,111 @@
       </div>
     </section>
 
+    <!-- ── Top 10 ───────────────────────────────────────────────── -->
+    <section v-if="top10.length" class="mb-top">
+      <div class="mb-fila__cabeza">
+        <h2>{{ $t('home.top10') }}</h2>
+        <div class="mb-fila__mandos">
+          <router-link to="/boxes?sort=popular" class="mb-fila__todo">{{ $t('home.viewAll') }}</router-link>
+          <div class="mb-flechas">
+            <button type="button" :aria-label="$t('common.previous')" @click="correr('top', -1)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>
+            </button>
+            <span aria-hidden="true"></span>
+            <button type="button" :aria-label="$t('common.next')" @click="correr('top', 1)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8"
+                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div ref="tira-top" class="mb-row mb-top__tira">
+        <router-link
+          v-for="(c, i) in top10" :key="c._id" :to="`/boxes/${c.slug}`"
+          class="mb-top__caja" :aria-label="$t('home.topAria', { n: i + 1, name: c.name })"
+        >
+          <span class="mb-top__tarjeta mb-card" :style="{ background: tinte(c) }">
+            <span class="mb-top__nombre">{{ c.name }}</span>
+            <span v-if="arteDe(c)" class="mb-art mb-top__arte" :class="arteDe(c).clase"
+                  :style="arteDe(c).estilo" aria-hidden="true"></span>
+            <span class="mb-top__precio">
+              <span class="mb-sc mb-sc--15" aria-hidden="true">SC</span>{{ plata(c.priceSc) }}
+            </span>
+          </span>
+          <span class="mb-top__numero" aria-hidden="true">{{ i + 1 }}</span>
+        </router-link>
+      </div>
+    </section>
+
+    <!-- ── Las marcas ───────────────────────────────────────────── -->
+    <section class="mb-marcas">
+      <div class="mb-fila__cabeza">
+        <h2>{{ $t('home.brands') }}</h2>
+        <div class="mb-flechas">
+          <button type="button" :aria-label="$t('common.previous')" @click="correr('marcas', -1)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>
+          </button>
+          <span aria-hidden="true"></span>
+          <button type="button" :aria-label="$t('common.next')" @click="correr('marcas', 1)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+          </button>
+        </div>
+      </div>
+
+      <div ref="tira-marcas" class="mb-row mb-marcas__tira">
+        <router-link
+          v-for="m in MARCAS" :key="m.nombre" class="mb-marca mb-card"
+          :to="{ path: '/boxes', query: { search: m.busca } }"
+          :aria-label="$t('home.brandAria', { name: m.nombre })"
+          :style="{ fontSize: m.tamano, letterSpacing: m.espacio, textTransform: m.caja }"
+        >{{ m.rotulo }}</router-link>
+      </div>
+    </section>
+
+    <!-- ── Como funciona ────────────────────────────────────────── -->
+    <section class="mb-como">
+      <h2>{{ $t('home.howTitle') }}</h2>
+      <div class="mb-como__grilla">
+        <article v-for="(h, i) in comoFunciona" :key="i" class="mb-paso-c">
+          <div class="mb-paso-c__arte" :style="{ background: h.fondo }" aria-hidden="true">
+            <span class="mb-paso-c__rayos"></span>
+            <span v-if="h.arte[0]" class="mb-art mb-paso-c__a1" :style="h.arte[0]"></span>
+            <span v-if="h.arte[1]" class="mb-art mb-paso-c__a2" :style="h.arte[1]"></span>
+            <span v-if="h.arte[2]" class="mb-art mb-paso-c__a3" :style="h.arte[2]"></span>
+          </div>
+          <div class="mb-paso-c__texto">
+            <h3>{{ $t(h.titulo) }}</h3>
+            <p>{{ $t(h.texto) }}</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ── Las preguntas ────────────────────────────────────────── -->
+    <section class="mb-faq">
+      <h2>{{ $t('home.faqTitle') }}</h2>
+      <div class="mb-faq__grilla">
+        <div
+          v-for="(q, i) in PREGUNTAS" :key="q" class="mb-faq__item"
+          :class="{ 'is-abierta': abierta === i }"
+        >
+          <button type="button" :aria-expanded="abierta === i ? 'true' : 'false'" @click="abierta = abierta === i ? -1 : i">
+            {{ $t('faq.' + q + '.q') }}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+                 :style="{ transform: abierta === i ? 'rotate(180deg)' : 'rotate(0deg)' }">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+          <p v-if="abierta === i">{{ $t('faq.' + q + '.a') }}</p>
+        </div>
+      </div>
+    </section>
+
     <p v-if="cargando" class="mb-vacio">{{ $t('common.loading') }}</p>
   </div>
 </template>
@@ -147,6 +262,44 @@ import { sprite } from "@/utils/sprite";
 const COLORES = {
   blue: "#3f7cf0", purple: "#8b4fe0", pink: "#e0418f", red: "#e2424b", gold: "#f5b80a",
 };
+
+/* El color de cada categoria, el mismo de las tarjetas. */
+const TINTES = {
+  Audio: "#1f8fc7", Collectables: "#b13d8c", Community: "#4a5b80", Cookware: "#d27d16",
+  Fashion: "#c2449b", Gadgets: "#16936d", Games: "#6a4fe0", Gaming: "#5a4fd6",
+  Memorabilia: "#b8862a", Mix: "#2f6fe0", Motorcycles: "#d24a55", Tech: "#1d7fbf",
+  "Trading Cards": "#e0a21a", Watches: "#8a6a3a",
+};
+
+/*
+  LAS QUINCE MARCAS DEL DISENO.
+
+  Van escritas, no con su logo: el logo de Rolex en nuestro sitio es
+  una marca ajena puesta donde no corresponde. El nombre con la
+  tipografia justa dice lo mismo y no mete a nadie en un problema.
+
+  `busca` es lo que se le pide al catalogo al tocarla.
+*/
+const MARCAS = [
+  { nombre: "Apple", rotulo: "Apple", busca: "Apple", tamano: "30px", espacio: "0", caja: "none" },
+  { nombre: "Rolex", rotulo: "Rolex", busca: "Rolex", tamano: "24px", espacio: ".28em", caja: "uppercase" },
+  { nombre: "PlayStation", rotulo: "PS5", busca: "PS5", tamano: "24px", espacio: ".02em", caja: "none" },
+  { nombre: "Pokemon", rotulo: "Pokemon", busca: "Pokemon", tamano: "26px", espacio: "0", caja: "none" },
+  { nombre: "Porsche", rotulo: "Porsche", busca: "Porsche", tamano: "20px", espacio: ".32em", caja: "uppercase" },
+  { nombre: "Nike", rotulo: "Nike", busca: "Nike", tamano: "30px", espacio: ".02em", caja: "uppercase" },
+  { nombre: "Gucci", rotulo: "Gucci", busca: "Gucci", tamano: "24px", espacio: ".26em", caja: "uppercase" },
+  { nombre: "Louis Vuitton", rotulo: "LV", busca: "LV", tamano: "18px", espacio: ".12em", caja: "uppercase" },
+  { nombre: "Supreme", rotulo: "Supreme", busca: "Supreme", tamano: "24px", espacio: "0", caja: "none" },
+  { nombre: "Chanel", rotulo: "Chanel", busca: "Chanel", tamano: "22px", espacio: ".3em", caja: "uppercase" },
+  { nombre: "Nintendo", rotulo: "Nintendo", busca: "Nintendo", tamano: "24px", espacio: "0", caja: "none" },
+  { nombre: "Hublot", rotulo: "Hublot", busca: "Hublot", tamano: "22px", espacio: ".24em", caja: "uppercase" },
+  { nombre: "BMW", rotulo: "BMW", busca: "BMW", tamano: "28px", espacio: ".12em", caja: "uppercase" },
+  { nombre: "Jordan", rotulo: "Jordan", busca: "Jordan", tamano: "24px", espacio: ".1em", caja: "uppercase" },
+  { nombre: "Bose", rotulo: "Bose", busca: "Bose", tamano: "28px", espacio: ".04em", caja: "uppercase" },
+];
+
+/* Las ocho preguntas del diseno. El texto vive en los idiomas. */
+const PREGUNTAS = ["what", "fair", "deposit", "missing", "howOpen", "support", "afterWin", "track"];
 
 /**
  * LA PORTADA.
@@ -168,6 +321,9 @@ export default {
 
   data() {
     return {
+      MARCAS,
+      PREGUNTAS,
+      abierta: -1,
       filas: [],
       pulls: [],
       tickets: [],
@@ -194,6 +350,38 @@ export default {
 
   computed: {
     ...mapGetters(["entro", "aperturasGratis"]),
+
+    /**
+     * LAS DIEZ MAS ABIERTAS.
+     *
+     * Salen de la fila "popular", que el servidor ya ordeno por
+     * aperturas. No es un pedido mas: es la misma lista, cortada.
+     */
+    top10() {
+      const popular = this.filas.find((f) => f.id === "popular");
+      return popular ? popular.items.slice(0, 10) : [];
+    },
+
+    /**
+     * Los tres pasos, con arte de cajas DE VERDAD.
+     *
+     * Como los banners: derivado de lo que haya cargado. Con arte fijo,
+     * el dia que una caja sale del catalogo quedan tres huecos.
+     */
+    comoFunciona() {
+      const todas = this.filas.flatMap((f) => f.items);
+      const pos = (c) => {
+        const s = c && sprite(c.imageUrl);
+        return s ? { backgroundPosition: s.estilo.backgroundPosition } : null;
+      };
+      const tres = (desde) => [0, 1, 2].map((k) => pos(todas[(desde + k * 5) % (todas.length || 1)]));
+
+      return [
+        { titulo: "home.how1", texto: "home.how1Sub", fondo: "#2a6be8", arte: tres(0) },
+        { titulo: "home.how2", texto: "home.how2Sub", fondo: "#47b83a", arte: tres(2) },
+        { titulo: "home.how3", texto: "home.how3Sub", fondo: "#7a3be0", arte: tres(4) },
+      ];
+    },
 
     /**
      * Los banners, con el arte de cajas DE VERDAD.
@@ -244,6 +432,13 @@ export default {
       });
     },
     color(r) { return COLORES[r] || COLORES.blue; },
+
+    arteDe(c) { return sprite(c.imageUrl); },
+
+    tinte(c) {
+      const color = TINTES[c.category] || TINTES.Mix;
+      return `radial-gradient(circle at 50% 58%, ${color} 0%, #12213a 72%)`;
+    },
 
     /**
      * El precio corto de una tarjeta de Live Pulls.
@@ -739,7 +934,17 @@ export default {
   line-height: 1.4;
 }
 
-.mb-pull-card__foto { width: 64px; height: 64px; @include en-celular { width: 52px; height: 52px; } }
+.mb-pull-card__foto {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  @include en-celular { width: 52px; height: 52px; }
+}
+
+.mb-pull-card__sinfoto {
+  color: rgba(255, 255, 255, .35);
+  svg { width: 100%; height: 100%; }
+}
 
 .mb-pull-card__nombre {
   text-align: center;
@@ -839,4 +1044,198 @@ export default {
 }
 
 .mb-fila__caja { flex: none; width: 190px; @include en-celular { width: 150px; } }
+
+/* ── Top 10 ───────────────────────────────────────────────────────── */
+
+.mb-top { margin-top: 36px; }
+.mb-top__tira { display: flex; gap: 10px; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 6px; }
+
+.mb-top__caja {
+  position: relative;
+  flex: none;
+  width: clamp(160px, 22vw, 220px);
+  height: clamp(210px, 28vw, 270px);
+  text-decoration: none;
+  color: #fff;
+  @include foco;
+  &:hover { color: #fff; }
+}
+
+// La tarjeta ocupa el 78% de la derecha: el 22% que queda a la
+// izquierda es para que el numerazo asome por detras.
+.mb-top__tarjeta {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 78%;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #23397a;
+  display: block;
+}
+
+.mb-top__nombre {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 12px;
+  z-index: 2;
+  text-align: center;
+  padding: 0 8px;
+  font-family: $fuente-cartel;
+  font-size: clamp(18px, 2.4vw, 24px);
+  line-height: 1;
+  text-shadow: 0 3px 0 $azul-tinta, 0 5px 10px rgba(0, 0, 0, .5);
+}
+
+.mb-top__arte {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  width: 96%;
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%);
+}
+
+.mb-top__precio {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: #2f6fe0;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+// El numero gigante, con su relieve de cuatro capas.
+.mb-top__numero {
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  font-family: $fuente-cartel;
+  font-size: clamp(84px, 11vw, 120px);
+  line-height: 1;
+  color: #eef4ff;
+  text-shadow:
+    0 4px 0 #9cbcf5,
+    0 8px 0 $azul-medio,
+    0 12px 0 $azul-tinta,
+    0 14px 18px rgba(0, 0, 0, .5);
+}
+
+/* ── Las marcas ───────────────────────────────────────────────────── */
+
+.mb-marcas { margin-top: 36px; }
+.mb-marcas__tira { display: flex; gap: 22px; overflow-x: auto; scroll-behavior: smooth; }
+
+.mb-marca {
+  flex: none;
+  width: 180px;
+  height: 96px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, #17505f 0%, #173468 100%);
+  color: #fff;
+  font-weight: 800;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @include foco;
+  &:hover { color: #fff; }
+  @include en-celular { width: 150px; height: 84px; }
+}
+
+/* ── Como funciona ────────────────────────────────────────────────── */
+
+.mb-como { margin-top: 44px; }
+.mb-como h2 { margin: 0 0 18px; font-weight: 800; font-size: 28px; }
+
+.mb-como__grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 30px;
+  @include en-celular { gap: 18px; }
+}
+
+.mb-paso-c { border-radius: 18px; overflow: hidden; background: $panel-alto; }
+
+.mb-paso-c__arte {
+  position: relative;
+  height: 200px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.mb-paso-c__rayos {
+  position: absolute;
+  inset: 0;
+  background: repeating-conic-gradient(from 0deg at 50% 60%, rgba(255, 255, 255, .12) 0deg 6deg, rgba(255, 255, 255, 0) 6deg 20deg);
+}
+
+.mb-paso-c__a1, .mb-paso-c__a2, .mb-paso-c__a3 { position: absolute; }
+.mb-paso-c__a1 { left: 4%; top: 46px; width: 132px; height: 132px; transform: rotate(-8deg); }
+.mb-paso-c__a2 { left: 50%; top: 18px; width: 164px; height: 164px; margin-left: -82px; }
+.mb-paso-c__a3 { right: 4%; top: 46px; width: 132px; height: 132px; transform: rotate(8deg); }
+
+.mb-paso-c__texto {
+  padding: 26px 28px 30px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  h3 { margin: 0; font-weight: 800; font-size: 25px; }
+  p { margin: 0; font-size: 16px; line-height: 1.5; color: $texto-3; }
+}
+
+/* ── Las preguntas ────────────────────────────────────────────────── */
+
+.mb-faq { margin-top: 44px; }
+.mb-faq h2 { margin: 0 0 16px; font-weight: 900; font-size: clamp(20px, 3vw, 28px); }
+
+.mb-faq__grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: 12px 16px;
+  align-items: start;
+}
+
+.mb-faq__item {
+  border-radius: 10px;
+  background: $panel-alto;
+  overflow: hidden;
+  transition: background .2s ease;
+
+  &.is-abierta { background: #1a3358; }
+
+  button {
+    width: 100%;
+    min-height: 60px;
+    padding: 0 20px;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 16px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    @include foco;
+
+    svg { flex: none; transition: transform .2s ease; }
+  }
+
+  p { margin: 0; padding: 0 20px 18px; font-size: 14px; line-height: 1.6; color: $texto-3; }
+}
 </style>

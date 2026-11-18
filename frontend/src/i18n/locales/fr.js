@@ -45,7 +45,8 @@ export default {
     "next": "Suivant",
     "close": "Fermer",
     "total": "Total",
-    "freeOpens": "gratuit"
+    "freeOpens": "gratuit",
+    "back": "Retour"
   },
   "box": {
     "openFor": "Ouvrir pour {price}",
@@ -74,7 +75,15 @@ export default {
       "medium": "Moyen",
       "high": "Élevé",
       "extreme": "Extrême"
-    }
+    },
+    "reelAria": "Ouverture de {name}",
+    "contents": "Contenu du coffret",
+    "rarity": "Rareté",
+    "bestOdds": "Meilleures chances",
+    "on": "Oui",
+    "off": "Non",
+    "open": "OUVRIR",
+    "highestValue": "Plus grande valeur"
   },
   "support": {
     "title": "Assistance",
@@ -332,7 +341,19 @@ export default {
     "highlights": "À la une",
     "livePulls": "TIRAGES EN DIRECT",
     "viewAll": "Voir tout",
-    "livePullsTwoLines": "TIRAGES<br>EN DIRECT"
+    "livePullsTwoLines": "TIRAGES<br>EN DIRECT",
+    "top10": "Top 10",
+    "topAria": "Numéro {n} : {name}",
+    "brands": "Marques",
+    "brandAria": "Voir les coffrets {name}",
+    "howTitle": "Comment marche MR BOX",
+    "how1": "Choisis un coffret",
+    "how1Sub": "Parcourez des coffrets mystere remplis d’objets haut de gamme.",
+    "how2": "Ouvre-le",
+    "how2Sub": "Déballez de vrais objets des marques que vous aimez.",
+    "how3": "Garder ou vendre",
+    "how3Sub": "Échangez les gains dont vous ne voulez pas contre du solde, ou faites-les livrer.",
+    "faqTitle": "Questions fréquentes"
   },
   "rows": {
     "popular": "Les plus populaires",
@@ -437,7 +458,9 @@ export default {
     "publish": "Envoyer pour validation",
     "signUpToPublish": "Inscris-toi pour publier",
     "sentForReview": "Envoyé pour validation",
-    "reviewNote": "Notre équipe valide chaque coffret avant sa mise en ligne. Les lots et les chances sont affichés aux joueurs avant l’ouverture."
+    "reviewNote": "Notre équipe valide chaque coffret avant sa mise en ligne. Les lots et les chances sont affichés aux joueurs avant l’ouverture.",
+    "chanceFor": "Chance pour {name}",
+    "payout": "ajoute SC {amount} au prix"
   },
   "dashboard": {
     "creator": "CRÉATEUR",
@@ -541,6 +564,47 @@ export default {
       "passport": "Passeport",
       "id": "Carte d’identité",
       "licence": "Permis de conduire"
+    }
+  },
+  "rarity": {
+    "blue": "Bleu",
+    "purple": "Violet",
+    "pink": "Rose",
+    "red": "Rouge",
+    "gold": "Or"
+  },
+  "faq": {
+    "what": {
+      "q": "Qu’est-ce que MR BOX ?",
+      "a": "Un site de coffrets mystere. Choisissez, ouvrez et gagnez de vrais objets Rolex, Apple, Nike ou Pokemon. Chaque lot et sa chance sont affichés avant."
+    },
+    "fair": {
+      "q": "MR BOX est-il équitable ?",
+      "a": "Chaque coffret affiche tous ses lots et leurs chances exactes, et chaque ouverture utilise un tirage vérifiable que vous pouvez contrôler."
+    },
+    "deposit": {
+      "q": "Comment recharger ?",
+      "a": "Touchez le + à côté de votre solde en haut, choisissez la crypto et le réseau, puis envoyez à l’adresse affichée. Le solde se met à jour tout seul."
+    },
+    "missing": {
+      "q": "Mon dépôt n’est pas arrivé",
+      "a": "Vérifiez la crypto, le réseau et le montant minimum. Les dépôts demandent quelques confirmations. Sinon, écrivez au support avec votre ID de transaction."
+    },
+    "howOpen": {
+      "q": "Comment ouvrir un coffret ?",
+      "a": "Choisissez un coffret, regardez les lots et les chances, puis appuyez sur Ouvrir. Jusqu’à 4 à la fois, en mode rapide, ou essayez d’abord en démo."
+    },
+    "support": {
+      "q": "Comment contacter le support ?",
+      "a": "Le support est disponible 24h/24 par chat. Touchez la bulle en bas à droite."
+    },
+    "afterWin": {
+      "q": "Que se passe-t-il quand je gagne ?",
+      "a": "Chaque objet gagné va dans votre inventaire. De là, revendez-le, faites-le livrer ou gardez-le."
+    },
+    "track": {
+      "q": "Puis-je suivre ma commande ?",
+      "a": "Oui. Le statut et le numéro de suivi sont dans Mes commandes, dans votre profil."
     }
   }
 };

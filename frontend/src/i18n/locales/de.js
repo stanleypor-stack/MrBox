@@ -45,7 +45,8 @@ export default {
     "next": "Weiter",
     "close": "Schließen",
     "total": "Gesamt",
-    "freeOpens": "gratis"
+    "freeOpens": "gratis",
+    "back": "Zurück"
   },
   "box": {
     "openFor": "Für {price} öffnen",
@@ -74,7 +75,15 @@ export default {
       "medium": "Mittel",
       "high": "Hoch",
       "extreme": "Extrem"
-    }
+    },
+    "reelAria": "{name} wird geöffnet",
+    "contents": "Inhalt der Box",
+    "rarity": "Seltenheit",
+    "bestOdds": "Beste Chancen",
+    "on": "An",
+    "off": "Aus",
+    "open": "ÖFFNEN",
+    "highestValue": "Höchster Wert"
   },
   "support": {
     "title": "Support",
@@ -332,7 +341,19 @@ export default {
     "highlights": "Highlights",
     "livePulls": "LIVE-GEWINNE",
     "viewAll": "Alle ansehen",
-    "livePullsTwoLines": "LIVE<br>DROPS"
+    "livePullsTwoLines": "LIVE<br>DROPS",
+    "top10": "Top 10",
+    "topAria": "Nummer {n}: {name}",
+    "brands": "Marken",
+    "brandAria": "{name}-Boxen zeigen",
+    "howTitle": "So funktioniert MR BOX",
+    "how1": "Wähl eine Box",
+    "how1Sub": "Stöbere in Mystery-Boxen voller Top-Artikel.",
+    "how2": "Pack sie aus",
+    "how2Sub": "Pack echte Artikel von Marken aus, die du liebst.",
+    "how3": "Behalten oder verkaufen",
+    "how3Sub": "Tausche ungewollte Gewinne gegen Guthaben oder lass sie dir schicken.",
+    "faqTitle": "Häufige Fragen"
   },
   "rows": {
     "popular": "Beliebte Boxen",
@@ -437,7 +458,9 @@ export default {
     "publish": "Zur Prüfung senden",
     "signUpToPublish": "Zum Veröffentlichen registrieren",
     "sentForReview": "Zur Prüfung geschickt",
-    "reviewNote": "Unser Team prüft jede Box, bevor sie live geht. Preise und Chancen sehen die Spieler vorher."
+    "reviewNote": "Unser Team prüft jede Box, bevor sie live geht. Preise und Chancen sehen die Spieler vorher.",
+    "chanceFor": "Chance für {name}",
+    "payout": "bringt SC {amount} auf den Preis"
   },
   "dashboard": {
     "creator": "CREATOR",
@@ -541,6 +564,47 @@ export default {
       "passport": "Reisepass",
       "id": "Personalausweis",
       "licence": "Führerschein"
+    }
+  },
+  "rarity": {
+    "blue": "Blau",
+    "purple": "Lila",
+    "pink": "Pink",
+    "red": "Rot",
+    "gold": "Gold"
+  },
+  "faq": {
+    "what": {
+      "q": "Was ist MR BOX?",
+      "a": "Eine Mystery-Box-Seite. Wähl eine Box, öffne sie und gewinne echte Artikel von Rolex, Apple, Nike oder Pokemon. Jeder Preis und seine Chance stehen vorher da."
+    },
+    "fair": {
+      "q": "Ist MR BOX fair?",
+      "a": "Jede Box zeigt alle Preise und ihre genauen Chancen vorab, und jede Öffnung nutzt eine nachprüfbare Ziehung, die du selbst kontrollieren kannst."
+    },
+    "deposit": {
+      "q": "Wie lade ich auf?",
+      "a": "Tippe oben auf das + neben deinem Guthaben, wähle Coin und Netzwerk und sende an die angezeigte Adresse. Dein Guthaben aktualisiert sich automatisch."
+    },
+    "missing": {
+      "q": "Meine Einzahlung fehlt",
+      "a": "Prüfe Coin, Netzwerk und Mindestbetrag. Einzahlungen brauchen einige Bestätigungen. Falls sie dann noch fehlt, schreib dem Support mit deiner Transaktions-ID."
+    },
+    "howOpen": {
+      "q": "Wie öffne ich eine Box?",
+      "a": "Wähl eine Box, sieh dir Preise und Chancen an und drück Öffnen. Bis zu 4 auf einmal, mit Schnellmodus, oder erst gratis testen."
+    },
+    "support": {
+      "q": "Wie erreiche ich den Support?",
+      "a": "Der Support ist rund um die Uhr im Live-Chat da. Tippe unten rechts auf die Sprechblase."
+    },
+    "afterWin": {
+      "q": "Was passiert nach einem Gewinn?",
+      "a": "Jeder Gewinn landet direkt in deinem Inventar. Von dort verkaufst du ihn, lässt ihn schicken oder behältst ihn."
+    },
+    "track": {
+      "q": "Kann ich meine Bestellung verfolgen?",
+      "a": "Ja. Status und Sendungsnummer findest du unter Meine Bestellungen in deinem Profil."
     }
   }
 };

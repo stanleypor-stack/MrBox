@@ -25,7 +25,20 @@ const mongoose = require("mongoose");
  */
 
 const premioSorteadoSchema = new mongoose.Schema(
-  { name: String, valueSc: Number, chance: Number, rarity: String },
+  {
+    name: String,
+    valueSc: Number,
+    chance: Number,
+    rarity: String,
+
+    /* A que objeto del catalogo era, y su foto COPIADA.
+
+       El feed de la portada dibuja esto. Sin la copia no tiene nada que
+       mostrar, y buscarlo en el catalogo cada vez deja el hueco el dia
+       que el objeto se da de baja. */
+    item: { type: mongoose.Schema.Types.ObjectId, ref: "Item", default: null },
+    imageUrl: { type: String, default: "" },
+  },
   { _id: false }
 );
 
@@ -54,7 +67,11 @@ const boxOpenSchema = new mongoose.Schema(
     indicePremio: { type: Number, required: true },
 
     /* Lo que salió, copiado. */
-    premio: { type: premioSorteadoSchema, required: true },
+    premio: {
+      /* La foto, copiada. Sin esto el feed de la portada no tiene nada
+         que dibujar: el objeto del catalogo puede haber cambiado de
+         arte, o no existir mas. */
+      imageUrl: { type: String, default: "" }, type: premioSorteadoSchema, required: true },
 
     inventoryItem: { type: mongoose.Schema.Types.ObjectId, ref: "InventoryItem", default: null },
 

@@ -1,57 +1,56 @@
 <template>
-  <section class="mb-ruleta" :aria-label="$t('box.opening')">
-    <!-- Los punteros: arriba y abajo del centro, con sus rayas que se
-         desvanecen. Marcan donde cae el premio. -->
-    <svg class="mb-ruleta__punta mb-ruleta__punta--arriba" width="18" height="14"
-         viewBox="0 0 24 18" fill="none" stroke="#fff" stroke-width="3"
-         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <section class="mb-reel" :aria-label="$t('box.reelAria', { name: nombreDeLaCaja })">
+    <!-- Las marcas de arriba y abajo, que señalan el centro. -->
+    <svg class="mb-reel__flecha mb-reel__flecha--arriba" width="18" height="14" viewBox="0 0 24 18"
+         fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M5 3l7 6 7-6M5 10l7 6 7-6" />
     </svg>
-    <span class="mb-ruleta__raya mb-ruleta__raya--ai" aria-hidden="true"></span>
-    <span class="mb-ruleta__raya mb-ruleta__raya--ad" aria-hidden="true"></span>
+    <span class="mb-reel__raya mb-reel__raya--ai" aria-hidden="true"></span>
+    <span class="mb-reel__raya mb-reel__raya--ad" aria-hidden="true"></span>
 
-    <svg class="mb-ruleta__punta mb-ruleta__punta--abajo" width="18" height="14"
-         viewBox="0 0 24 18" fill="none" stroke="#fff" stroke-width="3"
-         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <svg class="mb-reel__flecha mb-reel__flecha--abajo" width="18" height="14" viewBox="0 0 24 18"
+         fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M5 15l7-6 7 6M5 8l7-6 7 6" />
     </svg>
-    <span class="mb-ruleta__raya mb-ruleta__raya--bi" aria-hidden="true"></span>
-    <span class="mb-ruleta__raya mb-ruleta__raya--bd" aria-hidden="true"></span>
+    <span class="mb-reel__raya mb-reel__raya--bi" aria-hidden="true"></span>
+    <span class="mb-reel__raya mb-reel__raya--bd" aria-hidden="true"></span>
 
-    <div class="mb-ruleta__cintas">
-      <div v-for="(cinta, c) in cintas" :key="c" class="mb-ruleta__via" :style="{ height: altoVia }">
+    <div class="mb-reel__cintas">
+      <div
+        v-for="(cinta, i) in cintas" :key="i"
+        class="mb-reel__pista" :style="{ height: altoDeLaPista }"
+      >
         <div
-          class="mb-ruleta__tira"
-          :style="{
-            transform: `translateX(${cinta.x}px)`,
-            transition: animando ? `transform ${duracion}ms cubic-bezier(.12,.72,.12,1)` : 'none',
-          }"
+          class="mb-reel__tira"
+          :style="{ transform: `translateX(${cinta.x}px)`, transition: transicion }"
         >
           <div
-            v-for="(it, i) in cinta.items" :key="i"
-            class="mb-ruleta__casillero"
-            :style="{ opacity: opacidad(c, i), width: ANCHO_ITEM + 'px' }"
+            v-for="(it, n) in cinta.items" :key="n"
+            class="mb-reel__item"
+            :style="{ opacity: opacidadDe(cinta, n) }"
           >
-            <div class="mb-ruleta__marco" :style="{ transform: `scale(${escala(c, i)})` }">
-              <!-- Los dos rectangulos girados del diseno, que le dan
-                   profundidad al objeto sin ponerle una caja alrededor. -->
-              <span class="mb-ruleta__borde mb-ruleta__borde--a" aria-hidden="true"></span>
-              <span class="mb-ruleta__borde mb-ruleta__borde--b" aria-hidden="true"></span>
+            <div
+              class="mb-reel__caja"
+              :style="{ width: ladoDeLaFoto, transform: `scale(${escalaDe(cinta, n)})` }"
+            >
+              <span class="mb-reel__marco mb-reel__marco--izq" aria-hidden="true"></span>
+              <span class="mb-reel__marco mb-reel__marco--der" aria-hidden="true"></span>
               <span
-                class="mb-ruleta__brillo" aria-hidden="true"
-                :style="{ background: color(it.rarity), opacity: brillo(c, i) }"
+                class="mb-reel__brillo" aria-hidden="true"
+                :style="{ background: color(it.rarity), opacity: brilloDe(cinta, n) }"
               ></span>
-              <div
-                class="mb-prod mb-ruleta__foto" aria-hidden="true"
-                :style="{ backgroundPosition: posicion(it) }"
-              ></div>
+
+              <span
+                v-if="arte(it)" class="mb-prod mb-reel__foto" :class="arte(it).clase"
+                :style="arte(it).estilo" aria-hidden="true"
+              ></span>
+              <img v-else-if="it.imageUrl" class="mb-reel__foto" :src="it.imageUrl" :alt="it.name">
             </div>
 
-            <!-- El nombre solo se lee cuando la cinta freno: durante el
-                 giro es un borron ilegible que marea. -->
-            <div class="mb-ruleta__rotulo" :style="{ visibility: quieta ? 'visible' : 'hidden' }">
-              <span class="mb-ruleta__nombre">{{ it.name }}</span>
-              <span class="mb-ruleta__valor">
+            <!-- El nombre solo aparece en el que salió, cuando frenó. -->
+            <div class="mb-reel__rotulo" :style="{ visibility: ganador(cinta, n) ? 'visible' : 'hidden' }">
+              <span class="mb-reel__nombre">{{ it.name }}</span>
+              <span class="mb-reel__valor">
                 <span class="mb-sc mb-sc--16" aria-hidden="true">SC</span>{{ plata(it.valueSc) }}
               </span>
             </div>
@@ -65,45 +64,93 @@
 <script>
 import { sprite } from "@/utils/sprite";
 
+/*
+  LA GEOMETRIA DE LA CINTA, QUE ES LA DEL DISEÑO.
+
+  Cada casillero mide 120 y entre dos hay 12 de aire: 132 de paso. La
+  tira empieza corrida 60 --medio casillero-- para que el centro de la
+  pantalla caiga en el MEDIO de un casillero y no en la juntura.
+
+  El premio que salió va en el lugar 54 de 64. Los diez de atrás no se
+  ven nunca: están para que el final de la tira no aparezca por la
+  derecha cuando frena.
+*/
+const PASO = 132;
+const GANADOR = 54;
+const CORRIMIENTO = 60;
+const LARGO = 64;
+
+/* De dónde arranca la tira: cinco casilleros adentro. */
+const ARRANQUE = -(PASO * 5 + CORRIMIENTO);
+
+const DURACION = 5200;
+const DURACION_RAPIDA = 1600;
+
 const COLORES = {
   blue: "#3f7cf0", purple: "#8b4fe0", pink: "#e0418f", red: "#e2424b", gold: "#f5b80a",
 };
 
-/* Los numeros del diseno. */
-const ANCHO_ITEM = 120;
-const GAP = 12;
-const PASO = ANCHO_ITEM + GAP;   // 132: lo que avanza la cinta por objeto
-const LARGO = 64;                // cuantos objetos tiene la tira
-const GANADOR = 54;              // en que posicion cae el premio
-const DESDE = 3;                 // donde arranca, para que ya se vea llena
-
+/**
+ * LA CINTA QUE GIRA.
+ *
+ * Una por caja cuando se abren varias: en el diseño van una debajo de
+ * otra, no cuatro cintas en fila.
+ *
+ * QUIEN DECIDE
+ *
+ * El servidor, siempre. Acá llega el premio ya sorteado y la cinta se
+ * arma PARA QUE CAIGA AHI: el lugar 54 es el que salió y el resto se
+ * rellena al azar. Al revés --sortear acá-- cualquiera con la consola
+ * abierta gana lo que quiera.
+ *
+ * POR QUE `setTimeout` Y NO `requestAnimationFrame`
+ *
+ * Porque rAF se congela cuando la pestaña no está adelante. Quien abre
+ * cuatro cajas y se va a otra pestaña volvía a una cinta clavada en el
+ * aire para siempre.
+ */
 export default {
   name: "MbRuleta",
 
   props: {
-    /** Los premios posibles de la caja, para armar el relleno. */
-    premios: { type: Array, required: true },
-    /** Lo que el SERVIDOR decidio. Uno por caja abierta. */
-    ganados: { type: Array, default: () => [] },
-    /** Cuantas cintas dibujar mientras no hay resultado todavia. */
+    /** Los premios de la caja, para rellenar la tira. */
+    premios: { type: Array, default: () => [] },
+    /** Cuántas cintas: una por caja abierta. */
     cuantas: { type: Number, default: 1 },
     rapido: { type: Boolean, default: false },
+    nombreDeLaCaja: { type: String, default: "" },
   },
 
   data() {
     return {
-      ANCHO_ITEM,
       cintas: [],
       animando: false,
-      quieta: true,
-      /* Mientras esto es `true`, nada puede reiniciar la cinta. */
       girandoAhora: false,
+      quieta: true,
     };
   },
 
   computed: {
-    duracion() { return this.rapido ? 1600 : 5200; },
-    altoVia() { return this.cuantas > 2 ? "150px" : "190px"; },
+    duracion() { return this.rapido ? DURACION_RAPIDA : DURACION; },
+
+    transicion() {
+      return this.animando ? `transform ${this.duracion}ms cubic-bezier(.08,.82,.17,1)` : "none";
+    },
+
+    /* Con más cintas, cada una es más baja: cuatro de 230 no entran en
+       una pantalla de teléfono. Son los números del diseño. */
+    altoDeLaPista() {
+      if (this.cuantas > 2) return "170px";
+      if (this.cuantas > 1) return "195px";
+      return "230px";
+    },
+
+    ladoDeLaFoto() { return this.cuantas > 1 ? "96px" : "120px"; },
+  },
+
+  watch: {
+    cuantas() { this.reposo(); },
+    premios() { this.reposo(); },
   },
 
   methods: {
@@ -112,148 +159,120 @@ export default {
         minimumFractionDigits: 2, maximumFractionDigits: 2,
       });
     },
+
+    arte(it) { return sprite(it.imageUrl); },
     color(r) { return COLORES[r] || COLORES.blue; },
-    posicion(it) {
-      const s = sprite(it.imageUrl);
-      return s ? s.estilo.backgroundPosition : "0% 0%";
+
+    ganador(cinta, n) { return !cinta.enReposo && this.quieta && n === GANADOR; },
+
+    opacidadDe(cinta, n) {
+      if (cinta.enReposo) return 0.85;
+      if (!this.quieta) return 1;
+      return n === GANADOR ? 1 : 0.25;
     },
 
-    /* El ganador queda grande; el resto se achica y se apaga. */
-    esGanador(c, i) { return this.quieta && i === GANADOR; },
-    escala(c, i) { return this.esGanador(c, i) ? 1.12 : 1; },
-    opacidad(c, i) { return this.quieta && i !== GANADOR ? 0.35 : 1; },
-    brillo(c, i) { return this.esGanador(c, i) ? 0.95 : 0.35; },
+    escalaDe(cinta, n) { return this.ganador(cinta, n) ? 1.22 : 1; },
+    brilloDe(cinta, n) { return this.ganador(cinta, n) ? 0.9 : 0.35; },
 
-    /**
-     * Un premio al azar de la caja, respetando sus chances.
-     *
-     * Es SOLO PARA EL RELLENO de la cinta: lo que se ve pasar volando.
-     * El premio de verdad --el de la posicion 54-- lo decide el
-     * servidor y llega en `ganados`. Si el relleno se sorteara mal no
-     * cambiaria nada de lo que el jugador gana; solo se veria menos
-     * creible.
-     */
+    /** Un premio al azar de la caja, con su chance como peso. */
     alAzar() {
+      const lista = this.premios;
+      if (!lista.length) return { name: "", valueSc: 0, rarity: "blue", imageUrl: "" };
       const n = Math.random();
-      let acc = 0;
-      for (const p of this.premios) {
-        acc += Number(p.chance) || 0;
-        if (n < acc) return p;
+      let suma = 0;
+      for (const p of lista) {
+        suma += Number(p.chance) || 0;
+        if (n < suma) return p;
       }
-      return this.premios[this.premios.length - 1];
+      return lista[lista.length - 1];
     },
 
-    /**
-     * ARRANCA EL GIRO.
-     *
-     * Lo llama la pantalla DESPUES de que el servidor contesto, con los
-     * premios que de verdad salieron. La cinta no decide nada: muestra.
-     *
-     * El truco de los dos pasos --poner la cinta quieta, esperar un
-     * cuadro, y recien ahi encender la transicion-- hace falta porque el
-     * navegador junta los dos cambios en uno si pasan en el mismo
-     * momento: la cinta aparecería ya en el final, sin moverse.
-     */
-    girar(ganados) {
-      const cuantas = ganados.length || this.cuantas;
+    /** Una tira de 64 con el premio que salió en el lugar 54. */
+    tiraCon(premio) {
+      const items = [];
+      for (let i = 0; i < LARGO; i += 1) items.push(i === GANADOR && premio ? premio : this.alAzar());
+      return items;
+    },
 
-      this.cintas = Array.from({ length: cuantas }, (_, c) => {
-        const items = Array.from({ length: LARGO }, () => this.alAzar());
-        /* El premio de verdad, puesto donde cae el puntero. */
-        items[GANADOR] = ganados[c] || items[GANADOR];
-        return { items, x: -(DESDE * PASO + 60) };
-      });
-
+    /** La cinta parada, para cuando todavía no se abrió nada. */
+    reposo() {
+      if (this.girandoAhora) return;
       this.animando = false;
-      this.quieta = false;
-      this.girandoAhora = true;
-
-      this.arrancar();
+      this.quieta = true;
+      this.cintas = Array.from({ length: Math.max(1, this.cuantas) }, () => ({
+        items: this.tiraCon(null),
+        x: ARRANQUE,
+        enReposo: true,
+      }));
     },
 
     /**
-     * Enciende la transicion y recien DESPUES mueve la cinta.
+     * Gira hasta los premios que ya trajo el servidor.
      *
-     * Hacen falta tres pasos separados y no dos. Vue junta todos los
-     * cambios de un mismo momento en un solo dibujado, asi que si la
-     * transicion y la posicion nueva se ponen juntas, el navegador no
-     * llega a ver la posicion vieja CON la transicion puesta: salta al
-     * final sin animar. Eso es lo que pasaba.
-     *
-     *   1. la cinta en su lugar de arranque, sin transicion
-     *   2. se enciende la transicion, la cinta sigue donde estaba
-     *   3. se mueve: ahi si, el navegador anima de uno al otro
+     * @param {Array} premios uno por cinta
+     * @returns {Promise<void>} se resuelve cuando frenaron todas
      */
-    async arrancar() {
-      await this.$nextTick();                       // 1 pintado
-      this.animando = true;
-      await this.$nextTick();                       // 2 transicion puesta
+    async girar(premios) {
+      const lista = Array.isArray(premios) ? premios : [premios];
+
+      this.girandoAhora = true;
+      this.quieta = false;
+      this.animando = false;
+
+      this.cintas = lista.map((p) => ({
+        items: this.tiraCon(p),
+        x: ARRANQUE,
+        enReposo: false,
+      }));
 
       /*
-        Un respiro antes de mover, para que el navegador pinte la cinta
-        en su lugar de arranque CON la transicion ya puesta.
+        TRES PASOS, Y CADA UNO HACE FALTA.
 
-        Se usa un temporizador y NO requestAnimationFrame, que seria lo
-        natural: el navegador congela rAF cuando la pestaña no esta a la
-        vista, y entonces la cinta se quedaba clavada para siempre.
-        Alguien que abre una caja y cambia de pestaña vuelve y encuentra
-        el giro terminado, no congelado.
+        Vue junta los cambios de un mismo tick en un solo pintado. Si la
+        tira nueva y su posición final salieran juntas, el navegador
+        nunca vería la posición de arranque y no habría nada que animar:
+        la cinta aparecería ya frenada.
+
+        1. pintar la tira en su lugar de arranque
+        2. poner la transición
+        3. recién ahí mover
       */
+      await this.$nextTick();
+      this.animando = true;
+      await this.$nextTick();
       await new Promise((r) => window.setTimeout(r, 32));
 
       this.cintas = this.cintas.map((cinta) => ({
         ...cinta,
-        /* Un empujoncito al azar para que las cuatro no frenen clavadas
-           en el mismo pixel, que queda mecanico. */
-        x: -(GANADOR * PASO + 60) + (Math.random() * 24 - 12),
+        /* El tironcito al azar es lo que hace que no frenen las cuatro
+           exactamente en el mismo lugar, que se nota y queda falso. */
+        x: -(GANADOR * PASO + CORRIMIENTO) + (Math.random() * 24 - 12),
       }));
 
-      window.setTimeout(() => {
-        this.quieta = true;
-        this.girandoAhora = false;
-        this.$emit("termino");
-      }, this.duracion + 80);
-    },
-
-    /**
-     * Deja la cinta llena y quieta, sin animar: el estado de reposo.
-     *
-     * NO HACE NADA SI HAY UN GIRO EN CURSO. Esto importa: cualquier
-     * cambio de propiedad --que el jugador toque el x2, que llegue el
-     * saldo nuevo-- dispara un watcher, y si ese watcher reiniciara la
-     * cinta a mitad del giro, la animacion se cortaria y el premio
-     * aparecería de la nada.
-     */
-    reposo() {
-      if (this.girandoAhora) return;
-      this.cintas = Array.from({ length: this.cuantas }, () => ({
-        items: Array.from({ length: LARGO }, () => this.alAzar()),
-        x: -(DESDE * PASO + 60),
-      }));
-      this.animando = false;
-      this.quieta = false;
+      return new Promise((listo) => {
+        window.setTimeout(() => {
+          this.quieta = true;
+          this.girandoAhora = false;
+          this.$emit("termino");
+          listo();
+        }, this.duracion + 80);
+      });
     },
   },
 
-  watch: {
-    cuantas() { if (this.quieta !== false || !this.cintas.length) this.reposo(); },
-    premios() { this.reposo(); },
-  },
-
-  mounted() { this.reposo(); },
+  created() { this.reposo(); },
 };
 </script>
 
 <style lang="scss" scoped>
 @import "@/styles/tokens";
 
-.mb-ruleta {
+.mb-reel {
   position: relative;
   overflow: hidden;
   border-radius: 18px;
   border: 2px solid #24365e;
-  // El fondo del diseño: un resplandor azul al centro sobre una trama
-  // de puntos, que le da textura sin pelear con los objetos.
+  // El fondo del diseño: un halo azul al medio y una trama de puntos.
   background:
     radial-gradient(ellipse 45% 70% at 50% 50%, rgba(63, 124, 240, .16) 0%, rgba(15, 26, 48, 0) 70%),
     radial-gradient(rgba(255, 255, 255, .05) 1px, transparent 1.2px) 0 0 / 18px 18px,
@@ -261,7 +280,7 @@ export default {
   padding: 30px 0;
 }
 
-.mb-ruleta__punta {
+.mb-reel__flecha {
   position: absolute;
   left: 50%;
   margin-left: -9px;
@@ -271,22 +290,31 @@ export default {
   &--abajo { bottom: 8px; }
 }
 
-.mb-ruleta__raya {
+// Las dos rayitas que salen de cada flecha hacia los costados.
+.mb-reel__raya {
   position: absolute;
   height: 1px;
-  z-index: 2;
 
-  &--ai { top: 14px; left: 22%; right: calc(50% + 18px); background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.3)); }
-  &--ad { top: 14px; right: 22%; left: calc(50% + 18px); background: linear-gradient(90deg, rgba(255,255,255,.3), rgba(255,255,255,0)); }
-  &--bi { bottom: 14px; left: 22%; right: calc(50% + 18px); background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.3)); }
-  &--bd { bottom: 14px; right: 22%; left: calc(50% + 18px); background: linear-gradient(90deg, rgba(255,255,255,.3), rgba(255,255,255,0)); }
+  &--ai, &--ad { top: 14px; }
+  &--bi, &--bd { bottom: 14px; }
+
+  &--ai, &--bi {
+    left: 22%;
+    right: calc(50% + 18px);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, .3));
+  }
+
+  &--ad, &--bd {
+    right: 22%;
+    left: calc(50% + 18px);
+    background: linear-gradient(90deg, rgba(255, 255, 255, .3), rgba(255, 255, 255, 0));
+  }
 }
 
-.mb-ruleta__cintas { display: flex; flex-direction: column; gap: 6px; }
+.mb-reel__cintas { display: flex; flex-direction: column; gap: 6px; }
+.mb-reel__pista { position: relative; overflow: hidden; }
 
-.mb-ruleta__via { position: relative; overflow: hidden; }
-
-.mb-ruleta__tira {
+.mb-reel__tira {
   position: absolute;
   left: 50%;
   top: 0;
@@ -297,8 +325,9 @@ export default {
   will-change: transform;
 }
 
-.mb-ruleta__casillero {
+.mb-reel__item {
   flex: none;
+  width: 120px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -308,24 +337,23 @@ export default {
   transition: opacity .35s ease;
 }
 
-.mb-ruleta__marco {
+.mb-reel__caja {
   position: relative;
-  width: 86px;
   aspect-ratio: 1 / 1;
   transition: transform .35s ease;
 }
 
-.mb-ruleta__borde {
+// Los dos marcos torcidos de atrás, que dan la idea de "cartas".
+.mb-reel__marco {
   position: absolute;
   inset: 6% 18%;
   border-radius: 10px;
 
-  &--a { border: 2px solid rgba(255, 255, 255, .13); transform: rotate(-7deg); }
-  &--b { border: 2px solid rgba(255, 255, 255, .08); transform: rotate(7deg); }
+  &--izq { border: 2px solid rgba(255, 255, 255, .13); transform: rotate(-7deg); }
+  &--der { border: 2px solid rgba(255, 255, 255, .08); transform: rotate(7deg); }
 }
 
-// El resplandor del color de la rareza, debajo del objeto.
-.mb-ruleta__brillo {
+.mb-reel__brillo {
   position: absolute;
   left: 20%;
   right: 20%;
@@ -336,13 +364,16 @@ export default {
   transition: opacity .35s ease;
 }
 
-.mb-ruleta__foto {
+.mb-reel__foto {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .5));
 }
 
-.mb-ruleta__rotulo {
+.mb-reel__rotulo {
   height: 34px;
   display: flex;
   flex-direction: column;
@@ -352,7 +383,7 @@ export default {
   text-align: center;
 }
 
-.mb-ruleta__nombre {
+.mb-reel__nombre {
   max-width: 170px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -360,21 +391,12 @@ export default {
   font-size: 14px;
 }
 
-.mb-ruleta__valor {
-  font-weight: 800;
-  font-size: 13px;
-  color: $texto-2;
+.mb-reel__valor {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  white-space: nowrap;
-}
-
-/*
-  Quien pidió que las cosas no se muevan NO ve la cinta volar: el premio
-  aparece directo. La animación es adorno; el resultado es el mismo.
-*/
-@media (prefers-reduced-motion: reduce) {
-  .mb-ruleta__tira { transition: none !important; }
+  font-weight: 800;
+  font-size: 13px;
+  color: $texto-2;
 }
 </style>

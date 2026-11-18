@@ -45,7 +45,8 @@ export default {
     "next": "下一页",
     "close": "关闭",
     "total": "合计",
-    "freeOpens": "免费"
+    "freeOpens": "免费",
+    "back": "返回"
   },
   "box": {
     "openFor": "{price} 开启",
@@ -74,7 +75,15 @@ export default {
       "medium": "中",
       "high": "高",
       "extreme": "极高"
-    }
+    },
+    "reelAria": "正在开 {name}",
+    "contents": "盒内物品",
+    "rarity": "稀有度",
+    "bestOdds": "概率从高",
+    "on": "开",
+    "off": "关",
+    "open": "开启",
+    "highestValue": "价值从高"
   },
   "support": {
     "title": "客服",
@@ -332,7 +341,19 @@ export default {
     "highlights": "精选",
     "livePulls": "实时开盒",
     "viewAll": "查看全部",
-    "livePullsTwoLines": "实时<br>开盒"
+    "livePullsTwoLines": "实时<br>开盒",
+    "top10": "前十",
+    "topAria": "第 {n} 名：{name}",
+    "brands": "品牌",
+    "brandAria": "查看 {name} 盒子",
+    "howTitle": "MR BOX 怎么玩",
+    "how1": "选一个盒子",
+    "how1Sub": "浏览装满好东西的盲盒。",
+    "how2": "打开它",
+    "how2Sub": "开出你喜欢品牌的真实商品。",
+    "how3": "留下或出售",
+    "how3Sub": "不想要的换成余额，想要的寄到家。",
+    "faqTitle": "常见问题"
   },
   "rows": {
     "popular": "热门精选",
@@ -437,7 +458,9 @@ export default {
     "publish": "提交审核",
     "signUpToPublish": "注册后发布",
     "sentForReview": "已提交审核",
-    "reviewNote": "每个盒子上线前都会审核。开盒前奖品和概率都会展示给玩家。"
+    "reviewNote": "每个盒子上线前都会审核。开盒前奖品和概率都会展示给玩家。",
+    "chanceFor": "{name} 的概率",
+    "payout": "为价格增加 SC {amount}"
   },
   "dashboard": {
     "creator": "创作者",
@@ -541,6 +564,47 @@ export default {
       "passport": "护照",
       "id": "身份证",
       "licence": "驾照"
+    }
+  },
+  "rarity": {
+    "blue": "蓝",
+    "purple": "紫",
+    "pink": "粉",
+    "red": "红",
+    "gold": "金"
+  },
+  "faq": {
+    "what": {
+      "q": "MR BOX 是什么？",
+      "a": "一个盲盒网站。选盒、开盒，赢到 Rolex、Apple、Nike、宝可梦等真实商品。每个奖品和概率开盒前都看得到。"
+    },
+    "fair": {
+      "q": "MR BOX 公平吗？",
+      "a": "每个盒子都提前列出全部奖品和准确概率，每次开盒都可以自己验证。"
+    },
+    "deposit": {
+      "q": "怎么充值？",
+      "a": "点顶部余额旁的 +，选币种和网络，转到显示的地址。网络确认后余额自动到账。"
+    },
+    "missing": {
+      "q": "充值没到账",
+      "a": "先确认币种、网络和最低金额是否正确。充值需要几个网络确认。若仍未到账，请带上交易 ID 联系客服。"
+    },
+    "howOpen": {
+      "q": "怎么开盒？",
+      "a": "选个盒子，看奖品和概率，点开启。最多一次开 4 个，可开快速模式，也可先免费试玩。"
+    },
+    "support": {
+      "q": "怎么联系客服？",
+      "a": "客服 24 小时在线。点任意页面右下角的对话气泡。"
+    },
+    "afterWin": {
+      "q": "赢到后怎么办？",
+      "a": "赢到的东西直接进背包。可以卖成余额、寄回家，或者先放着。"
+    },
+    "track": {
+      "q": "能查订单吗？",
+      "a": "可以。寄出后，在个人资料的「我的订单」里看状态和快递单号。"
     }
   }
 };

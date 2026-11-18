@@ -45,7 +45,8 @@ export default {
     "next": "Siguiente",
     "close": "Cerrar",
     "total": "Total",
-    "freeOpens": "gratis"
+    "freeOpens": "gratis",
+    "back": "Volver"
   },
   "box": {
     "openFor": "Abrir por {price}",
@@ -74,7 +75,15 @@ export default {
       "medium": "Medio",
       "high": "Alto",
       "extreme": "Extremo"
-    }
+    },
+    "reelAria": "Abriendo {name}",
+    "contents": "Qué puede salir",
+    "rarity": "Rareza",
+    "bestOdds": "Mejor chance",
+    "on": "Sí",
+    "off": "No",
+    "open": "ABRIR",
+    "highestValue": "Más valiosos"
   },
   "support": {
     "title": "Soporte",
@@ -332,7 +341,19 @@ export default {
     "highlights": "Destacados",
     "livePulls": "EN VIVO",
     "viewAll": "Ver todas",
-    "livePullsTwoLines": "SALIDAS<br>EN VIVO"
+    "livePullsTwoLines": "SALIDAS<br>EN VIVO",
+    "top10": "Top 10",
+    "topAria": "Número {n}: {name}",
+    "brands": "Marcas",
+    "brandAria": "Ver cajas de {name}",
+    "howTitle": "Cómo funciona MR BOX",
+    "how1": "Elegí una caja",
+    "how1Sub": "Mirá cajas misteriosas llenas de objetos de primera.",
+    "how2": "Abrila",
+    "how2Sub": "Abrí objetos de verdad de las marcas que te gustan.",
+    "how3": "Quedátelo o vendelo",
+    "how3Sub": "Cambiá por saldo lo que no quieras, o pedí que te lo manden.",
+    "faqTitle": "Preguntas frecuentes"
   },
   "rows": {
     "popular": "Las más abiertas",
@@ -437,7 +458,9 @@ export default {
     "publish": "Mandar a revisar",
     "signUpToPublish": "Registrate para publicar",
     "sentForReview": "La mandamos a revisar",
-    "reviewNote": "Revisamos cada caja antes de que salga al aire. Los premios y las chances se le muestran al jugador antes de abrir."
+    "reviewNote": "Revisamos cada caja antes de que salga al aire. Los premios y las chances se le muestran al jugador antes de abrir.",
+    "chanceFor": "Chance de {name}",
+    "payout": "suma SC {amount} al precio"
   },
   "dashboard": {
     "creator": "CREADOR",
@@ -541,6 +564,47 @@ export default {
       "passport": "Pasaporte",
       "id": "DNI",
       "licence": "Licencia de conducir"
+    }
+  },
+  "rarity": {
+    "blue": "Azul",
+    "purple": "Violeta",
+    "pink": "Rosa",
+    "red": "Rojo",
+    "gold": "Dorado"
+  },
+  "faq": {
+    "what": {
+      "q": "¿Qué es MR BOX?",
+      "a": "Un sitio de cajas misteriosas. Elegís una caja, la abrís y ganás objetos de verdad de marcas como Rolex, Apple, Nike o Pokemon. Cada premio y su chance se ven antes de abrir."
+    },
+    "fair": {
+      "q": "¿MR BOX es justo?",
+      "a": "Cada caja muestra todos sus premios y sus chances exactas antes de abrir, y cada apertura usa un sorteo verificable que podés revisar vos mismo desde tu perfil."
+    },
+    "deposit": {
+      "q": "¿Cómo cargo saldo?",
+      "a": "Tocá el + al lado de tu saldo arriba, elegí la moneda y la red, y mandá a la dirección que aparece. El saldo se actualiza solo cuando la red lo confirma."
+    },
+    "missing": {
+      "q": "No me llegó el depósito",
+      "a": "Fijate que hayas mandado la moneda correcta en la red correcta y arriba del mínimo. Los depósitos necesitan unas confirmaciones de la red. Si igual no llegó, escribinos con el ID de la transacción."
+    },
+    "howOpen": {
+      "q": "¿Cómo abro una caja?",
+      "a": "Elegí una caja, mirá los premios y las chances, y tocá Abrir. Podés abrir hasta 4 de una, usar el modo rápido, o probar gratis primero."
+    },
+    "support": {
+      "q": "¿Cómo pido ayuda?",
+      "a": "El soporte está las 24 horas por chat. Tocá la burbujita abajo a la derecha de cualquier pantalla."
+    },
+    "afterWin": {
+      "q": "¿Qué pasa cuando gano algo?",
+      "a": "Todo lo que ganás va directo a tu inventario. De ahí lo podés vender por saldo, pedir que te lo manden, o dejarlo para después."
+    },
+    "track": {
+      "q": "¿Puedo seguir mi pedido?",
+      "a": "Sí. Una vez que pedís el envío, el estado y el número de seguimiento están en Mis pedidos, adentro de tu perfil."
     }
   }
 };

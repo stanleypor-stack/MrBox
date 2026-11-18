@@ -256,9 +256,14 @@ export default {
     inset: 0;
     max-width: none;
     overflow-y: auto;
+    /* `stretch` las deja todas del alto del contenido y entonces el
+       fondo no llega abajo. `flex-start` las deja de su alto y el
+       fondo del cajon se ve entero. */
+    align-items: stretch;
     border: 0;
     scrollbar-width: none;
     &::-webkit-scrollbar { display: none; }
+    > * { flex: none; }
   }
 }
 

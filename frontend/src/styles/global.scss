@@ -35,6 +35,15 @@
 html, body {
   margin: 0;
   padding: 0;
+  /*
+    NADA SE SALE DE COSTADO.
+
+    Es la red de seguridad, no la solucion: cuando algo se pasa de
+    ancho hay que arreglar ESO. Pero mientras tanto, una pagina que se
+    mueve de costado en un telefono se siente rota, y tapa el problema
+    con uno peor.
+  */
+  overflow-x: hidden;
   background: $fondo;
   color: $texto;
   font-family: $fuente;

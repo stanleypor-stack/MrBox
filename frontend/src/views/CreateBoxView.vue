@@ -174,13 +174,18 @@
             <span class="mb-odd__texto">
               <span class="mb-odd__nombre">{{ o.name }}</span>
               <span class="mb-odd__datos">
-                <span class="mb-sc mb-sc--13" aria-hidden="true">SC</span>{{ plata(o.valueSc) }} · {{ chanceDe(o) }}
+                <span class="mb-sc mb-sc--13" aria-hidden="true">SC</span>{{ plata(o.valueSc) }}
+                · {{ $t('create.payout', { amount: plata(o.valueSc * (chances[String(o._id)] || 0)) }) }}
               </span>
             </span>
-            <input
-              :value="o.peso" inputmode="decimal" :aria-label="$t('create.weightFor', { name: o.name })"
-              class="mb-odd__peso" @change="ponerPeso(o, $event.target.value)"
-            >
+            <span class="mb-odd__pct">
+              <input
+                :value="pctDe(o)" inputmode="decimal"
+                :aria-label="$t('create.chanceFor', { name: o.name })"
+                @change="ponerChance(o, $event.target.value)"
+              >
+              <span aria-hidden="true">%</span>
+            </span>
             <button type="button" class="mb-odd__sacar" :aria-label="$t('create.remove', { name: o.name })" @click="sacar(o)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ea3c7"
                    stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
@@ -336,10 +341,48 @@ export default {
     arte(o) { return sprite(o.imageUrl); },
     fondoDe(r) { return FONDOS[r] || FONDOS.blue; },
 
-    chanceDe(o) {
+    /** La chance de un objeto, como numero para el campo. */
+    pctDe(o) {
       const c = this.chances[String(o._id)];
-      if (c == null) return "—";
-      return (c * 100).toFixed(c < 0.001 ? 4 : 2) + "%";
+      if (c == null) return "";
+      const pct = c * 100;
+      /* Cuatro decimales abajo del 0,1%: un premio de SC 300.000 vive
+         en 0,0002% y con dos decimales se ve como un cero. */
+      return pct < 0.1 ? pct.toFixed(4) : pct.toFixed(2);
+    },
+
+    /**
+     * PONER UNA CHANCE A MANO.
+     *
+     * El jugador escribe "0,05%" para el auto y el resto se reparte lo
+     * que queda, manteniendo las proporciones entre ellos.
+     *
+     * Por dentro se siguen guardando PESOS --que es lo que no se
+     * desarma al agregar o sacar un objeto-- pero nadie piensa en
+     * pesos. Piensa en "una de cada dos mil".
+     */
+    ponerChance(o, valor) {
+      const pct = Number(String(valor).replace(",", ".")) / 100;
+      const id = String(o._id);
+
+      /* Entre un diezmilesimo de punto y el 99%: al 100% no hay caja,
+         hay una compra. */
+      if (!Number.isFinite(pct) || pct <= 0 || pct >= 0.99) {
+        this.$forceUpdate();
+        return;
+      }
+
+      const otros = this.lista.filter((x) => String(x._id) !== id);
+      const sumaOtros = otros.reduce((a, x) => a + x.peso, 0);
+      if (!otros.length || sumaOtros <= 0) return;
+
+      /* peso / (peso + resto) = pct  →  peso = pct × resto / (1 − pct) */
+      const peso = (pct * sumaOtros) / (1 - pct);
+      this.$set(this.elegidos, id, {
+        ...this.elegidos[id],
+        peso: Math.max(0.0001, Math.min(1e6, Math.round(peso * 10000) / 10000)),
+      });
+      this.cotizar();
     },
 
     conRetraso() {
@@ -396,17 +439,6 @@ export default {
       const id = String(o._id);
       this.$delete(this.elegidos, id);
       this.orden_ = this.orden_.filter((x) => x !== id);
-    },
-
-    ponerPeso(o, valor) {
-      const n = Number(String(valor).replace(",", "."));
-      const id = String(o._id);
-      if (!Number.isFinite(n) || n <= 0) {
-        this.$set(this.elegidos, id, { ...this.elegidos[id], peso: 1 });
-        return;
-      }
-      this.$set(this.elegidos, id, { ...this.elegidos[id], peso: Math.min(10000, n) });
-      this.cotizar();
     },
 
     mover({ clave, posicion }) { this.$set(this.posiciones, clave, posicion); },
@@ -556,7 +588,19 @@ export default {
 
 .mb-crear__campos { flex: 999 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
 .mb-crear__dos { display: flex; flex-wrap: wrap; gap: 20px; }
-.mb-crear__col { flex: 1 1 260px; display: flex; flex-direction: column; gap: 8px; }
+
+/*
+  `flex: 1 1 260px` NO.
+
+  Esta clase se usa adentro de `.mb-crear__dos`, que es una fila, y
+  tambien suelta adentro de `.mb-crear__campos`, que es una COLUMNA.
+  En la columna, `flex-grow: 1` la hacia crecer a lo alto y dejaba un
+  hueco de doscientos pixeles entre los logos y lo que se gana.
+
+  Crece solo cuando esta en la fila, que es donde tiene sentido.
+*/
+.mb-crear__col { display: flex; flex-direction: column; gap: 8px; }
+.mb-crear__dos > .mb-crear__col { flex: 1 1 260px; }
 
 .mb-rotulo {
   font-weight: 900;
@@ -840,18 +884,32 @@ export default {
   white-space: nowrap;
 }
 
-.mb-odd__peso {
-  width: 58px;
+.mb-odd__pct {
+  display: flex;
+  align-items: center;
+  gap: 2px;
   height: 34px;
   padding: 0 8px;
   border-radius: 8px;
   border: 1px solid #2a4170;
   background: $panel-alto;
-  color: #fff;
-  font-family: inherit;
   font-size: 13px;
-  text-align: right;
-  &:focus { outline: none; border-color: $azul; }
+  color: $texto-4;
+
+  input {
+    width: 62px;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    text-align: right;
+  }
+
+  &:focus-within { border-color: $azul; }
 }
 
 .mb-odd__sacar {

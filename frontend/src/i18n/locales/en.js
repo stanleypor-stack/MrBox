@@ -45,7 +45,8 @@ export default {
     "next": "Next",
     "close": "Close",
     "total": "Total",
-    "freeOpens": "free"
+    "freeOpens": "free",
+    "back": "Back"
   },
   "box": {
     "openFor": "Open for {price}",
@@ -74,7 +75,15 @@ export default {
       "medium": "Medium",
       "high": "High",
       "extreme": "Extreme"
-    }
+    },
+    "reelAria": "Opening {name}",
+    "contents": "Box contents",
+    "rarity": "Rarity",
+    "bestOdds": "Best odds",
+    "on": "On",
+    "off": "Off",
+    "open": "OPEN",
+    "highestValue": "Highest value"
   },
   "support": {
     "title": "Support",
@@ -332,7 +341,19 @@ export default {
     "highlights": "Highlights",
     "livePulls": "LIVE PULLS",
     "viewAll": "View all",
-    "livePullsTwoLines": "LIVE<br>PULLS"
+    "livePullsTwoLines": "LIVE<br>PULLS",
+    "top10": "Top 10",
+    "topAria": "Number {n}: {name}",
+    "brands": "Brands",
+    "brandAria": "Show {name} boxes",
+    "howTitle": "How MR BOX works",
+    "how1": "Choose a box",
+    "how1Sub": "Browse mystery boxes packed with top-tier items.",
+    "how2": "Unbox it",
+    "how2Sub": "Unbox real items from brands you love.",
+    "how3": "Claim or sell",
+    "how3Sub": "Swap wins you do not want for balance, or get them shipped to you.",
+    "faqTitle": "Frequently asked questions"
   },
   "rows": {
     "popular": "Popular Picks",
@@ -437,7 +458,9 @@ export default {
     "publish": "Send for review",
     "signUpToPublish": "Sign up to publish",
     "sentForReview": "Sent for review",
-    "reviewNote": "Our team reviews every box before it goes live. Prizes and chances are shown to players before they open it."
+    "reviewNote": "Our team reviews every box before it goes live. Prizes and chances are shown to players before they open it.",
+    "chanceFor": "Chance for {name}",
+    "payout": "adds SC {amount} to the price"
   },
   "dashboard": {
     "creator": "CREATOR",
@@ -541,6 +564,47 @@ export default {
       "passport": "Passport",
       "id": "ID card",
       "licence": "Driver licence"
+    }
+  },
+  "rarity": {
+    "blue": "Blue",
+    "purple": "Purple",
+    "pink": "Pink",
+    "red": "Red",
+    "gold": "Gold"
+  },
+  "faq": {
+    "what": {
+      "q": "What is MR BOX?",
+      "a": "A mystery box site. Pick a box, open it and win real items from brands like Rolex, Apple, Nike and Pokemon. Every prize and its chance are shown before you open."
+    },
+    "fair": {
+      "q": "Is MR BOX fair?",
+      "a": "Every box lists all of its prizes and their exact odds up front, and every open uses a provably fair draw you can check yourself from your profile."
+    },
+    "deposit": {
+      "q": "How do I add balance?",
+      "a": "Tap the + next to your balance at the top, choose your coin and network, and send to the address shown. Your balance updates on its own once the network confirms it."
+    },
+    "missing": {
+      "q": "My deposit has not arrived",
+      "a": "Check that you sent the right coin on the right network and above the minimum. Deposits need a few network confirmations. If it still has not arrived, write to support with your transaction ID."
+    },
+    "howOpen": {
+      "q": "How do I open a box?",
+      "a": "Choose any box, check the prizes and odds, then press Open. You can open up to 4 at once, turn on fast mode, or try a free demo first."
+    },
+    "support": {
+      "q": "How do I get support?",
+      "a": "Support is available 24/7 through live chat. Tap the chat bubble at the bottom right of any page."
+    },
+    "afterWin": {
+      "q": "What happens after I win an item?",
+      "a": "Every item you win goes straight to your inventory. From there you can sell it for balance, ship it home, or keep it for later."
+    },
+    "track": {
+      "q": "Can I track my order?",
+      "a": "Yes. Once you ship an item home, you can follow its status and tracking number in My Orders inside your profile."
     }
   }
 };
