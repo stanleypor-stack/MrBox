@@ -33,6 +33,36 @@
       <path d="M10.3 4h3.4l-1.8 7.1 2.6-.8-.5 2.1-2.6.8-.9 3.6h7l-.7 3.2H6.3l1.5-6-2.3.7.5-2.1 2.3-.7L10.3 4Z" />
     </svg>
 
+    <!-- BNB: el rombo con los cuatro chicos. -->
+    <svg v-else-if="ticker === 'BNB'" viewBox="0 0 24 24" fill="#fff">
+      <path d="m12 3 2.6 2.6L12 8.2 9.4 5.6 12 3Zm-5.4 5.4L9.2 11l-2.6 2.6L4 11l2.6-2.6Zm10.8 0L20 11l-2.6 2.6L14.8 11l2.6-2.6ZM12 8.9 14.1 11 12 13.1 9.9 11 12 8.9Zm0 7.9 2.6 2.6L12 22l-2.6-2.6L12 16.8Z" />
+    </svg>
+
+    <!-- Tron: el triangulo con la barra. -->
+    <svg v-else-if="ticker === 'TRX'" viewBox="0 0 24 24" fill="#fff">
+      <path d="M4 5.5 20 8l-7.4 11.5L4 5.5Zm2.9 2.2 4.6 7.9.6-5.6-5.2-2.3Zm6.8 2.5-.6 5.3 4.2-6.5-3.6 1.2Zm3.1-1.4L8.3 7.2l7.4 3.3 1.1-1.7Z" />
+    </svg>
+
+    <!-- Dogecoin: la D con la barra. -->
+    <svg v-else-if="ticker === 'DOGE'" viewBox="0 0 24 24" fill="#fff">
+      <path d="M7 4h5.2c3.9 0 6.6 3.1 6.6 8s-2.7 8-6.6 8H7v-6.1H5v-2.3h2V4Zm3.3 2.6v4.9h3v2.3h-3v4.6h1.7c2.3 0 3.7-1.9 3.7-5.9s-1.4-5.9-3.7-5.9h-1.7Z" />
+    </svg>
+
+    <!-- Polygon: el hexagono. -->
+    <svg v-else-if="ticker === 'POL'" viewBox="0 0 24 24" fill="#fff">
+      <path d="M12 2.6 20 7v10l-8 4.4L4 17V7l8-4.4Zm0 2.5L6.2 8.3v7.4L12 18.9l5.8-3.2V8.3L12 5.1Zm0 3 3.2 1.8v3.4L12 16.6l-3.2-1.9v-3.4L12 9.6Z" />
+    </svg>
+
+    <!-- XRP: la equis cruzada. -->
+    <svg v-else-if="ticker === 'XRP'" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round">
+      <path d="M5 5c2 2.6 4.3 4 7 4s5-1.4 7-4M5 19c2-2.6 4.3-4 7-4s5 1.4 7 4" />
+    </svg>
+
+    <!-- Monero: la M. -->
+    <svg v-else-if="ticker === 'XMR'" viewBox="0 0 24 24" fill="#fff">
+      <path d="M3.6 18V7l4.6 5.4L12 8.3l3.8 4.1L20.4 7v11h-3.2v-5.2L12 18.6l-5.2-5.8V18H3.6Z" />
+    </svg>
+
     <!-- Cualquier otra: su inicial, que es lo que había antes. -->
     <span v-else class="mb-mon__letra">{{ letra }}</span>
   </span>

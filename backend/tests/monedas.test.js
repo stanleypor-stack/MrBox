@@ -42,20 +42,48 @@ const ACEPTA = {
   ],
   SOL: [["Solana", "SOL"]],
   LTC: [["Litecoin", "LTC"]],
+  TRX: [["Tron", "TRC20", "TRX"]],
+  BNB: [["BSC", "BEP20", "BNB", "Binance"]],
+  DOGE: [["Dogecoin", "DOGE"]],
+  POL: [["Polygon", "POL"]],
+  XRP: [["xrpl", "xrp", "ripple"]],
+  XMR: [["Monero", "XMR"]],
 };
 
 /* Las confirmaciones que pide la pasarela, por moneda y red. */
 const CONFIRMACIONES = {
-  "BTC/BTC": 2,
   "USDT/TRC20": 10,
-  "USDT/ERC20": 10,
   "USDT/BEP20": 15,
+  "USDT/Polygon": 50,
+  "USDT/TON": 3,
+  "USDT/Solana": 30,
+  "USDT/ERC20": 10,
+  "BTC/BTC": 2,
+  "ETH/Base": 10,
+  "ETH/BEP20": 15,
   "ETH/ERC20": 10,
+  "USDC/Polygon": 50,
+  "USDC/BEP20": 15,
+  "USDC/Solana": 30,
+  "USDC/Base": 10,
   "USDC/ERC20": 10,
-  "USDC/SOL": 30,
-  "SOL/SOL": 30,
+  "SOL/Solana": 30,
   "LTC/LTC": 3,
+  "TRX/TRC20": 10,
+  "BNB/BEP20": 15,
+  "DOGE/Dogecoin": 12,
+  "POL/Polygon": 50,
+  "XRP/xrpl": 5,
+  "XMR/Monero": 6,
 };
+
+/* Las doce que estan prendidas en la cuenta. */
+const PRENDIDAS = ["USDT", "BTC", "ETH", "USDC", "SOL", "LTC", "TRX", "BNB", "DOGE", "POL", "XRP", "XMR"];
+
+test("ofrecemos exactamente las monedas que estan prendidas en la cuenta", () => {
+  const nuestras = MONEDAS.map((m) => m.ticker);
+  assert.deepEqual(nuestras.slice().sort(), PRENDIDAS.slice().sort());
+});
 
 test("cada red que ofrecemos es una que OxaPay entiende", () => {
   for (const m of MONEDAS) {
@@ -97,5 +125,6 @@ test("buscar() acepta como lo escriba el jugador, y rechaza lo que no existe", (
   assert.ok(buscar("usdt", "trc20"), "en minuscula tambien");
   assert.ok(buscar("USDT"), "sin red, la primera");
   assert.equal(buscar("USDC", "SPL"), null, "la red que rebotaba la pasarela");
-  assert.equal(buscar("DOGE", "DOGE"), null, "una moneda que no ofrecemos");
+  assert.ok(buscar("USDC", "solana"), "la misma red escrita en minuscula");
+  assert.equal(buscar("SHIB", "ERC20"), null, "una moneda que no ofrecemos");
 });
