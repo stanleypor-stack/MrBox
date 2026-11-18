@@ -9,9 +9,9 @@
 
     <template v-else>
       <MbCabecera
-        @depositar="avisarPendiente('wallet.depositSoon')"
-        @retirar="avisarPendiente('wallet.withdrawSoon')"
-        @canjear="avisarPendiente('wallet.redeemSoon')"
+        @depositar="abrirCaja('in')"
+        @retirar="abrirCaja('out')"
+        @canjear="abrirCaja('out')"
         @soporte="pedirSoporte"
       />
 
@@ -53,6 +53,15 @@
       <!-- El globito de soporte: en todas las pantallas del sitio,
            nunca en el panel, que tiene su propia bandeja. -->
       <MbSoporte :abrir="soporte.pedidos" :mensaje-inicial="soporte.borrador" />
+
+      <!--
+        LA CAJA.
+
+        Comprar SC y canjearlos, en la ventana del prototipo. Se dibuja
+        solo cuando se abre: adentro hay un QR y una librería para
+        dibujarlo que no tiene por qué bajarse quien nunca la abre.
+      -->
+      <MbBilletera v-if="caja" :modo="caja" @cerrar="caja = ''" />
     </template>
 
     <output v-if="aviso" class="mb-aviso" :class="'mb-aviso--' + aviso.tono" aria-live="polite">
@@ -69,6 +78,7 @@ import MbBarraDeAbajo from "@/components/MbBarraDeAbajo.vue";
 import MbMenuDeCuenta from "@/components/MbMenuDeCuenta.vue";
 import MbPie from "@/components/MbPie.vue";
 import MbSoporte from "@/components/MbSoporte.vue";
+import MbBilletera from "@/components/MbBilletera.vue";
 
 /**
  * EL ARMAZON DEL SITIO.
@@ -95,7 +105,12 @@ import MbSoporte from "@/components/MbSoporte.vue";
  */
 export default {
   name: "App",
-  components: { MbCabecera, MbLateral, MbBarraDeAbajo, MbMenuDeCuenta, MbPie, MbSoporte },
+  components: {
+    MbCabecera, MbLateral, MbBarraDeAbajo, MbMenuDeCuenta, MbPie, MbSoporte, MbBilletera,
+  },
+
+  /* "in" deposita, "out" canjea, vacio es cerrada. */
+  data() { return { caja: "" }; },
 
 
 
@@ -153,6 +168,18 @@ export default {
 
     /* Cabecera, pie y menú de cuenta abren el mismo globito. */
     pedirSoporte() { this.$store.dispatch("pedirSoporte"); },
+
+    /**
+     * Abrir la caja.
+     *
+     * Sin sesión no tiene sentido --no hay a quién acreditarle ni de
+     * dónde sacar-- así que manda a entrar, que es lo que hace falta.
+     */
+    abrirCaja(modo) {
+      this.cerrar();
+      if (!this.$store.getters.entro) { this.$router.push("/login"); return; }
+      this.caja = modo;
+    },
 
     /* Lo que todavía no está: se avisa, en vez de un botón mudo. */
     avisarPendiente(clave) {

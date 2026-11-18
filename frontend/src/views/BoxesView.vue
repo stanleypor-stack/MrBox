@@ -83,18 +83,40 @@ export default {
   components: { MbCajaEnGrilla },
 
   data() {
-    return {
-      busqueda: "",
-      categoria: "",
-      orden: "popular",
-      pagina: 1,
-      reloj: null,
-      ultimoPedido: 0,
-    };
+    /* Lo que se esta tecleando vive aca hasta que se calma; lo demas
+       vive en la direccion (ver el comentario de abajo). */
+    return { busqueda: this.$route.query.search || "", reloj: null, ultimoPedido: 0 };
   },
 
   computed: {
     ...mapState({ cajas: "cajas", cargando: "cargandoCajas", categorias: "categorias" }),
+
+    /*
+      LA DIRECCION MANDA.
+
+      Categoria, orden y pagina salen de `?category=`, `?sort=` y
+      `?page=`, y tocar un chip cambia la direccion. Antes vivian
+      adentro de la pantalla, y por eso /boxes?category=Cookware --el
+      enlace de la barra lateral, el del pie y el de los banners--
+      mostraba TODAS las cajas: la pantalla ni miraba la direccion.
+
+      Con la direccion mandando, ademas, el boton de atras funciona y un
+      filtro se puede mandar por mensaje.
+    */
+    categoria: {
+      get() { return this.$route.query.category || ""; },
+      set(v) { this.irA({ category: v || undefined, page: undefined }); },
+    },
+
+    orden: {
+      get() { return this.$route.query.sort || "popular"; },
+      set(v) { this.irA({ sort: v === "popular" ? undefined : v, page: undefined }); },
+    },
+
+    pagina: {
+      get() { return Math.max(1, Number(this.$route.query.page) || 1); },
+      set(v) { this.irA({ page: v > 1 ? String(v) : undefined }); },
+    },
 
     categoriasConTodas() {
       /*
@@ -110,16 +132,44 @@ export default {
   },
 
   watch: {
-    busqueda() { this.pagina = 1; this.pedirConEspera(); },
-    categoria() { this.pagina = 1; this.pedir(); },
-    orden() { this.pagina = 1; this.pedir(); },
-    pagina() { this.pedir(); },
+    busqueda() { this.pedirConEspera(); },
+
+    /* Un cambio de direccion --un chip, el boton de atras, un enlace
+       de la barra lateral-- es lo que dispara el pedido. */
+    "$route.query": function () {
+      const q = this.$route.query.search || "";
+      if (q !== this.busqueda) this.busqueda = q;
+      this.pedir();
+    },
   },
 
   methods: {
+    /**
+     * Cambia la direccion sin apilar una entrada por tecla.
+     *
+     * `replace` y no `push` para lo que se teclea: con `push`, volver
+     * atras despues de escribir "rolex" serian cinco pasos, uno por
+     * letra.
+     */
+    irA(cambios, reemplazar) {
+      const query = { ...this.$route.query, ...cambios };
+      for (const k of Object.keys(query)) if (query[k] === undefined) delete query[k];
+
+      const igual = JSON.stringify(query) === JSON.stringify(this.$route.query);
+      if (igual) return;
+
+      const ir = reemplazar ? this.$router.replace : this.$router.push;
+      ir.call(this.$router, { query }).catch(() => {});
+    },
+
     pedirConEspera() {
       clearTimeout(this.reloj);
-      this.reloj = setTimeout(this.pedir, 350);
+      this.reloj = setTimeout(() => {
+        this.irA({ search: this.busqueda || undefined, page: undefined }, true);
+        /* Si la direccion no cambio --se borro y se volvio a escribir
+           lo mismo-- el watch no corre: se pide igual. */
+        this.pedir();
+      }, 350);
     },
 
     async pedir() {
@@ -131,6 +181,7 @@ export default {
           sort: this.orden,
           page: this.pagina,
         });
+        if (mio !== this.ultimoPedido) return;
       } catch (err) {
         if (mio !== this.ultimoPedido) return;
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });

@@ -9,6 +9,8 @@ const RakebackClaim = require("../../database/models/RakebackClaim");
 
 const vip = require("../../services/vip");
 const admin = require("../../services/admin");
+const caja = require("../../services/cashier");
+const oxapay = require("../../services/cashier/oxapay");
 const { sc } = require("../../utils/money");
 const { errorDe, esDeJugador } = require("../../utils/errors");
 const { logger, ultimasLineas } = require("../../utils/logger");
@@ -110,7 +112,7 @@ router.get("/payments", async (req, res) => {
         promedioSc: datos.total ? sc(datos.totalSc / datos.total) : 0,
         /* La pasarela todavía no está conectada. */
         pasarela: "oxapay",
-        conectada: !!process.env.OXAPAY_API_KEY,
+        conectada: oxapay.configurada(),
       },
     });
   } catch (err) {
@@ -120,25 +122,52 @@ router.get("/payments", async (req, res) => {
 
 /* ══ Canjes ══════════════════════════════════════════════════════ */
 
+/**
+ * LA COLA DE CANJES.
+ *
+ * Lo mas viejo arriba: el que pidio primero espera menos. El saldo ya
+ * se le descontó al pedir, asi que rechazar DEVUELVE la plata y pagar
+ * no la vuelve a tocar (ver services/cashier).
+ */
 router.get("/redemptions", async (req, res) => {
   try {
-    const { dias, desde } = desdeDias(req);
-    const datos = await delLibro("redemption", {
-      desde,
+    const datos = await caja.cola({
+      estado: req.query.estado || "",
       page: Number(req.query.page) || 1,
       perPage: Number(req.query.perPage) || 25,
     });
 
     return res.json({
       success: true,
-      data: {
-        ...datos,
-        dias,
-        conectada: !!process.env.OXAPAY_API_KEY,
-      },
+      data: { ...datos, listaParaPagar: oxapay.listaParaPagar() },
     });
   } catch (err) {
     return responderError(res, err, "redemptions");
+  }
+});
+
+/** Aprobar, pagar o rechazar. Todo queda en el registro del panel. */
+router.post("/redemptions/:id/:accion", async (req, res) => {
+  try {
+    const pedido = await caja.resolver({
+      admin: req.user,
+      id: req.params.id,
+      accion: req.params.accion,
+      motivo: req.body.motivo,
+    });
+
+    await admin.anotar({
+      admin: req.user,
+      evento: "redemption." + req.params.accion,
+      sobre: { tipo: "redemption", id: pedido._id, nombre: pedido.moneda + " " + pedido.montoSc },
+      despues: { estado: pedido.estado },
+      motivo: req.body.motivo || "",
+      req,
+    });
+
+    return res.json({ success: true, data: pedido });
+  } catch (err) {
+    return responderError(res, err, "redemptions.resolve");
   }
 });
 
@@ -558,7 +587,37 @@ function pendiente(clave) {
   });
 }
 
-router.get("/coins", pendiente("oxapay"));
+/**
+ * LAS MONEDAS QUE SE ACEPTAN.
+ *
+ * Salen de la misma lista que usa la caja del sitio
+ * (services/cashier/monedas.js): si acá dijera otra cosa que la
+ * pantalla de depósito, una de las dos estaría mintiendo.
+ */
+router.get("/coins", async (req, res) => {
+  try {
+    const items = [];
+    for (const m of caja.monedas()) {
+      for (const r of m.redes) {
+        items.push({
+          _id: m.ticker + "-" + r.clave,
+          moneda: m.nombre + " (" + m.ticker + ")",
+          red: r.nombre + " · " + r.clave,
+          confirmaciones: r.confirmaciones,
+          demora: r.demora,
+          activa: oxapay.configurada(),
+        });
+      }
+    }
+
+    return res.json({
+      success: true,
+      data: { items, total: items.length, conectada: oxapay.configurada() },
+    });
+  } catch (err) {
+    return responderError(res, err, "coins");
+  }
+});
 router.get("/promo", pendiente("promoCodes"));
 router.get("/legal", pendiente("legalPages"));
 router.get("/seo", pendiente("seo"));

@@ -228,7 +228,24 @@ export default {
   gap: 10px;
   background: #0e1a2e;
   border-right: 1px solid #1a2a45;
-  align-self: stretch;
+
+  /*
+    SE QUEDA A LA VISTA, NO CRECE CON LA PAGINA.
+
+    Antes era `align-self: stretch`, asi que tomaba el alto de la fila
+    --o sea, el de la pagina entera-- y en el catalogo quedaba una
+    columna azul vacia de varias pantallas de largo.
+
+    Pegada arriba se queda donde se la ve mientras el catalogo baja, que
+    ademas es como funciona en el prototipo. Si no entra, se desliza
+    ella sola.
+  */
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  max-height: 100vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
 
   &.is-angosta { flex: 0 0 auto; max-width: 72px; }
 
@@ -254,6 +271,8 @@ export default {
   &.is-cajon {
     position: absolute;
     inset: 0;
+    top: 0;
+    max-height: none;
     max-width: none;
     overflow-y: auto;
     /* `stretch` las deja todas del alto del contenido y entonces el

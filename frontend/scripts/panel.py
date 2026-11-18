@@ -147,6 +147,15 @@ PANEL = {
     "admin.act.reopen": "Reopen",
     "admin.act.replyAndClose": "Reply and close",
 
+    # ── La caja, del lado del panel ──────────────────────────────────
+    "admin.act.pay": "Pay",
+    "admin.confirmPay": "Send this payout now? It cannot be undone.",
+    "admin.num.waitingSc": "Waiting to be paid",
+    "admin.num.payouts": "Payouts",
+    "admin.col.montoSc": "Amount",
+    "admin.col.moneda": "Coin",
+    "admin.col.direccion": "Address",
+
     # ── Las columnas ──────────────────────────────────────────────────
     "admin.col.username": "Player",
     "admin.col.email": "Email",

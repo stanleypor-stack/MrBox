@@ -172,20 +172,46 @@ const SECCIONES = {
   redemptions: {
     ruta: "/admin/redemptions",
     porPagina: 25,
-    ancho: "900px",
-    w: "1.1fr 1.2fr 1fr 1fr 1.8fr",
-    accion: { texto: "admin.act.csv", que: "csv" },
+    ancho: "1100px",
+    w: "1fr 1.1fr .8fr .7fr .9fr 2fr .9fr",
+    anchoDeAcciones: "230px",
+    filtros: [
+      { campo: "estado", opciones: ["pending", "approved", "paid", "rejected"], textos: "cashier.state" },
+    ],
     numeros: (d, vm) => [
-      { rotulo: vm.$t("admin.num.paidOut", { n: d.dias }), valor: "SC " + vm.plata(d.totalSc) },
-      { rotulo: vm.$t("admin.num.rows"), valor: vm.num(d.total) },
+      { rotulo: vm.$t("cashier.state.pending"), valor: vm.num(d.porEstado.pending || 0), clase: (d.porEstado.pending || 0) ? "ad-amarillo" : "" },
+      { rotulo: vm.$t("admin.num.waitingSc"), valor: "SC " + vm.plata(d.pendienteSc) },
+      { rotulo: vm.$t("cashier.state.paid"), valor: vm.num(d.porEstado.paid || 0) },
+      {
+        rotulo: vm.$t("admin.num.payouts"),
+        valor: d.listaParaPagar ? vm.$t("admin.state.on") : vm.$t("admin.state.off"),
+        clase: d.listaParaPagar ? "ad-verde" : "ad-amarillo",
+      },
     ],
     columnas: [
       { campo: "createdAt", tipo: "fechaHora", tenue: true },
       { campo: "username", enlace: (f) => `/admin/players/${f.userId}` },
-      { campo: "amountSc", der: true, tipo: "scFirmado" },
-      { campo: "balanceAfter", der: true, tipo: "sc", tenue: true },
-      { campo: "label", tenue: true },
+      { campo: "montoSc", der: true, tipo: "sc" },
+      { campo: "nivel", der: true, tipo: "numero" },
+      { campo: "moneda", valor: (f) => `${f.moneda} · ${f.red}` },
+      { campo: "direccion", tenue: true },
+      { campo: "estado", tipo: "estado", textos: "cashier.state" },
     ],
+    acciones: (f) => {
+      if (f.estado === "pending") {
+        return [
+          { clave: "ok", texto: "admin.act.approve", ruta: (x) => `/admin/redemptions/${x._id}/approve` },
+          { clave: "no", texto: "admin.act.reject", clase: "ad-b--mal", pideMotivo: true, pregunta: "admin.whyReject", ruta: (x) => `/admin/redemptions/${x._id}/reject` },
+        ];
+      }
+      if (f.estado === "approved") {
+        return [
+          { clave: "pay", texto: "admin.act.pay", confirma: "admin.confirmPay", ruta: (x) => `/admin/redemptions/${x._id}/pay` },
+          { clave: "no", texto: "admin.act.reject", clase: "ad-b--mal", pideMotivo: true, pregunta: "admin.whyReject", ruta: (x) => `/admin/redemptions/${x._id}/reject` },
+        ];
+      }
+      return [];
+    },
   },
 
   risk: {
@@ -394,7 +420,7 @@ const SECCIONES = {
   coins: {
     ruta: "/admin/coins",
     ancho: "800px",
-    w: "1.2fr 1.4fr 1fr 1fr 1fr",
+    w: "1.4fr 1.6fr 1fr 1fr .8fr",
     columnas: [
       { campo: "moneda" },
       { campo: "red" },
