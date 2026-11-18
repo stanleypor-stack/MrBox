@@ -37,6 +37,15 @@ const premioSchema = new mongoose.Schema(
 
     /* Entre 0 y 1. Las de todos los premios tienen que sumar exactamente 1. */
     chance: { type: Number, required: true, min: 0, max: 1 },
+
+    /*
+      EL PESO QUE ESCRIBIO EL CREADOR.
+
+      Solo en las cajas de la comunidad, y solo para poder mostrarselo
+      tal cual cuando vuelva a editar. Lo que manda al sortear es
+      `chance`; esto es la cuenta de la que salio.
+    */
+    peso: { type: Number, default: null },
   },
   { _id: false }
 );
@@ -99,6 +108,40 @@ const boxSchema = new mongoose.Schema(
       default: "none",
       index: true,
     },
+
+    /* Lo que el creador escribió sobre su caja. Solo las suyas. */
+    description: { type: String, default: "", trim: true, maxlength: 240 },
+
+    /* Por qué se rechazó, para poder decírselo y que lo arregle. */
+    motivoDelRechazo: { type: String, default: "" },
+
+    /*
+      COMO SE DIBUJA UNA CAJA DE COMUNIDAD.
+
+      Las 163 de la casa tienen su arte en una lámina. Las que hace un
+      jugador no: no hay nadie dibujando una por cada una. Así que se
+      guardan las decisiones --color, armado, qué premios asoman, los
+      logos-- y la pantalla la dibuja en SVG cada vez.
+
+      Guardar las decisiones y no una imagen tiene una ventaja que se
+      nota el día que se toca el dibujo: todas las cajas ya publicadas
+      se actualizan solas. Con una imagen generada habría que rehacer
+      mil y pico de archivos.
+    */
+    portada: {
+      color: { type: String, default: "#9b30ff" },
+      /* 0 Hero, 1 Trio, 2 Spread. */
+      estilo: { type: Number, default: 2, min: 0, max: 2 },
+      /* Hasta tres premios de la caja, por su posición en `prizes`. */
+      asoman: { type: [Number], default: [] },
+      /* Corrimientos a mano: { "0": [x, y] }, en por ciento. */
+      posiciones: { type: mongoose.Schema.Types.Mixed, default: {} },
+      logoIzquierdo: { type: String, default: "" },
+      logoDerecho: { type: String, default: "" },
+    },
+
+    /* Lo que el creador ya se llevó de esta caja, para su panel. */
+    ganadoPorElCreadorSc: { type: Number, default: 0 },
 
     /* Para ordenar la portada sin contar aperturas cada vez. */
     opens: { type: Number, default: 0 },

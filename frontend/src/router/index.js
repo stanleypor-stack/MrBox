@@ -33,6 +33,21 @@ const routes = [
     component: () => import(/* webpackChunkName: "deals" */ "@/views/DealsView.vue"),
   },
   {
+    path: "/community",
+    name: "community",
+    component: () => import(/* webpackChunkName: "comunidad" */ "@/views/CommunityView.vue"),
+  },
+  {
+    path: "/create",
+    name: "create",
+    component: () => import(/* webpackChunkName: "comunidad" */ "@/views/CreateBoxView.vue"),
+  },
+  {
+    path: "/dashboard",
+    name: "dashboard",
+    component: () => import(/* webpackChunkName: "comunidad" */ "@/views/DashboardView.vue"),
+  },
+  {
     path: "/inventory",
     name: "inventory",
     component: () => import(/* webpackChunkName: "cuenta" */ "@/views/InventoryView.vue"),

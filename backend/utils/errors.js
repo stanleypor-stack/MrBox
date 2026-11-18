@@ -52,6 +52,13 @@ const CODIGOS = {
   TOO_MANY_AT_ONCE: "You cannot open that many at once.",
   NO_SEED: "No seed to play with.",
 
+  /* Cajas de la comunidad */
+  BOX_NOT_VALID: "That box does not add up.",
+  TOO_FEW_ITEMS: "That box needs more items.",
+  TOO_MANY_ITEMS: "That box has too many items.",
+  DUPLICATE_ITEM: "The same item is in the box twice.",
+  TOO_MANY_BOXES: "You already have too many boxes.",
+
   /* Inventario */
   ITEM_NOT_FOUND: "That item is not in your inventory.",
   ITEM_ALREADY_GONE: "You already sold or shipped that item.",

@@ -35,6 +35,7 @@ const fair = require("./fair");
 const eco = require("./economia");
 const wallet = require("../wallet");
 const afiliados = require("../affiliates");
+const comunidad = require("../community");
 const { sc } = require("../../utils/money");
 const { errorDe } = require("../../utils/errors");
 const { logger } = require("../../utils/logger");
@@ -206,14 +207,31 @@ async function abrir({ user, slug, veces = 1, demo = false }) {
       Va en su propio try: que falle anotarle la comisión a un socio no
       puede tumbar la apertura de un jugador que ya pagó.
     */
+    const margen = sc(precio - sc(premio.valueSc));
+
     try {
-      await afiliados.anotarComision({
-        jugador: user,
-        jugadoSc: precio,
-        margenSc: sc(precio - sc(premio.valueSc)),
-      });
+      await afiliados.anotarComision({ jugador: user, jugadoSc: precio, margenSc: margen });
     } catch (err) {
       logger.error(`[boxes] comision del socio: ${err.message}`);
+    }
+
+    /*
+      LA PARTE DEL CREADOR, SI LA CAJA ES DE LA COMUNIDAD.
+
+      La mitad del margen de ESTA apertura. Igual que la comisión del
+      socio: en su propio try, porque que falle pagarle al creador no
+      puede tumbar la apertura de alguien que ya pagó.
+
+      Y no se le paga por abrir su propia caja: si no, armar una cara y
+      abrirla uno mismo devolvería el 96% en vez del 92%, que es una
+      forma lenta pero segura de sacarle plata a la casa.
+    */
+    if (caja.creator && String(caja.creator) !== String(user._id)) {
+      try {
+        await comunidad.pagarAlCreador({ caja, margenSc: margen });
+      } catch (err) {
+        logger.error(`[boxes] parte del creador: ${err.message}`);
+      }
     }
 
     resultados.push({
