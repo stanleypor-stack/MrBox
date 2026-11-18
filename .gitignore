@@ -14,3 +14,4 @@ backend/datos/catalogo.json
 
 # Lo que deja Python al importar panel.py
 __pycache__/
+backend/scripts/tmp/
