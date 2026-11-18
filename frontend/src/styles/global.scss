@@ -35,6 +35,15 @@
 html, body {
   margin: 0;
   padding: 0;
+
+  /*
+    LO QUE DIBUJA EL NAVEGADOR, OSCURO TAMBIEN.
+
+    El calendario de una fecha, el menu de un campo y cualquier cosa
+    que dibuje Chrome por su cuenta salen BLANCOS si no se avisa. Una
+    linea y todo eso se dibuja en oscuro, como el resto.
+  */
+  color-scheme: dark;
   /*
     NADA SE SALE DE COSTADO.
 
@@ -65,11 +74,22 @@ a {
   outline-offset: 2px;
 }
 
-// Las filas que se deslizan al costado no muestran barra, como el diseño.
-.mb-row {
-  scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
-}
+/*
+  NINGUNA BARRA DE SCROLL SE VE. EN NINGUN LADO.
+
+  Ni la de la página, ni la de las filas que se deslizan, ni la de un
+  panel con lista larga. El diseño no tiene una sola barra gris, y en
+  Windows son anchas y de otro color: aparecen como un pedazo de otro
+  programa pegado adentro del sitio.
+
+  Se sigue pudiendo scrollear con la rueda, el dedo, las flechas y la
+  barra espaciadora: lo que se saca es el dibujo, no el movimiento.
+*/
+html { scrollbar-width: none; }
+
+*, *::before, *::after { scrollbar-width: none; }
+
+*::-webkit-scrollbar { width: 0; height: 0; }
 
 // Respetar a quien pidió que las cosas no se muevan.
 @media (prefers-reduced-motion: reduce) {

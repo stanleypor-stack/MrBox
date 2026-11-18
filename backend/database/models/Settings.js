@@ -205,7 +205,18 @@ const settingsSchema = new mongoose.Schema(
           nombre: { type: String, required: true },
           desde: { type: Number, required: true, min: 0 },
           color: { type: String, default: "#3f7cf0" },
+
+          /*
+            LOS TRES PERIODOS, cada uno con su numero.
+
+            Antes solo se guardaba el semanal y los otros dos salian de
+            una proporcion: cambiar el semanal movia los tres sin que
+            nadie lo pidiera. El diario y el mensual en null quieren
+            decir "el que trae el rango de fabrica".
+          */
           rakebackSemanal: { type: Number, default: 0, min: 0, max: 0.5 },
+          rakebackDiario: { type: Number, default: null, min: 0, max: 0.5 },
+          rakebackMensual: { type: Number, default: null, min: 0, max: 0.5 },
         },
       ],
       default: [],

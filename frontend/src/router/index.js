@@ -166,7 +166,7 @@ const routes = [
       {
         path: "ranks",
         name: "adminRanks",
-        component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminTabla.vue"),
+        component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminRangos.vue"),
       },
       {
         path: "home",

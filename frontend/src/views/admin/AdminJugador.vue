@@ -288,10 +288,10 @@
           <p>{{ $t('admin.player.tierHelp') }}</p>
           <span class="ad-tenue">{{ $t('admin.player.tierNow', { rango: d.rango.nombre }) }}</span>
 
-          <select v-model="rango" class="ad-in">
-            <option value="">{{ $t('admin.player.tierAuto') }}</option>
-            <option v-for="r in d.rangos" :key="r" :value="r">{{ r }}</option>
-          </select>
+          <MbElegir
+            v-model="rango" chico class="ad-elegir"
+            :opciones="[{ valor: '', texto: $t('admin.player.tierAuto') }].concat(d.rangos.map((r) => ({ valor: r, texto: r })))"
+          />
 
           <label class="ad-campo">
             {{ $t('admin.reason') }}
@@ -387,6 +387,7 @@
 </template>
 
 <script>
+import MbElegir from "@/components/MbElegir.vue";
 import api from "@/api";
 
 /**
@@ -447,6 +448,8 @@ const COLUMNAS = {
 
 export default {
   name: "AdminJugador",
+
+  components: { MbElegir },
 
   data() {
     return {

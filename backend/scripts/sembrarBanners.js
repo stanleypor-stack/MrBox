@@ -17,7 +17,7 @@ const Banner = require("../database/models/Banner");
 const BANNERS = [
   {
     clave: "reward",
-    foto: "/img/banners/banner-50k.png",
+    foto: "/img/banners/banner-50k.webp",
     titulo: "banners.rewardTitle",
     sub: "banners.rewardSub",
     cta: "banners.rewardCta",
@@ -26,7 +26,7 @@ const BANNERS = [
   },
   {
     clave: "luxury",
-    foto: "/img/banners/banner-luxury.png",
+    foto: "/img/banners/banner-luxury.webp",
     titulo: "banners.luxTitle",
     sub: "banners.luxSub",
     cta: "banners.luxCta",
@@ -35,7 +35,7 @@ const BANNERS = [
   },
   {
     clave: "race",
-    foto: "/img/banners/banner-race.png",
+    foto: "/img/banners/banner-race.webp",
     titulo: "banners.raceTitle",
     sub: "banners.raceSub",
     cta: "banners.raceCta",
@@ -44,7 +44,7 @@ const BANNERS = [
   },
   {
     clave: "gta",
-    foto: "/img/banners/banner-gta.png",
+    foto: "/img/banners/banner-gta.webp",
     titulo: "banners.gtaTitle",
     sub: "banners.gtaSub",
     cta: "banners.gtaCta",

@@ -20,10 +20,12 @@
         <label v-for="c in g.campos" :key="c.ruta" class="adc__campo">
           <span class="adc__rotulo">{{ $t('admin.set.' + c.id) }}</span>
 
-          <select v-if="c.tipo === 'siNo'" class="ad-in" :disabled="!esDueno" :value="String(leer(c.ruta))" @change="poner(c, $event.target.value === 'true')">
-            <option value="false">{{ $t('admin.state.off') }}</option>
-            <option value="true">{{ $t('admin.state.on') }}</option>
-          </select>
+          <MbElegir
+            v-if="c.tipo === 'siNo'" chico class="ad-elegir" :deshabilitado="!esDueno"
+            :value="!!leer(c.ruta)"
+            :opciones="[{ valor: true, texto: $t('admin.state.on') }, { valor: false, texto: $t('admin.state.off') }]"
+            @input="poner(c, $event)"
+          />
 
           <input
             v-else class="ad-in" :disabled="!esDueno"
@@ -39,6 +41,7 @@
 </template>
 
 <script>
+import MbElegir from "@/components/MbElegir.vue";
 import { mapState } from "vuex";
 import api from "@/api";
 
@@ -143,6 +146,8 @@ const GRUPOS = [
 
 export default {
   name: "AdminSettings",
+
+  components: { MbElegir },
 
   data() { return { GRUPOS, cfg: null, cambios: {}, guardando: false }; },
 

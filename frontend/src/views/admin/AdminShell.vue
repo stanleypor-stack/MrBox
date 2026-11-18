@@ -252,6 +252,19 @@ export default {
   display: flex;
   flex-direction: column;
 
+  /*
+    EL MENU MIDE UNA PANTALLA, NO LA PAGINA.
+
+    Sin esto crece con lo que haya a la derecha --una tabla de
+    doscientas filas-- y el menu se hace infinito: hay que scrollear
+    la pagina entera para volver arriba. Pegado y de alto fijo, lo
+    que se mueve adentro es la lista de secciones y nada mas.
+  */
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100vh;
+
   @media (max-width: 900px) {
     position: fixed;
     inset: 0 auto 0 0;
@@ -284,11 +297,16 @@ export default {
 
 .ad__grupos {
   flex: 1;
+  min-height: 0;
   padding: 12px 10px 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   overflow-y: auto;
+
+  /* Como en el diseño: se desliza, no se ve la barra. */
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
 }
 
 .ad__grupo { display: flex; flex-direction: column; gap: 2px; }
@@ -591,6 +609,27 @@ export default {
   &--mal { background: transparent; border: 1px solid #ff5b6b; color: #ff9aa5; }
   &--chico { height: 32px; padding: 0 10px; font-size: 12px; }
 }
+
+/*
+  EL SELECTOR DIBUJADO.
+
+  Es el mismo componente del sitio; acá solo se le dan las medidas
+  de los campos del panel. El `<select>` del navegador abria una
+  lista BLANCA dibujada por Windows en medio de un panel oscuro.
+*/
+.ad-elegir {
+  min-width: 170px;
+
+  .mb-el__boton {
+    height: 40px;
+    border-radius: 10px;
+    border-color: $borde-fuerte;
+    background: $panel-alto;
+    font-size: 13px;
+  }
+}
+
+.ad-campo .ad-elegir, .ade__campo .ad-elegir, .adt__in.ad-elegir { width: 100%; min-width: 0; }
 
 .ad-in, .ad-sel {
   height: 42px;

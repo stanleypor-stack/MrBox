@@ -345,6 +345,11 @@ PANEL = {
     "admin.num.biggest": "Largest segment",
     "admin.num.banners": "Banners",
     "admin.num.visible": "Visible",
+    "admin.num.unassigned": "With nobody on them",
+    "admin.num.closedToday": "Closed today",
+    "admin.num.firstReply": "First reply",
+    "admin.num.firstReplyHelp": "Median of the last fifty.",
+    "admin.openPlayer": "Open the player file",
     "admin.num.waitingOnUs": "Waiting on us",
 
     # ── El tablero ────────────────────────────────────────────────────
@@ -527,6 +532,28 @@ PANEL = {
     "admin.race.whySettle": "Why is it being closed early?",
     "admin.race.payHelp": "When a race closes, prizes are paid one by one: if one fails, the rest still get theirs and the one that failed is left here. This pays it, and it cannot pay twice --the ledger is checked first.",
     "admin.race.empty": "Nobody has played in this window yet.",
+
+    # ── Los rangos VIP ────────────────────────────────────────────────
+    "admin.rank.players": "Players",
+    "admin.rank.wagered": "Played by everyone",
+    "admin.rank.giveBack": "Given back as rakeback",
+    "admin.rank.giveBackHelp": "Of everything played. The house keeps 8%, so this coming near it means the club is eating the margin.",
+    "admin.rank.daily": "Daily %",
+    "admin.rank.weekly": "Weekly %",
+    "admin.rank.monthly": "Monthly %",
+    "admin.rank.theirWager": "What they played",
+    "admin.rank.theirDeposits": "What they bought",
+    "admin.rank.theirRakeback": "Paid back to them",
+    "admin.rank.each": "Played each",
+    "admin.rank.benefits": "What each rank unlocks",
+    "admin.benefit.levelUpBox": "Level-up box",
+    "admin.benefit.welcomeBalance": "Welcome balance",
+    "admin.benefit.monthlyBox": "Monthly box",
+    "admin.benefit.weeklyBox": "Weekly box",
+    "admin.benefit.rakeback": "Coin back",
+    "admin.benefit.vipManager": "VIP manager",
+    "admin.benefit.reload": "Reload bonus",
+    "admin.rank.benefitsHelp": "How many benefits a rank has is fixed by its position: the first rank gets the first benefit, the last one gets them all.",
 
     # ── El editor de una caja ─────────────────────────────────────────
     "admin.box.price": "Price",

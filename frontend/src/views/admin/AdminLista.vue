@@ -34,13 +34,14 @@
         :placeholder="$t('admin.search')" :aria-label="$t('admin.search')" @input="conRetraso"
       >
 
-      <label v-for="f in (cfg.filtros || [])" :key="f.campo" class="ad-campo">
+      <div v-for="f in (cfg.filtros || [])" :key="f.campo" class="ad-campo">
         {{ $t('admin.filter.' + f.campo) }}
-        <select v-model="filtros[f.campo]" class="ad-sel" @change="traer(1)">
-          <option value="">{{ $t('admin.all') }}</option>
-          <option v-for="o in f.opciones" :key="o" :value="o">{{ $t(f.textos + '.' + o) }}</option>
-        </select>
-      </label>
+        <MbElegir
+          v-model="filtros[f.campo]" chico class="ad-elegir"
+          :opciones="[{ valor: '', texto: $t('admin.all') }].concat(f.opciones.map((o) => ({ valor: o, texto: $t(f.textos + '.' + o) })))"
+          @elegida="traer(1)"
+        />
+      </div>
 
       <span class="ad-crece"></span>
       <span class="ad-tenue">{{ $t('admin.showing', { n: num(total) }) }}</span>
@@ -68,11 +69,18 @@
 
               <!-- Una foto de la lámina, cuando la fila tiene arte. -->
               <span v-else-if="c.tipo === 'arte'" class="adl__arte">
+                <!--
+                  La foto sale de SU campo --`c.foto`-- y no del que se
+                  muestra. Cuando salia del mismo, el catalogo de
+                  objetos pedia "G63 (2024)" como si fuera una imagen y
+                  dibujaba el icono de foto rota en cada fila.
+                -->
                 <span
-                  v-if="spr(f[c.campo])" class="adl__foto" :class="spr(f[c.campo]).clase"
-                  :style="spr(f[c.campo]).estilo" aria-hidden="true"
+                  v-if="spr(f[c.foto])" class="adl__foto" :class="spr(f[c.foto]).clase"
+                  :style="spr(f[c.foto]).estilo" aria-hidden="true"
                 ></span>
-                <img v-else-if="f[c.campo]" class="adl__foto" :src="f[c.campo]" alt="">
+                <img v-else-if="esFoto(f[c.foto])" class="adl__foto" :src="f[c.foto]" alt="" loading="lazy">
+                <span v-else class="adl__foto adl__foto--sin" aria-hidden="true"></span>
                 <span>{{ texto(c, f) }}</span>
               </span>
 
@@ -118,6 +126,7 @@
 </template>
 
 <script>
+import MbElegir from "@/components/MbElegir.vue";
 import api from "@/api";
 import { sprite } from "@/utils/sprite";
 import AdminEditor from "./AdminEditor.vue";
@@ -151,7 +160,7 @@ const MAL = /^(rejected|cancelled|failed|off|false|banned|ended|expired|hidden|l
  */
 export default {
   name: "AdminLista",
-  components: { AdminEditor },
+  components: { MbElegir, AdminEditor },
 
   data() {
     return {
@@ -186,6 +195,9 @@ export default {
   },
 
   methods: {
+    /* Una foto de verdad: una direccion, no el nombre de algo. */
+    esFoto(v) { return typeof v === "string" && /^(https?:|\/|data:)/.test(v); },
+
     num(n) { return Number(n || 0).toLocaleString("en-US"); },
 
     plata(n) {
@@ -364,6 +376,8 @@ export default {
 .adl__buscar { flex: 1 1 280px; max-width: 420px; }
 .adl__acciones { display: flex; gap: 6px; flex-wrap: wrap; }
 .adl__link { color: #9fc0ff; text-decoration: none; &:hover { color: #fff; } }
+
+.adl__foto--sin { background: $panel-alto; border: 1px dashed $borde-fuerte; }
 
 .adl__arte { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .adl__foto { width: 34px; height: 34px; flex: none; border-radius: 8px; }

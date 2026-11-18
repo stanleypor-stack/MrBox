@@ -25,10 +25,10 @@
               <!-- Lo que no se toca se lee; lo demás se escribe acá mismo. -->
               <span v-if="!c.editable" :class="c.tenue ? 'ad-tenue' : ''">{{ texto(c, f) }}</span>
 
-              <select v-else-if="c.tipo === 'siNo'" v-model="f[c.campo]" class="ad-in adt__in">
-                <option :value="true">{{ $t('admin.state.on') }}</option>
-                <option :value="false">{{ $t('admin.state.off') }}</option>
-              </select>
+              <MbElegir
+                v-else-if="c.tipo === 'siNo'" v-model="f[c.campo]" chico class="ad-elegir"
+                :opciones="[{ valor: true, texto: $t('admin.state.on') }, { valor: false, texto: $t('admin.state.off') }]"
+              />
 
               <input
                 v-else v-model="f[c.campo]" class="ad-in adt__in"
@@ -43,6 +43,7 @@
 </template>
 
 <script>
+import MbElegir from "@/components/MbElegir.vue";
 import api from "@/api";
 
 /**
@@ -112,6 +113,8 @@ const TABLAS = {
 
 export default {
   name: "AdminTabla",
+
+  components: { MbElegir },
 
   data() { return { filas: [], original: "", guardando: false }; },
 

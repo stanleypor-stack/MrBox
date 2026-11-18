@@ -15,18 +15,7 @@
             <input v-model="busqueda" type="search" :placeholder="$t('inventory.searchItems')">
           </label>
 
-          <label class="mb-sel">
-            <span class="mb-oculto">{{ $t('boxes.sort') }}</span>
-            <select v-model="orden">
-              <option value="nuevo">{{ $t('boxes.sortNew') }}</option>
-              <option value="caro">{{ $t('inventory.highestValue') }}</option>
-              <option value="barato">{{ $t('boxes.sortCheap') }}</option>
-            </select>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ea3c7"
-                 stroke-width="2.6" stroke-linecap="round" aria-hidden="true">
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </label>
+          <MbElegir v-model="orden" :opciones="ordenes" chico class="mb-sel" />
 
           <div class="mb-inv__pestanas">
             <span class="mb-pestana is-activa">
@@ -116,6 +105,7 @@
 </template>
 
 <script>
+import MbElegir from "@/components/MbElegir.vue";
 import { mapGetters } from "vuex";
 import api from "@/api";
 import { sprite } from "@/utils/sprite";
@@ -146,6 +136,8 @@ const COLORES = {
 export default {
   name: "InventoryView",
 
+  components: { MbElegir },
+
   data() {
     return {
       items: [],
@@ -159,6 +151,14 @@ export default {
   },
 
   computed: {
+    ordenes() {
+      return [
+        { valor: "nuevo", texto: this.$t("boxes.sortNew") },
+        { valor: "caro", texto: this.$t("inventory.highestValue") },
+        { valor: "barato", texto: this.$t("boxes.sortCheap") },
+      ];
+    },
+
     ...mapGetters(["aperturasGratis"]),
 
     visibles() {

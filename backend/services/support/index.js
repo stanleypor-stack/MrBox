@@ -1,6 +1,11 @@
 const SupportThread = require("../../database/models/SupportThread");
 const Settings = require("../../database/models/Settings");
+const User = require("../../database/models/User");
+const BalanceTransaction = require("../../database/models/BalanceTransaction");
+const Redemption = require("../../database/models/Redemption");
+const Order = require("../../database/models/Order");
 const { errorDe } = require("../../utils/errors");
+const { sc } = require("../../utils/money");
 
 /**
  * SOPORTE.
@@ -197,7 +202,46 @@ async function bandeja(opciones) {
   const cuenta = {};
   for (const f of porEstado) cuenta[f._id] = f.n;
 
+  /*
+    LOS NUMEROS DE LA BANDEJA.
+
+    Cuántas esperan respuesta nuestra, cuántas no tienen dueño, cuántas
+    se cerraron hoy y --el que de verdad importa-- cuánto tarda la
+    PRIMERA respuesta. Una bandeja sin ese número se ve igual de
+    ordenada esté o no esté contestando alguien.
+  */
+  const hoy = new Date();
+  hoy.setUTCHours(0, 0, 0, 0);
+
+  const [sinDueno, cerradasHoy, ultimas] = await Promise.all([
+    SupportThread.countDocuments({ estado: { $ne: "closed" }, asignado: null }),
+    SupportThread.countDocuments({ estado: "closed", ultimoMensajeEl: { $gte: hoy } }),
+    /* Las últimas cincuenta alcanzan: es una mediana, no una auditoría. */
+    SupportThread.find({ "mensajes.deAdmin": true })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .select("createdAt mensajes.deAdmin mensajes.el")
+      .lean(),
+  ]);
+
+  const esperas = [];
+  for (const h of ultimas) {
+    const primera = (h.mensajes || []).find((m) => m.deAdmin);
+    if (primera && primera.el) esperas.push(new Date(primera.el) - new Date(h.createdAt));
+  }
+  esperas.sort((a, b) => a - b);
+  const mediana = esperas.length ? esperas[Math.floor(esperas.length / 2)] : null;
+
   return {
+    numeros: {
+      esperandoNos: cuenta.waiting_us || 0,
+      esperandoAlJugador: cuenta.waiting_player || 0,
+      cerradas: cuenta.closed || 0,
+      sinDueno,
+      cerradasHoy,
+      /* En minutos, que es como se lee. */
+      primeraRespuestaMin: mediana === null ? null : Math.round(mediana / 60000),
+    },
     items: hilos.map((h) => Object.assign(resumir(h, { paraElEquipo: true }), {
       userId: h.user && h.user._id,
       username: (h.user && h.user.username) || "",
@@ -209,6 +253,74 @@ async function bandeja(opciones) {
     pages: Math.max(1, Math.ceil(total / perPage)),
     porEstado: cuenta,
     esperando: cuenta.waiting_us || 0,
+  };
+}
+
+/**
+ * LO QUE HAY QUE SABER DEL QUE ESCRIBIO.
+ *
+ * Sale al lado de la conversación porque el 90% de lo que se pregunta
+ * en soporte se contesta mirando esto: cuánto tiene, cuánto jugó, si
+ * está verificado, si tiene un canje esperando y si alguien le puso
+ * una traba. Sin esto hay que abrir la ficha del jugador en otra
+ * pestaña, leerla, y volver.
+ *
+ * TODO SALE DEL LIBRO
+ *
+ * Lo comprado y lo canjeado se suman de las transacciones, no de un
+ * contador: si soporte le dice a alguien "vos depositaste 200" tiene
+ * que ser lo mismo que diga su extracto.
+ */
+async function fichaDelJugador(userId) {
+  if (!userId) return null;
+
+  const vip = require("../vip");
+
+  const [u, porTipo, canjes, pedidos, ultimos] = await Promise.all([
+    User.findById(userId).select("+balanceSc +bonoPendienteSc").lean(),
+    BalanceTransaction.aggregate([
+      { $match: { user: userId } },
+      { $group: { _id: "$type", total: { $sum: "$amountSc" } } },
+    ]),
+    Redemption.countDocuments({ user: userId, estado: { $in: ["pending", "approved"] } }),
+    Order.countDocuments({ user: userId, estado: { $in: ["pending", "packing"] } }),
+    BalanceTransaction.find({ user: userId }).sort({ createdAt: -1 }).limit(5).lean(),
+  ]);
+
+  if (!u) return null;
+
+  const de = (tipo) => {
+    const f = porTipo.find((x) => x._id === tipo);
+    return f ? sc(Math.abs(f.total)) : 0;
+  };
+
+  const rango = vip.rangoDe(u.jugadoSc, u.rangoManual);
+
+  return {
+    _id: u._id,
+    username: u.username,
+    email: u.email,
+    createdAt: u.createdAt,
+    banned: !!u.banned,
+    verificationLevel: u.verificationLevel,
+    balanceSc: sc(u.balanceSc),
+    bonoPendienteSc: sc(u.bonoPendienteSc),
+    jugadoSc: sc(u.jugadoSc),
+    compradoSc: de("purchase"),
+    canjeadoSc: de("redemption"),
+    freeOpens: u.freeOpens,
+    rango: rango.nombre,
+    rangoColor: rango.color,
+    trabas: u.trabas || {},
+    notaInterna: u.notaInterna || "",
+    canjesAbiertos: canjes,
+    pedidosAbiertos: pedidos,
+    ultimos: ultimos.map((m) => ({
+      _id: m._id,
+      createdAt: m.createdAt,
+      type: m.type,
+      amountSc: sc(m.amountSc),
+    })),
   };
 }
 
@@ -224,14 +336,8 @@ async function verDelEquipo(hiloId) {
   const j = hilo.user || {};
   return Object.assign(completo(hilo), {
     asignadoA: (hilo.asignado && hilo.asignado.username) || "",
-    jugador: {
-      _id: j._id,
-      username: j.username,
-      email: j.email,
-      jugadoSc: j.jugadoSc,
-      verificationLevel: j.verificationLevel,
-      banned: j.banned,
-      createdAt: j.createdAt,
+    jugador: (await fichaDelJugador(j._id)) || {
+      _id: j._id, username: j.username, email: j.email,
     },
   });
 }
@@ -288,6 +394,7 @@ module.exports = {
   sinLeer,
   bandeja,
   verDelEquipo,
+  fichaDelJugador,
   responder,
   mover,
   respuestasGuardadas,

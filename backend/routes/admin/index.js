@@ -1042,7 +1042,30 @@ router.get("/team", async (req, res) => {
 router.get("/settings", async (req, res) => {
   try {
     const cfg = await Settings.leer();
-    return res.json({ success: true, data: cfg });
+
+    /*
+      LOS QUE NUNCA SE GUARDARON, CON SU VALOR DE VERDAD.
+
+      `default:` de Mongoose solo corre cuando se CREA el documento: la
+      configuracion del sitio se creo hace meses, asi que un campo
+      agregado despues viene vacio y el panel lo dibujaba apagado...
+      mientras el sitio lo trataba como encendido. Un interruptor que
+      miente es peor que no tenerlo.
+
+      Los valores de abajo son los mismos que usan los servicios
+      (services/feed, services/support) cuando el campo no esta.
+    */
+    const p = cfg.pulls || {};
+    const completo = Object.assign({}, cfg, {
+      pulls: {
+        relleno: p.relleno !== false,
+        porMinuto: p.porMinuto || 90,
+        baratosPct: p.baratosPct == null ? 85 : p.baratosPct,
+        topeSc: p.topeSc || 10,
+      },
+    });
+
+    return res.json({ success: true, data: completo });
   } catch (err) {
     return responderError(res, err, "settings");
   }

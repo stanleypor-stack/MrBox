@@ -323,7 +323,7 @@ const SECCIONES = {
     w: ".9fr 2.4fr 1fr 1fr .8fr .8fr .7fr .7fr .8fr",
     columnas: [
       { campo: "sku", tenue: true },
-      { campo: "name", tipo: "arte", valor: (f) => f.name, enlace: null },
+      { campo: "name", tipo: "arte", foto: "imageUrl", valor: (f) => f.name, enlace: null },
       { campo: "brand", tenue: true },
       { campo: "category", tenue: true },
       { campo: "valueSc", der: true, tipo: "sc" },
@@ -615,7 +615,7 @@ const SECCIONES = {
       campos: [
         { campo: "clave", rotulo: "admin.field.key", ejemplo: "reward" },
         { campo: "orden", tipo: "numero", porDefecto: 1 },
-        { campo: "foto", ancho: true, ejemplo: "/img/banners/banner-50k.png" },
+        { campo: "foto", ancho: true, ejemplo: "/img/banners/banner-50k.webp" },
         { campo: "titulo", rotulo: "admin.field.titleKey", ejemplo: "banners.rewardTitle", ayuda: "admin.help.claveDeIdioma" },
         { campo: "sub", ejemplo: "banners.rewardSub" },
         { campo: "cta", ejemplo: "banners.rewardCta" },
@@ -633,7 +633,7 @@ const SECCIONES = {
     ],
     columnas: [
       { campo: "orden", der: true, tipo: "numero" },
-      { campo: "titulo", tipo: "arte", valor: (f) => f.clave },
+      { campo: "titulo", tipo: "arte", foto: "foto", valor: (f) => f.clave },
       { campo: "texto", valor: (f) => f.titulo, tipo: "clave", tenue: true },
       { campo: "destino", tenue: true },
       { campo: "visible", tipo: "estado", valor: (f) => (f.visible ? "visible" : "hidden"), textos: "admin.state" },

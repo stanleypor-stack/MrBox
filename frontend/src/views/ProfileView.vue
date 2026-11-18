@@ -215,13 +215,10 @@
 
           <section class="mb-panel mb-panel--tabla">
             <div class="mb-panel__cabeza">
-              <label class="mb-sel-chico">
+              <div class="mb-sel-chico">
                 <span class="mb-oculto">{{ $t('boxes.sort') }}</span>
-                <select v-model="tipo" @change="traerMovimientos(1)">
-                  <option value="">{{ $t('boxes.allCategories') }}</option>
-                  <option v-for="t in TIPOS" :key="t" :value="t">{{ $t('txType.' + t) }}</option>
-                </select>
-              </label>
+                <MbElegir v-model="tipo" :opciones="tiposDeMovimiento" chico @elegida="traerMovimientos(1)" />
+              </div>
             </div>
 
             <p v-if="!movimientos.items.length" class="mb-panel__vacio">{{ $t('profile.noTransactions') }}</p>
@@ -515,14 +512,17 @@
       :sub="$t('profile.level' + nivelAbierto.nivel + 'Sub')"
       @cerrar="nivelAbierto = null"
     >
-      <label v-for="c in nivelAbierto.campos" :key="c.campo" class="mb-campo-g">
+      <component
+        :is="c.tipo === 'opcion' ? 'div' : 'label'" v-for="c in nivelAbierto.campos" :key="c.campo"
+        class="mb-campo-g"
+      >
         {{ $t('kyc.field.' + c.campo) }}
         <span v-if="!c.obligatorio" class="mb-tenue"> · {{ $t('create.optional') }}</span>
 
-        <select v-if="c.tipo === 'opcion'" v-model="formaKyc[c.campo]">
-          <option value="">—</option>
-          <option v-for="o in c.opciones" :key="o" :value="o">{{ $t('kyc.doc.' + o) }}</option>
-        </select>
+        <MbElegir
+          v-if="c.tipo === 'opcion'" v-model="formaKyc[c.campo]"
+          :opciones="c.opciones.map((o) => ({ valor: o, texto: $t('kyc.doc.' + o) }))"
+        />
 
         <input
           v-else-if="c.tipo === 'archivo'" type="file"
@@ -531,7 +531,7 @@
         >
 
         <input v-else v-model="formaKyc[c.campo]" :type="c.tipo === 'fecha' ? 'date' : 'text'">
-      </label>
+      </component>
 
       <p class="mb-ayuda">{{ $t('kyc.fileHelp', { mb: kyc.maximoPorArchivoMb }) }}</p>
 
@@ -574,6 +574,7 @@
 import { mapGetters, mapState } from "vuex";
 import api from "@/api";
 import MbVentana from "@/components/MbVentana.vue";
+import MbElegir from "@/components/MbElegir.vue";
 
 const TIPOS = [
   "purchase", "redemption", "box_open", "item_sold", "deal", "rakeback",
@@ -620,7 +621,7 @@ const CAMPOS_DIR = [
 export default {
   name: "ProfileView",
 
-  components: { MbVentana },
+  components: { MbVentana, MbElegir },
 
   data() {
     return {
@@ -673,6 +674,12 @@ export default {
   },
 
   computed: {
+    /* El filtro del extracto: todos, y cada tipo de movimiento. */
+    tiposDeMovimiento() {
+      return [{ valor: "", texto: this.$t("boxes.allCategories") }]
+        .concat(TIPOS.map((t) => ({ valor: t, texto: this.$t("txType." + t) })));
+    },
+
     ...mapState(["usuario"]),
     ...mapGetters(["entro"]),
 

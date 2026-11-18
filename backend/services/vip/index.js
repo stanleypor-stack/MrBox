@@ -102,16 +102,25 @@ function rangos() {
           ? puestos.map((r, i) => {
             const base = RANGOS[Math.min(i, RANGOS.length - 1)];
             const semanal = Number(r.rakebackSemanal) || 0;
+
+            /*
+              El diario y el mensual usan SU numero si lo tienen. Si no
+              --un rango guardado antes de que existiera el campo-- se
+              estiran desde el semanal, que es lo que se hacia siempre.
+            */
             const proporcion = base.rakeback.weekly > 0 ? semanal / base.rakeback.weekly : 0;
+            const propio = (v, deFabrica) => (
+              v === null || v === undefined ? Math.round(deFabrica * proporcion * 1e6) / 1e6 : Number(v)
+            );
 
             return {
               nombre: r.nombre,
               desde: r.desde,
               color: r.color || base.color,
               rakeback: {
-                daily: Math.round(base.rakeback.daily * proporcion * 1e6) / 1e6,
+                daily: propio(r.rakebackDiario, base.rakeback.daily),
                 weekly: semanal,
-                monthly: Math.round(base.rakeback.monthly * proporcion * 1e6) / 1e6,
+                monthly: propio(r.rakebackMensual, base.rakeback.monthly),
               },
             };
           })

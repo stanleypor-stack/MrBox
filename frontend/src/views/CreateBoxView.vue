@@ -117,13 +117,7 @@
             <input v-model="maximo" inputmode="decimal" :aria-label="$t('create.maxValue')" :placeholder="$t('deals.max')">
           </span>
 
-          <label class="mb-orden">
-            <span class="mb-oculto">{{ $t('boxes.sort') }}</span>
-            <select v-model="orden">
-              <option value="desc">{{ $t('boxes.sortExpensive') }}</option>
-              <option value="asc">{{ $t('boxes.sortCheap') }}</option>
-            </select>
-          </label>
+          <MbElegir v-model="orden" :opciones="ordenes" chico class="mb-orden" />
         </div>
 
         <span class="mb-ayuda">{{ $t('create.catCount', { n: total }) }}</span>
@@ -216,6 +210,7 @@
 </template>
 
 <script>
+import MbElegir from "@/components/MbElegir.vue";
 import { mapGetters } from "vuex";
 import api from "@/api";
 import { sprite } from "@/utils/sprite";
@@ -261,7 +256,7 @@ const MAXIMO = 20;
  */
 export default {
   name: "CreateBoxView",
-  components: { MbCajaDibujada },
+  components: { MbElegir, MbCajaDibujada },
 
   data() {
     return {
@@ -301,6 +296,13 @@ export default {
   },
 
   computed: {
+    ordenes() {
+      return [
+        { valor: "desc", texto: this.$t("boxes.sortExpensive") },
+        { valor: "asc", texto: this.$t("boxes.sortCheap") },
+      ];
+    },
+
     ...mapGetters(["entro"]),
 
     /** Lo elegido, en el orden en que lo fue eligiendo. */

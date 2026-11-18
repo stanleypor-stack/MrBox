@@ -1134,6 +1134,10 @@ export default {
       "biggest": "Largest segment",
       "banners": "Banners",
       "visible": "Visible",
+      "unassigned": "With nobody on them",
+      "closedToday": "Closed today",
+      "firstReply": "First reply",
+      "firstReplyHelp": "Median of the last fifty.",
       "waitingOnUs": "Waiting on us"
     },
     "col": {
@@ -1270,6 +1274,7 @@ export default {
       "shown": "Shown",
       "name": "Name"
     },
+    "openPlayer": "Open the player file",
     "dash": {
       "lastSync": "updated {seg}s ago",
       "period": "Period",
@@ -1313,7 +1318,20 @@ export default {
       "user": "Player",
       "support": "Support",
       "admin": "Admin",
-      "owner": "Owner"
+      "owner": "Owner",
+      "players": "Players",
+      "wagered": "Played by everyone",
+      "giveBack": "Given back as rakeback",
+      "giveBackHelp": "Of everything played. The house keeps 8%, so this coming near it means the club is eating the margin.",
+      "daily": "Daily %",
+      "weekly": "Weekly %",
+      "monthly": "Monthly %",
+      "theirWager": "What they played",
+      "theirDeposits": "What they bought",
+      "theirRakeback": "Paid back to them",
+      "each": "Played each",
+      "benefits": "What each rank unlocks",
+      "benefitsHelp": "How many benefits a rank has is fixed by its position: the first rank gets the first benefit, the last one gets them all."
     },
     "level": {
       "error": "Error",
@@ -1437,6 +1455,15 @@ export default {
       "whySettle": "Why is it being closed early?",
       "payHelp": "When a race closes, prizes are paid one by one: if one fails, the rest still get theirs and the one that failed is left here. This pays it, and it cannot pay twice --the ledger is checked first.",
       "empty": "Nobody has played in this window yet."
+    },
+    "benefit": {
+      "levelUpBox": "Level-up box",
+      "welcomeBalance": "Welcome balance",
+      "monthlyBox": "Monthly box",
+      "weeklyBox": "Weekly box",
+      "rakeback": "Coin back",
+      "vipManager": "VIP manager",
+      "reload": "Reload bonus"
     },
     "box": {
       "price": "Price",

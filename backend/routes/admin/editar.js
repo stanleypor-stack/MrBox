@@ -333,11 +333,19 @@ router.put("/ranks", async (req, res) => {
     const filas = Array.isArray(req.body.rangos) ? req.body.rangos : [];
     if (!filas.length) throw errorDe("INVALID_AMOUNT", { rangos: 0 });
 
+    /* Un rakeback no puede pasar del 50%: arriba de eso el sitio paga
+       por que jueguen, y seguro es un dedo de mas en el teclado. */
+    const tope = (v) => (
+      v === null || v === undefined || v === "" ? null : Math.max(0, Math.min(0.5, Number(v) || 0))
+    );
+
     const rangos = filas.map((r) => ({
       nombre: LIMPIAR.texto(r.nombre),
       desde: LIMPIAR.sc(r.desde),
       color: LIMPIAR.texto(r.color || "#3f7cf0"),
-      rakebackSemanal: Number(r.rakebackSemanal) || 0,
+      rakebackSemanal: tope(r.rakebackSemanal) || 0,
+      rakebackDiario: tope(r.rakebackDiario),
+      rakebackMensual: tope(r.rakebackMensual),
     }));
 
     /* Tienen que ir de menor a mayor: con un umbral fuera de orden,

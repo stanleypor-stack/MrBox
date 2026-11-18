@@ -71,39 +71,25 @@
         <p v-else class="mb-caja__nota">{{ $t('common.loading') }}</p>
 
         <!-- La moneda y la red: los dos selectores del diseño -->
-        <label class="mb-caja__campo">
+        <span class="mb-caja__campo">
           {{ $t('wallet.coin') }}
-          <span class="mb-caja__select">
-            <span class="mb-caja__punto mb-caja__punto--grande" :style="{ background: moneda.color }" aria-hidden="true">
-              {{ moneda.letra }}
-            </span>
-            <select v-model="tickerElegido" @change="alCambiarMoneda">
-              <option v-for="m in monedas" :key="m.ticker" :value="m.ticker">
-                {{ m.nombre }} ({{ m.ticker }})
-              </option>
-            </select>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ea3c7" stroke-width="2.6"
-                 stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
-          </span>
-        </label>
+          <MbElegir v-model="tickerElegido" :opciones="opcionesDeMoneda" @elegida="alCambiarMoneda">
+            <template #icono="{ o }">
+              <MbMoneda v-if="o" :ticker="o.valor" :color="o.color" :letra="o.letra" />
+            </template>
+          </MbElegir>
+        </span>
 
-        <label class="mb-caja__campo">
+        <span class="mb-caja__campo">
           {{ $t('wallet.network') }}
-          <span class="mb-caja__select">
-            <span class="mb-caja__punto mb-caja__punto--grande" :style="{ background: red.color }" aria-hidden="true">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
-                <path d="M12 2 22 8v8l-10 6L2 16V8z" />
-              </svg>
-            </span>
-            <select v-model="redElegida" @change="traerDeposito">
-              <option v-for="r in moneda.redes" :key="r.clave" :value="r.clave">
-                {{ r.nombre }} · {{ r.demora }}
-              </option>
-            </select>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ea3c7" stroke-width="2.6"
-                 stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
-          </span>
-        </label>
+          <MbElegir v-model="redElegida" :opciones="opcionesDeRed" @elegida="traerDeposito">
+            <template #icono="{ o }">
+              <span v-if="o" class="mb-caja__red" :style="{ background: o.color }" aria-hidden="true">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M12 2 22 8v8l-10 6L2 16V8z" /></svg>
+              </span>
+            </template>
+          </MbElegir>
+        </span>
 
         <p class="mb-caja__fino">
           {{ $t('wallet.minAndConfirms', { min: minimo, n: red.confirmaciones, time: red.demora }) }}
@@ -179,35 +165,28 @@
               </span>
             </label>
 
-            <label class="mb-caja__campo">
+            <span class="mb-caja__campo">
               {{ $t('wallet.coin') }}
-              <span class="mb-caja__select">
-                <span class="mb-caja__punto mb-caja__punto--grande" :style="{ background: moneda.color }" aria-hidden="true">
-                  {{ moneda.letra }}
-                </span>
-                <select v-model="tickerElegido" :disabled="!puedeCanjear" @change="alCambiarMoneda">
-                  <option v-for="m in monedas" :key="m.ticker" :value="m.ticker">{{ m.nombre }} ({{ m.ticker }})</option>
-                </select>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ea3c7" stroke-width="2.6"
-                     stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
-              </span>
-            </label>
+              <MbElegir
+                v-model="tickerElegido" :opciones="opcionesDeMoneda"
+                :deshabilitado="!puedeCanjear" @elegida="alCambiarMoneda"
+              >
+                <template #icono="{ o }">
+                  <MbMoneda v-if="o" :ticker="o.valor" :color="o.color" :letra="o.letra" />
+                </template>
+              </MbElegir>
+            </span>
 
-            <label class="mb-caja__campo">
+            <span class="mb-caja__campo">
               {{ $t('wallet.network') }}
-              <span class="mb-caja__select">
-                <span class="mb-caja__punto mb-caja__punto--grande" :style="{ background: red.color }" aria-hidden="true">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
-                    <path d="M12 2 22 8v8l-10 6L2 16V8z" />
-                  </svg>
-                </span>
-                <select v-model="redElegida" :disabled="!puedeCanjear">
-                  <option v-for="r in moneda.redes" :key="r.clave" :value="r.clave">{{ r.nombre }} · {{ r.clave }}</option>
-                </select>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ea3c7" stroke-width="2.6"
-                     stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
-              </span>
-            </label>
+              <MbElegir v-model="redElegida" :opciones="opcionesDeRed" :deshabilitado="!puedeCanjear">
+                <template #icono="{ o }">
+                  <span v-if="o" class="mb-caja__red" :style="{ background: o.color }" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M12 2 22 8v8l-10 6L2 16V8z" /></svg>
+                  </span>
+                </template>
+              </MbElegir>
+            </span>
 
             <label class="mb-caja__campo">
               {{ $t('wallet.yourAddress', { coin: tickerElegido }) }}
@@ -249,6 +228,8 @@
 <script>
 import { mapGetters } from "vuex";
 import api from "@/api";
+import MbElegir from "@/components/MbElegir.vue";
+import MbMoneda from "@/components/MbMoneda.vue";
 
 /**
  * LA CAJA: COMPRAR SC Y CANJEARLOS.
@@ -271,6 +252,8 @@ import api from "@/api";
  */
 export default {
   name: "MbBilletera",
+
+  components: { MbElegir, MbMoneda },
 
   props: {
     /* "in" deposita, "out" canjea. */
@@ -307,6 +290,30 @@ export default {
 
     red() {
       return (this.moneda.redes || []).find((r) => r.clave === this.redElegida) || { nombre: "", clave: "", confirmaciones: 0, demora: "" };
+    },
+
+    /*
+      Lo que ve el selector: nombre a la izquierda, ticker a la
+      derecha y la monedita adelante, como en el diseño.
+    */
+    opcionesDeMoneda() {
+      return this.monedas.map((m) => ({
+        valor: m.ticker,
+        texto: m.nombre,
+        derecha: m.ticker,
+        color: m.color,
+        letra: m.letra,
+      }));
+    },
+
+    opcionesDeRed() {
+      return (this.moneda.redes || []).map((r) => ({
+        valor: r.clave,
+        texto: r.nombre,
+        nota: r.demora,
+        derecha: r.clave,
+        color: r.color,
+      }));
     },
 
     /* "USDT (TRC20)" cuando hay varias redes; "BTC" cuando hay una. */
@@ -708,6 +715,17 @@ export default {
 }
 
 .mb-caja__scico { position: absolute; left: 14px; }
+
+/* El rombito de la red, del mismo tamaño que la monedita. */
+.mb-caja__red {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 .mb-caja__todo {
   position: absolute;

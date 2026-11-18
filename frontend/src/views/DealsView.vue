@@ -14,17 +14,10 @@
           {{ $t('deals.priceMax') }}
           <input v-model="maximo" inputmode="decimal" :placeholder="$t('deals.any')">
         </label>
-        <label class="mb-dcampo mb-dcampo--sel">
+        <span class="mb-dcampo mb-dcampo--sel">
           {{ $t('deals.orderBy') }}
-          <select v-model="orden">
-            <option value="desc">{{ $t('boxes.sortExpensive') }}</option>
-            <option value="asc">{{ $t('boxes.sortCheap') }}</option>
-          </select>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8ea3c7"
-               stroke-width="3" stroke-linecap="round" aria-hidden="true">
-            <path d="m6 9 6 6 6-6" />
-          </svg>
-        </label>
+          <MbElegir v-model="orden" :opciones="ordenes" chico />
+        </span>
       </div>
 
       <div class="mb-dgrilla">
@@ -133,6 +126,7 @@
 </template>
 
 <script>
+import MbElegir from "@/components/MbElegir.vue";
 import { mapGetters } from "vuex";
 import api from "@/api";
 import { sprite } from "@/utils/sprite";
@@ -167,7 +161,7 @@ const FONDOS = {
  */
 export default {
   name: "DealsView",
-  components: { MbRuedaDeDeal },
+  components: { MbElegir, MbRuedaDeDeal },
 
   data() {
     return {
@@ -194,6 +188,13 @@ export default {
   },
 
   computed: {
+    ordenes() {
+      return [
+        { valor: "desc", texto: this.$t("boxes.sortExpensive") },
+        { valor: "asc", texto: this.$t("boxes.sortCheap") },
+      ];
+    },
+
     ...mapGetters(["entro", "saldo"]),
 
     hayMas() { return this.pagina < this.paginas; },

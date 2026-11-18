@@ -339,13 +339,13 @@ export default {
         telefono, donde se recorta al arte y el titulo va encima.
       */
       banners: [
-        { foto: "/img/banners/banner-50k.png", title: "banners.rewardTitle",
+        { foto: "/img/banners/banner-50k.webp", title: "banners.rewardTitle",
           sub: "banners.rewardSub", cta: "banners.rewardCta", a: "/vip" },
-        { foto: "/img/banners/banner-luxury.png", title: "banners.luxTitle",
+        { foto: "/img/banners/banner-luxury.webp", title: "banners.luxTitle",
           sub: "banners.luxSub", cta: "banners.luxCta", a: "/boxes?sort=caras" },
-        { foto: "/img/banners/banner-race.png", title: "banners.raceTitle",
+        { foto: "/img/banners/banner-race.webp", title: "banners.raceTitle",
           sub: "banners.raceSub", cta: "banners.raceCta", a: "/races/weekly" },
-        { foto: "/img/banners/banner-gta.png", title: "banners.gtaTitle",
+        { foto: "/img/banners/banner-gta.webp", title: "banners.gtaTitle",
           sub: "banners.gtaSub", cta: "banners.gtaCta", a: "/promotions" },
       ],
     };
@@ -418,7 +418,22 @@ export default {
     async traerPulls() {
       try {
         const { data } = await api.get("/boxes/feed/latest", { params: { limit: 24 } });
-        this.pulls = data.data;
+
+        /*
+          SE PEGAN LAS NUEVAS, NO SE CAMBIA LA CINTA ENTERA.
+
+          Reemplazar la lista hacia que Vue tratara como "nueva" a
+          cada tarjeta y las animara a todas a la vez: la cinta
+          quedaba en blanco un cuarto de segundo, dos veces por
+          segundo. Pegando solo las que no estaban, lo que ya se ve
+          no se vuelve a dibujar y entra una sola por vez, que es
+          justo lo que hace mrloot.
+        */
+        const tengo = new Set(this.pulls.map((p) => p._id));
+        const nuevas = data.data.filter((p) => !tengo.has(p._id));
+
+        if (nuevas.length) this.pulls = nuevas.concat(this.pulls).slice(0, 24);
+        else if (!this.pulls.length) this.pulls = data.data;
       } catch (err) {
         /* La cinta es decoracion: si falla, se queda con lo que tenia.
            Un cartel rojo en la portada porque no entro un pull seria

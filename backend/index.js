@@ -7,8 +7,12 @@
 */
 require("dotenv").config({ path: require("path").join(__dirname, ".env") });
 
+const path = require("path");
+const fs = require("fs");
+
 const express = require("express");
 const cors = require("cors");
+const compression = require("compression");
 
 const { conectar } = require("./database");
 const carreras = require("./services/races");
@@ -30,10 +34,57 @@ const app = express();
 app.set("trust proxy", 1);
 
 app.use(cors());
+
+/*
+  TODO VIAJA COMPRIMIDO.
+
+  El javascript del sitio son 500 KB de texto que gzip deja en 150. En
+  una conexion de telefono eso es un segundo y medio menos de pantalla
+  en blanco, y no cuesta nada: lo hace el servidor al vuelo.
+
+  Las imagenes ya vienen comprimidas (webp) y `compression` las saltea
+  solo, asi que no se gasta tiempo en recomprimir lo que no baja.
+*/
+app.use(compression());
+
 /* Un cuerpo de mas de esto no es un pedido de este sitio, es un ataque. */
 app.use(express.json({ limit: "200kb" }));
 
 app.use("/api", require("./routes"));
+
+/*
+  EL SITIO CONSTRUIDO, SI ESTA.
+
+  En produccion este mismo servidor sirve el `dist` del frontend: una
+  sola cosa que arrancar, un solo dominio, y nada de CORS entre el
+  sitio y su API. En desarrollo la carpeta no existe y esto no hace
+  nada, porque ahi el sitio lo sirve el servidor de Vue con recarga en
+  caliente.
+
+  LOS ARCHIVOS CON HASH SE GUARDAN UN AÑO
+
+  `app.1a2b3c.js` no cambia nunca --si cambia el contenido cambia el
+  nombre-- asi que el navegador no tiene por que volver a pedirlo. El
+  `index.html` es el unico que NO se guarda: es el que dice cuales son
+  los nombres de hoy.
+*/
+const dist = path.join(__dirname, "..", "frontend", "dist");
+
+if (fs.existsSync(dist)) {
+  app.use(express.static(dist, {
+    index: false,
+    setHeaders(res, ruta) {
+      const guardable = /[.-][0-9a-f]{8,}\.[a-z0-9]+$/i.test(ruta) || /\.(webp|png|jpg|svg|otf|woff2?)$/i.test(ruta);
+      res.setHeader("Cache-Control", guardable ? "public, max-age=31536000, immutable" : "no-cache");
+    },
+  }));
+
+  /* Cualquier direccion del sitio la resuelve el router del navegador. */
+  app.get(/^(?!\/api\/).*/, (req, res, next) => {
+    if (req.method !== "GET") return next();
+    return res.sendFile(path.join(dist, "index.html"));
+  });
+}
 
 /* Lo que no existe contesta como lo que existe, en el mismo formato. */
 app.use((req, res) => res.status(404).json(errorDe("SOMETHING_WENT_WRONG", { ruta: req.path }, 404).aRespuesta()));

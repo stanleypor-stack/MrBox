@@ -9,12 +9,7 @@
 
       <label class="ad-campo">
         {{ $t('admin.filter.estado') }}
-        <select v-model="estado" class="ad-sel" @change="traer()">
-          <option value="">{{ $t('admin.all') }}</option>
-          <option value="waiting_us">{{ $t('admin.thread.waiting_us') }}</option>
-          <option value="waiting_player">{{ $t('admin.thread.waiting_player') }}</option>
-          <option value="closed">{{ $t('admin.thread.closed') }}</option>
-        </select>
+        <MbElegir v-model="estado" :opciones="estados" chico class="ad-elegir" @elegida="traer()" />
       </label>
     </div>
 
@@ -23,8 +18,18 @@
         <span>{{ $t('admin.num.waitingOnUs') }}</span>
         <b :class="esperando ? 'ad-amarillo' : 'ad-verde'">{{ num(esperando) }}</b>
       </div>
-      <div class="ad-num"><span>{{ $t('admin.thread.waiting_player') }}</span><b>{{ num(porEstado.waiting_player || 0) }}</b></div>
-      <div class="ad-num"><span>{{ $t('admin.thread.closed') }}</span><b>{{ num(porEstado.closed || 0) }}</b></div>
+      <div class="ad-num"><span>{{ $t('admin.thread.waiting_player') }}</span><b>{{ num(n.esperandoAlJugador) }}</b></div>
+      <div class="ad-num">
+        <span>{{ $t('admin.num.unassigned') }}</span>
+        <b :class="n.sinDueno ? 'ad-amarillo' : ''">{{ num(n.sinDueno) }}</b>
+      </div>
+      <div class="ad-num"><span>{{ $t('admin.num.closedToday') }}</span><b>{{ num(n.cerradasHoy) }}</b></div>
+      <div class="ad-num">
+        <span>{{ $t('admin.num.firstReply') }}</span>
+        <b>{{ n.primeraRespuestaMin === null ? '—' : espera(n.primeraRespuestaMin) }}</b>
+        <em>{{ $t('admin.num.firstReplyHelp') }}</em>
+      </div>
+      <div class="ad-num"><span>{{ $t('admin.thread.closed') }}</span><b>{{ num(n.cerradas) }}</b></div>
     </div>
 
     <!-- ── La bandeja y la conversación ─────────────────────────── -->
@@ -114,11 +119,75 @@
       <section v-else class="ads__chat ads__chat--vacio">
         <p class="ad-tenue">{{ $t('admin.pickThread') }}</p>
       </section>
+
+      <!--
+        ── Quién es el que escribió ──────────────────────────────
+
+        Al lado de la conversación, porque casi todo lo que se
+        pregunta en soporte se contesta mirando esto. Sin esta
+        columna hay que abrir la ficha en otra pestaña, leerla y
+        volver, por cada conversación.
+      -->
+      <aside v-if="elegido && j" class="ads__ficha">
+        <div class="ads__ficha-quien">
+          <span class="ads__avatar">{{ (j.username || '?').charAt(0).toUpperCase() }}</span>
+          <span class="ads__ficha-nombre">
+            <router-link :to="`/admin/players/${j._id}`" class="ads__link">{{ j.username }}</router-link>
+            <span class="ad-tenue">{{ j.email }}</span>
+          </span>
+        </div>
+
+        <div class="ads__chapas">
+          <span class="ads__chapa" :style="{ color: j.rangoColor }">{{ j.rango }}</span>
+          <span class="ads__chapa">{{ $t('admin.player.level', { n: j.verificationLevel }) }}</span>
+          <span v-if="j.banned" class="ad-estado is-mal">{{ $t('admin.state.banned') }}</span>
+        </div>
+
+        <dl class="ads__datos">
+          <div><dt>{{ $t('admin.balance') }}</dt><dd>SC {{ plata(j.balanceSc) }}</dd></div>
+          <div><dt>{{ $t('admin.wagered') }}</dt><dd>SC {{ plata(j.jugadoSc) }}</dd></div>
+          <div><dt>{{ $t('admin.player.bought') }}</dt><dd>SC {{ plata(j.compradoSc) }}</dd></div>
+          <div><dt>{{ $t('admin.player.redeemed') }}</dt><dd>SC {{ plata(j.canjeadoSc) }}</dd></div>
+          <div><dt>{{ $t('admin.player.openRedemptions') }}</dt><dd :class="j.canjesAbiertos ? 'ad-amarillo' : ''">{{ num(j.canjesAbiertos) }}</dd></div>
+          <div><dt>{{ $t('admin.player.orders') }}</dt><dd>{{ num(j.pedidosAbiertos) }}</dd></div>
+          <div><dt>{{ $t('admin.player.freeLeft') }}</dt><dd>{{ num(j.freeOpens) }}</dd></div>
+          <div><dt>{{ $t('admin.col.createdAt') }}</dt><dd>{{ fecha(j.createdAt) }}</dd></div>
+        </dl>
+
+        <!-- Si alguien le puso una traba, se dice ACA: es la mitad de
+             los "por qué no puedo retirar" que entran por soporte. -->
+        <div v-if="trabas.length" class="ads__trabas">
+          <span class="ads__ficha-t">{{ $t('admin.player.locks') }}</span>
+          <span v-for="k in trabas" :key="k" class="ad-estado is-mal">{{ $t('admin.player.lock.' + k) }}</span>
+          <span v-if="j.trabas.motivo" class="ad-tenue">{{ j.trabas.motivo }}</span>
+        </div>
+
+        <div v-if="j.notaInterna" class="ads__nota">
+          <span class="ads__ficha-t">{{ $t('admin.player.note') }}</span>
+          <p>{{ j.notaInterna }}</p>
+        </div>
+
+        <div v-if="(j.ultimos || []).length" class="ads__ultimos">
+          <span class="ads__ficha-t">{{ $t('admin.player.tab.movimientos') }}</span>
+          <span v-for="m in j.ultimos" :key="m._id" class="ads__mov">
+            <span class="ad-tenue">{{ fecha(m.createdAt) }}</span>
+            <span>{{ $t('txType.' + m.type) }}</span>
+            <b :class="m.amountSc >= 0 ? 'ad-verde' : 'ad-rojo'">
+              {{ m.amountSc >= 0 ? '+' : '' }}{{ plata(m.amountSc) }}
+            </b>
+          </span>
+        </div>
+
+        <router-link :to="`/admin/players/${j._id}`" class="ad-b ad-b--suave">
+          {{ $t('admin.openPlayer') }}
+        </router-link>
+      </aside>
     </div>
   </div>
 </template>
 
 <script>
+import MbElegir from "@/components/MbElegir.vue";
 import api from "@/api";
 
 /**
@@ -139,6 +208,8 @@ import api from "@/api";
 export default {
   name: "AdminSoporte",
 
+  components: { MbElegir },
+
   data() {
     return {
       hilos: [],
@@ -148,12 +219,36 @@ export default {
       estado: "",
       esperando: 0,
       porEstado: {},
+      n: { esperandoNos: 0, esperandoAlJugador: 0, cerradas: 0, sinDueno: 0, cerradasHoy: 0, primeraRespuestaMin: null },
       ocupado: false,
       reloj: null,
     };
   },
 
+  computed: {
+    /* El que escribió, con todo lo suyo al lado del chat. */
+    j() { return this.elegido && this.elegido.jugador ? this.elegido.jugador : null; },
+
+    /* Qué trabas tiene puestas, para decirlo antes de que pregunte. */
+    trabas() {
+      const t = (this.j && this.j.trabas) || {};
+      return ["canje", "envio", "promos", "carreras"].filter((k) => t[k]);
+    },
+
+    estados() {
+      return [{ valor: "", texto: this.$t("admin.all") }].concat(
+        ["waiting_us", "waiting_player", "closed"].map((e) => ({ valor: e, texto: this.$t("admin.thread." + e) }))
+      );
+    },
+  },
+
   methods: {
+    /* "18 min" mientras sea razonable; "3 h" cuando ya no lo es. */
+    espera(min) {
+      const n = Number(min) || 0;
+      return n < 90 ? `${n} min` : `${Math.round(n / 60)} h`;
+    },
+
     num(n) { return Number(n || 0).toLocaleString("en-US"); },
     plata(n) {
       return Number(n || 0).toLocaleString("en-US", {
@@ -180,6 +275,7 @@ export default {
         this.hilos = data.data.items;
         this.esperando = data.data.esperando;
         this.porEstado = data.data.porEstado;
+        this.n = data.data.numeros || this.n;
         this.$emit("pendientes", { support: this.esperando });
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
@@ -265,6 +361,72 @@ export default {
 .ads__que { max-width: 680px; font-size: 14px; line-height: 1.5; color: $texto-3; }
 
 .ads__dos { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+
+/* ── La ficha del que escribió ─────────────────────────────────── */
+
+.ads__ficha {
+  flex: 1 1 260px;
+  max-width: 320px;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: 16px;
+  background: $panel-alto;
+  border: 1px solid $borde;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 13px;
+}
+
+.ads__ficha-quien { display: flex; align-items: center; gap: 10px; }
+
+.ads__avatar {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 11px;
+  background: $azul;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+
+.ads__ficha-nombre { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-weight: 900; overflow-wrap: anywhere; }
+.ads__ficha-t { font-weight: 900; font-size: 12px; letter-spacing: .04em; color: $texto-4; }
+
+.ads__chapas { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.ads__chapa {
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: $panel;
+  border: 1px solid $borde;
+  font-weight: 900;
+  font-size: 11px;
+}
+
+.ads__datos {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+
+  div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  dt { font-size: 11px; font-weight: 700; color: $texto-4; }
+  dd { margin: 0; font-weight: 800; }
+}
+
+.ads__trabas, .ads__nota, .ads__ultimos { display: flex; flex-direction: column; gap: 6px; }
+.ads__nota p { margin: 0; line-height: 1.5; }
+
+.ads__mov {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 12px;
+}
 
 .ads__lista {
   flex: 2 1 320px;

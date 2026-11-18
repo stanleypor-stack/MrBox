@@ -12,7 +12,10 @@
       </header>
 
       <div class="ade__campos">
-        <label v-for="c in campos" :key="c.campo" class="ade__campo" :class="{ 'ade__campo--ancho': c.ancho }">
+        <component
+          :is="(c.tipo === 'siNo' || c.opciones) ? 'div' : 'label'" v-for="c in campos" :key="c.campo"
+          class="ade__campo" :class="{ 'ade__campo--ancho': c.ancho }"
+        >
           <!--
             El rotulo propio existe porque los nombres de columna se
             comparten entre secciones: `codigo` es "Order" en pedidos y
@@ -20,14 +23,15 @@
           -->
           <span class="ade__rotulo">{{ $t(c.rotulo || ('admin.col.' + c.campo)) }}</span>
 
-          <select v-if="c.tipo === 'siNo'" v-model="forma[c.campo]" class="ad-in">
-            <option :value="true">{{ $t('admin.state.on') }}</option>
-            <option :value="false">{{ $t('admin.state.off') }}</option>
-          </select>
+          <MbElegir
+            v-if="c.tipo === 'siNo'" v-model="forma[c.campo]" chico class="ad-elegir"
+            :opciones="[{ valor: true, texto: $t('admin.state.on') }, { valor: false, texto: $t('admin.state.off') }]"
+          />
 
-          <select v-else-if="c.opciones" v-model="forma[c.campo]" class="ad-in">
-            <option v-for="o in c.opciones" :key="o" :value="o">{{ o }}</option>
-          </select>
+          <MbElegir
+            v-else-if="c.opciones" v-model="forma[c.campo]" chico class="ad-elegir"
+            :opciones="c.opciones.map((o) => ({ valor: o, texto: o }))"
+          />
 
           <input
             v-else v-model="forma[c.campo]" class="ad-in"
@@ -37,7 +41,7 @@
           >
 
           <span v-if="c.ayuda" class="ade__ayuda">{{ $t(c.ayuda) }}</span>
-        </label>
+        </component>
       </div>
 
       <footer class="ade__pie">
@@ -58,6 +62,7 @@
 </template>
 
 <script>
+import MbElegir from "@/components/MbElegir.vue";
 import api from "@/api";
 
 /**
@@ -82,6 +87,8 @@ import api from "@/api";
  */
 export default {
   name: "AdminEditor",
+
+  components: { MbElegir },
 
   props: {
     cfg: { type: Object, required: true },

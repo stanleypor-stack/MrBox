@@ -4,31 +4,34 @@ import VueI18n from "vue-i18n";
 import { IDIOMAS, IDIOMA_POR_DEFECTO, idiomaInicial, recordarIdioma, existe } from "./idiomas";
 
 import en from "./locales/en";
-import de from "./locales/de";
-import fr from "./locales/fr";
-import es from "./locales/es";
-import pt from "./locales/pt";
-import it from "./locales/it";
-import ru from "./locales/ru";
-import ja from "./locales/ja";
-import zh from "./locales/zh";
 
 /**
- * LOS IDIOMAS, ENCHUFADOS.
+ * LOS IDIOMAS, UNO POR VEZ.
  *
- * Los nueve van en el paquete principal en vez de cargarse por separado.
- * Es a propósito: los nueve juntos son unos pocos kilobytes, y cargarlos
- * aparte significa que el que entra en japonés ve el sitio en inglés
- * durante medio segundo hasta que llega su archivo. Ese parpadeo se nota
- * mucho más que los kilobytes.
+ * En el paquete principal va el inglés y nada más. Los otros ocho se
+ * bajan cuando hacen falta.
  *
- * El día que los textos crezcan de verdad —cuando estén las treinta y
- * seis pantallas— esto se parte por idioma. Hoy no.
+ * POR QUE CAMBIO
+ *
+ * Antes iban los nueve juntos, y con razón: eran unos kilobytes y
+ * cargarlos aparte hacía parpadear el sitio. Hoy son mil trescientos
+ * textos por idioma --medio megabyte de los nueve-- y eso ya es más de
+ * la mitad del javascript que baja alguien que entra por primera vez,
+ * para leer ocho idiomas que no habla.
+ *
+ * Y EL PARPADEO NO VUELVE
+ *
+ * Porque el idioma se sabe ANTES de dibujar --está en el navegador o
+ * guardado de la vez pasada-- y `main.js` espera ese archivo antes de
+ * montar la aplicación. Nadie ve medio segundo de inglés.
  */
 
 Vue.use(VueI18n);
 
-const messages = { en, de, fr, es, pt, it, ru, ja, zh };
+const messages = { en };
+
+/* Los que ya se bajaron, para no volver a pedirlos. */
+const bajados = new Set(["en"]);
 
 const i18n = new VueI18n({
   locale: idiomaInicial(),
@@ -45,14 +48,30 @@ const i18n = new VueI18n({
 });
 
 /**
+ * Baja los textos de un idioma, si no estaban.
+ *
+ * El nombre del archivo sale de la lista de idiomas y nunca de algo que
+ * escriba alguien: `import` con una variable suelta deja que cualquier
+ * texto de la dirección pida un archivo del paquete.
+ */
+export async function cargarIdioma(code) {
+  if (bajados.has(code) || !existe(code)) return;
+
+  const m = await import(/* webpackChunkName: "idioma-[request]" */ `./locales/${code}.js`);
+  i18n.setLocaleMessage(code, m.default);
+  bajados.add(code);
+}
+
+/**
  * Cambia el idioma de todo el sitio.
  *
  * Además de los textos cambia el `lang` del documento, que es lo que usan
  * el lector de pantalla para elegir la voz y el navegador para partir las
  * palabras al final del renglón.
  */
-export function cambiarIdioma(code) {
+export async function cambiarIdioma(code) {
   if (!existe(code)) return i18n.locale;
+  await cargarIdioma(code);
   i18n.locale = code;
   recordarIdioma(code);
   if (typeof document !== "undefined") document.documentElement.setAttribute("lang", code);

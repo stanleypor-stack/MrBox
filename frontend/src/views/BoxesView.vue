@@ -22,15 +22,10 @@
         >{{ c.texto }}<span v-if="c.cuenta" class="mb-chip__cuenta">{{ c.cuenta }}</span></button>
       </div>
 
-      <label class="mb-orden">
+      <div class="mb-orden">
         <span class="mb-oculto">{{ $t('boxes.sort') }}</span>
-        <select v-model="orden" class="mb-in mb-orden__select">
-          <option value="popular">{{ $t('boxes.sortPopular') }}</option>
-          <option value="nuevas">{{ $t('boxes.sortNew') }}</option>
-          <option value="baratas">{{ $t('boxes.sortCheap') }}</option>
-          <option value="caras">{{ $t('boxes.sortExpensive') }}</option>
-        </select>
-      </label>
+        <MbElegir v-model="orden" :opciones="ordenes" chico />
+      </div>
     </div>
 
     <!-- Mientras carga se dibujan tarjetas vacías del mismo tamaño que
@@ -59,6 +54,7 @@
 </template>
 
 <script>
+import MbElegir from "@/components/MbElegir.vue";
 import { mapState } from "vuex";
 import MbCajaEnGrilla from "@/components/MbCajaEnGrilla.vue";
 
@@ -80,7 +76,7 @@ import MbCajaEnGrilla from "@/components/MbCajaEnGrilla.vue";
  */
 export default {
   name: "BoxesView",
-  components: { MbCajaEnGrilla },
+  components: { MbElegir, MbCajaEnGrilla },
 
   data() {
     /* Lo que se esta tecleando vive aca hasta que se calma; lo demas
@@ -89,6 +85,16 @@ export default {
   },
 
   computed: {
+    /* Las cuatro maneras de ordenar, para el selector. */
+    ordenes() {
+      return [
+        { valor: "popular", texto: this.$t("boxes.sortPopular") },
+        { valor: "nuevas", texto: this.$t("boxes.sortNew") },
+        { valor: "baratas", texto: this.$t("boxes.sortCheap") },
+        { valor: "caras", texto: this.$t("boxes.sortExpensive") },
+      ];
+    },
+
     ...mapState({ cajas: "cajas", cargando: "cargandoCajas", categorias: "categorias" }),
 
     /*

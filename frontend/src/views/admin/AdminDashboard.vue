@@ -7,12 +7,7 @@
         <span class="ad-tenue">{{ $t('admin.dash.lastSync', { seg: hace }) }}</span>
       </div>
 
-      <select v-model.number="dias" class="ad-sel" :aria-label="$t('admin.dash.period')" @change="traer">
-        <option :value="7">{{ $t('admin.dash.days', { n: 7 }) }}</option>
-        <option :value="14">{{ $t('admin.dash.days', { n: 14 }) }}</option>
-        <option :value="30">{{ $t('admin.dash.days', { n: 30 }) }}</option>
-        <option :value="90">{{ $t('admin.dash.days', { n: 90 }) }}</option>
-      </select>
+      <MbElegir v-model="dias" :opciones="periodos" chico class="ad-elegir" @elegida="traer" />
     </div>
 
     <!-- ── Las tres grandes ─────────────────────────────────────── -->
@@ -117,6 +112,7 @@
 </template>
 
 <script>
+import MbElegir from "@/components/MbElegir.vue";
 import api from "@/api";
 
 /**
@@ -139,9 +135,15 @@ import api from "@/api";
 export default {
   name: "AdminDashboard",
 
+  components: { MbElegir },
+
   data() { return { d: null, dias: 14, traidoEl: Date.now(), hace: 0, reloj: null }; },
 
   computed: {
+    periodos() {
+      return [7, 14, 30, 90].map((n) => ({ valor: n, texto: this.$t("admin.dash.days", { n }) }));
+    },
+
     kpis() {
       const d = this.d;
       if (!d) return [];

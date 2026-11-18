@@ -378,11 +378,40 @@ router.get("/ranks", async (req, res) => {
   try {
     const tabla = vip.tabla();
 
+    /*
+      CADA RANGO CON SU GENTE Y SU PLATA.
+
+      No alcanza con "cuántos hay en Gold": la pregunta de verdad es
+      cuánto juega Gold, cuánto deposita y cuánto se le devuelve. Eso
+      es lo que dice si un rango está bien puesto o si se está
+      regalando rakeback a gente que no mueve nada.
+    */
     const gente = await User.find({ rank: "user" }).select("jugadoSc rangoManual").lean();
-    const cuantos = new Map();
+
+    const deQuien = new Map(); // userId -> rango
+    const porRango = new Map(); // rango -> { jugadores, jugadoSc }
     for (const u of gente) {
       const r = vip.rangoDe(u.jugadoSc || 0, u.rangoManual);
-      cuantos.set(r.nombre, (cuantos.get(r.nombre) || 0) + 1);
+      deQuien.set(String(u._id), r.nombre);
+      const a = porRango.get(r.nombre) || { jugadores: 0, jugadoSc: 0 };
+      a.jugadores += 1;
+      a.jugadoSc += Number(u.jugadoSc) || 0;
+      porRango.set(r.nombre, a);
+    }
+
+    /* Lo comprado y lo devuelto, por persona, del LIBRO. */
+    const porPersona = await BalanceTransaction.aggregate([
+      { $match: { type: { $in: ["purchase", "rakeback"] } } },
+      { $group: { _id: { u: "$user", t: "$type" }, total: { $sum: "$amountSc" } } },
+    ]);
+
+    const compras = new Map();
+    const rakes = new Map();
+    for (const f of porPersona) {
+      const rango = deQuien.get(String(f._id.u));
+      if (!rango) continue;
+      const donde = f._id.t === "purchase" ? compras : rakes;
+      donde.set(rango, (donde.get(rango) || 0) + f.total);
     }
 
     const { desde } = desdeDias(req);
@@ -391,22 +420,39 @@ router.get("/ranks", async (req, res) => {
       { $group: { _id: null, t: { $sum: "$amountSc" } } },
     ]);
 
+    const total = gente.length || 1;
+
     return res.json({
       success: true,
       data: {
-        items: tabla.map((r) => ({
-          _id: r.nombre,
-          rango: r.nombre,
-          desdeSc: r.desde,
-          /* El del periodo semanal, que es el que mira todo el mundo. */
-          rakebackPct: Math.round(r.rakeback.weekly * 10000) / 100,
-          beneficios: r.beneficios.filter((b) => b.tiene).length,
-          jugadores: cuantos.get(r.nombre) || 0,
-        })),
+        items: tabla.map((r) => {
+          const a = porRango.get(r.nombre) || { jugadores: 0, jugadoSc: 0 };
+          return {
+            _id: r.nombre,
+            numero: r.numero,
+            rango: r.nombre,
+            color: r.color,
+            desdeSc: r.desde,
+            /* El del periodo semanal, que es el que mira todo el mundo. */
+            rakebackPct: Math.round(r.rakeback.weekly * 10000) / 100,
+            rakebackDiarioPct: Math.round(r.rakeback.daily * 10000) / 100,
+            rakebackMensualPct: Math.round(r.rakeback.monthly * 10000) / 100,
+            beneficios: r.beneficios.filter((b) => b.tiene).length,
+            jugadores: a.jugadores,
+            parte: Math.round((a.jugadores / total) * 1000) / 10,
+            jugadoSc: sc(a.jugadoSc),
+            compradoSc: sc(compras.get(r.nombre) || 0),
+            rakebackSc: sc(rakes.get(r.nombre) || 0),
+            /* Lo que juega cada uno de este rango, en promedio. */
+            porCabezaSc: a.jugadores ? sc(a.jugadoSc / a.jugadores) : 0,
+          };
+        }),
         total: tabla.length,
+        jugadores: gente.length,
         rakebackSc: sc(rake.length ? rake[0].t : 0),
-        conRango: [...cuantos.entries()].filter(([k]) => k !== "Bronze").reduce((a, [, v]) => a + v, 0),
+        conRango: [...porRango.entries()].filter(([k]) => k !== "Bronze").reduce((a, [, v]) => a + v.jugadores, 0),
         reclamos: await RakebackClaim.countDocuments(),
+        beneficios: vip.BENEFICIOS,
       },
     });
   } catch (err) {
