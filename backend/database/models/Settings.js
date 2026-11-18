@@ -23,6 +23,16 @@ const mongoose = require("mongoose");
   primer dia: una perilla agregada despues nunca ve su valor por
   defecto. El servicio las usa cuando la lista esta vacia.
 */
+/*
+  LAS TRES CAJAS DE REGALO QUE VIENEN DE FABRICA.
+
+  Afuera del esquema por lo mismo que las respuestas guardadas: el
+  `default` de mongoose corre al CREAR el documento, y el de perillas
+  se creo el primer dia. Una perilla agregada despues nunca ve su valor
+  por defecto, y el servicio la encuentra vacia.
+*/
+const CAJAS_DE_REGALO = ["mac", "pokemon-boosters", "splash"];
+
 const RESPUESTAS_POR_DEFECTO = [
   {
     titulo: "Where is my order?",
@@ -84,8 +94,20 @@ const settingsSchema = new mongoose.Schema(
 
     /* ── Regalos ─────────────────────────────────────────────────────── */
 
-    /** Aperturas gratis al registrarse. */
+    /** Cuántas cajas de regalo se dan al registrarse. */
     aperturasDeRegalo: { type: Number, default: 3 },
+
+    /**
+     * CUALES.
+     *
+     * Las tres del prototipo: una Mac, una de Pokemon y una Splash.
+     * Son baratas y de las que tienen un premio grande adentro, que es
+     * exactamente lo que tiene que hacer un regalo de bienvenida.
+     *
+     * Si una se saca del catalogo, el que se registre ese dia recibe
+     * las que si existan: mejor dos regalos que un error.
+     */
+    cajasDeRegalo: { type: [String], default: () => CAJAS_DE_REGALO.slice() },
 
     /** Aperturas de demostración para el que todavía no tiene cuenta. */
     aperturasDeDemo: { type: Number, default: 3 },
@@ -248,3 +270,4 @@ settingsSchema.statics.leer = async function leer() {
 
 module.exports = mongoose.model("Settings", settingsSchema);
 module.exports.RESPUESTAS_POR_DEFECTO = RESPUESTAS_POR_DEFECTO;
+module.exports.CAJAS_DE_REGALO = CAJAS_DE_REGALO;

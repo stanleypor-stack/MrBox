@@ -67,7 +67,25 @@
           :class="{ 'is-mio': miRango && miRango.numero === r.numero }"
         >
           <div class="mb-rango__alto" :style="{ background: r.color }">
-            <span class="mb-rango__gema" aria-hidden="true"></span>
+            <span class="mb-rango__gema" aria-hidden="true">
+              <!-- La gema del prototipo: cuatro caras con los colores
+                   de su rango. Dibujada y no una imagen, asi pesa cero
+                   y se ve nitida en cualquier pantalla. -->
+              <svg width="50" height="50" viewBox="0 0 64 64">
+                <ellipse cx="32" cy="58" rx="16" ry="3" fill="rgba(0,0,0,.35)" />
+                <polygon points="20,12 44,12 54,25 32,57 10,25" :fill="gema(r)[3]" />
+                <polygon points="22,14 42,14 38,25 26,25" :fill="gema(r)[0]" />
+                <polygon points="12,25 22,14 26,25" :fill="gema(r)[1]" />
+                <polygon points="42,14 52,25 38,25" :fill="gema(r)[2]" />
+                <polygon points="12,25 26,25 32,55" :fill="gema(r)[1]" />
+                <polygon points="26,25 38,25 32,55" :fill="gema(r)[0]" opacity=".9" />
+                <polygon points="38,25 52,25 32,55" :fill="gema(r)[2]" />
+                <polyline points="12,25 52,25" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.2" />
+                <polygon points="20,12 44,12 54,25 32,57 10,25" fill="none" :stroke="gema(r)[3]" stroke-width="2" stroke-linejoin="round" />
+                <polygon points="24,16 31,16 28,22 22,22" fill="#ffffff" opacity=".75" />
+                <path d="M50 6l1.6 3.6L55 11l-3.4 1.4L50 16l-1.6-3.6L45 11l3.4-1.4z" fill="#ffffff" opacity=".9" />
+              </svg>
+            </span>
             <span class="mb-rango__quien">
               <span class="mb-rango__n">{{ String(r.numero).padStart(2, '0') }}</span>
               <span class="mb-rango__nombre">{{ r.nombre }}</span>
@@ -206,6 +224,22 @@ const BENEFICIOS = [
   { id: "vipBoxes", tinte: "#7a5af5", icono: "M3 8l4 4 5-7 5 7 4-4-2 11H5z" },
 ];
 
+/*
+  LOS COLORES DE CADA GEMA, los del prototipo: cara clara, media,
+  oscura y el contorno. Uno por rango, en orden.
+*/
+const GEMAS = [
+  ["#ffd2a6", "#e0954f", "#a65f28", "#5e3414"],
+  ["#ffffff", "#d3dae6", "#97a4ba", "#4f5b70"],
+  ["#fff3a6", "#ffd04a", "#dc9c1c", "#7a4c06"],
+  ["#b9dbff", "#5b98ff", "#2058d0", "#0e2b70"],
+  ["#b4ffe0", "#3ddca0", "#11a171", "#06513a"],
+  ["#ffc0cc", "#ff5574", "#cc2747", "#6a0a1d"],
+  ["#ffffff", "#c6f3ff", "#6acdf4", "#1f6f9c"],
+  ["#a9b1c2", "#646d82", "#30353f", "#0d0f14"],
+  ["#ffe6fb", "#d2bdff", "#9270ff", "#4a2fb0"],
+];
+
 const GRUPOS = [
   { id: "general", preguntas: ["counts", "lose", "signup", "purchase"] },
   { id: "benefits", preguntas: ["rakeback", "boost", "levelUp"] },
@@ -285,6 +319,8 @@ export default {
      * guardarlo, así el día que se corra un beneficio de rango la
      * chapita se mueve sola.
      */
+    gema(rango) { return GEMAS[(rango.numero || 1) - 1] || GEMAS[0]; },
+
     esNuevo(rango, i) {
       if (rango.numero <= 1) return false;
       const antes = this.rangos[rango.numero - 2];
@@ -501,6 +537,9 @@ export default {
   border-radius: 16px;
   background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, .35), rgba(255, 255, 255, .06) 70%);
   border: 2px solid rgba(255, 255, 255, .4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mb-rango__quien { display: flex; flex-direction: column; gap: 2px; min-width: 0; }

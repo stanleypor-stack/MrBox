@@ -120,7 +120,8 @@
           <path :d="l.icono" />
         </svg>
         {{ $t(l.texto) }}
-        <span v-if="l.badge" class="mb-acceso__badge">{{ l.badge }}</span>
+        <!-- La chapita del prototipo: cuantos desafios hay al aire. -->
+        <span v-if="l.contar && cuentas[l.contar]" class="mb-acceso__badge">{{ cuentas[l.contar] }}</span>
       </router-link>
 
       <div class="mb-side__pie">
@@ -196,10 +197,11 @@ export default {
       abierta: typeof window === "undefined" || window.innerWidth >= 1280,
       categoriasAbiertas: true,
       categorias: [],
+      cuentas: {},
       enlaces: [
         { a: "/inventory", texto: "nav.inventory", icono: "M3 7h18v13H3zM3 7l2-4h14l2 4M9 11h6" },
         { a: "/promotions", texto: "nav.promotions", icono: "M20 12v9H4v-9M2 7h20v5H2zM12 21V7" },
-        { a: "/challenges", texto: "nav.challenges", icono: "M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7z" },
+        { a: "/challenges", texto: "nav.challenges", icono: "M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7z", contar: "desafios" },
         { a: "/rewards", texto: "nav.rewards", icono: "M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.2l5.9-.9z" },
         { a: "/vip", texto: "nav.vip", icono: "M3 8l4 4 5-7 5 7 4-4-2 11H5z" },
         { a: "/affiliates", texto: "nav.affiliates", icono: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 20a6 6 0 0 1 12 0M19 8v6M16 11h6" },
@@ -218,9 +220,21 @@ export default {
         /* Sin categorías la barra anda igual, con un grupo menos. */
       }
     },
+    /** Los numeritos de los accesos. Hoy, los desafios al aire. */
+    async traerCuentas() {
+      try {
+        const { data } = await api.get("/public/counts");
+        this.cuentas = data.data;
+      } catch {
+        /* Sin numeritos la barra anda igual. */
+      }
+    },
   },
 
-  created() { this.traerCategorias(); },
+  created() {
+    this.traerCategorias();
+    this.traerCuentas();
+  },
 };
 </script>
 
@@ -254,7 +268,11 @@ export default {
   align-self: flex-start;
   max-height: 100vh;
   overflow-y: auto;
-  scrollbar-width: thin;
+
+  /* Se desliza, pero sin la barrita gris: afea la columna y en el
+     prototipo no esta. Se sigue pudiendo con la rueda y con el dedo. */
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
 
   &.is-angosta { flex: 0 0 auto; max-width: 72px; }
 

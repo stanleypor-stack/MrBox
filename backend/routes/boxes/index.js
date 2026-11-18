@@ -210,6 +210,41 @@ router.get("/rows", autorizar(false), async (req, res) => {
  * maquinita: el jugador ve exactamente que puede salir y con que
  * probabilidad, antes de poner un peso.
  */
+/**
+ * LAS CAJAS DE REGALO DE QUIEN MIRA.
+ *
+ * Las tres de bienvenida y cuales ya abrio. Sin sesion devuelve las
+ * tres que SE REGALAN, para poder mostrarlas en la portada a quien
+ * todavia no se registro: son el argumento para que lo haga.
+ */
+router.get("/gifts", autorizar(false), async (req, res) => {
+  try {
+    if (req.user) {
+      return res.json({ success: true, data: { items: await cajas.cajasGratisDe(req.user._id) } });
+    }
+
+    const cfg = await Settings.leer();
+    const lista = await Box.find({ slug: { $in: cfg.cajasDeRegalo || [] }, live: true })
+      .select("slug name imageUrl priceSc")
+      .lean();
+
+    return res.json({
+      success: true,
+      data: {
+        items: lista.map((b) => ({
+          slug: b.slug,
+          nombre: b.name,
+          imageUrl: b.imageUrl,
+          priceSc: sc(b.priceSc),
+          usada: false,
+        })),
+      },
+    });
+  } catch (err) {
+    return responderError(res, err, "gifts");
+  }
+});
+
 router.get("/:slug", autorizar(false), async (req, res) => {
   try {
     const caja = await cajas.cajaPorSlug(req.params.slug);
@@ -228,6 +263,12 @@ router.get("/:slug", autorizar(false), async (req, res) => {
         /* El retorno, a la vista. No tenemos nada que esconder y es el
            numero que un jugador informado quiere ver. */
         retornoMostrado: Math.round((caja.retorno || 0) * 10000) / 100,
+
+        /* Si tiene una apertura de regalo EN ESTA caja. El regalo es
+           por caja, no una ficha para usar donde sea. */
+        gratisAca: req.user
+          ? (await cajas.cajasGratisDe(req.user._id)).some((c) => c.slug === caja.slug && !c.usada)
+          : false,
       },
     });
   } catch (err) {
@@ -322,9 +363,23 @@ router.get("/feed/latest", autorizar(false), async (req, res) => {
       ultimo minuto, la cinta es de verdad entera y esto no se ve. Lo de
       relleno no toca la base ni el libro (ver services/feed).
     */
-    const relleno = await feed.ambiente(Math.max(0, cuantas - reales.length));
+    const relleno = await feed.ambiente(cuantas);
 
-    return res.json({ success: true, data: reales.concat(relleno) });
+    /*
+      TODO JUNTO Y ORDENADO POR HORA.
+
+      Antes iban las de verdad primero y el relleno atras, y entonces
+      cuatro aperturas viejas quedaban clavadas a la izquierda --que es
+      por donde entran las nuevas-- y lo que se movia empezaba recien
+      despues de ellas. La cinta muestra lo ULTIMO que paso, sea de
+      quien sea: se mezcla y se ordena por fecha.
+    */
+    const todo = reales
+      .concat(relleno)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, cuantas);
+
+    return res.json({ success: true, data: todo });
   } catch (err) {
     return responderError(res, err, "feed");
   }

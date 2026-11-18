@@ -21,7 +21,7 @@
         class="mb-reel__pista" :style="{ height: altoDeLaPista }"
       >
         <div
-          class="mb-reel__tira"
+          ref="tiras" class="mb-reel__tira"
           :style="{ transform: `translateX(${cinta.x}px)`, transition: transicion }"
         >
           <div
@@ -63,6 +63,7 @@
 
 <script>
 import { sprite } from "@/utils/sprite";
+import { ticsDeLaCinta } from "@/utils/sonido";
 
 /*
   LA GEOMETRIA DE LA CINTA, QUE ES LA DEL DISEÑO.
@@ -248,6 +249,19 @@ export default {
            exactamente en el mismo lugar, que se nota y queda falso. */
         x: -(GANADOR * PASO + CORRIMIENTO) + (Math.random() * 24 - 12),
       }));
+
+      /*
+        EL TIC VA ATADO AL MOVIMIENTO, NO AL RELOJ.
+
+        Lee dónde está la tira en cada cuadro y suena cuando pasa un
+        objeto. Por eso los tics se van separando solos mientras la
+        cinta frena: a intervalos fijos sonaría a metrónomo.
+
+        Una sola tira suena --la primera-- aunque haya cuatro: cuatro
+        cintas sonando a la vez es ruido, no juego.
+      */
+      const tira = Array.isArray(this.$refs.tiras) ? this.$refs.tiras[0] : this.$refs.tiras;
+      ticsDeLaCinta(tira, this.duracion, PASO);
 
       return new Promise((listo) => {
         window.setTimeout(() => {

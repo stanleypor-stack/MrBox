@@ -10,6 +10,7 @@ const Settings = require("../../database/models/Settings");
 const { firmar, autorizar } = require("../../middleware/auth");
 const turnstile = require("../../services/turnstile");
 const afiliados = require("../../services/affiliates");
+const cajas = require("../../services/boxes");
 const fair = require("../../services/boxes/fair");
 const wallet = require("../../services/wallet");
 const { errorDe, esDeJugador } = require("../../utils/errors");
@@ -132,17 +133,11 @@ router.post("/register", limite, async (req, res) => {
     if (await User.exists({ username })) throw errorDe("USERNAME_TAKEN");
     if (await User.exists({ email })) throw errorDe("EMAIL_TAKEN");
 
-    const cfg = await Settings.leer();
     const passwordHash = await bcrypt.hash(password, 12);
 
     let usuario;
     try {
-      usuario = await User.create({
-        username,
-        email,
-        passwordHash,
-        freeOpens: cfg.aperturasDeRegalo || 0,
-      });
+      usuario = await User.create({ username, email, passwordHash });
     } catch (err) {
       /* 11000 es "ya existe". Llega acá cuando dos registros entraron
          juntos y la pregunta de arriba no alcanzó. */
@@ -169,6 +164,15 @@ router.post("/register", limite, async (req, res) => {
       nonce: 0,
       activa: true,
     });
+
+    /*
+      LAS TRES CAJAS DE REGALO.
+
+      No son tres fichas sueltas: son UNA apertura en cada una de tres
+      cajas, como en el prototipo. Con fichas, alguien abria tres veces
+      la mas cara de las tres (ver services/boxes).
+    */
+    await cajas.regalarCajasDeBienvenida(usuario._id);
 
     const socio = codigo ? await afiliados.atarAlSocio(usuario, codigo) : null;
     await anotarSesion(usuario._id, req, "register");

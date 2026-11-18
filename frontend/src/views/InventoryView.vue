@@ -260,6 +260,7 @@ export default {
       try {
         const { data } = await api.post("/inventory/sell-many", { ids: this.elegidos });
         this.$store.commit("saldo", data.data);
+        this.$store.commit("inventarioCambio");
         this.$store.dispatch("avisar", {
           texto: this.$t("inventory.sold", { n: data.data.vendidos, amount: "SC " + this.plata(data.data.totalSc) }),
         });

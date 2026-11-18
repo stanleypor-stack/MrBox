@@ -58,6 +58,18 @@ export default new Vuex.Store({
       la persona redactandolo de cero.
     */
     soporte: { pedidos: 0, borrador: "" },
+
+    /*
+      CUANDO CAMBIO EL INVENTARIO.
+
+      Un contador, no una lista: lo unico que hace falta es avisarle a
+      la cabecera que su resumen quedo viejo. Abrir una caja o vender
+      un objeto lo suben, y la billetera de arriba se vuelve a leer.
+
+      Sin esto, alguien abria cuatro cajas y la billetera seguia
+      diciendo "0 objetos" hasta recargar la pagina.
+    */
+    inventarioCambio: 0,
   },
 
   getters: {
@@ -90,6 +102,8 @@ export default new Vuex.Store({
     soporte(s, borrador) {
       s.soporte = { pedidos: s.soporte.pedidos + 1, borrador: borrador || "" };
     },
+
+    inventarioCambio(s) { s.inventarioCambio += 1; },
 
     cajas(s, v) { s.cajas = v; },
     cargandoCajas(s, v) { s.cargandoCajas = !!v; },

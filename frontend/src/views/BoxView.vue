@@ -16,8 +16,38 @@
           <h1>{{ caja.name }}</h1>
         </div>
 
-        <span></span>
+        <!-- Los tres del prototipo: la prueba del sorteo, el sonido y
+             el sello de que esta caja se puede verificar. -->
+        <div class="mb-abrir__botones">
+          <button type="button" class="mb-cuadrado" :aria-label="$t('box.fairness')" @click="verJusto = !verJusto">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9d7f7" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3v18M7 7l-4 8h8zM17 7l-4 8h8zM6 7h12" />
+            </svg>
+          </button>
+
+          <button
+            type="button" class="mb-cuadrado" :aria-pressed="String(mudo)"
+            :aria-label="mudo ? $t('box.unmute') : $t('box.mute')" @click="mudo = !mudo"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9d7f7" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M11 5 6 9H3v6h3l5 4z" />
+              <path :d="mudo ? 'M17 9l4 6M21 9l-4 6' : 'M16 8.5a5 5 0 0 1 0 7M19 6a9 9 0 0 1 0 12'" />
+            </svg>
+          </button>
+
+          <span class="mb-cuadrado mb-cuadrado--sello" :title="$t('box.verified')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6bb4ff" stroke-width="2.4"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V6zM9 12l2 2 4-4" />
+            </svg>
+          </span>
+        </div>
       </div>
+
+      <!-- Como se sortea, cuando alguien toca la balanza. -->
+      <p v-if="verJusto" class="mb-justo">{{ $t('box.fairnessHelp') }}</p>
 
       <!-- ── La cinta ─────────────────────────────────────────────── -->
       <mb-ruleta
@@ -27,43 +57,23 @@
 
       <!-- ── Los mandos ───────────────────────────────────────────── -->
       <div class="mb-mandos">
-        <div class="mb-mandos__fila">
-          <div class="mb-veces" role="radiogroup" :aria-label="$t('box.howMany')">
-            <button
-              v-for="n in [1, 2, 3, 4]" :key="n" type="button" role="radio"
-              :aria-checked="veces === n ? 'true' : 'false'"
-              :class="{ 'is-activo': veces === n }" :disabled="girando" @click="veces = n"
-            >{{ n }}</button>
-          </div>
-
+        <div class="mb-veces" role="radiogroup" :aria-label="$t('box.howMany')">
           <button
-            type="button" role="switch" class="mb-rapido"
-            :aria-checked="rapido ? 'true' : 'false'" @click="rapido = !rapido"
-          >
-            {{ $t('box.fast') }}
-            <span class="mb-rapido__estado">{{ rapido ? $t('box.on') : $t('box.off') }}</span>
-            <span class="mb-rapido__riel" :class="{ 'is-on': rapido }" aria-hidden="true"><span></span></span>
-          </button>
-
-          <button type="button" class="mb-mudo" :aria-label="mudo ? $t('box.unmute') : $t('box.mute')" @click="mudo = !mudo">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9d7f7"
-                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M11 5 6 9H3v6h3l5 4z" />
-              <path :d="mudo ? 'M17 9l4 6M21 9l-4 6' : 'M16 8.5a5 5 0 0 1 0 7M19 6a9 9 0 0 1 0 12'" />
-            </svg>
-          </button>
+            v-for="n in [1, 2, 3, 4]" :key="n" type="button" role="radio"
+            :aria-checked="veces === n ? 'true' : 'false'"
+            :class="{ 'is-activo': veces === n }" :disabled="girando" @click="veces = n"
+          >{{ n }}</button>
         </div>
 
         <div class="mb-mandos__botones">
           <button
-            v-if="aperturasGratis > 0" type="button" class="mb-amarillo"
+            v-if="gratisDeEstaCaja" type="button" class="mb-amarillo"
             :disabled="girando" @click="abrir(true)"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="#0b2266" aria-hidden="true">
               <path d="M20 12v9H4v-9M2 7h20v5H2zM12 21V7" />
             </svg>
             {{ $t('box.openFree') }}
-            <span class="mb-amarillo__cuantas">{{ aperturasGratis }}</span>
           </button>
 
           <button type="button" class="mb-azul" :disabled="girando" @click="abrir(false)">
@@ -82,6 +92,38 @@
           </button>
         </div>
 
+        <div class="mb-mandos__dos">
+          <!-- Rapido: la misma tirada en 1,6s en vez de 5,2s. -->
+          <button
+            type="button" class="mb-cuadrado mb-cuadrado--grande" :aria-pressed="String(rapido)"
+            :class="{ 'is-on': rapido }" :aria-label="$t('box.fast')" @click="rapido = !rapido"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" :fill="rapido ? '#0b2266' : 'none'"
+                 :stroke="rapido ? '#0b2266' : '#c9d7f7'" stroke-width="2.2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M13 2 4 14h7l-1 8 9-12h-7z" />
+            </svg>
+          </button>
+
+          <!--
+            AUTO.
+
+            Sigue abriendo solo hasta que se apaga o hasta que no
+            alcanza el saldo. Se apaga sola al quedarse sin plata: una
+            pantalla que sigue intentando y fallando no es una
+            comodidad, es un cartel de error repetido.
+          -->
+          <button
+            type="button" role="switch" class="mb-auto" :aria-checked="String(automatico)"
+            @click="automatico = !automatico"
+          >
+            {{ $t('box.auto') }}
+            <span class="mb-auto__riel" :class="{ 'is-on': automatico }" aria-hidden="true"><span></span></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-abrir__salida">
         <!-- Lo que salió, en una línea. -->
         <div v-if="resultado" class="mb-salio" aria-live="polite">
           <span>{{ resultado.demo ? $t('box.demoNote') : $t('box.youWon') }}</span>
@@ -176,6 +218,7 @@ import { mapGetters } from "vuex";
 import api from "@/api";
 import MbRuleta from "@/components/MbRuleta.vue";
 import { sprite } from "@/utils/sprite";
+import { despertar, silenciar, sonarPremio } from "@/utils/sonido";
 
 const COLORES = {
   blue: "#3f7cf0", purple: "#8b4fe0", pink: "#e0418f", red: "#e2424b", gold: "#f5b80a",
@@ -221,6 +264,9 @@ export default {
       veces: 1,
       rapido: false,
       mudo: false,
+      automatico: false,
+      verJusto: false,
+      relojAuto: null,
       girando: false,
       vendiendo: false,
       resultado: null,
@@ -231,7 +277,16 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["entro", "aperturasGratis"]),
+    ...mapGetters(["entro", "saldo"]),
+
+    /*
+      LA GRATIS ES DE ESTA CAJA.
+
+      El regalo son tres cajas, una apertura en cada una: el boton
+      amarillo aparece solo en las tres que le tocaron y solo mientras
+      no la haya abierto. El servidor manda el dato con la caja.
+    */
+    gratisDeEstaCaja() { return !!(this.caja && this.caja.gratisAca); },
 
     lamina() { return this.caja ? sprite(this.caja.imageUrl) : null; },
 
@@ -324,6 +379,11 @@ export default {
         this.$router.push("/signup");
         return;
       }
+
+      /* El navegador no deja sonar hasta que alguien toca algo: este
+         click es ese momento. */
+      despertar();
+
       this.girando = true;
       this.resultado = null;
       try {
@@ -331,10 +391,36 @@ export default {
           veces: gratis ? 1 : this.veces,
         });
         this.$store.commit("saldo", data.data);
+        this.$store.commit("inventarioCambio");
         this.pendiente = data.data;
+
+        /* Si esta era la gratis de esta caja, ya no lo es. */
+        if (data.data.resultados.some((r) => r.conAperturaGratis)) {
+          this.caja = { ...this.caja, gratisAca: false };
+        }
+
         await this.$refs.ruleta.girar(data.data.resultados.map((r) => r.premio));
+
+        /*
+          AUTOMATICO: SIGUE SOLO.
+
+          Con una pausa para que se vea lo que salió. Se apaga sola si
+          ya no alcanza el saldo: seguir intentando y fallando no es
+          una comodidad, es un cartel de error repetido.
+        */
+        if (this.automatico && !gratis) {
+          if (this.saldo < this.total) {
+            this.automatico = false;
+            this.$store.dispatch("avisar", { texto: this.$t("box.autoOff") });
+            return;
+          }
+          this.relojAuto = window.setTimeout(() => {
+            if (this.automatico) this.abrir(false);
+          }, 1200);
+        }
       } catch (err) {
         this.girando = false;
+        this.automatico = false;
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
       }
     },
@@ -357,37 +443,12 @@ export default {
       this.girando = false;
       this.resultado = this.pendiente;
       this.pendiente = null;
-      if (!this.mudo) this.sonar();
-    },
 
-    /**
-     * El sonidito de premio.
-     *
-     * Tres notas que suben, armadas con el sintetizador del navegador.
-     * No hay archivo de audio: son unos bytes de código contra unos
-     * cientos de kilobytes que habría que bajar.
-     */
-    sonar() {
-      try {
-        const AC = window.AudioContext || window.webkitAudioContext;
-        if (!AC) return;
-        this._ac = this._ac || new AC();
-        if (this._ac.state === "suspended") this._ac.resume();
-        [523.25, 659.25, 783.99].forEach((f, i) => {
-          const o = this._ac.createOscillator();
-          const g = this._ac.createGain();
-          o.type = "triangle";
-          o.frequency.setValueAtTime(f, this._ac.currentTime + i * 0.09);
-          g.gain.setValueAtTime(0.0001, this._ac.currentTime + i * 0.09);
-          g.gain.exponentialRampToValueAtTime(0.07, this._ac.currentTime + i * 0.09 + 0.02);
-          g.gain.exponentialRampToValueAtTime(0.0001, this._ac.currentTime + i * 0.09 + 0.3);
-          o.connect(g).connect(this._ac.destination);
-          o.start(this._ac.currentTime + i * 0.09);
-          o.stop(this._ac.currentTime + i * 0.09 + 0.32);
-        });
-      } catch {
-        /* Sin sonido el juego anda igual. */
-      }
+      /* El acorde va por lo MEJOR que salió de la tanda: abrir cuatro y
+         escuchar el sonido del peor premio es un anticlímax. */
+      const mejor = (this.resultado.resultados || [])
+        .reduce((a, r) => (!a || r.premio.valueSc > a.premio.valueSc ? r : a), null);
+      sonarPremio(mejor && mejor.premio.rarity);
     },
 
     async venderTodo() {
@@ -396,6 +457,7 @@ export default {
         const ids = this.resultado.resultados.map((r) => r.premio._id).filter(Boolean);
         const { data } = await api.post("/inventory/sell-many", { ids });
         this.$store.commit("saldo", data.data);
+        this.$store.commit("inventarioCambio");
         this.$store.dispatch("avisar", {
           texto: this.$t("box.sellFor", { amount: "SC " + this.plata(data.data.totalSc) }),
         });
@@ -410,7 +472,21 @@ export default {
 
   created() { this.traer(); },
 
+  beforeDestroy() {
+    window.clearTimeout(this.relojAuto);
+    /* Que no quede mudo el resto del sitio por haber apagado el sonido
+       en una caja. */
+    silenciar(false);
+  },
+
   watch: {
+    /* El modulo de sonido es uno solo para toda la pantalla: la cinta
+       tambien lo usa para los tics. */
+    mudo: { immediate: true, handler(v) { silenciar(v); } },
+
+    /* Apagar el automatico corta la cadena pendiente. */
+    automatico(v) { if (!v) window.clearTimeout(this.relojAuto); },
+
     "$route.params.slug"() { this.veces = 1; this.traer(); },
   },
 };
@@ -467,16 +543,90 @@ export default {
 
 /* ── Los mandos ───────────────────────────────────────────────────── */
 
-.mb-mandos { display: flex; flex-direction: column; gap: 10px; }
-.mb-mandos__fila {
+.mb-mandos {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  /* A 375px los tres juntos miden 400 y empujaban la pagina de
-     costado. Que bajen de renglon antes que eso. */
-  flex-wrap: wrap;
+  gap: 10px;
 }
+
+
+/* Los tres cuadraditos de la cabecera y el de rapido. */
+.mb-cuadrado {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 10px;
+  border: 0;
+  background: #16253f;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @include foco;
+  &:hover { background: $panel-hover; }
+
+  &--sello { background: #17305e; cursor: default; }
+  &--grande { width: 46px; height: 46px; border-radius: 12px; }
+  &.is-on { background: $amarillo-v; }
+}
+
+.mb-abrir__botones { justify-self: end; display: flex; gap: 8px; }
+
+.mb-justo {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: $panel-alto;
+  border: 1px solid $borde;
+  font-size: 13px;
+  line-height: 1.5;
+  color: $texto-3;
+}
+
+.mb-mandos__dos { display: flex; align-items: center; gap: 8px; }
+
+.mb-auto {
+  height: 46px;
+  padding: 0 12px 0 14px;
+  border-radius: 12px;
+  border: 0;
+  background: $panel-alto;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  @include foco;
+}
+
+.mb-auto__riel {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  border-radius: 13px;
+  background: #2a3d5e;
+  transition: background .15s ease;
+
+  span {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    transition: left .15s ease;
+  }
+
+  &.is-on { background: $azul; span { left: 21px; } }
+}
+
+.mb-abrir__salida { display: flex; flex-direction: column; gap: 10px; }
 
 .mb-veces {
   display: flex;

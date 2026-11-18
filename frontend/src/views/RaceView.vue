@@ -47,18 +47,32 @@
       </div>
 
       <!-- ── El podio ─────────────────────────────────────────────── -->
-      <section v-if="podio.length" class="mb-podio" :aria-label="$t('races.top3')">
-        <div v-for="p in podio" :key="p.puesto" class="mb-podio__lugar">
+      <section class="mb-podio" :aria-label="$t('races.top3')">
+        <div
+          v-for="p in podio" :key="p.puesto" class="mb-podio__lugar"
+          :class="{ 'is-vacio': !p.username }"
+        >
           <span class="mb-podio__premio">
             <span class="mb-sc mb-sc--16" aria-hidden="true">SC</span>{{ plata(p.premioSc) }}
           </span>
-          <span class="mb-podio__nombre">{{ p.username }}</span>
+          <span class="mb-podio__nombre">{{ p.username || '—' }}</span>
+
           <span class="mb-podio__avatar" :style="{ background: p.fondo, borderColor: p.anillo }">
             {{ p.inicial }}
+            <!-- Los laureles del prototipo, a los costados del primero. -->
+            <span v-if="p.puesto === 1" class="mb-podio__laurel" aria-hidden="true">
+              <svg width="26" height="34" viewBox="0 0 26 34" fill="none" :stroke="p.anillo" stroke-width="2" stroke-linecap="round">
+                <path d="M22 4C12 7 6 14 5 24M20 9c-6 2-10 7-11 14M18 15c-4 2-7 5-8 10" />
+              </svg>
+            </span>
           </span>
+
           <div class="mb-podio__base" :style="{ height: p.alto, borderColor: p.anillo }">
-            <span class="mb-podio__puesto" :style="{ color: p.anillo }">{{ p.puesto }}</span>
-            <span class="mb-podio__jugado">{{ plata(p.jugadoSc) }} {{ $t('races.wagered') }}</span>
+            <span class="mb-podio__puesto" :style="{ color: p.anillo }">{{ $t('races.place' + p.puesto) }}</span>
+            <span class="mb-podio__jugado">
+              <span class="mb-sc mb-sc--13" aria-hidden="true">SC</span>{{ plata(p.jugadoSc) }}
+              {{ $t('races.wagered') }}
+            </span>
           </div>
         </div>
       </section>
@@ -185,19 +199,37 @@ export default {
       ];
     },
 
+    /**
+     * EL PODIO SIEMPRE TIENE TRES LUGARES.
+     *
+     * Aunque haya jugado una sola persona. Un podio de un escalón no se
+     * lee como un podio, y además los otros dos lugares dicen cuánto
+     * paga el segundo y el tercero, que es justo lo que mira el que
+     * está pensando en entrar.
+     *
+     * El segundo va a la izquierda y el primero al medio: 2, 1, 3.
+     */
     podio() {
       if (!this.carrera) return [];
-      /* El segundo va a la izquierda y el primero al medio, como en
-         cualquier podio: 2, 1, 3. */
-      const orden = [1, 0, 2];
-      return orden
-        .map((i) => this.carrera.filas[i])
-        .filter(Boolean)
-        .map((f) => ({
-          ...f,
-          ...PODIO[f.puesto - 1],
-          inicial: String(f.username || "?").charAt(0).toUpperCase(),
-        }));
+
+      return [1, 0, 2].map((i) => {
+        const f = this.carrera.filas[i];
+        const puesto = i + 1;
+
+        /* `reparto` son PORCENTAJES del pozo, no plata: el lugar vacio
+           muestra lo que pagaria ese puesto. */
+        const pct = (this.carrera.reparto || [])[i] || 0;
+        const delPuesto = Math.round((this.carrera.premioTotalSc * pct) / 100 * 100) / 100;
+
+        return {
+          puesto,
+          ...PODIO[i],
+          username: f ? f.username : "",
+          jugadoSc: f ? f.jugadoSc : 0,
+          premioSc: f ? f.premioSc : delPuesto,
+          inicial: f ? String(f.username || "?").charAt(0).toUpperCase() : "?",
+        };
+      });
     },
   },
 
@@ -408,6 +440,26 @@ export default {
 }
 
 .mb-podio__lugar { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
+.mb-podio__lugar.is-vacio { opacity: .45; }
+
+.mb-podio__laurel {
+  position: absolute;
+  left: -22px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  /* El de la derecha es el mismo dibujo, espejado. */
+  &::after {
+    content: "";
+    position: absolute;
+    left: 100%;
+    top: 0;
+    width: 26px;
+    height: 34px;
+    background: inherit;
+  }
+}
+
 .mb-podio__premio { display: flex; align-items: center; gap: 5px; font-weight: 900; font-size: clamp(16px, 2.6vw, 24px); }
 
 .mb-podio__nombre {
@@ -420,6 +472,7 @@ export default {
 }
 
 .mb-podio__avatar {
+  position: relative;
   width: clamp(44px, 7vw, 64px);
   height: clamp(44px, 7vw, 64px);
   border-radius: 50%;

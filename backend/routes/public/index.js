@@ -1,6 +1,7 @@
 const express = require("express");
 const Settings = require("../../database/models/Settings");
 const Banner = require("../../database/models/Banner");
+const Challenge = require("../../database/models/Challenge");
 const { errorDe } = require("../../utils/errors");
 const { logger } = require("../../utils/logger");
 
@@ -70,6 +71,29 @@ router.get("/banners", async (req, res) => {
     return res.json({ success: true, data: { items } });
   } catch (err) {
     logger.error("[public] banners:", err.message);
+    return res.status(500).json(errorDe("SOMETHING_WENT_WRONG", {}, 500).aRespuesta());
+  }
+});
+
+/**
+ * LOS NUMERITOS DE LA BARRA LATERAL.
+ *
+ * Hoy, cuantos desafios hay al aire: es la chapita del prototipo al
+ * lado de "Challenges". Va en su propia ruta --chica y sin sesion--
+ * porque la barra esta en TODAS las pantallas: meterlo en algo mas
+ * grande seria pagar ese pedido en cada vista.
+ */
+router.get("/counts", async (req, res) => {
+  try {
+    const desafios = await Challenge.countDocuments({
+      activo: true,
+      hasta: { $gt: new Date() },
+      $expr: { $lt: ["$cuposUsados", "$cupos"] },
+    });
+
+    return res.json({ success: true, data: { desafios } });
+  } catch (err) {
+    logger.error("[public] counts:", err.message);
     return res.status(500).json(errorDe("SOMETHING_WENT_WRONG", {}, 500).aRespuesta());
   }
 });

@@ -37,6 +37,8 @@ const { app } = require("../index");
 const { conectar } = require("../database");
 
 const User = require("../database/models/User");
+const Box = require("../database/models/Box");
+const Item = require("../database/models/Item");
 const AffiliateCode = require("../database/models/AffiliateCode");
 const wallet = require("../services/wallet");
 const afiliados = require("../services/affiliates");
@@ -53,6 +55,26 @@ test.before(async () => {
     servidor = app.listen(0);
     await new Promise((r) => servidor.once("listening", r));
     base = `http://127.0.0.1:${servidor.address().port}/api`;
+
+    /*
+      LAS TRES CAJAS DE REGALO.
+
+      El regalo de bienvenida son tres CAJAS, no tres fichas: si no
+      existen en el catálogo, no hay regalo que dar. Hacen falta acá
+      para que el registro sea el mismo que en el sitio.
+    */
+    const algo = await Item.create({ sku: "REG-1", name: "Algo", valueSc: 2.76, rarity: "blue" });
+
+    for (const slug of ["mac", "pokemon-boosters", "splash"]) {
+      await Box.create({
+        slug,
+        name: slug,
+        category: "Mix",
+        live: true,
+        priceSc: 3,
+        prizes: [{ item: algo._id, name: algo.name, valueSc: algo.valueSc, chance: 1, rarity: "blue" }],
+      });
+    }
   } catch {
     hayBase = false;
   }
@@ -99,7 +121,13 @@ test("alguien se registra y queda con sus aperturas de regalo", async (t) => {
   assert.equal(estado, 201, JSON.stringify(datos));
   assert.ok(datos.token, "no vino el token");
   assert.equal(datos.user.balanceSc, 0);
-  assert.equal(datos.user.freeOpens, 3, "el regalo de bienvenida son 3 aperturas");
+  assert.equal(datos.user.freeOpens, 3, "el regalo de bienvenida son 3 cajas");
+
+  /* Y son TRES CAJAS distintas, no tres fichas para la misma. */
+  const enLaBase = await User.findById(datos.user._id).select("cajasGratis").lean();
+  assert.equal(enLaBase.cajasGratis.length, 3);
+  assert.equal(new Set(enLaBase.cajasGratis.map((c) => c.slug)).size, 3, "tres cajas distintas");
+  assert.ok(enLaBase.cajasGratis.every((c) => c.usadaEl === null));
   assert.equal(datos.user.verificationLevel, 0);
   assert.equal(datos.user.rank, "user");
   assert.ok(!("passwordHash" in datos.user), "LA CONTRASENA NO PUEDE SALIR DEL SERVIDOR");

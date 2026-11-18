@@ -76,10 +76,39 @@ const userSchema = new mongoose.Schema(
     verificationLevel: { type: Number, default: 0, min: 0, max: NIVEL_MAXIMO, index: true },
 
     /*
-      APERTURAS GRATIS QUE LE QUEDAN.
+      LAS CAJAS DE REGALO.
 
-      El regalo de bienvenida son 3. No son saldo: no se pueden canjear ni
-      vender, solo gastar abriendo. Por eso viven acá y no en `balanceSc`.
+      El regalo de bienvenida son TRES CAJAS, una apertura en cada una,
+      no tres fichas para usar donde sea. Es lo que dice el prototipo, y
+      la diferencia no es un detalle: con fichas sueltas alguien abre
+      tres veces la caja mas cara de las tres y el regalo cuesta el
+      triple de lo pensado.
+
+      No son saldo: no se canjean ni se venden, solo se abren. Por eso
+      viven acá y no en `balanceSc`.
+
+      `usadaEl` en vez de borrar la fila: asi se puede mirar cuales
+      abrio y cuales no, que es la mitad de la pantalla de bienvenida.
+    */
+    cajasGratis: {
+      type: [
+        {
+          box: { type: mongoose.Schema.Types.ObjectId, ref: "Box", required: true },
+          slug: { type: String, required: true },
+          nombre: { type: String, default: "" },
+          usadaEl: { type: Date, default: null },
+        },
+      ],
+      default: [],
+    },
+
+    /*
+      CUANTAS LE QUEDAN SIN ABRIR.
+
+      Es la cuenta de `cajasGratis`, guardada aparte porque la cabecera
+      la muestra en cada pantalla y leerla asi es un campo en vez de
+      recorrer un arreglo. Se mueve SIEMPRE junto con el arreglo (ver
+      services/boxes).
     */
     freeOpens: { type: Number, default: 0 },
 

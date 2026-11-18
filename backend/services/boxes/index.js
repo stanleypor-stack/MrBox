@@ -141,7 +141,7 @@ async function abrir({ user, slug, veces = 1, demo = false }) {
   */
   for (let i = 0; i < cuantas; i += 1) {
     /* ¿Le queda alguna gratis? Se gastan antes que el saldo. */
-    const gratis = await gastarAperturaGratis(user._id);
+    const gratis = await gastarAperturaGratis(user._id, caja._id);
 
     /*
       UNA APERTURA GRATIS TAMBIEN ES JUGAR.
@@ -348,13 +348,80 @@ async function abrir({ user, slug, veces = 1, demo = false }) {
  * tiempo con una sola gratis disponible se la gastarían las dos y el
  * contador quedaría en -1.
  */
-async function gastarAperturaGratis(userId) {
+async function gastarAperturaGratis(userId, boxId) {
+  /*
+    LA CONDICION VA ADENTRO DEL FILTRO.
+
+    `$elemMatch` pide: una caja de regalo de ESTA caja y sin usar. Si
+    dos aperturas entran a la vez, la base deja pasar una sola. Leer y
+    después escribir es como se regalan dos cajas con un solo ticket.
+
+    `freeOpens` baja en el mismo `findOneAndUpdate`: el contador y el
+    arreglo no pueden quedar diciendo cosas distintas.
+  */
   const r = await User.findOneAndUpdate(
-    { _id: userId, freeOpens: { $gt: 0 } },
-    { $inc: { freeOpens: -1 } },
+    {
+      _id: userId,
+      cajasGratis: { $elemMatch: { box: boxId, usadaEl: null } },
+    },
+    {
+      $set: { "cajasGratis.$.usadaEl": new Date() },
+      $inc: { freeOpens: -1 },
+    },
     { new: true }
   ).select("freeOpens").lean();
+
   return !!r;
+}
+
+/**
+ * LAS TRES CAJAS DE REGALO, AL REGISTRARSE.
+ *
+ * Las que digan las perillas. Si alguna no existe o no está al aire, se
+ * reparten las que sí: mejor dos regalos que un error en el registro.
+ */
+async function regalarCajasDeBienvenida(userId) {
+  const cfg = await Settings.leer();
+  /* Vacia quiere decir "nadie las eligio todavia", no "ninguna": el
+     documento de perillas es mas viejo que el campo. */
+  const configuradas = (cfg.cajasDeRegalo || []).length
+    ? cfg.cajasDeRegalo
+    : Settings.CAJAS_DE_REGALO;
+
+  const slugs = configuradas.slice(0, cfg.aperturasDeRegalo || 3);
+  if (!slugs.length) return [];
+
+  const cajas = await Box.find({ slug: { $in: slugs }, live: true })
+    .select("slug name")
+    .lean();
+
+  if (!cajas.length) return [];
+
+  const regalo = cajas.map((c) => ({
+    box: c._id,
+    slug: c.slug,
+    nombre: c.name,
+    usadaEl: null,
+  }));
+
+  await User.updateOne(
+    { _id: userId },
+    { $set: { cajasGratis: regalo, freeOpens: regalo.length } }
+  );
+
+  return regalo;
+}
+
+/** Las que le quedan sin abrir, para la portada y la cabecera. */
+async function cajasGratisDe(userId) {
+  const u = await User.findById(userId).select("cajasGratis").lean();
+  if (!u || !u.cajasGratis) return [];
+
+  return u.cajasGratis.map((c) => ({
+    slug: c.slug,
+    nombre: c.nombre,
+    usada: !!c.usadaEl,
+  }));
 }
 
 /** Lo que se muestra de una caja, sin lo que no hace falta. */
@@ -547,4 +614,6 @@ module.exports = {
   cajaPorSlug,
   resumenDeCaja,
   economia: eco,
+  regalarCajasDeBienvenida,
+  cajasGratisDe,
 };

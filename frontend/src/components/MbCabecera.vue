@@ -336,7 +336,7 @@ export default {
   },
 
   computed: {
-    ...mapState(["usuario", "abierto"]),
+    ...mapState(["usuario", "abierto", "inventarioCambio"]),
     ...mapGetters(["entro", "saldo", "aperturasGratis"]),
 
     inicial() {
@@ -361,6 +361,9 @@ export default {
   },
 
   watch: {
+    /* Abrio una caja o vendio algo: la billetera de arriba quedo vieja. */
+    inventarioCambio() { this.traerInventario(); },
+
     /* Al entrar o salir, el inventario del encabezado cambia. */
     entro: "traerInventario",
   },

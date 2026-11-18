@@ -14,23 +14,24 @@
     </router-link>
 
     <!-- ── Las aperturas gratis que le quedan ───────────────────── -->
-    <section v-if="entro && aperturasGratis > 0 && tickets.length" class="mb-gratis">
+    <section v-if="entro && tickets.length" class="mb-gratis">
       <div class="mb-gratis__cabeza">
         <h2>{{ $t('home.yourFreeOpens') }}</h2>
         <span>{{ $t('home.freeLeft', { n: aperturasGratis, total: regalo }) }}</span>
       </div>
       <div class="mb-gratis__grilla">
         <router-link
-          v-for="t in tickets" :key="t.slug" :to="`/boxes/${t.slug}`" class="mb-tix"
+          v-for="t in tickets" :key="t.slug" :to="`/boxes/${t.slug}`"
+          class="mb-tix" :class="{ 'is-usada': t.usada }"
         >
           <span class="mb-tix__arriba">
-            <span class="mb-tix__cinta">{{ $t('home.freeOpen') }}</span>
+            <span class="mb-tix__cinta">{{ t.usada ? $t('home.freeUsed') : $t('home.freeOpen') }}</span>
             <span class="mb-art mb-float mb-tix__arte" :style="arte(t)"></span>
           </span>
           <span class="mb-tix__abajo">
             <span class="mb-tix__nombre">{{ t.name }}</span>
             <span class="mb-tix__cat">{{ t.category }}</span>
-            <span class="mb-tix__cta">{{ $t('action.open') }}</span>
+            <span class="mb-tix__cta">{{ t.usada ? $t('home.freeOpened') : $t('action.open') }}</span>
           </span>
         </router-link>
       </div>
@@ -491,10 +492,23 @@ export default {
           }));
         }
 
-        /* Los tickets de las gratis: las cajas baratas, que es lo que
-           conviene abrir con un regalo. */
-        const baratas = this.filas.find((f) => f.id === "cheap");
-        this.tickets = ((baratas && baratas.items) || []).slice(0, 3);
+        /*
+          LOS TRES TICKETS SON TRES CAJAS DE VERDAD.
+
+          No "tres cajas baratas cualesquiera": son LAS tres que se
+          regalan, y cada una dice si ya se abrió. El regalo es una
+          apertura en cada una, no tres fichas sueltas.
+        */
+        try {
+          const regalos = await api.get("/boxes/gifts");
+          const todas = this.filas.flatMap((f) => f.items);
+          this.tickets = regalos.data.data.items.map((g) => {
+            const caja = todas.find((c) => c.slug === g.slug);
+            return { ...(caja || {}), slug: g.slug, name: g.nombre || (caja && caja.name), usada: g.usada };
+          });
+        } catch (err) {
+          this.tickets = [];
+        }
 
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
@@ -625,6 +639,10 @@ export default {
 
   &:hover { color: #fff; filter: drop-shadow(0 10px 20px rgba(0, 0, 0, .55)) brightness(1.05); }
 }
+/* La que ya se abrio queda apagada, pero a la vista: el prototipo las
+   deja las tres para que se vea cuantas quedan. */
+.mb-tix.is-usada { opacity: .55; filter: grayscale(.4); }
+
 
 .mb-tix__arriba {
   position: relative;

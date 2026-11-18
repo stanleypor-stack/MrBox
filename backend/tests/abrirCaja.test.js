@@ -95,7 +95,23 @@ async function jugador({ saldo = 100, gratis = 0, codigo = null } = {}) {
   const cuenta = { username: `cj${n}`, email: `cj${n}@test.local`, password: "unaclavelarga" };
   if (codigo) cuenta.affiliateCode = codigo;
   const { datos } = await pedir("POST", "/auth/register", { cuerpo: cuenta });
-  await User.updateOne({ _id: datos.user._id }, { $set: { balanceSc: saldo, freeOpens: gratis } });
+  /*
+    La gratis es de UNA CAJA, no una ficha suelta (ver services/boxes).
+    Las pruebas que piden `gratis: 2` piden dos cajas de regalo, y como
+    acá hay una sola caja de prueba, se reparte esa.
+  */
+  const laDePrueba = await Box.findOne({ slug: "prueba" }).select("slug name").lean();
+  const cajasGratis = Array.from({ length: gratis }, () => ({
+    box: laDePrueba._id,
+    slug: laDePrueba.slug,
+    nombre: laDePrueba.name,
+    usadaEl: null,
+  }));
+
+  await User.updateOne(
+    { _id: datos.user._id },
+    { $set: { balanceSc: saldo, freeOpens: gratis, cajasGratis } }
+  );
   return { id: datos.user._id, token: datos.token };
 }
 

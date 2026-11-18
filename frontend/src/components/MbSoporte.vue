@@ -45,7 +45,6 @@
             <span class="mb-sop__opcion-b">{{ $t('support.searchHelp') }}</span>
           </button>
 
-          <p class="mb-sop__horario">{{ $t('support.hours', { horario: horario }) }}</p>
         </div>
 
         <!-- Mis conversaciones -->
