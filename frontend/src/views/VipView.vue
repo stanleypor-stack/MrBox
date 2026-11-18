@@ -9,19 +9,21 @@
         <p>{{ $t('vip.sub') }}</p>
 
         <div v-if="miRango" class="mb-vcartel__caja">
-          <div class="mb-vcartel__fila">
-            <span class="mb-vcartel__ahora" :style="{ color: miRango.color }">{{ miRango.nombre }}</span>
-            <span v-if="miRango.siguiente" class="mb-tenue">
-              {{ $t('vip.nextIs', { rango: miRango.siguiente }) }}
+          <div class="mb-vcartel__quien">
+            <span class="mb-vcartel__avatar">{{ inicial }}</span>
+            <span class="mb-vcartel__nombre">
+              <b>{{ (usuario && usuario.username) || $t('nav.vip') }}</b>
+              <span :style="{ color: miRango.color }">{{ miRango.nombre }}</span>
             </span>
-            <span v-else class="mb-tenue">{{ $t('vip.topTier') }}</span>
+            <span class="mb-vcartel__pct">{{ miRango.progreso }}%</span>
           </div>
 
           <div class="mb-vcartel__barra"><div :style="{ width: miRango.progreso + '%' }"></div></div>
 
           <div class="mb-vcartel__fila mb-tenue">
             <span>{{ $t('vip.played', { amount: plata(jugado) }) }}</span>
-            <span v-if="miRango.faltaPara">{{ plata(miRango.faltaPara) }}</span>
+            <span v-if="miRango.faltaPara">{{ $t('vip.nextAt', { amount: corto(miRango.faltaPara), rango: miRango.siguiente }) }}</span>
+            <span v-else>{{ $t('vip.topTier') }}</span>
           </div>
         </div>
       </div>
@@ -32,11 +34,11 @@
       <button
         type="button" role="tab" :aria-selected="pestana === 'rangos' ? 'true' : 'false'"
         :class="{ 'is-activa': pestana === 'rangos' }" @click="pestana = 'rangos'"
-      >{{ $t('vip.rankSystem') }}</button>
+      >{{ $t('vip.statuses') }}</button>
       <button
-        type="button" role="tab" :aria-selected="pestana === 'preguntas' ? 'true' : 'false'"
-        :class="{ 'is-activa': pestana === 'preguntas' }" @click="pestana = 'preguntas'"
-      >{{ $t('home.faqTitle') }}</button>
+        type="button" role="tab" :aria-selected="pestana === 'explicado' ? 'true' : 'false'"
+        :class="{ 'is-activa': pestana === 'explicado' }" @click="pestana = 'explicado'"
+      >{{ $t('vip.explained') }}</button>
     </div>
 
     <!-- ── Los nueve rangos ─────────────────────────────────────── -->
@@ -76,25 +78,62 @@
           </div>
 
           <ul class="mb-rango__lista">
-            <li v-for="b in r.beneficios" :key="b.clave" :class="{ 'is-si': b.tiene }">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <li v-for="(b, k) in r.beneficios" :key="b.clave" :class="{ 'is-si': b.tiene }">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path :d="b.tiene ? 'm5 12 5 5 9-10' : 'M7 11V8a5 5 0 0 1 10 0v3M6 11h12v9H6z'" />
               </svg>
               {{ $t('vip.perk.' + b.clave) }}
+              <!-- El que ESTE rango agrega, como en el prototipo. -->
+              <span v-if="esNuevo(r, k)" class="mb-rango__nuevo">{{ $t('vip.new') }}</span>
             </li>
           </ul>
 
-          <div class="mb-rango__rake">
-            <span>{{ $t('vip.rakeback') }}</span>
-            <b>{{ (r.rakeback.monthly * 100).toFixed(2) }}%</b>
+          <div class="mb-rango__pie">
+            {{ r.desde === 0 ? $t('vip.everyoneStarts') : $t('vip.reachPlayed', { amount: corto(r.desde) }) }}
           </div>
         </article>
       </div>
     </section>
 
+    <!-- ── Como funciona y los beneficios ───────────────────────── -->
+    <section v-else class="mb-vcomo">
+      <div class="mb-vcomo__parte">
+        <h2>{{ $t('vip.howTitle') }}</h2>
+        <div class="mb-vcomo__pasos">
+          <div v-for="n in 3" :key="n" class="mb-vpaso">
+            <span class="mb-vpaso__n">{{ n }}</span>
+            <span class="mb-vpaso__t">{{ $t('vip.step' + n) }}</span>
+            <span class="mb-vpaso__s">{{ $t('vip.step' + n + 'Sub') }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-vcomo__parte">
+        <h2>{{ $t('vip.benefitsTitle') }}</h2>
+        <p class="mb-tenue">{{ $t('vip.benefitsSub') }}</p>
+
+        <div class="mb-vcomo__benes">
+          <div v-for="b in BENEFICIOS" :key="b.id" class="mb-vbene">
+            <span class="mb-vbene__ico" :style="{ background: b.tinte }" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"
+                   stroke-linecap="round" stroke-linejoin="round"><path :d="b.icono" /></svg>
+            </span>
+            <span class="mb-vbene__t">{{ $t('vip.bene.' + b.id) }}</span>
+            <span class="mb-vbene__s">{{ $t('vip.beneSub.' + b.id) }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── A subir ──────────────────────────────────────────────── -->
+    <div class="mb-vsubir">
+      <router-link :to="entro ? '/boxes' : '/signup'">{{ $t('vip.levelUp') }}</router-link>
+    </div>
+
     <!-- ── Las preguntas, por grupo ─────────────────────────────── -->
-    <section v-else class="mb-vfaq">
+    <section class="mb-vfaq">
+      <h2 class="mb-vfaq__titulo">{{ $t('home.faqTitle') }}</h2>
       <div class="mb-vfaq__grupos" role="tablist" :aria-label="$t('home.faqTitle')">
         <button
           v-for="g in GRUPOS" :key="g.id" type="button" role="tab"
@@ -119,33 +158,31 @@
         <p v-if="abierta === i">{{ $t('vipFaq.' + q + '.a') }}</p>
       </div>
 
-      <!--
-        EL TRASLADO DE RANGO.
+    </section>
 
-        El diseno lo cuenta en una pregunta: "mandale a soporte la
-        prueba de tu rango en otro lado". Como el chat de soporte ya
-        existe, el boton lo ABRE con el mensaje empezado en vez de
-        dejar a la persona redactandolo de cero.
-      -->
-      <div v-if="grupo === 'transfer'" class="mb-vmatch">
-        <div class="mb-vmatch__texto">
-          <h2>{{ $t('vip.matchTitle') }}</h2>
-          <p>{{ $t('vip.matchSub') }}</p>
-          <ul>
-            <li v-for="n in [1, 2, 3]" :key="n">{{ $t('vip.matchStep' + n) }}</li>
-          </ul>
-        </div>
+    <!--
+      EL TRASLADO DE RANGO.
 
-        <button type="button" class="mb-vmatch__b" @click="pedirTraslado">
-          {{ $t('vip.matchCta') }}
-        </button>
+      El cartel del prototipo, abajo de todo y siempre a la vista. El
+      boton abre el chat de soporte con el mensaje empezado: del otro
+      lado lo contesta una persona que tiene que mirar una captura, y
+      eso ya es soporte.
+    -->
+    <section class="mb-vmatch">
+      <div class="mb-vmatch__texto">
+        <h2>{{ $t('vip.matchTitle') }}</h2>
+        <p>{{ $t('vip.matchSub') }}</p>
       </div>
+
+      <button type="button" class="mb-vmatch__b" @click="pedirTraslado">
+        {{ $t('vip.matchCta') }}
+      </button>
     </section>
   </div>
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 import api from "@/api";
 
 /*
@@ -156,6 +193,19 @@ import api from "@/api";
   por el traslado de rango no tiene que leer cuatro respuestas sobre como
   se sube.
 */
+/*
+  LOS SEIS BENEFICIOS, los del prototipo. El texto vive en los idiomas;
+  acá solo están el color y el dibujo, que no se traducen.
+*/
+const BENEFICIOS = [
+  { id: "boost", tinte: "#3f7cf0", icono: "M13 2 4 14h7l-1 8 9-12h-7z" },
+  { id: "coinBack", tinte: "#16936d", icono: "M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5" },
+  { id: "levelBox", tinte: "#d27d16", icono: "M12 19V5M5 12l7-7 7 7" },
+  { id: "topUp", tinte: "#b8862a", icono: "M12 5v14M5 12h14" },
+  { id: "manager", tinte: "#c42a45", icono: "M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0" },
+  { id: "vipBoxes", tinte: "#7a5af5", icono: "M3 8l4 4 5-7 5 7 4-4-2 11H5z" },
+];
+
 const GRUPOS = [
   { id: "general", preguntas: ["counts", "lose", "signup", "purchase"] },
   { id: "benefits", preguntas: ["rakeback", "boost", "levelUp"] },
@@ -177,11 +227,19 @@ export default {
   name: "VipView",
 
   data() {
-    return { GRUPOS, rangos: [], miRango: null, pestana: "rangos", grupo: "general", abierta: -1 };
+    return {
+      GRUPOS, BENEFICIOS,
+      rangos: [], miRango: null, pestana: "rangos", grupo: "general", abierta: -1,
+    };
   },
 
   computed: {
     ...mapState(["usuario"]),
+    ...mapGetters(["entro"]),
+
+    inicial() {
+      return String((this.usuario && this.usuario.username) || "?").charAt(0).toUpperCase();
+    },
     jugado() { return (this.usuario && this.usuario.jugadoSc) || 0; },
 
     preguntas() {
@@ -217,6 +275,21 @@ export default {
         return;
       }
       this.$store.dispatch("pedirSoporte", this.$t("vip.matchMessage"));
+    },
+
+    /**
+     * El beneficio que ESTE rango agrega.
+     *
+     * Es el último que tiene y el anterior no: el prototipo le pone la
+     * chapita NUEVO. Se calcula mirando el rango de antes en vez de
+     * guardarlo, así el día que se corra un beneficio de rango la
+     * chapita se mueve sola.
+     */
+    esNuevo(rango, i) {
+      if (rango.numero <= 1) return false;
+      const antes = this.rangos[rango.numero - 2];
+      if (!antes) return false;
+      return rango.beneficios[i].tiene && !antes.beneficios[i].tiene;
     },
 
     correr(hacia) {
@@ -304,7 +377,31 @@ export default {
 }
 
 .mb-vcartel__fila { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 700; }
-.mb-vcartel__ahora { font-weight: 900; font-size: 18px; }
+
+.mb-vcartel__quien { display: flex; align-items: center; gap: 12px; }
+
+.mb-vcartel__avatar {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 12px;
+  background: $azul;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $fuente-cartel;
+  font-size: 20px;
+}
+
+.mb-vcartel__nombre {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  b { font-weight: 900; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  span { font-weight: 800; font-size: 13px; }
+}
+
+.mb-vcartel__pct { margin-left: auto; font-weight: 900; font-size: 20px; }
 
 .mb-vcartel__barra {
   height: 8px;
@@ -431,20 +528,106 @@ export default {
   }
 }
 
-.mb-rango__rake {
-  padding: 12px 16px;
+.mb-rango__pie {
+  padding: 12px 18px;
   border-top: 1px solid $borde;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  text-align: center;
+  font-weight: 800;
   font-size: 13px;
-  color: $texto-3;
-  b { font-size: 16px; color: $verde; }
+  color: $texto-4;
+}
+
+.mb-rango__nuevo {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: $amarillo-v;
+  color: $azul-tinta;
+  font-weight: 900;
+  font-size: 10px;
+  letter-spacing: .06em;
+}
+
+/* ── Como funciona y los beneficios ───────────────────────────────── */
+
+.mb-vcomo { display: flex; flex-direction: column; gap: 24px; }
+.mb-vcomo__parte { display: flex; flex-direction: column; gap: 14px; h2 { margin: 0; font-weight: 800; font-size: 28px; } p { margin: -8px 0 0; font-size: 15px; } }
+
+.mb-vcomo__pasos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 14px; }
+
+.mb-vpaso {
+  border-radius: 18px;
+  background: $panel-alto;
+  border: 1px solid $borde;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mb-vpaso__n {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: $azul;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $fuente-cartel;
+  font-size: 20px;
+}
+
+.mb-vpaso__t { font-weight: 900; font-size: 19px; }
+.mb-vpaso__s { font-size: 15px; line-height: 1.5; color: $texto-3; }
+
+.mb-vcomo__benes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 14px; }
+
+.mb-vbene {
+  border-radius: 18px;
+  background: $panel-alto;
+  border: 1px solid $borde;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mb-vbene__ico {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mb-vbene__t { font-weight: 900; font-size: 18px; }
+.mb-vbene__s { font-size: 14px; line-height: 1.55; color: $texto-3; }
+
+/* ── El boton de subir ────────────────────────────────────────────── */
+
+.mb-vsubir {
+  display: flex;
+  justify-content: center;
+
+  a {
+    padding: 16px 32px;
+    border-radius: 14px;
+    background: $azul;
+    box-shadow: 0 5px 0 $azul-hondo;
+    text-decoration: none;
+    color: #fff;
+    font-family: $fuente-cartel;
+    font-size: 22px;
+    @include foco;
+    &:hover { color: #fff; filter: brightness(1.06); }
+  }
 }
 
 /* ── Las preguntas ────────────────────────────────────────────────── */
 
 .mb-vfaq { display: flex; flex-direction: column; gap: 10px; }
+.mb-vfaq__titulo { margin: 0 0 4px; font-weight: 800; font-size: 28px; }
 
 .mb-vfaq__grupos {
   display: flex;
@@ -470,40 +653,48 @@ export default {
   }
 }
 
-/* El traslado de rango, abajo de su grupo de preguntas. */
+/* El cartel del traslado de rango, abajo de todo. */
 .mb-vmatch {
-  margin-top: 6px;
-  padding: 20px;
-  border-radius: 18px;
-  background: $panel-alto;
-  border: 1px solid $borde-fuerte;
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  background: #173262;
+  border: 1px solid #2a4a85;
+  padding: 26px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 18px;
 
-  h2 { margin: 0 0 6px; font-weight: 900; font-size: 18px; }
-  p { margin: 0 0 10px; font-size: 14px; line-height: 1.5; color: $texto-3; }
-  ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: $texto-2; }
+  h2 {
+    margin: 0 0 8px;
+    font-family: $fuente-cartel;
+    font-weight: 400;
+    font-size: 28px;
+    line-height: 1.1;
+  }
+
+  p { margin: 0; font-size: 15px; line-height: 1.55; color: #d4e0fb; }
 }
 
 .mb-vmatch__texto { flex: 1 1 280px; min-width: 0; }
 
 .mb-vmatch__b {
   flex: none;
-  height: 50px;
-  padding: 0 24px;
-  border-radius: 25px;
-  border: 2px solid #fff;
-  background: linear-gradient(180deg, #4fa2ff, #2f6fe0);
-  color: #fff;
+  padding: 15px 26px;
+  border-radius: 14px;
+  border: 0;
+  background: $amarillo-v;
+  box-shadow: 0 5px 0 #c9921a;
+  color: $azul-tinta;
   font-family: inherit;
   font-weight: 900;
-  font-size: 15px;
+  font-size: 16px;
   cursor: pointer;
   @include foco;
-  &:hover { filter: brightness(1.06); }
+  &:hover { filter: brightness(1.04); }
 }
+
 
 .mb-vfaq__item {
   border-radius: 10px;

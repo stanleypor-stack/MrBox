@@ -24,6 +24,63 @@ const { sc } = require("../../utils/money");
 const { errorDe } = require("../../utils/errors");
 
 /** Busca un código, sin importar cómo lo hayan escrito. */
+/**
+ * LOS OCHO TRAMOS DEL PROTOTIPO.
+ *
+ * El socio sube de tramo con lo que juegan los suyos, y nunca baja: el
+ * volumen es de toda la vida, como el rango VIP.
+ *
+ * SOBRE QUE SE PAGA ESE PORCENTAJE
+ *
+ * Sobre el MARGEN que dejan sus jugadores, no sobre lo que juegan.
+ * Importa: la casa se queda con el 8% de lo jugado, asi que pagar "15%
+ * de cada apuesta" seria pagar casi el doble de lo que entra. Sobre el
+ * margen, el tramo VIII paga 15 centavos de cada peso que la casa gana
+ * con esos jugadores, que es un trato bueno y que ademas existe.
+ *
+ * El porcentaje de un codigo se puede fijar a mano desde el panel
+ * (`comision`), y en ese caso manda el del codigo: hay socios grandes
+ * que negocian su numero.
+ */
+const TRAMOS = [
+  { nombre: "Tier I", pct: 0.05, desdeSc: 0 },
+  { nombre: "Tier II", pct: 0.06, desdeSc: 10000 },
+  { nombre: "Tier III", pct: 0.07, desdeSc: 50000 },
+  { nombre: "Tier IV", pct: 0.08, desdeSc: 100000 },
+  { nombre: "Tier V", pct: 0.09, desdeSc: 250000 },
+  { nombre: "Tier VI", pct: 0.1, desdeSc: 500000 },
+  { nombre: "Tier VII", pct: 0.12, desdeSc: 1000000 },
+  { nombre: "Tier VIII", pct: 0.15, desdeSc: 2500000 },
+];
+
+/** En qué tramo cae un código, por lo que jugaron los suyos. */
+function tramoDe(jugadoPorLosSuyosSc) {
+  const jugado = Number(jugadoPorLosSuyosSc) || 0;
+  let i = 0;
+  for (let k = 0; k < TRAMOS.length; k += 1) if (jugado >= TRAMOS[k].desdeSc) i = k;
+
+  const siguiente = i < TRAMOS.length - 1 ? TRAMOS[i + 1] : null;
+  const desde = TRAMOS[i].desdeSc;
+  const hasta = siguiente ? siguiente.desdeSc : desde;
+
+  return {
+    ...TRAMOS[i],
+    numero: i + 1,
+    deCuantos: TRAMOS.length,
+    siguiente,
+    faltaSc: siguiente ? sc(Math.max(0, hasta - jugado)) : 0,
+    progreso: siguiente && hasta > desde
+      ? Math.max(0, Math.min(100, Math.round(((jugado - desde) / (hasta - desde)) * 1000) / 10))
+      : 100,
+  };
+}
+
+/** Lo que cobra ese código: lo suyo si se lo fijaron, o su tramo. */
+function comisionDe(codigo) {
+  if (codigo && Number(codigo.comision) > 0) return Number(codigo.comision);
+  return tramoDe(codigo && codigo.jugadoPorLosSuyosSc).pct;
+}
+
 async function buscarCodigo(texto) {
   const code = String(texto || "").trim().toUpperCase();
   if (!code) return null;
@@ -113,7 +170,7 @@ async function anotarComision({ jugador, jugadoSc, margenSc }) {
     sobre la suerte de nadie: la comisión de una jugada perdedora es
     cero, no negativa.
   */
-  const ganado = margen > 0 ? sc(margen * (Number(codigo.comision) || 0)) : 0;
+  const ganado = margen > 0 ? sc(margen * comisionDe(codigo)) : 0;
 
   await AffiliateCode.updateOne(
     { _id: codigo._id },
@@ -167,6 +224,9 @@ async function cobrar({ userId, codigoId }) {
 }
 
 module.exports = {
+  TRAMOS,
+  tramoDe,
+  comisionDe,
   buscarCodigo,
   bonoDe,
   atarAlSocio,

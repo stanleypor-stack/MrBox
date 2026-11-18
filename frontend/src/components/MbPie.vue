@@ -104,7 +104,7 @@ const COLUMNAS = [
       { texto: "nav.challenges", a: "/challenges" },
       { texto: "nav.rewards", a: "/rewards" },
       { texto: "nav.vip", a: "/vip" },
-      { texto: "nav.affiliates", a: "/profile?tab=refer" },
+      { texto: "nav.affiliates", a: "/affiliates" },
     ],
   },
 ];

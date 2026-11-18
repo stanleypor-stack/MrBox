@@ -8,6 +8,7 @@ const wallet = require("../../services/wallet");
 const Settings = require("../../database/models/Settings");
 const BalanceTransaction = require("../../database/models/BalanceTransaction");
 const User = require("../../database/models/User");
+const afiliados = require("../../services/affiliates");
 const { sc } = require("../../utils/money");
 const { errorDe, esDeJugador } = require("../../utils/errors");
 const { logger } = require("../../utils/logger");
@@ -106,6 +107,33 @@ router.post("/withdraw", freno, async (req, res) => {
   }
 });
 
+/**
+ * ATAR UN CODIGO DE AFILIADO DESPUES.
+ *
+ * El código normalmente se pone al registrarse, pero la mitad de la
+ * gente se entera del código DESPUES. Esto deja ponerlo mientras
+ * todavía no tenga uno: el que ya tiene no lo puede cambiar, porque si
+ * no, el primer socio pierde al jugador que trajo.
+ */
+router.post("/code", freno, async (req, res) => {
+  try {
+    if (req.user.referredBy) throw errorDe("CODE_ALREADY_USED");
+
+    const codigo = await afiliados.atarAlSocio(req.user, req.body.code);
+    if (!codigo) throw errorDe("CODE_NOT_FOUND");
+
+    const cfg = await Settings.leer();
+    const pct = codigo.tramo === "destacado" ? cfg.bonoPorDeposito.destacado : cfg.bonoPorDeposito.normal;
+
+    return res.json({
+      success: true,
+      data: { code: codigo.code, bonoPct: Math.round(pct * 1000) / 10 },
+    });
+  } catch (err) {
+    return responderError(res, err, "code");
+  }
+});
+
 /** Los míos. */
 router.get("/withdrawals", async (req, res) => {
   try {
@@ -172,13 +200,18 @@ aviso.post("/oxapay", express.raw({ type: "*/*" }), async (req, res) => {
     }).lean();
     if (yaEsta) return res.json({ success: true, repetido: true });
 
-    const jugador = await User.findById(userId).select("referredBy").lean();
+    const jugador = await User.findById(userId).select("referredBy affiliateCode").lean();
     if (!jugador) return res.json({ success: true, ignorado: "sin jugador" });
 
-    /* El bono por código de afiliado, si corresponde. Queda pendiente
-       de jugar: ver Settings.vecesAJugarElBono. */
+    /*
+      El bono por código de afiliado lo calcula el servicio, que es el
+      que sabe si ese código es de los destacados --10% en vez de 5%--
+      y si sigue vivo. Calcularlo acá con el porcentaje normal le
+      pagaba de menos a los socios grandes.
+    */
     const cfg = await Settings.leer();
-    const bono = jugador.referredBy ? sc(monto * (cfg.bonoPorDeposito.normal || 0)) : 0;
+    const { bonoSc } = await afiliados.bonoDeCompra(jugador, monto);
+    const bono = sc(bonoSc);
 
     await wallet.mover({
       userId,

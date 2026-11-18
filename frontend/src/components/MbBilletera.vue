@@ -109,6 +109,31 @@
           {{ $t('wallet.minAndConfirms', { min: minimo, n: red.confirmaciones, time: red.demora }) }}
           <br>{{ $t('wallet.belowMin') }}
         </p>
+
+        <!--
+          EL CODIGO DE AFILIADO, QUE SE PUEDE PONER ACA.
+
+          Normalmente se pone al registrarse, pero la mitad de la gente
+          se entera del codigo despues. Mientras no tenga uno, lo puede
+          atar desde aca y el bono entra en la compra siguiente.
+        -->
+        <div class="mb-caja__codigo">
+          <button type="button" :aria-expanded="String(codigoAbierto)" @click="codigoAbierto = !codigoAbierto">
+            {{ $t('wallet.haveCode') }}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8ea3c7" stroke-width="2.6"
+                 stroke-linecap="round" aria-hidden="true"
+                 :style="{ transform: codigoAbierto ? 'rotate(180deg)' : 'rotate(0deg)' }">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+
+          <div v-if="codigoAbierto" class="mb-caja__codigo-fila">
+            <input v-model="codigo" class="mb-caja__in" :placeholder="$t('wallet.codePlaceholder')" :aria-label="$t('wallet.haveCode')">
+            <button type="button" class="mb-caja__aplicar" :disabled="!codigo.trim() || aplicando" @click="aplicarCodigo">
+              {{ $t('wallet.apply') }}
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- ── Canjear ──────────────────────────────────────────────── -->
@@ -267,6 +292,9 @@ export default {
       direccion: "",
       mandando: false,
       minimo: 10,
+      codigo: "",
+      codigoAbierto: false,
+      aplicando: false,
     };
   },
 
@@ -396,6 +424,23 @@ export default {
         window.setTimeout(() => { this.copiado = false; }, 2500);
       } catch (err) {
         this.$store.dispatch("avisar", { texto: this.deposito.direccion });
+      }
+    },
+
+    /** Atar un código de afiliado, si todavía no tiene uno. */
+    async aplicarCodigo() {
+      this.aplicando = true;
+      try {
+        const { data } = await api.post("/wallet/code", { code: this.codigo.trim() });
+        this.codigo = "";
+        this.codigoAbierto = false;
+        this.$store.dispatch("avisar", {
+          texto: this.$t("wallet.codeOn", { code: data.data.code, pct: data.data.bonoPct }),
+        });
+      } catch (err) {
+        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
+      } finally {
+        this.aplicando = false;
       }
     },
 
@@ -690,6 +735,47 @@ export default {
   font-family: inherit;
   font-size: 14px;
   &:focus { outline: none; border-color: $azul; }
+}
+
+.mb-caja__codigo {
+  border-radius: 14px;
+  background: $panel-alto;
+  overflow: hidden;
+
+  > button {
+    width: 100%;
+    height: 52px;
+    padding: 0 16px;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-family: inherit;
+    font-weight: 900;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    @include foco;
+  }
+}
+
+.mb-caja__codigo-fila { display: flex; gap: 8px; padding: 0 16px 16px; }
+.mb-caja__codigo-fila .mb-caja__in { flex: 1; min-width: 0; height: 44px; }
+
+.mb-caja__aplicar {
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 0;
+  background: $azul;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  @include foco;
+  &:disabled { opacity: .5; cursor: default; }
 }
 
 .mb-caja__fino { margin: 0; text-align: center; font-size: 12px; line-height: 1.6; color: $texto-3; }
