@@ -188,6 +188,17 @@
               </MbElegir>
             </span>
 
+            <!--
+              LO QUE CUESTA LA RED.
+
+              Son los numeros de la pasarela, no una estimacion: en
+              USDT por Ethereum la comision son 2 USDT, y el que saca
+              5 no tiene por que enterarse despues.
+            -->
+            <p v-if="red.comision !== undefined" class="mb-caja__fino">
+              {{ $t('wallet.networkFee', { fee: red.comision, min: red.retiroMinimo, coin: tickerElegido }) }}
+            </p>
+
             <label class="mb-caja__campo">
               {{ $t('wallet.yourAddress', { coin: tickerElegido }) }}
               <input v-model="direccion" class="mb-caja__in" :disabled="!puedeCanjear" :placeholder="$t('wallet.addressPlaceholder')">
@@ -510,7 +521,7 @@ export default {
 .mb-caja__ventana {
   position: relative;
   width: min(880px, 100%);
-  max-height: calc(100vh - 32px);
+  max-height: calc(100vh / var(--escala, 1) - 32px);
   overflow: auto;
   border-radius: 22px;
   border: 2px solid #fff;

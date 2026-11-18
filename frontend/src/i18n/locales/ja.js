@@ -278,6 +278,7 @@ export default {
     "needsKyc": "換金には認証レベル {n} が必要です。",
     "yourAddress": "あなたの {coin} アドレス",
     "addressPlaceholder": "受け取りアドレスを貼り付けてください",
+    "networkFee": "ネットワーク手数料 {fee} {coin} · 最低 {min} {coin}",
     "checkAddress": "アドレスは必ず二度確認してください。誤った送金先への支払いは誰にも取り消せません。",
     "requestCashOut": "換金を申請",
     "requested": "申請を受け付けました。まもなく確認します。",

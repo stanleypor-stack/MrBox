@@ -750,7 +750,18 @@ export default {
 
   watch: {
     entro() { this.arrancar(); },
-    "$route.query.tab": function (v) { this.pestana = this.valida(v); },
+    /*
+      Cambio el `?tab=` estando ya en el perfil --el menu de la cuenta
+      del celular, o un enlace compartido-- asi que hay que BAJAR. Solo
+      marcar la seccion dejaba la pagina arriba de todo.
+    */
+    "$route.query.tab": function (v) {
+      const id = this.valida(v);
+      this.pestana = id;
+      if (!v) return;
+
+      this.$nextTick(() => this.bajarA(id));
+    },
   },
 
   methods: {
@@ -789,8 +800,38 @@ export default {
         this.$router.replace({ query: { ...this.$route.query, tab: id } }).catch(() => {});
       }
 
+      this.bajarA(id);
+    },
+
+    /**
+     * BAJA HASTA UNA SECCION.
+     *
+     * A mano y no con `scrollIntoView({ behavior: "smooth" })`: el
+     * desplazamiento suave del navegador NO CORRE en varios casos --una
+     * pestaña que todavia no termino de dibujar, una ventana sin foco,
+     * un telefono con las animaciones apagadas-- y entonces no pasa
+     * nada: se tocaba "Movimientos" y la pagina se quedaba arriba de
+     * todo, en "Perfil". Eso es lo que estaba roto.
+     *
+     * Asi siempre llega. Y si el navegador sabe animar, anima.
+     */
+    bajarA(id) {
       const el = document.getElementById("p-" + id);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (!el) return;
+
+      /* Un respiro arriba, para que el titulo no quede pegado al borde. */
+      const y = Math.max(0, el.getBoundingClientRect().top + window.scrollY - 12);
+
+      try {
+        window.scrollTo({ top: y, behavior: "smooth" });
+      } catch {
+        window.scrollTo(0, y);
+      }
+
+      /* Si a los 300ms no se movio, el navegador no lo hizo: se salta. */
+      window.setTimeout(() => {
+        if (Math.abs(window.scrollY - y) > 24) window.scrollTo(0, y);
+      }, 300);
     },
 
 
@@ -829,8 +870,7 @@ export default {
       /* Con `?tab=` en la direccion, baja hasta esa seccion. */
       if (this.$route.query.tab) {
         await this.$nextTick();
-        const el = document.getElementById("p-" + this.pestana);
-        if (el) el.scrollIntoView({ block: "start" });
+        this.bajarA(this.pestana);
       }
     },
 
@@ -1138,7 +1178,7 @@ export default {
   position: sticky;
   top: 12px;
   align-self: flex-start;
-  max-height: calc(100vh - 24px);
+  max-height: calc(100vh / var(--escala, 1) - 24px);
   overflow-y: auto;
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }

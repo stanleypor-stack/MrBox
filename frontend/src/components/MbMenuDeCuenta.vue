@@ -62,6 +62,9 @@ const ITEMS = [
  * Lo abre el último botón de la barra de abajo. Son atajos a las
  * pestañas del perfil, más soporte y salir.
  */
+/* El atajo "orders" es la seccion "pedidos"; los demas se llaman igual. */
+const SECCION = { orders: "pedidos" };
+
 export default {
   name: "MbMenuDeCuenta",
 
@@ -76,12 +79,38 @@ export default {
       if (m.id === "wallet") return this.$store.commit("abrir", "wallet");
       this.cerrar();
 
-      const donde = m.id === "recompensas" ? "/rewards" : "/profile";
-      const query = m.id === "recompensas" ? {} : { tab: m.id };
-      if (this.$route.path !== donde || this.$route.query.tab !== query.tab) {
-        this.$router.push({ path: donde, query });
+      if (m.id === "recompensas") {
+        if (this.$route.path !== "/rewards") this.$router.push("/rewards");
+        window.scrollTo({ top: 0 });
+        return undefined;
       }
-      window.scrollTo({ top: 0 });
+
+      /*
+        AL PEDAZO DEL PERFIL, NO AL PRINCIPIO DEL PERFIL.
+
+        El perfil es UNA pagina larga, asi que cada atajo es una
+        seccion de esa pagina. Antes todos empujaban `?tab=` y
+        enseguida un `scrollTo(0)` que deshacia el salto: se tocara lo
+        que se tocara, se terminaba arriba de todo, en "Perfil".
+
+        El nombre de la seccion no siempre es el del atajo --"orders"
+        es la seccion "pedidos"-- asi que va la tabla de arriba.
+      */
+      const seccion = SECCION[m.id] || m.id;
+
+      if (this.$route.path !== "/profile") {
+        this.$router.push({ path: "/profile", query: { tab: seccion } });
+        return undefined;
+      }
+
+      /* Ya estando en el perfil: se cambia la direccion y el perfil
+         baja solo (mira `$route.query.tab`). */
+      if (this.$route.query.tab !== seccion) {
+        this.$router.replace({ query: { ...this.$route.query, tab: seccion } }).catch(() => {});
+      } else {
+        const el = document.getElementById("p-" + seccion);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
       return undefined;
     },
 

@@ -82,7 +82,7 @@ export default {
 .mb-vent__caja {
   position: relative;
   width: min(560px, 100%);
-  max-height: calc(100vh - 32px);
+  max-height: calc(100vh / var(--escala, 1) - 32px);
   overflow: auto;
   border-radius: 22px;
   border: 2px solid #fff;

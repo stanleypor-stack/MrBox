@@ -278,6 +278,7 @@ export default {
     "needsKyc": "Cashing out needs verification level {n}.",
     "yourAddress": "Your {coin} address",
     "addressPlaceholder": "Paste the address you want to be paid to",
+    "networkFee": "Network fee {fee} {coin} · minimum {min} {coin}",
     "checkAddress": "Check the address twice. A payment sent to a wrong address cannot be undone by anyone.",
     "requestCashOut": "Request the cash out",
     "requested": "Asked for. We will have it checked shortly.",

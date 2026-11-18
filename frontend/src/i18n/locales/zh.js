@@ -278,6 +278,7 @@ export default {
     "needsKyc": "提现需要达到验证等级 {n}。",
     "yourAddress": "你的 {coin} 地址",
     "addressPlaceholder": "粘贴你的收款地址",
+    "networkFee": "网络手续费 {fee} {coin} · 最低 {min} {coin}",
     "checkAddress": "请仔细核对地址。转错地址的款项无人能够撤回。",
     "requestCashOut": "申请提现",
     "requested": "已提交申请，我们会尽快审核。",

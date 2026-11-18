@@ -210,9 +210,17 @@ export default {
 
     En el teléfono queda en 1: ahí el diseño ya entra como debe.
   */
-  @media (min-width: 1100px) { zoom: .84; }
+  /*
+    Y la escala tambien como NUMERO, porque adentro de un `zoom` una
+    medida de pantalla deja de ser la pantalla: `100vh` se dibuja al
+    84% y abajo de la barra lateral quedaba una franja del fondo de la
+    pagina. Dividiendo por la escala, `100vh` vuelve a ser la pantalla
+    entera.
+  */
+  --escala: 1;
+  @media (min-width: 1100px) { zoom: .84; --escala: .84; }
 
-  min-height: 100vh;
+  min-height: calc(100vh / var(--escala));
   background: $fondo;
   /* Para que el cajón se pueda plantar sobre el cuerpo sin tapar la
      cabecera ni la barra de abajo. */

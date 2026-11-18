@@ -278,6 +278,7 @@ export default {
     "needsKyc": "Le retrait requiert le niveau de vérification {n}.",
     "yourAddress": "Votre adresse {coin}",
     "addressPlaceholder": "Collez l’adresse de paiement",
+    "networkFee": "Frais de réseau {fee} {coin} · minimum {min} {coin}",
     "checkAddress": "Vérifiez l’adresse deux fois. Un paiement envoyé à la mauvaise adresse est irréversible.",
     "requestCashOut": "Demander le retrait",
     "requested": "Demande enregistrée. Nous la vérifions sous peu.",

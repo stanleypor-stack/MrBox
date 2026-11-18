@@ -278,6 +278,7 @@ export default {
     "needsKyc": "Для вывода нужен уровень верификации {n}.",
     "yourAddress": "Ваш адрес {coin}",
     "addressPlaceholder": "Вставьте адрес для выплаты",
+    "networkFee": "Комиссия сети {fee} {coin} · минимум {min} {coin}",
     "checkAddress": "Дважды проверьте адрес. Платёж на неверный адрес отменить невозможно.",
     "requestCashOut": "Запросить вывод",
     "requested": "Запрос принят. Скоро проверим.",

@@ -278,6 +278,7 @@ export default {
     "needsKyc": "Für eine Auszahlung brauchst du Verifizierungsstufe {n}.",
     "yourAddress": "Deine {coin}-Adresse",
     "addressPlaceholder": "Füge die Adresse ein, auf die ausgezahlt werden soll",
+    "networkFee": "Netzwerkgebühr {fee} {coin} · Minimum {min} {coin}",
     "checkAddress": "Prüfe die Adresse zweimal. Eine Zahlung an die falsche Adresse kann niemand rückgängig machen.",
     "requestCashOut": "Auszahlung anfordern",
     "requested": "Angefordert. Wir prüfen es in Kürze.",

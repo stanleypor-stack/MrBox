@@ -278,6 +278,7 @@ export default {
     "needsKyc": "Para sacar é preciso o nível de verificação {n}.",
     "yourAddress": "Seu endereço de {coin}",
     "addressPlaceholder": "Cole o endereço onde quer receber",
+    "networkFee": "Taxa de rede {fee} {coin} · mínimo {min} {coin}",
     "checkAddress": "Confira o endereço duas vezes. Um pagamento para o endereço errado ninguém consegue desfazer.",
     "requestCashOut": "Pedir o saque",
     "requested": "Pedido feito. Vamos revisar em breve.",

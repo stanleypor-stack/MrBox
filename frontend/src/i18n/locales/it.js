@@ -278,6 +278,7 @@ export default {
     "needsKyc": "Per prelevare serve il livello di verifica {n}.",
     "yourAddress": "Il tuo indirizzo {coin}",
     "addressPlaceholder": "Incolla l’indirizzo su cui vuoi ricevere",
+    "networkFee": "Commissione di rete {fee} {coin} · minimo {min} {coin}",
     "checkAddress": "Controlla due volte l’indirizzo. Un pagamento a un indirizzo sbagliato non lo annulla nessuno.",
     "requestCashOut": "Richiedi il prelievo",
     "requested": "Richiesto. Lo controlliamo a breve.",

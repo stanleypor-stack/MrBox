@@ -438,7 +438,7 @@ export default {
   bottom: 90px;
   z-index: 97;
   width: 380px;
-  height: min(560px, calc(100vh - 120px));
+  height: min(560px, calc(100vh / var(--escala, 1) - 120px));
   display: flex;
   flex-direction: column;
   overflow: hidden;

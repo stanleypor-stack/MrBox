@@ -290,7 +290,7 @@ export default {
     --el fondo de la pagina-- donde deberia seguir el panel. Con `height`
     el fondo llega siempre hasta abajo.
   */
-  height: 100vh;
+  height: calc(100vh / var(--escala, 1));
   overflow-y: auto;
 
   /* Se desliza, pero sin la barrita gris: afea la columna y en el
