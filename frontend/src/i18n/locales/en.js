@@ -711,5 +711,25 @@ export default {
       "q": "How does rakeback work?",
       "a": "A share of what you play comes back to you. It builds up in three windows — daily, weekly and monthly — and each one can be claimed once in Rewards."
     }
+  },
+  "foot": {
+    "about": "Open boxes online: Pokemon cards, sneakers, tech and more. Everything you pull can be shipped to your door.",
+    "age": "By using this site you confirm that you are over 18.",
+    "legal": "LEGAL",
+    "explore": "EXPLORE",
+    "earn": "EARN MORE",
+    "support": "SUPPORT",
+    "terms": "General terms",
+    "rules": "Sweepstakes rules",
+    "responsible": "Responsible play",
+    "privacy": "Privacy policy",
+    "acceptance": "Customer acceptance",
+    "liveChat": "Live chat",
+    "helpCenter": "Help centre",
+    "partner": "Partner programme",
+    "legal1": "MR BOX is an independent platform and is not affiliated with, endorsed or sponsored by any of the brands, manufacturers or rights holders whose products are offered on this site. All product names, brands, logos and trademarks are the property of their respective owners.",
+    "legal2": "MR BOX is not affiliated with, endorsed or sponsored by The Pokemon Company, Nintendo, Creatures Inc. or GAME FREAK Inc. Pokemon and all related names, characters and trademarks are the property of their respective owners.",
+    "legal3": "No purchase necessary. Sweeps Coins can be redeemed for prizes under the official rules. Void where prohibited.",
+    "copy": "© {anio} MR BOX"
   }
 };

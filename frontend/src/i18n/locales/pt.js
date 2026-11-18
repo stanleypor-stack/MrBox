@@ -711,5 +711,25 @@ export default {
       "q": "Como funciona o rakeback?",
       "a": "Parte do que você joga volta. Acumula em três janelas — diária, semanal e mensal — e cada uma é resgatada uma vez em Recompensas."
     }
+  },
+  "foot": {
+    "about": "Abra caixas online: cartas de Pokemon, tênis, tecnologia e mais. Tudo o que você tirar pode ir para a sua casa.",
+    "age": "Ao usar este site você confirma ter mais de 18 anos.",
+    "legal": "LEGAL",
+    "explore": "EXPLORAR",
+    "earn": "GANHAR MAIS",
+    "support": "SUPORTE",
+    "terms": "Termos gerais",
+    "rules": "Regras do sorteio",
+    "responsible": "Jogo responsável",
+    "privacy": "Privacidade",
+    "acceptance": "Aceitação de clientes",
+    "liveChat": "Chat ao vivo",
+    "helpCenter": "Central de ajuda",
+    "partner": "Programa de parceiros",
+    "legal1": "MR BOX é uma plataforma independente e não tem ligação, aval ou patrocínio das marcas, fabricantes ou detentores de direitos cujos produtos são oferecidos aqui. Todos os nomes, marcas e logos pertencem aos seus donos.",
+    "legal2": "MR BOX não tem ligação, aval ou patrocínio da The Pokemon Company, Nintendo, Creatures Inc. ou GAME FREAK Inc. Pokemon e os nomes relacionados pertencem aos seus donos.",
+    "legal3": "Não é preciso comprar nada. Sweeps Coins podem ser trocados por prêmios conforme as regras oficiais. Sem validade onde for proibido.",
+    "copy": "© {anio} MR BOX"
   }
 };

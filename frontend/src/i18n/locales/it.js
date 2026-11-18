@@ -711,5 +711,25 @@ export default {
       "q": "Come funziona il rakeback?",
       "a": "Una parte del giocato torna indietro. Si accumula in tre finestre — giorno, settimana, mese — ognuna riscuotibile una volta in Premi."
     }
+  },
+  "foot": {
+    "about": "Apri box online: carte Pokemon, sneaker, tech e altro. Tutto quello che vinci può arrivarti a casa.",
+    "age": "Usando questo sito confermi di avere più di 18 anni.",
+    "legal": "LEGALE",
+    "explore": "ESPLORA",
+    "earn": "GUADAGNA DI PIÙ",
+    "support": "ASSISTENZA",
+    "terms": "Termini generali",
+    "rules": "Regolamento",
+    "responsible": "Gioco responsabile",
+    "privacy": "Privacy",
+    "acceptance": "Accettazione clienti",
+    "liveChat": "Chat dal vivo",
+    "helpCenter": "Centro assistenza",
+    "partner": "Programma partner",
+    "legal1": "MR BOX è una piattaforma indipendente e non è affiliata, approvata o sponsorizzata dai marchi, produttori o titolari dei diritti i cui prodotti sono offerti su questo sito. Tutti i nomi, marchi e loghi appartengono ai rispettivi proprietari.",
+    "legal2": "MR BOX non è affiliata, approvata o sponsorizzata da The Pokemon Company, Nintendo, Creatures Inc. o GAME FREAK Inc. Pokemon e i nomi correlati appartengono ai rispettivi proprietari.",
+    "legal3": "Nessun acquisto necessario. Gli Sweeps Coins si riscattano in premi secondo il regolamento ufficiale. Nullo dove vietato.",
+    "copy": "© {anio} MR BOX"
   }
 };

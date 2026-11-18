@@ -24,6 +24,15 @@
         <MbLateral class="mb-cuerpo__lateral" />
         <main class="mb-contenido">
           <router-view />
+
+          <!--
+            EL PIE VA ADENTRO DEL CONTENIDO, NO ABAJO DEL CUERPO.
+
+            Asi queda alineado con la columna de la pantalla y no cruza
+            por debajo de la barra lateral, que es como lo dibuja el
+            diseno.
+          -->
+          <MbPie @soporte="avisarPendiente('support.soon')" />
         </main>
       </div>
 
@@ -54,6 +63,7 @@ import MbCabecera from "@/components/MbCabecera.vue";
 import MbLateral from "@/components/MbLateral.vue";
 import MbBarraDeAbajo from "@/components/MbBarraDeAbajo.vue";
 import MbMenuDeCuenta from "@/components/MbMenuDeCuenta.vue";
+import MbPie from "@/components/MbPie.vue";
 
 /**
  * EL ARMAZON DEL SITIO.
@@ -80,7 +90,7 @@ import MbMenuDeCuenta from "@/components/MbMenuDeCuenta.vue";
  */
 export default {
   name: "App",
-  components: { MbCabecera, MbLateral, MbBarraDeAbajo, MbMenuDeCuenta },
+  components: { MbCabecera, MbLateral, MbBarraDeAbajo, MbMenuDeCuenta, MbPie },
 
   computed: {
     ...mapState(["aviso", "abierto"]),

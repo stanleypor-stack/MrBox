@@ -711,5 +711,25 @@ export default {
       "q": "返水怎么算？",
       "a": "投注的一部分会返给你。分每日、每周、每月三个周期积累，每个在「奖励」里领一次。"
     }
+  },
+  "foot": {
+    "about": "在线开盒：宝可梦卡、球鞋、数码等。开到的东西都能寄到家。",
+    "age": "使用本站即表示你已满 18 岁。",
+    "legal": "法律",
+    "explore": "逋逛",
+    "earn": "赚更多",
+    "support": "客服",
+    "terms": "通用条款",
+    "rules": "抽奖规则",
+    "responsible": "责任游戏",
+    "privacy": "隐私政策",
+    "acceptance": "客户接纳政策",
+    "liveChat": "在线客服",
+    "helpCenter": "帮助中心",
+    "partner": "合作计划",
+    "legal1": "MR BOX 是独立平台，与本站所售商品的任何品牌、制造商或权利人无关联、未获其认可或赞助。所有名称、商标和标志归各自所有者所有。",
+    "legal2": "MR BOX 与宝可梦公司、任天堂、Creatures Inc. 或 GAME FREAK Inc. 无关。宝可梦及相关名称、角色和商标归各自所有者所有。",
+    "legal3": "无需购买。Sweeps Coins 可按官方规则兑换奖品。法律禁止地区无效。",
+    "copy": "© {anio} MR BOX"
   }
 };

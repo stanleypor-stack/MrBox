@@ -43,7 +43,10 @@ html, body {
     mueve de costado en un telefono se siente rota, y tapa el problema
     con uno peor.
   */
-  overflow-x: hidden;
+  /* `clip` y no `hidden`: `hidden` convierte esto en un contenedor de
+     scroll y rompe todo lo que sea `position: sticky` adentro. `clip`
+     recorta igual sin crear el contenedor. */
+  overflow-x: clip;
   background: $fondo;
   color: $texto;
   font-family: $fuente;

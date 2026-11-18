@@ -91,16 +91,25 @@ export default {
 @import "@/styles/tokens";
 
 .mb-abajo {
-  position: sticky;
+  /*
+    FIJA A LA PANTALLA, NO `sticky`.
+
+    Era `sticky` y desaparecio el dia que `html, body` recibieron
+    `overflow-x: hidden` para que nada se saliera de costado: ese
+    overflow convierte al body en un contenedor de scroll, y un
+    elemento `sticky` adentro deja de pegarse a la pantalla.
+
+    Fija no depende de nada de eso. Es lo que de verdad queria ser: una
+    barra que esta siempre ahi abajo.
+  */
+  position: fixed;
+  left: 0;
+  right: 0;
   bottom: 0;
   /* Por ENCIMA del cajon del menu (z 20): es el mismo boton que lo
      abrio el que tiene que poder cerrarlo. Tapado, la unica salida
      seria tocar el velo, que nadie adivina. */
   z-index: 30;
-  /* Se monta sobre los ultimos 72px de la pagina en vez de agregarlos
-     al final: asi el fondo no queda con una franja vacia abajo cuando
-     la pagina es corta. El relleno de `.mb-contenido` ya deja el lugar. */
-  margin-top: -72px;
   height: 72px;
   box-sizing: border-box;
   /* El relleno de abajo es más grande para dejar lugar a la barra del
