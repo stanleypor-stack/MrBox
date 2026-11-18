@@ -20,7 +20,7 @@
 
       <div class="mb-perfil__cuerpo">
         <!-- ══ Perfil ═══════════════════════════════════════════════ -->
-        <template v-if="pestana === 'perfil'">
+        <section id="p-perfil" class="mb-psec">
           <section class="mb-tarjeta-user">
             <div class="mb-tarjeta-user__trama" aria-hidden="true"></div>
 
@@ -103,10 +103,10 @@
               <button type="button" class="mb-chico" @click="pendiente">{{ $t('profile.changePassword') }}</button>
             </section>
           </div>
-        </template>
+        </section>
 
         <!-- ══ Verificación ═════════════════════════════════════════ -->
-        <template v-else-if="pestana === 'verificacion'">
+        <section id="p-verificacion" class="mb-psec">
           <h1>{{ $t('nav.verification') }}</h1>
 
           <div class="mb-verif">
@@ -186,10 +186,10 @@
               </button>
             </aside>
           </div>
-        </template>
+        </section>
 
         <!-- ══ Números ══════════════════════════════════════════════ -->
-        <template v-else-if="pestana === 'numeros'">
+        <section id="p-numeros" class="mb-psec">
           <h1>{{ $t('profile.stats') }}</h1>
           <section class="mb-numeros">
             <div v-for="n in numeros" :key="n.clave" class="mb-numero">
@@ -204,10 +204,10 @@
           <p v-if="stats && !stats.cuadra" class="mb-descuadre">
             {{ $t('profile.mismatch', { contador: plata(stats.jugadoSc), libro: plata(stats.jugadoSegunElLibro) }) }}
           </p>
-        </template>
+        </section>
 
         <!-- ══ Direcciones ══════════════════════════════════════════ -->
-        <template v-else-if="pestana === 'direcciones'">
+        <section id="p-direcciones" class="mb-psec">
           <div class="mb-titulo-fila">
             <div>
               <h1>{{ $t('profile.addresses') }}</h1>
@@ -257,10 +257,10 @@
               </div>
             </section>
           </div>
-        </template>
+        </section>
 
         <!-- ══ Movimientos ══════════════════════════════════════════ -->
-        <template v-else-if="pestana === 'movimientos'">
+        <section id="p-movimientos" class="mb-psec">
           <div>
             <h1>{{ $t('profile.transactions') }}</h1>
             <p class="mb-sub">{{ $t('profile.transactionsSub') }}</p>
@@ -312,10 +312,10 @@
                       @click="traerMovimientos(movimientos.page + 1)">{{ $t('common.next') }}</button>
             </nav>
           </section>
-        </template>
+        </section>
 
         <!-- ══ Historial ════════════════════════════════════════════ -->
-        <template v-else-if="pestana === 'historial'">
+        <section id="p-historial" class="mb-psec">
           <div>
             <h1>{{ $t('profile.history') }}</h1>
             <p class="mb-sub">{{ $t('profile.historySub') }}</p>
@@ -369,10 +369,10 @@
             <button type="button" class="mb-guardar" @click="rotar">{{ $t('profile.rotateSeed') }}</button>
             <p class="mb-panel__p mb-tenue">{{ $t('profile.rotateNote') }}</p>
           </section>
-        </template>
+        </section>
 
         <!-- ══ Actividad ════════════════════════════════════════════ -->
-        <template v-else-if="pestana === 'actividad'">
+        <section id="p-actividad" class="mb-psec">
           <div>
             <h1>{{ $t('profile.activity') }}</h1>
             <p class="mb-sub">{{ $t('profile.activitySub') }}</p>
@@ -402,10 +402,10 @@
           </section>
 
           <p class="mb-ayuda">{{ $t('profile.activityNote') }}</p>
-        </template>
+        </section>
 
         <!-- ══ Pedidos ══════════════════════════════════════════════ -->
-        <template v-else-if="pestana === 'pedidos'">
+        <section id="p-pedidos" class="mb-psec">
           <div>
             <h1>{{ $t('profile.orders') }}</h1>
             <p class="mb-sub">{{ $t('profile.ordersSub') }}</p>
@@ -440,10 +440,10 @@
               @click="cancelarPedido(p)"
             >{{ $t('order.cancel') }}</button>
           </section>
-        </template>
+        </section>
 
         <!-- ══ Controles ════════════════════════════════════════════ -->
-        <template v-else-if="pestana === 'controles'">
+        <section id="p-controles" class="mb-psec">
           <div>
             <h1>{{ $t('profile.controls') }}</h1>
             <p class="mb-sub">{{ $t('profile.controlsSub') }}</p>
@@ -493,10 +493,10 @@
               >{{ $tc('controls.days', d, { n: d }) }}</button>
             </div>
           </section>
-        </template>
+        </section>
 
         <!-- ══ Refer & Earn ═════════════════════════════════════════ -->
-        <template v-else-if="pestana === 'refer'">
+        <section id="p-refer" class="mb-psec">
           <section class="mb-refer">
             <div class="mb-refer__rayos mb-rays" aria-hidden="true"></div>
             <div class="mb-refer__texto">
@@ -551,7 +551,7 @@
               {{ $t('profile.joinedWith', { code: afiliado.miCodigoDeEntrada }) }}
             </p>
           </section>
-        </template>
+        </section>
       </div>
     </div>
   </div>
@@ -727,7 +727,7 @@ export default {
 
   watch: {
     entro() { this.arrancar(); },
-    "$route.query.tab": function (v) { this.pestana = this.valida(v); this.traerLoDeLaPestana(); },
+    "$route.query.tab": function (v) { this.pestana = this.valida(v); },
   },
 
   methods: {
@@ -751,10 +751,25 @@ export default {
       return this.pestanas.some((p) => p.id === id) ? id : "perfil";
     },
 
+    /**
+     * Lleva a una seccion.
+     *
+     * El perfil es UNA pagina larga, como el prototipo: el menu de la
+     * izquierda no cambia de pantalla, baja hasta la seccion. La
+     * direccion igual queda con `?tab=`, asi se puede compartir un
+     * enlace directo a "Verificacion".
+     */
     irA(id) {
-      if (this.pestana === id) return;
-      this.$router.push({ path: "/profile", query: { tab: id } });
+      this.pestana = id;
+
+      if (this.$route.query.tab !== id) {
+        this.$router.replace({ query: { ...this.$route.query, tab: id } }).catch(() => {});
+      }
+
+      const el = document.getElementById("p-" + id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     },
+
 
     copiarId() { this.alPortapapeles(this.idCorto, "profile.copied"); },
 
@@ -778,7 +793,32 @@ export default {
       if (!this.entro) return;
       this.forma = { username: this.usuario.username, email: this.usuario.email };
       this.pestana = this.valida(this.$route.query.tab);
-      await this.traerLoDeLaPestana();
+
+      /*
+        SE TRAE TODO.
+
+        La pagina muestra todas las secciones a la vez, asi que no
+        tiene sentido esperar a que alguien "entre" a una: son ocho
+        pedidos chicos en paralelo, una sola vez.
+      */
+      await this.traerTodo();
+
+      /* Con `?tab=` en la direccion, baja hasta esa seccion. */
+      if (this.$route.query.tab) {
+        await this.$nextTick();
+        const el = document.getElementById("p-" + this.pestana);
+        if (el) el.scrollIntoView({ block: "start" });
+      }
+    },
+
+    /** Todas las secciones, en paralelo y sin tumbar la pantalla si una falla. */
+    async traerTodo() {
+      await Promise.all(
+        this.pestanas.map(async (t) => {
+          this.pestana = this.pestana || t.id;
+          await this.traerLoDe(t.id);
+        })
+      );
     },
 
     /**
@@ -789,8 +829,8 @@ export default {
      * direcciones, sus límites-- se refrescan a mano después de tocar
      * algo, que es cuando de verdad cambiaron.
      */
-    async traerLoDeLaPestana() {
-      const p = this.pestana;
+    async traerLoDe(cual) {
+      const p = cual || this.pestana;
       if (!this.entro || this.pedidas[p]) return;
       this.$set(this.pedidas, p, true);
 
@@ -1007,6 +1047,35 @@ export default {
   },
 
   created() { this.arrancar(); },
+
+  /**
+   * EL MENU SIGUE A LA PANTALLA.
+   *
+   * Marca la seccion que se esta mirando mientras se baja. Sin esto, el
+   * menu de la izquierda queda siempre marcando "Perfil" aunque uno
+   * este leyendo Movimientos, y deja de servir para ubicarse.
+   */
+  mounted() {
+    if (typeof IntersectionObserver === "undefined") return;
+
+    this.mirador = new IntersectionObserver(
+      (filas) => {
+        const visible = filas
+          .filter((f) => f.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) this.pestana = visible.target.id.replace("p-", "");
+      },
+      { rootMargin: "-20% 0px -70% 0px", threshold: [0, 0.2, 0.6] }
+    );
+
+    this.$nextTick(() => {
+      for (const s of this.$el.querySelectorAll(".mb-psec")) this.mirador.observe(s);
+    });
+  },
+
+  beforeDestroy() {
+    if (this.mirador) this.mirador.disconnect();
+  },
 };
 </script>
 
@@ -1040,6 +1109,16 @@ export default {
     scrollbar-width: none;
     &::-webkit-scrollbar { display: none; }
   }
+
+  /* Se queda a la vista mientras se baja por las secciones: es el
+     indice de la pagina, no un encabezado. */
+  position: sticky;
+  top: 12px;
+  align-self: flex-start;
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
 }
 
 .mb-pnav__b {
