@@ -31,6 +31,49 @@
           <use href="#hd2W" fill="url(#hd2F)" />
           <use href="#hd2W" fill="#ffffff" opacity=".55" clip-path="url(#hd2C)" />
         </svg>
+
+        <!--
+          EL LOGO DE CELULAR: "MR" ARRIBA DE "BOX".
+
+          A 375px de ancho, el logo de una linea ocupa la mitad de la
+          cabecera y no queda lugar para la billetera. Apilado mide 70
+          de ancho en vez de 240 y se lee igual de bien.
+
+          Son dos SVG y no uno escalado porque las dos formas son
+          distintas de verdad: la de dos renglones tiene su propio
+          recorte de brillo, no es la otra achicada.
+        -->
+        <svg class="mb-head__logo--celu" width="70" height="55" viewBox="0 0 560 440" role="img" aria-label="MR BOX">
+          <defs>
+            <linearGradient id="hm3F" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ffffff" />
+              <stop offset=".55" stop-color="#e3eeff" />
+              <stop offset="1" stop-color="#9fc3f7" />
+            </linearGradient>
+            <g
+              id="hm3W" font-family="Titan One, sans-serif" font-size="200"
+              text-anchor="middle" letter-spacing="-4" transform="skewX(-7) translate(36 0)"
+            >
+              <text x="270" y="200">MR</text>
+              <text x="270" y="400">BOX</text>
+            </g>
+            <clipPath id="hm3C">
+              <rect x="0" y="40" width="600" height="80" />
+              <rect x="0" y="240" width="600" height="80" />
+            </clipPath>
+          </defs>
+          <use href="#hm3W" transform="translate(16 18)" fill="#06143a" stroke="#06143a" stroke-width="22" stroke-linejoin="round" opacity=".55" />
+          <use href="#hm3W" transform="translate(14 14)" fill="#0b2266" stroke="#0b2266" stroke-width="16" stroke-linejoin="round" />
+          <use href="#hm3W" transform="translate(14 14)" fill="#123a9e" stroke="#123a9e" stroke-width="12" stroke-linejoin="round" />
+          <use href="#hm3W" transform="translate(12 12)" fill="#1a4fc0" stroke="#1a4fc0" stroke-width="12" stroke-linejoin="round" />
+          <use href="#hm3W" transform="translate(10 10)" fill="#2260d6" stroke="#2260d6" stroke-width="12" stroke-linejoin="round" />
+          <use href="#hm3W" transform="translate(8 8)" fill="#2a6fe6" stroke="#2a6fe6" stroke-width="12" stroke-linejoin="round" />
+          <use href="#hm3W" transform="translate(6 6)" fill="#3a80f0" stroke="#3a80f0" stroke-width="12" stroke-linejoin="round" />
+          <use href="#hm3W" transform="translate(4 4)" fill="#4a8ff5" stroke="#4a8ff5" stroke-width="12" stroke-linejoin="round" />
+          <use href="#hm3W" fill="none" stroke="#0b2266" stroke-width="10" stroke-linejoin="round" />
+          <use href="#hm3W" fill="url(#hm3F)" />
+          <use href="#hm3W" fill="#ffffff" opacity=".55" clip-path="url(#hm3C)" />
+        </svg>
       </router-link>
 
       <!-- ── La billetera ─────────────────────────────────────────── -->
@@ -293,7 +336,7 @@ export default {
   },
 
   computed: {
-    ...mapState(["usuario"]),
+    ...mapState(["usuario", "abierto"]),
     ...mapGetters(["entro", "saldo", "aperturasGratis"]),
 
     inicial() {
@@ -322,6 +365,17 @@ export default {
     entro: "traerInventario",
   },
 
+  watch: {
+    /*
+      LA BILLETERA LA PUEDE ABRIR LA BARRA DE ABAJO.
+
+      En celular, el tercer boton de la barra abre esta misma billetera.
+      Son dos componentes hermanos que no se ven, asi que la bandera
+      vive en el estado compartido y cada uno la mira.
+    */
+    "abierto.wallet": function (v) { this.walletAbierta = v; },
+  },
+
   methods: {
     plata(n) {
       return Number(n || 0).toLocaleString("en-US", {
@@ -329,7 +383,10 @@ export default {
       });
     },
 
-    cerrarWallet() { this.walletAbierta = false; },
+    cerrarWallet() {
+      this.walletAbierta = false;
+      if (this.abierto.wallet) this.$store.commit("abrir", null);
+    },
     cerrarAvisos() { this.avisosAbiertos = false; },
     cerrarCuenta() { this.cuentaAbierta = false; },
 
@@ -378,10 +435,19 @@ export default {
   align-items: center;
   gap: 12px;
 
+  /*
+    EN CELULAR ES UNA SOLA FILA.
+
+    Logo, billetera y dos botones, como el diseno de celular. La
+    grilla de tres columnas del escritorio ahi no entra: la billetera
+    terminaba en un segundo renglon y el boton de entrar se iba de la
+    pantalla.
+  */
   @include en-celular {
-    grid-template-columns: 1fr auto;
-    row-gap: 10px;
-    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
   }
 }
 
@@ -389,12 +455,20 @@ export default {
   display: flex;
   align-items: center;
   @include foco;
-  svg { width: 240px; height: 62px; @include en-celular { width: 150px; height: 40px; } }
+  flex: none;
+  svg { width: 240px; height: 62px; }
+  .mb-head__logo--celu { display: none; width: 70px; height: 55px; }
+
+  @include en-celular {
+    svg { display: none; }
+    .mb-head__logo--celu { display: block; }
+  }
 }
 
 .mb-head__centro {
   margin: 0 auto;
-  @include en-celular { order: 3; grid-column: 1 / -1; }
+  /* En celular la billetera se estira y ocupa el hueco del medio. */
+  @include en-celular { flex: 1; min-width: 0; margin: 0; }
 }
 
 .mb-head__der {
@@ -402,6 +476,44 @@ export default {
   align-items: center;
   gap: 10px;
   justify-self: end;
+  @include en-celular { gap: 8px; }
+}
+
+/*
+  LO QUE NO VA EN LA CABECERA DE CELULAR.
+
+  El buscador, la chapa de la cuenta y los botones de entrar y
+  registrarse. No es que sobren: estan abajo, en la barra de cinco
+  botones, que es donde llega el pulgar. Tenerlos dos veces solo
+  empujaba la billetera a un segundo renglon.
+*/
+@include en-celular {
+  .mb-head__der > .mb-redondo,
+  .mb-cuenta { display: none; }
+
+  /*
+    LOS ICONOS, SUELTOS Y CUADRADOS.
+
+    En escritorio los tres viven dentro de una pastilla con borde
+    blanco. A 375px esa pastilla no entra al lado de la billetera, asi
+    que se desarma en botones de 38 como en el diseno de celular.
+  */
+  .mb-iconos__caja {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    gap: 8px;
+    height: auto;
+  }
+
+  .mb-iconos__raya { display: none; }
+
+  .mb-iconos__b {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #16253f;
+  }
 }
 
 /* ── La billetera ─────────────────────────────────────────────────── */

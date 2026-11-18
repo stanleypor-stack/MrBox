@@ -18,7 +18,10 @@ export default {
     "vip": "Club VIP",
     "profile": "Profil",
     "affiliates": "Affiliation",
-    "verification": "Vérification"
+    "verification": "Vérification",
+    "menu": "Menu",
+    "home": "Accueil",
+    "wallet": "Portefeuille"
   },
   "action": {
     "signIn": "Se connecter",
@@ -93,7 +96,24 @@ export default {
     "BOX_NOT_LIVE": "Ce coffret n’est pas disponible.",
     "RATE_LIMITED": "Trop de tentatives. Patientez un instant.",
     "SOMETHING_WENT_WRONG": "Une erreur est survenue.",
-    "NOT_LOGGED_IN": "Vous devez être connecté."
+    "NOT_LOGGED_IN": "Vous devez être connecté.",
+    "ON_A_BREAK": "Vous êtes en pause et ne pouvez pas jouer.",
+    "DAILY_PLAY_LIMIT": "Vous avez atteint votre limite quotidienne.",
+    "DAILY_LOSS_LIMIT": "Vous avez atteint votre limite de perte.",
+    "ALREADY_VERIFIED": "Vous avez déjà ce niveau.",
+    "ALREADY_IN_REVIEW": "Ce niveau est déjà en cours de vérification.",
+    "FINISH_PREVIOUS_LEVEL": "Terminez d’abord le niveau {falta}.",
+    "TOO_YOUNG": "Vous devez avoir au moins {minimo} ans.",
+    "BAD_FILE_TYPE": "Ce type de fichier n’est pas accepté.",
+    "FILE_TOO_BIG": "Ce fichier dépasse {maximoMb} Mo.",
+    "NO_ADDRESS": "Ajoutez d’abord une adresse de livraison.",
+    "ADDRESS_NOT_FOUND": "Cette adresse n’existe pas.",
+    "NOTHING_TO_SHIP": "Il n’y a rien à expédier.",
+    "BOX_NOT_VALID": "Ce coffret ne tient pas debout.",
+    "TOO_FEW_ITEMS": "Un coffret doit contenir au moins {minimo} objets.",
+    "TOO_MANY_ITEMS": "Un coffret contient au plus {maximo} objets.",
+    "DUPLICATE_ITEM": "Le même objet est présent deux fois.",
+    "TOO_MANY_BOXES": "Vous avez déjà {maximo} coffrets."
   },
   "boxes": {
     "title": "Coffrets",
@@ -190,7 +210,47 @@ export default {
     "openingsWithIt": "Ouvertures avec cette paire",
     "rotateSeed": "Changer ma graine",
     "rotateNote": "En changeant, nous révélons l’ancienne graine serveur : vous pouvez vérifier chaque ouverture faite avec elle.",
-    "rotated": "Graine changée"
+    "rotated": "Graine changée",
+    "addresses": "Adresses",
+    "addressesSub": "Où nous envoyons vos objets",
+    "addAddress": "Ajouter une adresse",
+    "editAddress": "Modifier l’adresse",
+    "noAddresses": "Aucune adresse. Ajoutez-en une avant toute livraison.",
+    "defaultAddress": "PAR DÉFAUT",
+    "makeDefault": "Définir par défaut",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "addr": {
+      "nombre": "Nom complet",
+      "telefono": "Téléphone",
+      "calle": "Adresse",
+      "calle2": "Appartement, étage",
+      "ciudad": "Ville",
+      "provincia": "Région",
+      "codigoPostal": "Code postal",
+      "pais": "Code pays"
+    },
+    "activity": "Activité",
+    "activitySub": "Connexions récentes à votre compte",
+    "noActivity": "Rien pour l’instant",
+    "activityNote": "Une connexion que vous ne reconnaissez pas ? Changez votre mot de passe et prévenez-nous.",
+    "device": "Appareil",
+    "from": "Depuis",
+    "session": {
+      "login": "Connexion",
+      "register": "Compte créé",
+      "logout": "Déconnexion",
+      "password": "Mot de passe modifié"
+    },
+    "orders": "Mes commandes",
+    "ordersSub": "Objets que vous vous êtes fait livrer",
+    "noOrders": "Aucune commande. Les objets livrés apparaîtront ici.",
+    "controls": "Limites",
+    "controlsSub": "Fixez des limites et faites une pause quand vous voulez",
+    "refer": "Parrainer et gagner",
+    "sold": "Revendu",
+    "transactionsSub": "Vos dépôts, retraits et gains d’affiliation",
+    "historySub": "Tous les coffrets que vous avez ouverts"
   },
   "txType": {
     "purchase": "Achat",
@@ -212,7 +272,9 @@ export default {
     "account": "Compte",
     "sideMenu": "Menu latéral",
     "collapse": "Réduire le menu",
-    "expand": "Agrandir le menu"
+    "expand": "Agrandir le menu",
+    "mainNav": "Navigation principale",
+    "closeMenu": "Fermer le menu"
   },
   "wallet": {
     "total": "Total du portefeuille",
@@ -409,5 +471,76 @@ export default {
     "payments": "Paiements",
     "claimedTotal": "SC {amount} versés au total",
     "noPayments": "Rien de versé pour l’instant. Ta part apparaît ici dès qu’un joueur ouvre un de tes coffrets."
+  },
+  "order": {
+    "pending": "Demandé",
+    "packing": "En préparation",
+    "shipped": "Expédié",
+    "delivered": "Livré",
+    "cancelled": "Annulé",
+    "cancel": "Annuler la commande"
+  },
+  "controls": {
+    "dailyLimits": "Limites quotidiennes",
+    "limitsHelp": "Durcir une limite s’applique immédiatement. L’assouplir attend {hs} heures — c’est ce qui en fait une limite.",
+    "playLimit": "Mise maximale par jour",
+    "lossLimit": "Perte maximale par jour",
+    "noLimit": "Aucune limite",
+    "playedToday": "Joué aujourd’hui : SC {amount}",
+    "lostToday": "Perdu aujourd’hui : SC {amount}",
+    "pending": "La limite assouplie prendra effet le {fecha}.",
+    "saved": "Limites enregistrées",
+    "takeABreak": "Faire une pause",
+    "breakHelp": "Vous ne pourrez pas jouer jusqu’à la fin. Impossible de l’écourter ou de l’annuler — c’est tout l’intérêt.",
+    "days": "{n} jour | {n} jours",
+    "breakSet": "Pause activée",
+    "onABreak": "Vous êtes en pause",
+    "breakUntil": "Vous pourrez rejouer le {fecha}."
+  },
+  "refer": {
+    "title": "Parrainez vos amis",
+    "sub": "Vos amis reçoivent 5% de bonus de dépôt, et vous touchez une commission sur chacune de leurs mises.",
+    "copyLink": "Copier mon lien",
+    "copied": "Lien copié",
+    "referrals": "Filleuls",
+    "wagerVolume": "Volume misé"
+  },
+  "kyc": {
+    "state": {
+      "none": "À FAIRE",
+      "pending": "EN COURS",
+      "approved": "VALIDÉ",
+      "rejected": "À CORRIGER"
+    },
+    "inReview": "En cours",
+    "finishPrevious": "Terminez le niveau précédent",
+    "tryAgain": "Renvoyer",
+    "send": "Envoyer",
+    "sent": "Envoyé. Nous revenons vers vous.",
+    "fileHelp": "PNG, JPG, WEBP ou PDF, jusqu’à {mb} Mo. Nous le supprimons après vérification.",
+    "fileTooBig": "Ce fichier dépasse {mb} Mo.",
+    "needHelp": "Besoin d’aide ?",
+    "needHelpSub": "Notre équipe est disponible 24h/24 pour vous accompagner.",
+    "contactSupport": "Contacter le support",
+    "field": {
+      "nombre": "Prénom",
+      "apellido": "Nom",
+      "nacimiento": "Date de naissance",
+      "documento": "Document",
+      "paisEmisor": "Pays de délivrance",
+      "numero": "Numéro du document",
+      "foto": "Photo de votre document",
+      "calle": "Adresse",
+      "ciudad": "Ville",
+      "provincia": "Région",
+      "codigoPostal": "Code postal",
+      "pais": "Pays",
+      "comprobante": "Facture ou relevé bancaire"
+    },
+    "doc": {
+      "passport": "Passeport",
+      "id": "Carte d’identité",
+      "licence": "Permis de conduire"
+    }
   }
 };

@@ -18,7 +18,10 @@ export default {
     "vip": "VIP Club",
     "profile": "Profile",
     "affiliates": "Affiliates",
-    "verification": "Verification"
+    "verification": "Verification",
+    "menu": "Menu",
+    "home": "Home",
+    "wallet": "Wallet"
   },
   "action": {
     "signIn": "Sign in",
@@ -93,7 +96,24 @@ export default {
     "BOX_NOT_LIVE": "That box is not available right now.",
     "RATE_LIMITED": "Too many tries. Wait a moment.",
     "SOMETHING_WENT_WRONG": "Something went wrong.",
-    "NOT_LOGGED_IN": "You need to be signed in."
+    "NOT_LOGGED_IN": "You need to be signed in.",
+    "ON_A_BREAK": "You are on a break and cannot play right now.",
+    "DAILY_PLAY_LIMIT": "You reached your daily play limit.",
+    "DAILY_LOSS_LIMIT": "You reached your daily loss limit.",
+    "ALREADY_VERIFIED": "You already passed that level.",
+    "ALREADY_IN_REVIEW": "That level is already being reviewed.",
+    "FINISH_PREVIOUS_LEVEL": "Finish level {falta} first.",
+    "TOO_YOUNG": "You need to be at least {minimo} to play.",
+    "BAD_FILE_TYPE": "That file type is not accepted.",
+    "FILE_TOO_BIG": "That file is over {maximoMb} MB.",
+    "NO_ADDRESS": "Add a shipping address first.",
+    "ADDRESS_NOT_FOUND": "That address does not exist.",
+    "NOTHING_TO_SHIP": "There is nothing to ship.",
+    "BOX_NOT_VALID": "That box does not add up.",
+    "TOO_FEW_ITEMS": "A box needs at least {minimo} items.",
+    "TOO_MANY_ITEMS": "A box can hold at most {maximo} items.",
+    "DUPLICATE_ITEM": "The same item is in the box twice.",
+    "TOO_MANY_BOXES": "You already have {maximo} boxes."
   },
   "boxes": {
     "title": "Boxes",
@@ -190,7 +210,47 @@ export default {
     "openingsWithIt": "Openings with this pair",
     "rotateSeed": "Change my seed",
     "rotateNote": "When you change it we reveal the old server seed, so you can check every opening you made with it.",
-    "rotated": "Seed changed"
+    "rotated": "Seed changed",
+    "addresses": "Addresses",
+    "addressesSub": "Where we send the items you keep",
+    "addAddress": "Add address",
+    "editAddress": "Edit address",
+    "noAddresses": "No addresses yet. Add one before you ship anything home.",
+    "defaultAddress": "DEFAULT",
+    "makeDefault": "Make default",
+    "edit": "Edit",
+    "delete": "Delete",
+    "addr": {
+      "nombre": "Full name",
+      "telefono": "Phone",
+      "calle": "Street address",
+      "calle2": "Apartment, floor",
+      "ciudad": "City",
+      "provincia": "State or region",
+      "codigoPostal": "Postal code",
+      "pais": "Country code"
+    },
+    "activity": "Activity",
+    "activitySub": "Recent sign-ins to your account",
+    "noActivity": "Nothing here yet",
+    "activityNote": "See a sign-in you do not recognise? Change your password and tell us.",
+    "device": "Device",
+    "from": "From",
+    "session": {
+      "login": "Signed in",
+      "register": "Account created",
+      "logout": "Signed out",
+      "password": "Password changed"
+    },
+    "orders": "My orders",
+    "ordersSub": "Items you shipped home",
+    "noOrders": "No orders yet. Items you ship home show up here.",
+    "controls": "Controls",
+    "controlsSub": "Set limits and take breaks whenever you need",
+    "refer": "Refer & Earn",
+    "sold": "Sold back",
+    "transactionsSub": "Your deposits, withdrawals and affiliate payouts",
+    "historySub": "Every box you have opened"
   },
   "txType": {
     "purchase": "Purchase",
@@ -212,7 +272,9 @@ export default {
     "account": "Account",
     "sideMenu": "Side menu",
     "collapse": "Collapse menu",
-    "expand": "Expand menu"
+    "expand": "Expand menu",
+    "mainNav": "Main navigation",
+    "closeMenu": "Close the menu"
   },
   "wallet": {
     "total": "Wallet total",
@@ -409,5 +471,76 @@ export default {
     "payments": "Payments",
     "claimedTotal": "SC {amount} paid out in total",
     "noPayments": "Nothing paid out yet. Your cut lands here the moment someone opens one of your boxes."
+  },
+  "order": {
+    "pending": "Requested",
+    "packing": "Packing",
+    "shipped": "Shipped",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled",
+    "cancel": "Cancel the order"
+  },
+  "controls": {
+    "dailyLimits": "Daily limits",
+    "limitsHelp": "Tightening a limit takes effect right away. Loosening one waits {hs} hours — that is what makes it a limit.",
+    "playLimit": "Most I can play per day",
+    "lossLimit": "Most I can lose per day",
+    "noLimit": "No limit",
+    "playedToday": "Played today: SC {amount}",
+    "lostToday": "Lost today: SC {amount}",
+    "pending": "The looser limit you asked for starts on {fecha}.",
+    "saved": "Limits saved",
+    "takeABreak": "Take a break",
+    "breakHelp": "You will not be able to play until it is over. It cannot be shortened or cancelled — that is the whole point.",
+    "days": "{n} day | {n} days",
+    "breakSet": "Break set",
+    "onABreak": "You are on a break",
+    "breakUntil": "You can play again on {fecha}."
+  },
+  "refer": {
+    "title": "Refer Your Friends",
+    "sub": "Your friends get a 5% deposit bonus, and you earn commission on every wager they place.",
+    "copyLink": "Copy my link",
+    "copied": "Link copied",
+    "referrals": "Referrals",
+    "wagerVolume": "Wager volume"
+  },
+  "kyc": {
+    "state": {
+      "none": "NOT STARTED",
+      "pending": "IN REVIEW",
+      "approved": "DONE",
+      "rejected": "NEEDS CHANGES"
+    },
+    "inReview": "In review",
+    "finishPrevious": "Finish the level before",
+    "tryAgain": "Send again",
+    "send": "Send for review",
+    "sent": "Sent. We will get back to you.",
+    "fileHelp": "PNG, JPG, WEBP or PDF, up to {mb} MB. We delete it once the level is reviewed.",
+    "fileTooBig": "That file is over {mb} MB.",
+    "needHelp": "Need help?",
+    "needHelpSub": "Our support team is available 24/7 to help you through the verification.",
+    "contactSupport": "Contact support",
+    "field": {
+      "nombre": "First name",
+      "apellido": "Last name",
+      "nacimiento": "Date of birth",
+      "documento": "Document",
+      "paisEmisor": "Issuing country",
+      "numero": "Document number",
+      "foto": "Photo of your document",
+      "calle": "Street address",
+      "ciudad": "City",
+      "provincia": "State or region",
+      "codigoPostal": "Postal code",
+      "pais": "Country",
+      "comprobante": "Utility bill or bank statement"
+    },
+    "doc": {
+      "passport": "Passport",
+      "id": "ID card",
+      "licence": "Driver licence"
+    }
   }
 };

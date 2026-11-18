@@ -18,7 +18,10 @@ export default {
     "vip": "VIP-Club",
     "profile": "Profil",
     "affiliates": "Partner",
-    "verification": "Verifizierung"
+    "verification": "Verifizierung",
+    "menu": "Menü",
+    "home": "Start",
+    "wallet": "Wallet"
   },
   "action": {
     "signIn": "Anmelden",
@@ -93,7 +96,24 @@ export default {
     "BOX_NOT_LIVE": "Diese Box ist gerade nicht verfügbar.",
     "RATE_LIMITED": "Zu viele Versuche. Warte einen Moment.",
     "SOMETHING_WENT_WRONG": "Etwas ist schiefgelaufen.",
-    "NOT_LOGGED_IN": "Du musst angemeldet sein."
+    "NOT_LOGGED_IN": "Du musst angemeldet sein.",
+    "ON_A_BREAK": "Du machst Pause und kannst gerade nicht spielen.",
+    "DAILY_PLAY_LIMIT": "Du hast dein Tageslimit erreicht.",
+    "DAILY_LOSS_LIMIT": "Du hast dein Verlustlimit erreicht.",
+    "ALREADY_VERIFIED": "Diese Stufe hast du schon.",
+    "ALREADY_IN_REVIEW": "Diese Stufe wird gerade geprüft.",
+    "FINISH_PREVIOUS_LEVEL": "Mach erst Stufe {falta}.",
+    "TOO_YOUNG": "Du musst mindestens {minimo} sein.",
+    "BAD_FILE_TYPE": "Dieser Dateityp wird nicht akzeptiert.",
+    "FILE_TOO_BIG": "Diese Datei ist größer als {maximoMb} MB.",
+    "NO_ADDRESS": "Füge zuerst eine Lieferadresse hinzu.",
+    "ADDRESS_NOT_FOUND": "Diese Adresse gibt es nicht.",
+    "NOTHING_TO_SHIP": "Es gibt nichts zu versenden.",
+    "BOX_NOT_VALID": "Diese Box geht nicht auf.",
+    "TOO_FEW_ITEMS": "Eine Box braucht mindestens {minimo} Artikel.",
+    "TOO_MANY_ITEMS": "Eine Box fasst höchstens {maximo} Artikel.",
+    "DUPLICATE_ITEM": "Derselbe Artikel ist zweimal drin.",
+    "TOO_MANY_BOXES": "Du hast schon {maximo} Boxen."
   },
   "boxes": {
     "title": "Boxen",
@@ -190,7 +210,47 @@ export default {
     "openingsWithIt": "Öffnungen mit diesem Paar",
     "rotateSeed": "Seed wechseln",
     "rotateNote": "Beim Wechsel geben wir den alten Server-Seed frei — so kannst du jede Öffnung damit nachprüfen.",
-    "rotated": "Seed gewechselt"
+    "rotated": "Seed gewechselt",
+    "addresses": "Adressen",
+    "addressesSub": "Wohin wir deine Artikel schicken",
+    "addAddress": "Adresse hinzufügen",
+    "editAddress": "Adresse bearbeiten",
+    "noAddresses": "Noch keine Adresse. Füge eine hinzu, bevor du etwas verschickst.",
+    "defaultAddress": "STANDARD",
+    "makeDefault": "Als Standard",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "addr": {
+      "nombre": "Vollständiger Name",
+      "telefono": "Telefon",
+      "calle": "Straße und Hausnummer",
+      "calle2": "Wohnung, Stock",
+      "ciudad": "Stadt",
+      "provincia": "Bundesland",
+      "codigoPostal": "Postleitzahl",
+      "pais": "Ländercode"
+    },
+    "activity": "Aktivität",
+    "activitySub": "Letzte Anmeldungen bei deinem Konto",
+    "noActivity": "Noch nichts hier",
+    "activityNote": "Eine Anmeldung, die du nicht kennst? Ändere dein Passwort und sag uns Bescheid.",
+    "device": "Gerät",
+    "from": "Von",
+    "session": {
+      "login": "Angemeldet",
+      "register": "Konto erstellt",
+      "logout": "Abgemeldet",
+      "password": "Passwort geändert"
+    },
+    "orders": "Meine Bestellungen",
+    "ordersSub": "Artikel, die du nach Hause geschickt hast",
+    "noOrders": "Noch keine Bestellungen. Versendete Artikel erscheinen hier.",
+    "controls": "Grenzen",
+    "controlsSub": "Setz dir Grenzen und mach Pausen, wann immer du willst",
+    "refer": "Empfehlen & verdienen",
+    "sold": "Zurückverkauft",
+    "transactionsSub": "Deine Ein- und Auszahlungen und Partnerprovisionen",
+    "historySub": "Jede Box, die du geöffnet hast"
   },
   "txType": {
     "purchase": "Kauf",
@@ -212,7 +272,9 @@ export default {
     "account": "Konto",
     "sideMenu": "Seitenmenü",
     "collapse": "Menü einklappen",
-    "expand": "Menü ausklappen"
+    "expand": "Menü ausklappen",
+    "mainNav": "Hauptnavigation",
+    "closeMenu": "Menü schließen"
   },
   "wallet": {
     "total": "Guthaben gesamt",
@@ -409,5 +471,76 @@ export default {
     "payments": "Auszahlungen",
     "claimedTotal": "SC {amount} insgesamt ausgezahlt",
     "noPayments": "Noch nichts ausgezahlt. Dein Anteil erscheint hier, sobald jemand eine deiner Boxen öffnet."
+  },
+  "order": {
+    "pending": "Angefragt",
+    "packing": "Wird verpackt",
+    "shipped": "Versendet",
+    "delivered": "Zugestellt",
+    "cancelled": "Storniert",
+    "cancel": "Bestellung stornieren"
+  },
+  "controls": {
+    "dailyLimits": "Tagesgrenzen",
+    "limitsHelp": "Ein strengeres Limit gilt sofort. Ein lockereres erst nach {hs} Stunden — genau das macht es zu einem Limit.",
+    "playLimit": "Höchster Einsatz pro Tag",
+    "lossLimit": "Höchster Verlust pro Tag",
+    "noLimit": "Kein Limit",
+    "playedToday": "Heute gespielt: SC {amount}",
+    "lostToday": "Heute verloren: SC {amount}",
+    "pending": "Das gelockerte Limit gilt ab {fecha}.",
+    "saved": "Grenzen gespeichert",
+    "takeABreak": "Pause machen",
+    "breakHelp": "Bis zum Ende kannst du nicht spielen. Sie lässt sich nicht verkürzen oder abbrechen — genau darum geht es.",
+    "days": "{n} Tag | {n} Tage",
+    "breakSet": "Pause gesetzt",
+    "onABreak": "Du machst gerade Pause",
+    "breakUntil": "Ab {fecha} kannst du wieder spielen."
+  },
+  "refer": {
+    "title": "Empfiehl deine Freunde",
+    "sub": "Deine Freunde bekommen 5% Einzahlungsbonus, und du verdienst an jedem ihrer Einsätze.",
+    "copyLink": "Meinen Link kopieren",
+    "copied": "Link kopiert",
+    "referrals": "Empfehlungen",
+    "wagerVolume": "Einsatzvolumen"
+  },
+  "kyc": {
+    "state": {
+      "none": "OFFEN",
+      "pending": "IN PRÜFUNG",
+      "approved": "ERLEDIGT",
+      "rejected": "ÄNDERUNGEN NÖTIG"
+    },
+    "inReview": "In Prüfung",
+    "finishPrevious": "Erst die Stufe davor",
+    "tryAgain": "Erneut senden",
+    "send": "Zur Prüfung senden",
+    "sent": "Gesendet. Wir melden uns.",
+    "fileHelp": "PNG, JPG, WEBP oder PDF, bis {mb} MB. Nach der Prüfung löschen wir es.",
+    "fileTooBig": "Diese Datei ist größer als {mb} MB.",
+    "needHelp": "Brauchst du Hilfe?",
+    "needHelpSub": "Unser Support ist rund um die Uhr da und hilft dir bei der Verifizierung.",
+    "contactSupport": "Support kontaktieren",
+    "field": {
+      "nombre": "Vorname",
+      "apellido": "Nachname",
+      "nacimiento": "Geburtsdatum",
+      "documento": "Dokument",
+      "paisEmisor": "Ausstellungsland",
+      "numero": "Dokumentnummer",
+      "foto": "Foto deines Dokuments",
+      "calle": "Straße und Hausnummer",
+      "ciudad": "Stadt",
+      "provincia": "Bundesland",
+      "codigoPostal": "Postleitzahl",
+      "pais": "Land",
+      "comprobante": "Rechnung oder Kontoauszug"
+    },
+    "doc": {
+      "passport": "Reisepass",
+      "id": "Personalausweis",
+      "licence": "Führerschein"
+    }
   }
 };

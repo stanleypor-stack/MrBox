@@ -1,7 +1,10 @@
 <template>
-  <aside class="mb-side" :class="{ 'is-angosta': !abierta }" :aria-label="$t('header.sideMenu')">
+  <aside
+    class="mb-side" :class="{ 'is-angosta': !abierta && !cajon, 'is-cajon': cajon }"
+    :aria-label="$t('header.sideMenu')"
+  >
     <button
-      type="button" class="mb-side__plegar"
+      v-if="!cajon" type="button" class="mb-side__plegar"
       :aria-label="abierta ? $t('header.collapse') : $t('header.expand')"
       @click="abierta = !abierta"
     >
@@ -11,7 +14,7 @@
       </svg>
     </button>
 
-    <div v-if="abierta" class="mb-side__cuerpo">
+    <div v-if="abierta || cajon" class="mb-side__cuerpo">
       <!-- ── Las carreras ─────────────────────────────────────────── -->
       <router-link to="/races/weekly" class="mb-race-card mb-race-card--grande">
         <span class="mb-race mb-race-card__arte mb-race-card__arte--grande" aria-hidden="true"
@@ -158,6 +161,15 @@ export default {
   name: "MbLateral",
   components: { MbSelectorDeIdioma },
 
+  props: {
+    /*
+      En celular esta misma barra se dibuja como un cajon que tapa la
+      pantalla. Es el MISMO componente y no una copia: dos listas de
+      secciones es una lista que se olvidan de actualizar.
+    */
+    cajon: { type: Boolean, default: false },
+  },
+
   data() {
     return {
       /*
@@ -220,11 +232,33 @@ export default {
 
   &.is-angosta { flex: 0 0 auto; max-width: 72px; }
 
+  /*
+    EN CELULAR NO SE DIBUJA, SALVO DE CAJON.
+
+    La navegacion de celular es la barra de abajo; esta barra aparece
+    solo cuando se toca MENU. La regla va aca y no en App.vue porque
+    los estilos de este archivo tienen mas peso que los de afuera, y
+    desde afuera `display: none` perdia contra el `display: flex` de
+    arriba.
+  */
   @include en-celular {
+    &:not(.is-cajon) { display: none; }
     max-width: none;
     flex: 1 1 100%;
     border-right: 0;
     border-bottom: 1px solid #1a2a45;
+  }
+
+  /* De cajon ocupa todo el hueco entre la cabecera y la barra de abajo
+     y se desliza solo, sin mover la pagina de atras. */
+  &.is-cajon {
+    position: absolute;
+    inset: 0;
+    max-width: none;
+    overflow-y: auto;
+    border: 0;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
   }
 }
 

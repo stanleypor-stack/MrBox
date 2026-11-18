@@ -5,10 +5,15 @@ const BoxOpen = require("../../database/models/BoxOpen");
 const InventoryItem = require("../../database/models/InventoryItem");
 const AffiliateCode = require("../../database/models/AffiliateCode");
 const User = require("../../database/models/User");
+const Address = require("../../database/models/Address");
+const Order = require("../../database/models/Order");
+const SessionEvent = require("../../database/models/SessionEvent");
 
 const { autorizar } = require("../../middleware/auth");
 const afiliados = require("../../services/affiliates");
 const wallet = require("../../services/wallet");
+const controles = require("../../services/controls");
+const kyc = require("../../services/verification");
 const { sc } = require("../../utils/money");
 const { errorDe, esDeJugador } = require("../../utils/errors");
 const { logger } = require("../../utils/logger");
@@ -203,6 +208,244 @@ router.post("/affiliate/claim", autorizar(true), async (req, res) => {
     return res.json({ success: true, data: { ...r, ...(await wallet.saldoDe(req.user._id)) } });
   } catch (err) {
     return responderError(res, err, "affiliate/claim");
+  }
+});
+
+/* ── La libreta de direcciones ──────────────────────────────── */
+
+/** Lo que se devuelve de una dirección. Es toda suya, no hay nada oculto. */
+function resumirDireccion(d) {
+  return {
+    _id: d._id,
+    nombre: d.nombre,
+    telefono: d.telefono || "",
+    calle: d.calle,
+    calle2: d.calle2 || "",
+    ciudad: d.ciudad,
+    provincia: d.provincia || "",
+    codigoPostal: d.codigoPostal,
+    pais: d.pais,
+    predeterminada: !!d.predeterminada,
+  };
+}
+
+/** Lee y recorta los campos. Lo que llega nunca se guarda como viene. */
+function camposDeDireccion(cuerpo) {
+  const texto = (v, largo) => String(v || "").trim().slice(0, largo);
+
+  const campos = {
+    nombre: texto(cuerpo.nombre, 80),
+    telefono: texto(cuerpo.telefono, 32),
+    calle: texto(cuerpo.calle, 120),
+    calle2: texto(cuerpo.calle2, 120),
+    ciudad: texto(cuerpo.ciudad, 80),
+    provincia: texto(cuerpo.provincia, 80),
+    codigoPostal: texto(cuerpo.codigoPostal, 20),
+    pais: texto(cuerpo.pais, 2).toUpperCase(),
+  };
+
+  for (const obligatorio of ["nombre", "calle", "ciudad", "codigoPostal", "pais"]) {
+    if (!campos[obligatorio]) throw errorDe("INVALID_AMOUNT", { campo: obligatorio });
+  }
+  if (campos.pais.length !== 2) throw errorDe("INVALID_AMOUNT", { campo: "pais" });
+
+  return campos;
+}
+
+router.get("/addresses", autorizar(true), async (req, res) => {
+  try {
+    const filas = await Address.find({ user: req.user._id })
+      .sort({ predeterminada: -1, createdAt: -1 })
+      .lean();
+    return res.json({ success: true, data: { items: filas.map(resumirDireccion) } });
+  } catch (err) {
+    return responderError(res, err, "addresses");
+  }
+});
+
+router.post("/addresses", autorizar(true), async (req, res) => {
+  try {
+    const campos = camposDeDireccion(req.body);
+    const cuantas = await Address.countDocuments({ user: req.user._id });
+    if (cuantas >= 10) throw errorDe("ABOVE_MAXIMUM", { maximo: 10 });
+
+    const creada = await Address.create({ ...campos, user: req.user._id });
+
+    /* La primera es la predeterminada sin que haya que elegirla. */
+    if (cuantas === 0 || req.body.predeterminada) {
+      await Address.marcarPredeterminada(req.user._id, creada._id);
+    }
+
+    return res.json({ success: true, data: resumirDireccion(await Address.findById(creada._id).lean()) });
+  } catch (err) {
+    return responderError(res, err, "addresses/create");
+  }
+});
+
+router.put("/addresses/:id", autorizar(true), async (req, res) => {
+  try {
+    const campos = camposDeDireccion(req.body);
+    const r = await Address.updateOne({ _id: req.params.id, user: req.user._id }, { $set: campos });
+    if (!r.matchedCount) throw errorDe("ADDRESS_NOT_FOUND", {}, 404);
+    if (req.body.predeterminada) await Address.marcarPredeterminada(req.user._id, req.params.id);
+    return res.json({ success: true, data: resumirDireccion(await Address.findById(req.params.id).lean()) });
+  } catch (err) {
+    return responderError(res, err, "addresses/update");
+  }
+});
+
+router.delete("/addresses/:id", autorizar(true), async (req, res) => {
+  try {
+    const borrada = await Address.findOneAndDelete({ _id: req.params.id, user: req.user._id }).lean();
+    if (!borrada) throw errorDe("ADDRESS_NOT_FOUND", {}, 404);
+
+    /* Si era la predeterminada, lo pasa a ser la más nueva que quede:
+       quedarse sin ninguna convierte el próximo envío en un error. */
+    if (borrada.predeterminada) {
+      const otra = await Address.findOne({ user: req.user._id }).sort({ createdAt: -1 }).lean();
+      if (otra) await Address.marcarPredeterminada(req.user._id, otra._id);
+    }
+
+    return res.json({ success: true, data: { borrada: true } });
+  } catch (err) {
+    return responderError(res, err, "addresses/delete");
+  }
+});
+
+router.post("/addresses/:id/default", autorizar(true), async (req, res) => {
+  try {
+    const existe = await Address.exists({ _id: req.params.id, user: req.user._id });
+    if (!existe) throw errorDe("ADDRESS_NOT_FOUND", {}, 404);
+    await Address.marcarPredeterminada(req.user._id, req.params.id);
+    return res.json({ success: true, data: { ok: true } });
+  } catch (err) {
+    return responderError(res, err, "addresses/default");
+  }
+});
+
+/* ── Los pedidos de envío ────────────────────────────────── */
+
+router.get("/orders", autorizar(true), async (req, res) => {
+  try {
+    const porPagina = Math.min(100, Math.max(1, Number(req.query.perPage) || 25));
+    const filas = await Order.find({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .limit(porPagina)
+      .lean();
+
+    return res.json({
+      success: true,
+      data: {
+        items: filas.map((o) => ({
+          _id: o._id,
+          estado: o.estado,
+          items: (o.items || []).map((i) => ({
+            name: i.name, imageUrl: i.imageUrl, valueSc: sc(i.valueSc),
+          })),
+          valorSc: sc(o.valorSc),
+          destino: o.destino,
+          transportista: o.transportista || "",
+          seguimiento: o.seguimiento || "",
+          motivo: o.motivo || "",
+          despachadoEl: o.despachadoEl,
+          entregadoEl: o.entregadoEl,
+          createdAt: o.createdAt,
+        })),
+      },
+    });
+  } catch (err) {
+    return responderError(res, err, "orders");
+  }
+});
+
+/* ── Desde dónde se entró ───────────────────────────────── */
+
+router.get("/activity", autorizar(true), async (req, res) => {
+  try {
+    const filas = await SessionEvent.find({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .limit(40)
+      .lean();
+
+    return res.json({
+      success: true,
+      data: {
+        items: filas.map((s) => ({
+          _id: s._id,
+          tipo: s.tipo,
+          dispositivo: s.dispositivo || "",
+          desde: s.desde || "",
+          ok: s.ok !== false,
+          createdAt: s.createdAt,
+        })),
+      },
+    });
+  } catch (err) {
+    return responderError(res, err, "activity");
+  }
+});
+
+/* ── Los límites que se pone el jugador ─────────────────────── */
+
+router.get("/controls", autorizar(true), async (req, res) => {
+  try {
+    return res.json({ success: true, data: await controles.leer(req.user._id) });
+  } catch (err) {
+    return responderError(res, err, "controls");
+  }
+});
+
+router.put("/controls", autorizar(true), async (req, res) => {
+  try {
+    const r = await controles.guardar({
+      userId: req.user._id,
+      juegoDiarioSc: req.body.juegoDiarioSc,
+      perdidaDiariaSc: req.body.perdidaDiariaSc,
+    });
+    return res.json({ success: true, data: r });
+  } catch (err) {
+    return responderError(res, err, "controls/save");
+  }
+});
+
+router.post("/controls/break", autorizar(true), async (req, res) => {
+  try {
+    const r = await controles.tomarseUnDescanso({ userId: req.user._id, dias: req.body.dias });
+    return res.json({ success: true, data: r });
+  } catch (err) {
+    return responderError(res, err, "controls/break");
+  }
+});
+
+/* ── La verificación, en tres niveles ─────────────────────── */
+
+router.get("/verification", autorizar(true), async (req, res) => {
+  try {
+    return res.json({ success: true, data: await kyc.estadoDe(req.user._id) });
+  } catch (err) {
+    return responderError(res, err, "verification");
+  }
+});
+
+/**
+ * MANDA UN NIVEL A REVISAR.
+ *
+ * Lo que entra son datos sensibles --nombre real, documento, dirección,
+ * fotos--, así que esta respuesta NO los devuelve: vuelve el estado de
+ * los tres niveles y nada más. Lo que el jugador acaba de escribir ya
+ * lo tiene en la pantalla; devolvérselo solo agrega un lugar más de
+ * donde pueden salirse.
+ */
+router.post("/verification/:nivel", autorizar(true), async (req, res) => {
+  try {
+    const r = await kyc.mandar({
+      userId: req.user._id,
+      nivel: req.params.nivel,
+      cuerpo: req.body,
+    });
+    return res.json({ success: true, data: r });
+  } catch (err) {
+    return responderError(res, err, "verification/submit");
   }
 });
 

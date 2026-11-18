@@ -83,6 +83,44 @@ const userSchema = new mongoose.Schema(
     */
     freeOpens: { type: Number, default: 0 },
 
+    /*
+      LOS LIMITES QUE SE PONE EL JUGADOR.
+
+      Cuánto está dispuesto a jugar por día, y hasta cuándo no quiere
+      poder entrar. Se los pone él, no nosotros.
+
+      APRETAR ES INMEDIATO, AFLOJAR ESPERA
+      -----------------------------------
+      Bajar un límite --o ponerse uno-- vale desde ese segundo. Subirlo
+      o sacarlo recién vale a las 24 horas.
+
+      Sin esa espera el límite no sirve para nada: el momento en que
+      alguien quiere sacárselo es exactamente el momento en que lo
+      necesita. Por eso lo nuevo se guarda aparte, con la fecha en que
+      empieza a valer, y hasta entonces manda el viejo.
+
+      Y la pausa no se cancela. Esa es toda la idea de una pausa.
+    */
+    limites: {
+      /* Cuánto puede jugar por día, en SC. `null` es sin límite. */
+      juegoDiarioSc: { type: Number, default: null },
+
+      /* Cuánto puede perder por día: lo jugado menos lo ganado. */
+      perdidaDiariaSc: { type: Number, default: null },
+
+      /* Lo que pidió aflojar, y desde cuándo vale. */
+      pendiente: {
+        juegoDiarioSc: { type: Number, default: null },
+        perdidaDiariaSc: { type: Number, default: null },
+        desde: { type: Date, default: null },
+      },
+
+      /* Hasta cuándo se tomó un descanso. No se puede acortar. */
+      pausaHasta: { type: Date, default: null },
+
+      actualizadoEl: { type: Date, default: null },
+    },
+
     rank: { type: String, enum: ["user", "support", "admin", "owner"], default: "user", index: true },
 
     /* Quién lo trajo. Se fija una vez, al registrarse, y no cambia más. */

@@ -36,6 +36,7 @@ const eco = require("./economia");
 const wallet = require("../wallet");
 const afiliados = require("../affiliates");
 const comunidad = require("../community");
+const controles = require("../controls");
 const { sc } = require("../../utils/money");
 const { errorDe } = require("../../utils/errors");
 const { logger } = require("../../utils/logger");
@@ -112,6 +113,19 @@ async function abrir({ user, slug, veces = 1, demo = false }) {
   /* ── La de verdad ────────────────────────────────────────────────── */
 
   const precioUnitario = sc(caja.priceSc);
+
+  /*
+    LOS LIMITES QUE SE PUSO EL JUGADOR, ANTES DE COBRAR.
+
+    Se miran por la tanda entera y no apertura por apertura: pedir x4
+    con el tope a dos aperturas de distancia tiene que rebotar entero,
+    no cobrar dos y fallar en la tercera dejando media tanda hecha.
+  */
+  await controles.revisarAntesDeJugar({
+    userId: user._id,
+    montoSc: sc(precioUnitario * cuantas),
+  });
+
   const tanda = await semillaDe(user._id);
   if (!tanda) throw errorDe("NO_SEED");
 

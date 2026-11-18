@@ -18,7 +18,10 @@ export default {
     "vip": "Club VIP",
     "profile": "Perfil",
     "affiliates": "Afiliados",
-    "verification": "Verificación"
+    "verification": "Verificación",
+    "menu": "Menú",
+    "home": "Inicio",
+    "wallet": "Billetera"
   },
   "action": {
     "signIn": "Iniciar sesión",
@@ -93,7 +96,24 @@ export default {
     "BOX_NOT_LIVE": "Esa caja no está disponible ahora.",
     "RATE_LIMITED": "Demasiados intentos. Esperá un momento.",
     "SOMETHING_WENT_WRONG": "Algo salió mal.",
-    "NOT_LOGGED_IN": "Tenés que iniciar sesión."
+    "NOT_LOGGED_IN": "Tenés que iniciar sesión.",
+    "ON_A_BREAK": "Estás en un descanso y no podés jugar ahora.",
+    "DAILY_PLAY_LIMIT": "Llegaste a tu límite de juego diario.",
+    "DAILY_LOSS_LIMIT": "Llegaste a tu límite de pérdida diaria.",
+    "ALREADY_VERIFIED": "Ese nivel ya lo pasaste.",
+    "ALREADY_IN_REVIEW": "Ese nivel ya está en revisión.",
+    "FINISH_PREVIOUS_LEVEL": "Primero terminá el nivel {falta}.",
+    "TOO_YOUNG": "Tenés que tener al menos {minimo} años.",
+    "BAD_FILE_TYPE": "Ese tipo de archivo no sirve.",
+    "FILE_TOO_BIG": "Ese archivo pasa los {maximoMb} MB.",
+    "NO_ADDRESS": "Primero agregá una dirección de envío.",
+    "ADDRESS_NOT_FOUND": "Esa dirección no existe.",
+    "NOTHING_TO_SHIP": "No hay nada para enviar.",
+    "BOX_NOT_VALID": "Esa caja no cierra.",
+    "TOO_FEW_ITEMS": "Una caja necesita al menos {minimo} objetos.",
+    "TOO_MANY_ITEMS": "Una caja puede tener hasta {maximo} objetos.",
+    "DUPLICATE_ITEM": "El mismo objeto está dos veces.",
+    "TOO_MANY_BOXES": "Ya tenés {maximo} cajas."
   },
   "boxes": {
     "title": "Cajas",
@@ -190,7 +210,47 @@ export default {
     "openingsWithIt": "Aperturas con este par",
     "rotateSeed": "Cambiar mi semilla",
     "rotateNote": "Cuando la cambiás revelamos la semilla vieja del servidor, así podés revisar cada apertura que hiciste con ella.",
-    "rotated": "Semilla cambiada"
+    "rotated": "Semilla cambiada",
+    "addresses": "Direcciones",
+    "addressesSub": "Adónde te mandamos los objetos que te quedás",
+    "addAddress": "Agregar dirección",
+    "editAddress": "Editar dirección",
+    "noAddresses": "Todavía no hay direcciones. Agregá una antes de pedir un envío.",
+    "defaultAddress": "PREDETERMINADA",
+    "makeDefault": "Hacer predeterminada",
+    "edit": "Editar",
+    "delete": "Borrar",
+    "addr": {
+      "nombre": "Nombre completo",
+      "telefono": "Teléfono",
+      "calle": "Calle y número",
+      "calle2": "Departamento, piso",
+      "ciudad": "Ciudad",
+      "provincia": "Provincia",
+      "codigoPostal": "Código postal",
+      "pais": "Código de país"
+    },
+    "activity": "Actividad",
+    "activitySub": "Los ingresos recientes a tu cuenta",
+    "noActivity": "Todavía no hay nada",
+    "activityNote": "¿Ves un ingreso que no reconocés? Cambiá la contraseña y avisanos.",
+    "device": "Dispositivo",
+    "from": "Desde",
+    "session": {
+      "login": "Inició sesión",
+      "register": "Creó la cuenta",
+      "logout": "Cerró sesión",
+      "password": "Cambió la contraseña"
+    },
+    "orders": "Mis pedidos",
+    "ordersSub": "Los objetos que pediste que te manden",
+    "noOrders": "Todavía no hay pedidos. Lo que pidas que te manden aparece acá.",
+    "controls": "Controles",
+    "controlsSub": "Poné límites y tomáte un descanso cuando quieras",
+    "refer": "Refer & Earn",
+    "sold": "Vendido",
+    "transactionsSub": "Tus compras, canjes y comisiones de afiliados",
+    "historySub": "Todas las cajas que abriste"
   },
   "txType": {
     "purchase": "Compra",
@@ -212,7 +272,9 @@ export default {
     "account": "Cuenta",
     "sideMenu": "Menú lateral",
     "collapse": "Achicar el menú",
-    "expand": "Agrandar el menú"
+    "expand": "Agrandar el menú",
+    "mainNav": "Navegación principal",
+    "closeMenu": "Cerrar el menú"
   },
   "wallet": {
     "total": "Total en la billetera",
@@ -409,5 +471,76 @@ export default {
     "payments": "Pagos",
     "claimedTotal": "SC {amount} pagados en total",
     "noPayments": "Todavía no te pagamos nada. Tu parte aparece acá en cuanto alguien abra una de tus cajas."
+  },
+  "order": {
+    "pending": "Pedido",
+    "packing": "Armándose",
+    "shipped": "Despachado",
+    "delivered": "Entregado",
+    "cancelled": "Cancelado",
+    "cancel": "Cancelar el pedido"
+  },
+  "controls": {
+    "dailyLimits": "Límites diarios",
+    "limitsHelp": "Apretar un límite vale ya. Aflojarlo espera {hs} horas — eso es lo que lo hace un límite.",
+    "playLimit": "Lo máximo que puedo jugar por día",
+    "lossLimit": "Lo máximo que puedo perder por día",
+    "noLimit": "Sin límite",
+    "playedToday": "Jugado hoy: SC {amount}",
+    "lostToday": "Perdido hoy: SC {amount}",
+    "pending": "El límite más flojo que pediste arranca el {fecha}.",
+    "saved": "Límites guardados",
+    "takeABreak": "Tomarte un descanso",
+    "breakHelp": "No vas a poder jugar hasta que termine. No se puede acortar ni cancelar — esa es toda la idea.",
+    "days": "{n} día | {n} días",
+    "breakSet": "Descanso puesto",
+    "onABreak": "Estás en un descanso",
+    "breakUntil": "Vas a poder jugar de nuevo el {fecha}."
+  },
+  "refer": {
+    "title": "Invitá a tus amigos",
+    "sub": "Tus amigos se llevan un 5% de bono en su depósito, y vos ganás comisión por cada peso que jueguen.",
+    "copyLink": "Copiar mi link",
+    "copied": "Link copiado",
+    "referrals": "Referidos",
+    "wagerVolume": "Volumen jugado"
+  },
+  "kyc": {
+    "state": {
+      "none": "SIN EMPEZAR",
+      "pending": "EN REVISIÓN",
+      "approved": "LISTO",
+      "rejected": "HAY QUE CORREGIR"
+    },
+    "inReview": "En revisión",
+    "finishPrevious": "Primero el nivel anterior",
+    "tryAgain": "Mandar de nuevo",
+    "send": "Mandar a revisar",
+    "sent": "Mandado. Te avisamos.",
+    "fileHelp": "PNG, JPG, WEBP o PDF, hasta {mb} MB. Lo borramos apenas revisamos el nivel.",
+    "fileTooBig": "Ese archivo pasa los {mb} MB.",
+    "needHelp": "¿Necesitás ayuda?",
+    "needHelpSub": "Nuestro soporte está las 24 horas para acompañarte en la verificación.",
+    "contactSupport": "Hablar con soporte",
+    "field": {
+      "nombre": "Nombre",
+      "apellido": "Apellido",
+      "nacimiento": "Fecha de nacimiento",
+      "documento": "Documento",
+      "paisEmisor": "País que lo emitió",
+      "numero": "Número de documento",
+      "foto": "Foto del documento",
+      "calle": "Calle y número",
+      "ciudad": "Ciudad",
+      "provincia": "Provincia",
+      "codigoPostal": "Código postal",
+      "pais": "País",
+      "comprobante": "Factura de servicios o resumen bancario"
+    },
+    "doc": {
+      "passport": "Pasaporte",
+      "id": "DNI",
+      "licence": "Licencia de conducir"
+    }
   }
 };

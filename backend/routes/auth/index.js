@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const rateLimit = require("express-rate-limit");
 
 const User = require("../../database/models/User");
+const SessionEvent = require("../../database/models/SessionEvent");
 const UserSeed = require("../../database/models/UserSeed");
 const Settings = require("../../database/models/Settings");
 
@@ -79,6 +80,29 @@ async function retrato(userId) {
 
 /* ── Registro ─────────────────────────────────────────────────────── */
 
+/**
+ * ANOTA QUE ALGUIEN ENTRO A SU CUENTA.
+ *
+ * Es lo que ve el jugador en la pestaña Activity del perfil, y la única
+ * forma que tiene de darse cuenta de que le entraron antes de que le
+ * vacíen el saldo.
+ *
+ * Va en su propio try y sin esperar a que termine la respuesta: que
+ * falle anotar un ingreso no puede impedir el ingreso.
+ */
+async function anotarSesion(userId, req, tipo) {
+  try {
+    await SessionEvent.create({
+      user: userId,
+      tipo,
+      dispositivo: SessionEvent.resumirDispositivo(req.get("user-agent")),
+      desde: SessionEvent.recortarIp(req.ip),
+    });
+  } catch (err) {
+    logger.error(`[auth] anotar sesion: ${err.message}`);
+  }
+}
+
 router.post("/register", limite, async (req, res) => {
   try {
     const username = String(req.body.username || "").trim();
@@ -147,6 +171,7 @@ router.post("/register", limite, async (req, res) => {
     });
 
     const socio = codigo ? await afiliados.atarAlSocio(usuario, codigo) : null;
+    await anotarSesion(usuario._id, req, "register");
 
     return res.status(201).json({
       success: true,
@@ -195,6 +220,7 @@ router.post("/login", limite, async (req, res) => {
     if (usuario.banned) throw errorDe("ACCOUNT_BANNED", {}, 403);
 
     await User.updateOne({ _id: usuario._id }, { $set: { lastSeenAt: new Date() } });
+    await anotarSesion(usuario._id, req, "login");
 
     return res.json({
       success: true,

@@ -8,25 +8,38 @@
     <router-view v-if="sinArmazon" />
 
     <template v-else>
-    <MbCabecera
-      @depositar="avisarPendiente('wallet.depositSoon')"
-      @retirar="avisarPendiente('wallet.withdrawSoon')"
-      @canjear="avisarPendiente('wallet.redeemSoon')"
-      @soporte="avisarPendiente('support.soon')"
-    />
+      <MbCabecera
+        @depositar="avisarPendiente('wallet.depositSoon')"
+        @retirar="avisarPendiente('wallet.withdrawSoon')"
+        @canjear="avisarPendiente('wallet.redeemSoon')"
+        @soporte="avisarPendiente('support.soon')"
+      />
 
-    <!--
-      El cuerpo: barra lateral y contenido, uno al lado del otro. La
-      cabecera va ARRIBA de los dos porque su degradé azul tiene que
-      cruzar todo el ancho, como en el diseño.
-    -->
-    <div class="mb-cuerpo">
-      <MbLateral />
-      <main class="mb-contenido">
-        <router-view />
-      </main>
-    </div>
+      <!--
+        El cuerpo: barra lateral y contenido, uno al lado del otro. La
+        cabecera va ARRIBA de los dos porque su degradé azul tiene que
+        cruzar todo el ancho, como en el diseño.
+      -->
+      <div class="mb-cuerpo">
+        <MbLateral class="mb-cuerpo__lateral" />
+        <main class="mb-contenido">
+          <router-view />
+        </main>
+      </div>
 
+      <!-- ── Lo que solo existe en celular ────────────────────────── -->
+
+      <!-- El menú, de cajón. Tapa la página pero deja la cabecera y la
+           barra de abajo a la vista, para poder cerrarlo desde el mismo
+           botón que lo abrió. -->
+      <div v-if="abierto.cajon" class="mb-cajon">
+        <button type="button" class="mb-cajon__fondo" :aria-label="$t('header.closeMenu')" @click="cerrar"></button>
+        <MbLateral cajon @click.native="talVezCerrar" />
+      </div>
+
+      <MbMenuDeCuenta v-if="abierto.cuenta" @soporte="avisarPendiente('support.soon')" />
+
+      <MbBarraDeAbajo />
     </template>
 
     <output v-if="aviso" class="mb-aviso" :class="'mb-aviso--' + aviso.tono" aria-live="polite">
@@ -39,12 +52,24 @@
 import { mapState } from "vuex";
 import MbCabecera from "@/components/MbCabecera.vue";
 import MbLateral from "@/components/MbLateral.vue";
+import MbBarraDeAbajo from "@/components/MbBarraDeAbajo.vue";
+import MbMenuDeCuenta from "@/components/MbMenuDeCuenta.vue";
 
 /**
  * EL ARMAZON DEL SITIO.
  *
  * Cabecera arriba --su degradé azul tiene que cruzar todo el ancho--,
  * barra lateral y contenido abajo, uno al lado del otro.
+ *
+ * EN CELULAR EL ARMAZON ES OTRO
+ *
+ * La barra lateral desaparece y en su lugar hay cinco botones fijos al
+ * pie: menú, portada, billetera, inventario y cuenta. El menú abre la
+ * MISMA barra lateral, de cajón.
+ *
+ * No es una decisión de estilo: en un teléfono el alto es lo que
+ * escasea, y un menú de doscientos pixeles arriba de todo se come la
+ * primera pantalla entera. Abajo, además, llega el pulgar.
  *
  * REGISTRARSE Y ENTRAR NO VIVEN ACA
  *
@@ -55,10 +80,10 @@ import MbLateral from "@/components/MbLateral.vue";
  */
 export default {
   name: "App",
-  components: { MbCabecera, MbLateral },
+  components: { MbCabecera, MbLateral, MbBarraDeAbajo, MbMenuDeCuenta },
 
   computed: {
-    ...mapState(["aviso"]),
+    ...mapState(["aviso", "abierto"]),
 
     /** Las pantallas que se dibujan solas, sin cabecera ni lateral. */
     sinArmazon() {
@@ -66,10 +91,30 @@ export default {
     },
   },
 
+  watch: {
+    /* Cambiar de pantalla cierra todo lo que esté abierto encima. */
+    $route() { this.cerrar(); },
+  },
+
   methods: {
+    cerrar() { this.$store.commit("abrir", null); },
+
+    /**
+     * Tocar un enlace del cajón lo cierra.
+     *
+     * Se mira el evento en vez de ponerle un `@click` a cada enlace
+     * porque la barra tiene más de veinte --las categorías salen de la
+     * base-- y uno que se olvide deja el cajón abierto encima de la
+     * pantalla a la que acaba de llevar.
+     */
+    talVezCerrar(e) {
+      if (e.target.closest("a, button")) this.cerrar();
+    },
+
     /* Lo que todavía no está: se avisa, en vez de un botón mudo. */
     avisarPendiente(clave) {
       this.$store.dispatch("avisar", { texto: this.$t(clave) });
+      this.cerrar();
     },
   },
 };
@@ -78,20 +123,51 @@ export default {
 <style lang="scss">
 @import "@/styles/tokens";
 
-.mb-app { min-height: 100vh; background: $fondo; }
+.mb-app {
+  min-height: 100vh;
+  background: $fondo;
+  /* Para que el cajón se pueda plantar sobre el cuerpo sin tapar la
+     cabecera ni la barra de abajo. */
+  display: flex;
+  flex-direction: column;
+}
 
 .mb-cuerpo {
+  position: relative;
+  flex: 1;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
 }
+
+.mb-cuerpo__lateral { @include en-celular { display: none; } }
 
 .mb-contenido {
   flex: 999 1 560px;
   min-width: 0;
   box-sizing: border-box;
   padding: 20px 24px 64px;
-  @include en-celular { padding: 16px 14px 48px; }
+  /* En celular el relleno de abajo deja lugar a la barra de cinco
+     botones, que flota sobre el final de la página. */
+  @include en-celular { padding: 14px 14px 110px; }
+}
+
+/* ── El cajón del menú ────────────────────────────────────────────── */
+
+.mb-cajon {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  overflow: hidden;
+  @include en-escritorio { display: none; }
+}
+
+.mb-cajon__fondo {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(4, 9, 20, .7);
+  cursor: pointer;
 }
 
 /* ── El cartel que avisa ──────────────────────────────────────────── */
@@ -111,5 +187,9 @@ export default {
   box-shadow: 0 14px 34px rgba(0, 0, 0, .5);
 
   &--error { border-color: #ff5b6b; color: #ff9aa5; }
+
+  /* En celular sube por encima de la barra de abajo: si no, el cartel
+     queda justo debajo de los cinco botones y no se lee. */
+  @include en-celular { right: 12px; left: 12px; bottom: 84px; max-width: none; }
 }
 </style>

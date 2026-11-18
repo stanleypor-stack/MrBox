@@ -18,7 +18,10 @@ export default {
     "vip": "VIP俱乐部",
     "profile": "个人资料",
     "affiliates": "联盟",
-    "verification": "身份验证"
+    "verification": "身份验证",
+    "menu": "菜单",
+    "home": "首页",
+    "wallet": "钱包"
   },
   "action": {
     "signIn": "登录",
@@ -93,7 +96,24 @@ export default {
     "BOX_NOT_LIVE": "该盲盒当前不可用。",
     "RATE_LIMITED": "尝试次数过多，请稍候。",
     "SOMETHING_WENT_WRONG": "出错了。",
-    "NOT_LOGGED_IN": "请先登录。"
+    "NOT_LOGGED_IN": "请先登录。",
+    "ON_A_BREAK": "你在休息期，现在不能玩。",
+    "DAILY_PLAY_LIMIT": "你已达到每日投入上限。",
+    "DAILY_LOSS_LIMIT": "你已达到每日亏损上限。",
+    "ALREADY_VERIFIED": "这一级你已经通过了。",
+    "ALREADY_IN_REVIEW": "这一级正在审核中。",
+    "FINISH_PREVIOUS_LEVEL": "请先完成第 {falta} 级。",
+    "TOO_YOUNG": "你至少要满 {minimo} 岁。",
+    "BAD_FILE_TYPE": "不支持这种文件格式。",
+    "FILE_TOO_BIG": "这个文件超过 {maximoMb} MB。",
+    "NO_ADDRESS": "请先添加收货地址。",
+    "ADDRESS_NOT_FOUND": "该地址不存在。",
+    "NOTHING_TO_SHIP": "没有可寄的东西。",
+    "BOX_NOT_VALID": "这个盒子算不平。",
+    "TOO_FEW_ITEMS": "一个盒子至少要 {minimo} 件。",
+    "TOO_MANY_ITEMS": "一个盒子最多 {maximo} 件。",
+    "DUPLICATE_ITEM": "同一件物品放了两次。",
+    "TOO_MANY_BOXES": "你已经有 {maximo} 个盒子了。"
   },
   "boxes": {
     "title": "盲盒",
@@ -190,7 +210,47 @@ export default {
     "openingsWithIt": "使用这对种子的次数",
     "rotateSeed": "更换种子",
     "rotateNote": "更换时我们会公开旧的服务器种子，你可以逐一核对之前的每次开盒。",
-    "rotated": "种子已更换"
+    "rotated": "种子已更换",
+    "addresses": "地址",
+    "addressesSub": "我们寄送物品的地址",
+    "addAddress": "添加地址",
+    "editAddress": "编辑地址",
+    "noAddresses": "还没有地址。寄货前先添加一个。",
+    "defaultAddress": "默认",
+    "makeDefault": "设为默认",
+    "edit": "编辑",
+    "delete": "删除",
+    "addr": {
+      "nombre": "姓名",
+      "telefono": "电话",
+      "calle": "详细地址",
+      "calle2": "门牌号、楼层",
+      "ciudad": "城市",
+      "provincia": "省份",
+      "codigoPostal": "邮编",
+      "pais": "国家代码"
+    },
+    "activity": "活动",
+    "activitySub": "最近的登录记录",
+    "noActivity": "还没有记录",
+    "activityNote": "看到不认识的登录？改密码并告诉我们。",
+    "device": "设备",
+    "from": "来源",
+    "session": {
+      "login": "登录",
+      "register": "创建账户",
+      "logout": "退出",
+      "password": "密码已改"
+    },
+    "orders": "我的订单",
+    "ordersSub": "你寄回家的物品",
+    "noOrders": "还没有订单。寄回家的物品会出现在这里。",
+    "controls": "自我管理",
+    "controlsSub": "设限额，随时休息",
+    "refer": "推荐赚钱",
+    "sold": "出售所得",
+    "transactionsSub": "充值、提现和推广收入",
+    "historySub": "你开过的所有盒子"
   },
   "txType": {
     "purchase": "充值",
@@ -212,7 +272,9 @@ export default {
     "account": "账户",
     "sideMenu": "侧边栏",
     "collapse": "收起菜单",
-    "expand": "展开菜单"
+    "expand": "展开菜单",
+    "mainNav": "主导航",
+    "closeMenu": "关闭菜单"
   },
   "wallet": {
     "total": "钱包总额",
@@ -409,5 +471,76 @@ export default {
     "payments": "收款",
     "claimedTotal": "共支付 SC {amount}",
     "noPayments": "还没有收款。有人开你的盒子时，分成就会出现在这里。"
+  },
+  "order": {
+    "pending": "已申请",
+    "packing": "打包中",
+    "shipped": "已发货",
+    "delivered": "已送达",
+    "cancelled": "已取消",
+    "cancel": "取消订单"
+  },
+  "controls": {
+    "dailyLimits": "每日限额",
+    "limitsHelp": "调低限额立即生效，调高要等 {hs} 小时——这才叫限额。",
+    "playLimit": "每天最多投入",
+    "lossLimit": "每天最多亏损",
+    "noLimit": "不限",
+    "playedToday": "今天已投入：SC {amount}",
+    "lostToday": "今天已亏：SC {amount}",
+    "pending": "你请求的更宽限额将在 {fecha} 生效。",
+    "saved": "限额已保存",
+    "takeABreak": "休息一下",
+    "breakHelp": "结束前你都不能玩。不能缩短也不能取消——这就是重点。",
+    "days": "{n} 天",
+    "breakSet": "已设置休息",
+    "onABreak": "你正在休息",
+    "breakUntil": "{fecha} 起可以再玩。"
+  },
+  "refer": {
+    "title": "邀请你的朋友",
+    "sub": "朋友获得 5% 充值奖励，你从他们的每笔投注中拿分成。",
+    "copyLink": "复制我的链接",
+    "copied": "链接已复制",
+    "referrals": "推荐人数",
+    "wagerVolume": "投注量"
+  },
+  "kyc": {
+    "state": {
+      "none": "未开始",
+      "pending": "审核中",
+      "approved": "完成",
+      "rejected": "需要修改"
+    },
+    "inReview": "审核中",
+    "finishPrevious": "先完成上一级",
+    "tryAgain": "重新提交",
+    "send": "提交审核",
+    "sent": "已提交，我们会回复你。",
+    "fileHelp": "PNG、JPG、WEBP 或 PDF，最大 {mb} MB。审核完成后我们会删除。",
+    "fileTooBig": "这个文件超过 {mb} MB。",
+    "needHelp": "需要帮助？",
+    "needHelpSub": "客服 24 小时在线，协助你完成验证。",
+    "contactSupport": "联系客服",
+    "field": {
+      "nombre": "名",
+      "apellido": "姓",
+      "nacimiento": "出生日期",
+      "documento": "证件类型",
+      "paisEmisor": "签发国家",
+      "numero": "证件号码",
+      "foto": "证件照片",
+      "calle": "详细地址",
+      "ciudad": "城市",
+      "provincia": "省份",
+      "codigoPostal": "邮编",
+      "pais": "国家",
+      "comprobante": "水电费单或银行对账单"
+    },
+    "doc": {
+      "passport": "护照",
+      "id": "身份证",
+      "licence": "驾照"
+    }
   }
 };

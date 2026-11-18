@@ -88,7 +88,9 @@
           <path d="M38 4l1.2 2.8L42 8l-2.8 1.2L38 12l-1.2-2.8L34 8l2.8-1.2z" fill="#ffe08a" />
           <path d="M9 3l.8 1.7 1.7.8-1.7.8L9 8l-.8-1.7L6.5 5.5l1.7-.8z" fill="#ffffff" />
         </svg>
-        <span v-html="$t('home.livePullsTwoLines')"></span>
+        <span class="mb-pulls__dos" v-html="$t('home.livePullsTwoLines')"></span>
+        <span class="mb-pulls__una">{{ $t('home.livePulls') }}</span>
+        <span class="mb-pulls__punto" aria-hidden="true"></span>
       </div>
 
       <div class="mb-pulls__via">
@@ -658,6 +660,15 @@ export default {
   border: 1px solid #1a2a45;
   border-radius: 18px;
   background: $panel-pulls;
+
+  /*
+    EN CELULAR EL ROTULO VA ARRIBA, NO AL COSTADO.
+
+    La columna de 84px del escritorio se lleva un cuarto de una
+    pantalla de 375 y deja la cinta tan angosta que entra una tarjeta y
+    media. Arriba, en una linea, la cinta queda entera.
+  */
+  @include en-celular { flex-direction: column; gap: 10px; }
 }
 
 .mb-pulls__rotulo {
@@ -672,16 +683,35 @@ export default {
   padding-right: 12px;
 
   span { font-weight: 900; font-size: 14px; line-height: 1.1; text-align: center; }
+
+  @include en-celular {
+    width: auto;
+    flex-direction: row;
+    justify-content: flex-start;
+    border-right: 0;
+    padding-right: 0;
+    svg { width: 26px; height: 26px; }
+  }
+}
+
+.mb-pulls__una { display: none; }
+.mb-pulls__punto { display: none; width: 8px; height: 8px; border-radius: 50%; background: #2fd47a; }
+
+@include en-celular {
+  .mb-pulls__dos { display: none; }
+  .mb-pulls__una, .mb-pulls__punto { display: block; }
 }
 
 .mb-pulls__via { position: relative; flex: 1; min-width: 0; }
 
-.mb-pulls__fila { display: flex; gap: 10px; overflow-x: auto; }
+.mb-pulls__fila { display: flex; gap: 10px; overflow-x: auto; @include en-celular { gap: 8px; } }
 
 .mb-pull-card {
   flex: none;
   width: 108px;
   height: 150px;
+
+  @include en-celular { width: 88px; height: 124px; padding: 6px; border-radius: 10px; }
   box-sizing: border-box;
   padding: 8px;
   border: 2px solid #4f9bff;
@@ -709,7 +739,7 @@ export default {
   line-height: 1.4;
 }
 
-.mb-pull-card__foto { width: 64px; height: 64px; }
+.mb-pull-card__foto { width: 64px; height: 64px; @include en-celular { width: 52px; height: 52px; } }
 
 .mb-pull-card__nombre {
   text-align: center;
@@ -717,6 +747,7 @@ export default {
   font-size: 10px;
   line-height: 1.15;
   text-transform: uppercase;
+  @include en-celular { font-size: 9px; }
 }
 
 .mb-pull-card__valor {
@@ -740,6 +771,7 @@ export default {
   width: 90px;
   pointer-events: none;
   background: linear-gradient(90deg, rgba(16, 29, 51, 0), $panel-pulls);
+  @include en-celular { width: 50px; }
 }
 
 /* ── Las filas ────────────────────────────────────────────────────── */

@@ -7,6 +7,7 @@ const Settings = require("../../database/models/Settings");
 const User = require("../../database/models/User");
 
 const { autorizar } = require("../../middleware/auth");
+const envios = require("../../services/shipping");
 const cajas = require("../../services/boxes");
 const { sc } = require("../../utils/money");
 const { errorDe, esDeJugador } = require("../../utils/errors");
@@ -226,6 +227,37 @@ router.get("/openings", autorizar(true), async (req, res) => {
     });
   } catch (err) {
     return responderError(res, err, "openings");
+  }
+});
+
+/* ── Mandarlo a una casa ──────────────────────────────── */
+
+/**
+ * PEDIR UN ENVIO.
+ *
+ * Uno o varios objetos a una de sus direcciones. No devuelve plata: ya
+ * la pagó cuando abrió la caja.
+ */
+router.post("/ship", autorizar(true), async (req, res) => {
+  try {
+    const r = await envios.pedir({
+      user: req.user,
+      ids: Array.isArray(req.body.ids) ? req.body.ids : [req.body.id].filter(Boolean),
+      addressId: req.body.addressId,
+    });
+    return res.json({ success: true, data: r });
+  } catch (err) {
+    return responderError(res, err, "ship");
+  }
+});
+
+/** Cancela un pedido que todavía no salió, y devuelve los objetos. */
+router.post("/ship/:orderId/cancel", autorizar(true), async (req, res) => {
+  try {
+    const r = await envios.cancelar({ user: req.user, orderId: req.params.orderId });
+    return res.json({ success: true, data: r });
+  } catch (err) {
+    return responderError(res, err, "ship/cancel");
   }
 });
 

@@ -42,6 +42,7 @@ const fair = require("../boxes/fair");
 const { RETORNO_OBJETIVO } = require("../boxes/economia");
 const wallet = require("../wallet");
 const afiliados = require("../affiliates");
+const controles = require("../controls");
 const { sc } = require("../../utils/money");
 const { errorDe } = require("../../utils/errors");
 const { logger } = require("../../utils/logger");
@@ -221,6 +222,9 @@ async function jugar({ user, itemId, chance, veces = 1, demo = false }) {
   }
 
   /* ── El de verdad ────────────────────────────────────────────────── */
+
+  /* Los límites del jugador, por la tanda entera y antes de cobrar. */
+  await controles.revisarAntesDeJugar({ userId: user._id, montoSc: sc(apuestaSc * cuantos) });
 
   const tanda = await semillaDe(user._id);
   if (!tanda) throw errorDe("NO_SEED");

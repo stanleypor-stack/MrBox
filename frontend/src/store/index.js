@@ -31,6 +31,20 @@ export default new Vuex.Store({
 
     /* El cartel de arriba a la derecha. */
     aviso: null,
+
+    /*
+      LO QUE ESTA ABIERTO EN EL CELULAR.
+
+      El cajón del menú, la billetera y el menú de la cuenta se abren
+      desde la barra de abajo --que es un componente-- pero los dibujan
+      la barra lateral y la cabecera, que son otros dos. Tres hermanos
+      que no se ven entre sí.
+
+      Vive acá y no en cada uno porque abrir uno tiene que cerrar los
+      otros dos: con tres banderas sueltas, el cajón y la billetera
+      terminan abiertos a la vez, uno encima del otro.
+    */
+    abierto: { cajon: false, wallet: false, cuenta: false },
   },
 
   getters: {
@@ -64,6 +78,21 @@ export default new Vuex.Store({
     cargandoCajas(s, v) { s.cargandoCajas = !!v; },
     categorias(s, v) { s.categorias = v || []; },
     aviso(s, v) { s.aviso = v; },
+
+    /** Abre uno y cierra los otros dos. `null` cierra todo. */
+    abrir(s, cual) {
+      s.abierto = {
+        cajon: cual === "cajon",
+        wallet: cual === "wallet",
+        cuenta: cual === "cuenta",
+      };
+    },
+
+    /** Lo mismo pero alternando: tocar el que ya está abierto lo cierra. */
+    alternar(s, cual) {
+      const estaba = s.abierto[cual];
+      s.abierto = { cajon: false, wallet: false, cuenta: false, [cual]: !estaba };
+    },
   },
 
   actions: {

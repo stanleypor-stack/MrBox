@@ -18,7 +18,10 @@ export default {
     "vip": "Club VIP",
     "profile": "Profilo",
     "affiliates": "Affiliazione",
-    "verification": "Verifica"
+    "verification": "Verifica",
+    "menu": "Menu",
+    "home": "Home",
+    "wallet": "Portafoglio"
   },
   "action": {
     "signIn": "Accedi",
@@ -93,7 +96,24 @@ export default {
     "BOX_NOT_LIVE": "Questa box non è disponibile ora.",
     "RATE_LIMITED": "Troppi tentativi. Attendi un momento.",
     "SOMETHING_WENT_WRONG": "Qualcosa è andato storto.",
-    "NOT_LOGGED_IN": "Devi accedere."
+    "NOT_LOGGED_IN": "Devi accedere.",
+    "ON_A_BREAK": "Sei in pausa e non puoi giocare ora.",
+    "DAILY_PLAY_LIMIT": "Hai raggiunto il limite giornaliero.",
+    "DAILY_LOSS_LIMIT": "Hai raggiunto il limite di perdita.",
+    "ALREADY_VERIFIED": "Hai già superato quel livello.",
+    "ALREADY_IN_REVIEW": "Quel livello è già in revisione.",
+    "FINISH_PREVIOUS_LEVEL": "Completa prima il livello {falta}.",
+    "TOO_YOUNG": "Devi avere almeno {minimo} anni.",
+    "BAD_FILE_TYPE": "Quel tipo di file non va bene.",
+    "FILE_TOO_BIG": "Quel file supera i {maximoMb} MB.",
+    "NO_ADDRESS": "Aggiungi prima un indirizzo di spedizione.",
+    "ADDRESS_NOT_FOUND": "Quell’indirizzo non esiste.",
+    "NOTHING_TO_SHIP": "Non c’è niente da spedire.",
+    "BOX_NOT_VALID": "Quella box non torna.",
+    "TOO_FEW_ITEMS": "Una box ha bisogno di almeno {minimo} oggetti.",
+    "TOO_MANY_ITEMS": "Una box può contenere al massimo {maximo} oggetti.",
+    "DUPLICATE_ITEM": "Lo stesso oggetto c’è due volte.",
+    "TOO_MANY_BOXES": "Hai già {maximo} box."
   },
   "boxes": {
     "title": "Box",
@@ -190,7 +210,47 @@ export default {
     "openingsWithIt": "Aperture con questa coppia",
     "rotateSeed": "Cambia il mio seme",
     "rotateNote": "Quando lo cambi riveliamo il vecchio seme del server, così puoi controllare ogni apertura fatta con quello.",
-    "rotated": "Seme cambiato"
+    "rotated": "Seme cambiato",
+    "addresses": "Indirizzi",
+    "addressesSub": "Dove spediamo gli oggetti che tieni",
+    "addAddress": "Aggiungi indirizzo",
+    "editAddress": "Modifica indirizzo",
+    "noAddresses": "Nessun indirizzo. Aggiungine uno prima di spedire.",
+    "defaultAddress": "PREDEFINITO",
+    "makeDefault": "Imposta predefinito",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "addr": {
+      "nombre": "Nome completo",
+      "telefono": "Telefono",
+      "calle": "Via e numero",
+      "calle2": "Interno, piano",
+      "ciudad": "Città",
+      "provincia": "Provincia",
+      "codigoPostal": "CAP",
+      "pais": "Codice paese"
+    },
+    "activity": "Attività",
+    "activitySub": "Accessi recenti al tuo account",
+    "noActivity": "Ancora niente",
+    "activityNote": "Vedi un accesso che non riconosci? Cambia la password e avvisaci.",
+    "device": "Dispositivo",
+    "from": "Da",
+    "session": {
+      "login": "Accesso",
+      "register": "Account creato",
+      "logout": "Disconnesso",
+      "password": "Password cambiata"
+    },
+    "orders": "I miei ordini",
+    "ordersSub": "Oggetti che ti sei fatto spedire",
+    "noOrders": "Nessun ordine. Gli oggetti spediti compaiono qui.",
+    "controls": "Controlli",
+    "controlsSub": "Imposta limiti e prenditi una pausa quando vuoi",
+    "refer": "Invita e guadagna",
+    "sold": "Rivenduto",
+    "transactionsSub": "Depositi, prelievi e commissioni",
+    "historySub": "Tutte le box che hai aperto"
   },
   "txType": {
     "purchase": "Acquisto",
@@ -212,7 +272,9 @@ export default {
     "account": "Account",
     "sideMenu": "Menu laterale",
     "collapse": "Riduci il menu",
-    "expand": "Espandi il menu"
+    "expand": "Espandi il menu",
+    "mainNav": "Navigazione principale",
+    "closeMenu": "Chiudi il menu"
   },
   "wallet": {
     "total": "Totale portafoglio",
@@ -409,5 +471,76 @@ export default {
     "payments": "Pagamenti",
     "claimedTotal": "SC {amount} pagati in totale",
     "noPayments": "Ancora nessun pagamento. La tua parte compare qui appena qualcuno apre una tua box."
+  },
+  "order": {
+    "pending": "Richiesto",
+    "packing": "In preparazione",
+    "shipped": "Spedito",
+    "delivered": "Consegnato",
+    "cancelled": "Annullato",
+    "cancel": "Annulla l’ordine"
+  },
+  "controls": {
+    "dailyLimits": "Limiti giornalieri",
+    "limitsHelp": "Stringere un limite vale subito. Allentarlo aspetta {hs} ore — è quello che lo rende un limite.",
+    "playLimit": "Massimo che posso giocare al giorno",
+    "lossLimit": "Massimo che posso perdere al giorno",
+    "noLimit": "Nessun limite",
+    "playedToday": "Giocato oggi: SC {amount}",
+    "lostToday": "Perso oggi: SC {amount}",
+    "pending": "Il limite più largo parte il {fecha}.",
+    "saved": "Limiti salvati",
+    "takeABreak": "Prenditi una pausa",
+    "breakHelp": "Non potrai giocare fino alla fine. Non si accorcia né si annulla — è tutto il senso.",
+    "days": "{n} giorno | {n} giorni",
+    "breakSet": "Pausa impostata",
+    "onABreak": "Sei in pausa",
+    "breakUntil": "Potrai giocare di nuovo il {fecha}."
+  },
+  "refer": {
+    "title": "Invita i tuoi amici",
+    "sub": "I tuoi amici ricevono un bonus del 5% sul deposito e tu guadagni una commissione su ogni loro giocata.",
+    "copyLink": "Copia il mio link",
+    "copied": "Link copiato",
+    "referrals": "Invitati",
+    "wagerVolume": "Volume giocato"
+  },
+  "kyc": {
+    "state": {
+      "none": "DA FARE",
+      "pending": "IN REVISIONE",
+      "approved": "FATTO",
+      "rejected": "DA CORREGGERE"
+    },
+    "inReview": "In revisione",
+    "finishPrevious": "Prima il livello precedente",
+    "tryAgain": "Rimanda",
+    "send": "Manda in revisione",
+    "sent": "Inviato. Ti faremo sapere.",
+    "fileHelp": "PNG, JPG, WEBP o PDF, fino a {mb} MB. Lo cancelliamo dopo la verifica.",
+    "fileTooBig": "Quel file supera i {mb} MB.",
+    "needHelp": "Serve aiuto?",
+    "needHelpSub": "Il supporto è disponibile 24/7 per aiutarti con la verifica.",
+    "contactSupport": "Contatta il supporto",
+    "field": {
+      "nombre": "Nome",
+      "apellido": "Cognome",
+      "nacimiento": "Data di nascita",
+      "documento": "Documento",
+      "paisEmisor": "Paese di rilascio",
+      "numero": "Numero del documento",
+      "foto": "Foto del documento",
+      "calle": "Via e numero",
+      "ciudad": "Città",
+      "provincia": "Provincia",
+      "codigoPostal": "CAP",
+      "pais": "Paese",
+      "comprobante": "Bolletta o estratto conto"
+    },
+    "doc": {
+      "passport": "Passaporto",
+      "id": "Carta d’identità",
+      "licence": "Patente"
+    }
   }
 };

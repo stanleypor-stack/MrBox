@@ -52,6 +52,24 @@ const CODIGOS = {
   TOO_MANY_AT_ONCE: "You cannot open that many at once.",
   NO_SEED: "No seed to play with.",
 
+  /* Limites que se puso el jugador */
+  ON_A_BREAK: "You are on a break.",
+  DAILY_PLAY_LIMIT: "You reached your daily play limit.",
+  DAILY_LOSS_LIMIT: "You reached your daily loss limit.",
+
+  /* Verificacion */
+  ALREADY_VERIFIED: "You already passed that level.",
+  ALREADY_IN_REVIEW: "That level is already being reviewed.",
+  FINISH_PREVIOUS_LEVEL: "Finish the previous level first.",
+  TOO_YOUNG: "You need to be of legal age.",
+  BAD_FILE_TYPE: "That file type is not accepted.",
+  FILE_TOO_BIG: "That file is too big.",
+
+  /* Envios */
+  NO_ADDRESS: "You need a shipping address first.",
+  ADDRESS_NOT_FOUND: "That address does not exist.",
+  NOTHING_TO_SHIP: "There is nothing to ship.",
+
   /* Cajas de la comunidad */
   BOX_NOT_VALID: "That box does not add up.",
   TOO_FEW_ITEMS: "That box needs more items.",

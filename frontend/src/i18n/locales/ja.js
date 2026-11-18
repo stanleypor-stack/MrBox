@@ -18,7 +18,10 @@ export default {
     "vip": "VIPクラブ",
     "profile": "プロフィール",
     "affiliates": "アフィリエイト",
-    "verification": "本人確認"
+    "verification": "本人確認",
+    "menu": "メニュー",
+    "home": "ホーム",
+    "wallet": "ウォレット"
   },
   "action": {
     "signIn": "ログイン",
@@ -93,7 +96,24 @@ export default {
     "BOX_NOT_LIVE": "このボックスは現在利用できません。",
     "RATE_LIMITED": "試行が多すぎます。少し待ってください。",
     "SOMETHING_WENT_WRONG": "問題が発生しました。",
-    "NOT_LOGGED_IN": "ログインが必要です。"
+    "NOT_LOGGED_IN": "ログインが必要です。",
+    "ON_A_BREAK": "休止中のため今はプレイできません。",
+    "DAILY_PLAY_LIMIT": "1日の上限に達しました。",
+    "DAILY_LOSS_LIMIT": "1日の損失上限に達しました。",
+    "ALREADY_VERIFIED": "そのレベルは完了済みです。",
+    "ALREADY_IN_REVIEW": "そのレベルは審査中です。",
+    "FINISH_PREVIOUS_LEVEL": "先にレベル {falta} を完了してください。",
+    "TOO_YOUNG": "{minimo} 歳以上でないとご利用いただけません。",
+    "BAD_FILE_TYPE": "その形式のファイルは使えません。",
+    "FILE_TOO_BIG": "このファイルは {maximoMb} MB を超えています。",
+    "NO_ADDRESS": "先に配送先住所を追加してください。",
+    "ADDRESS_NOT_FOUND": "その住所はありません。",
+    "NOTHING_TO_SHIP": "配送するものがありません。",
+    "BOX_NOT_VALID": "そのボックスは計算が合いません。",
+    "TOO_FEW_ITEMS": "ボックスには最低 {minimo} 点必要です。",
+    "TOO_MANY_ITEMS": "ボックスに入るのは最大 {maximo} 点です。",
+    "DUPLICATE_ITEM": "同じアイテムが2回入っています。",
+    "TOO_MANY_BOXES": "すでに {maximo} 個あります。"
   },
   "boxes": {
     "title": "ボックス",
@@ -190,7 +210,47 @@ export default {
     "openingsWithIt": "この組での開封回数",
     "rotateSeed": "シードを変える",
     "rotateNote": "変更すると古いサーバーシードを公開します。それで過去の開封をすべて検証できます。",
-    "rotated": "シードを変更しました"
+    "rotated": "シードを変更しました",
+    "addresses": "住所",
+    "addressesSub": "受け取ったアイテムの送り先",
+    "addAddress": "住所を追加",
+    "editAddress": "住所を編集",
+    "noAddresses": "住所がまだありません。配送の前に追加してください。",
+    "defaultAddress": "既定",
+    "makeDefault": "既定にする",
+    "edit": "編集",
+    "delete": "削除",
+    "addr": {
+      "nombre": "氏名",
+      "telefono": "電話番号",
+      "calle": "番地",
+      "calle2": "部屋番号・階",
+      "ciudad": "市区町村",
+      "provincia": "都道府県",
+      "codigoPostal": "郵便番号",
+      "pais": "国コード"
+    },
+    "activity": "アクティビティ",
+    "activitySub": "最近のログイン",
+    "noActivity": "まだ何もありません",
+    "activityNote": "覚えのないログインがあれば、パスワードを変えてご連絡ください。",
+    "device": "端末",
+    "from": "接続元",
+    "session": {
+      "login": "ログイン",
+      "register": "アカウント作成",
+      "logout": "ログアウト",
+      "password": "パスワード変更"
+    },
+    "orders": "注文履歴",
+    "ordersSub": "自宅に配送したアイテム",
+    "noOrders": "まだ注文はありません。配送を申し込むとここに出ます。",
+    "controls": "制限",
+    "controlsSub": "制限を決めたり、いつでも休めたりできます",
+    "refer": "紹介して稼ぐ",
+    "sold": "売却額",
+    "transactionsSub": "入金、出金、アフィリエイト報酬",
+    "historySub": "これまでに開けたボックス"
   },
   "txType": {
     "purchase": "購入",
@@ -212,7 +272,9 @@ export default {
     "account": "アカウント",
     "sideMenu": "サイドメニュー",
     "collapse": "メニューを閉じる",
-    "expand": "メニューを開く"
+    "expand": "メニューを開く",
+    "mainNav": "メインナビ",
+    "closeMenu": "メニューを閉じる"
   },
   "wallet": {
     "total": "ウォレット合計",
@@ -409,5 +471,76 @@ export default {
     "payments": "支払い",
     "claimedTotal": "合計 SC {amount} 支払済み",
     "noPayments": "まだ支払いはありません。誰かがあなたのボックスを開けた瞬間にここに出ます。"
+  },
+  "order": {
+    "pending": "申請済み",
+    "packing": "梱包中",
+    "shipped": "発送済み",
+    "delivered": "配達済み",
+    "cancelled": "キャンセル",
+    "cancel": "注文をキャンセル"
+  },
+  "controls": {
+    "dailyLimits": "1日の上限",
+    "limitsHelp": "制限を厳しくするのは即時、緩めるのは {hs} 時間後。それが制限というものです。",
+    "playLimit": "1日に使える上限",
+    "lossLimit": "1日に負けてもいい上限",
+    "noLimit": "上限なし",
+    "playedToday": "本日の利用額：SC {amount}",
+    "lostToday": "本日の損失：SC {amount}",
+    "pending": "緩めた制限は {fecha} から有効になります。",
+    "saved": "制限を保存しました",
+    "takeABreak": "休む",
+    "breakHelp": "終わるまでプレイできません。短縮も取消もできません——それが目的です。",
+    "days": "{n} 日間",
+    "breakSet": "休止を設定しました",
+    "onABreak": "現在休止中です",
+    "breakUntil": "{fecha} からまたプレイできます。"
+  },
+  "refer": {
+    "title": "友達を誘おう",
+    "sub": "友達は入金ボーナス5%、あなたは彼らのプレイごとに報酬を受け取ります。",
+    "copyLink": "リンクをコピー",
+    "copied": "リンクをコピーしました",
+    "referrals": "紹介人数",
+    "wagerVolume": "プレイ総額"
+  },
+  "kyc": {
+    "state": {
+      "none": "未着手",
+      "pending": "審査中",
+      "approved": "完了",
+      "rejected": "要修正"
+    },
+    "inReview": "審査中",
+    "finishPrevious": "先に前のレベルを",
+    "tryAgain": "再送信",
+    "send": "審査に出す",
+    "sent": "送信しました。ご連絡します。",
+    "fileHelp": "PNG、JPG、WEBP、PDF。{mb} MB まで。審査が終わると削除します。",
+    "fileTooBig": "このファイルは {mb} MB を超えています。",
+    "needHelp": "お困りですか？",
+    "needHelpSub": "サポートは24時間体制で本人確認をお手伝いします。",
+    "contactSupport": "サポートに連絡",
+    "field": {
+      "nombre": "名",
+      "apellido": "姓",
+      "nacimiento": "生年月日",
+      "documento": "書類の種類",
+      "paisEmisor": "発行国",
+      "numero": "書類番号",
+      "foto": "書類の写真",
+      "calle": "番地",
+      "ciudad": "市区町村",
+      "provincia": "都道府県",
+      "codigoPostal": "郵便番号",
+      "pais": "国",
+      "comprobante": "公共料金の請求書または銀行明細"
+    },
+    "doc": {
+      "passport": "パスポート",
+      "id": "身分証明書",
+      "licence": "運転免許証"
+    }
   }
 };

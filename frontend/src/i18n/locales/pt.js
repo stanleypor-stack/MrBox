@@ -18,7 +18,10 @@ export default {
     "vip": "Clube VIP",
     "profile": "Perfil",
     "affiliates": "Afiliados",
-    "verification": "Verificação"
+    "verification": "Verificação",
+    "menu": "Menu",
+    "home": "Início",
+    "wallet": "Carteira"
   },
   "action": {
     "signIn": "Entrar",
@@ -93,7 +96,24 @@ export default {
     "BOX_NOT_LIVE": "Essa caixa não está disponível agora.",
     "RATE_LIMITED": "Muitas tentativas. Aguarde um momento.",
     "SOMETHING_WENT_WRONG": "Algo deu errado.",
-    "NOT_LOGGED_IN": "Você precisa entrar."
+    "NOT_LOGGED_IN": "Você precisa entrar.",
+    "ON_A_BREAK": "Você está em pausa e não pode jogar agora.",
+    "DAILY_PLAY_LIMIT": "Você atingiu seu limite diário.",
+    "DAILY_LOSS_LIMIT": "Você atingiu seu limite de perda.",
+    "ALREADY_VERIFIED": "Você já passou esse nível.",
+    "ALREADY_IN_REVIEW": "Esse nível já está em análise.",
+    "FINISH_PREVIOUS_LEVEL": "Conclua antes o nível {falta}.",
+    "TOO_YOUNG": "Você precisa ter pelo menos {minimo} anos.",
+    "BAD_FILE_TYPE": "Esse tipo de arquivo não é aceito.",
+    "FILE_TOO_BIG": "Esse arquivo passa de {maximoMb} MB.",
+    "NO_ADDRESS": "Adicione um endereço de entrega antes.",
+    "ADDRESS_NOT_FOUND": "Esse endereço não existe.",
+    "NOTHING_TO_SHIP": "Não há nada para enviar.",
+    "BOX_NOT_VALID": "Essa caixa não fecha.",
+    "TOO_FEW_ITEMS": "Uma caixa precisa de ao menos {minimo} itens.",
+    "TOO_MANY_ITEMS": "Uma caixa comporta no máximo {maximo} itens.",
+    "DUPLICATE_ITEM": "O mesmo item está duas vezes.",
+    "TOO_MANY_BOXES": "Você já tem {maximo} caixas."
   },
   "boxes": {
     "title": "Caixas",
@@ -190,7 +210,47 @@ export default {
     "openingsWithIt": "Aberturas com este par",
     "rotateSeed": "Trocar minha semente",
     "rotateNote": "Ao trocar, revelamos a semente antiga do servidor, para você conferir cada abertura feita com ela.",
-    "rotated": "Semente trocada"
+    "rotated": "Semente trocada",
+    "addresses": "Endereços",
+    "addressesSub": "Para onde enviamos seus itens",
+    "addAddress": "Adicionar endereço",
+    "editAddress": "Editar endereço",
+    "noAddresses": "Nenhum endereço ainda. Adicione um antes de pedir envio.",
+    "defaultAddress": "PADRÃO",
+    "makeDefault": "Tornar padrão",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "addr": {
+      "nombre": "Nome completo",
+      "telefono": "Telefone",
+      "calle": "Rua e número",
+      "calle2": "Apartamento, andar",
+      "ciudad": "Cidade",
+      "provincia": "Estado",
+      "codigoPostal": "CEP",
+      "pais": "Código do país"
+    },
+    "activity": "Atividade",
+    "activitySub": "Acessos recentes à sua conta",
+    "noActivity": "Nada aqui ainda",
+    "activityNote": "Viu um acesso que não reconhece? Troque a senha e nos avise.",
+    "device": "Dispositivo",
+    "from": "De",
+    "session": {
+      "login": "Entrou",
+      "register": "Conta criada",
+      "logout": "Saiu",
+      "password": "Senha alterada"
+    },
+    "orders": "Meus pedidos",
+    "ordersSub": "Itens que você mandou para casa",
+    "noOrders": "Nenhum pedido ainda. O que você enviar aparece aqui.",
+    "controls": "Controles",
+    "controlsSub": "Defina limites e faça pausas quando quiser",
+    "refer": "Indique e ganhe",
+    "sold": "Vendido",
+    "transactionsSub": "Seus depósitos, saques e comissões",
+    "historySub": "Todas as caixas que você abriu"
   },
   "txType": {
     "purchase": "Compra",
@@ -212,7 +272,9 @@ export default {
     "account": "Conta",
     "sideMenu": "Menu lateral",
     "collapse": "Recolher o menu",
-    "expand": "Expandir o menu"
+    "expand": "Expandir o menu",
+    "mainNav": "Navegação principal",
+    "closeMenu": "Fechar o menu"
   },
   "wallet": {
     "total": "Total na carteira",
@@ -409,5 +471,76 @@ export default {
     "payments": "Pagamentos",
     "claimedTotal": "SC {amount} pagos no total",
     "noPayments": "Ainda nada pago. Sua parte aparece aqui assim que alguém abrir uma caixa sua."
+  },
+  "order": {
+    "pending": "Solicitado",
+    "packing": "Em preparação",
+    "shipped": "Enviado",
+    "delivered": "Entregue",
+    "cancelled": "Cancelado",
+    "cancel": "Cancelar o pedido"
+  },
+  "controls": {
+    "dailyLimits": "Limites diários",
+    "limitsHelp": "Apertar um limite vale na hora. Afrouxar espera {hs} horas — é isso que o torna um limite.",
+    "playLimit": "Máximo que posso jogar por dia",
+    "lossLimit": "Máximo que posso perder por dia",
+    "noLimit": "Sem limite",
+    "playedToday": "Jogado hoje: SC {amount}",
+    "lostToday": "Perdido hoje: SC {amount}",
+    "pending": "O limite mais folgado começa em {fecha}.",
+    "saved": "Limites salvos",
+    "takeABreak": "Fazer uma pausa",
+    "breakHelp": "Você não poderá jogar até o fim. Não dá para encurtar nem cancelar — é esse o ponto.",
+    "days": "{n} dia | {n} dias",
+    "breakSet": "Pausa definida",
+    "onABreak": "Você está em pausa",
+    "breakUntil": "Você poderá jogar de novo em {fecha}."
+  },
+  "refer": {
+    "title": "Indique seus amigos",
+    "sub": "Seus amigos ganham 5% de bônus no depósito, e você ganha comissão em cada aposta deles.",
+    "copyLink": "Copiar meu link",
+    "copied": "Link copiado",
+    "referrals": "Indicados",
+    "wagerVolume": "Volume apostado"
+  },
+  "kyc": {
+    "state": {
+      "none": "NÃO INICIADO",
+      "pending": "EM ANÁLISE",
+      "approved": "CONCLUÍDO",
+      "rejected": "PRECISA AJUSTES"
+    },
+    "inReview": "Em análise",
+    "finishPrevious": "Conclua o nível anterior",
+    "tryAgain": "Enviar de novo",
+    "send": "Enviar para análise",
+    "sent": "Enviado. Avisaremos você.",
+    "fileHelp": "PNG, JPG, WEBP ou PDF, até {mb} MB. Apagamos após a análise.",
+    "fileTooBig": "Esse arquivo passa de {mb} MB.",
+    "needHelp": "Precisa de ajuda?",
+    "needHelpSub": "Nosso suporte está 24/7 para ajudar na verificação.",
+    "contactSupport": "Falar com o suporte",
+    "field": {
+      "nombre": "Nome",
+      "apellido": "Sobrenome",
+      "nacimiento": "Data de nascimento",
+      "documento": "Documento",
+      "paisEmisor": "País emissor",
+      "numero": "Número do documento",
+      "foto": "Foto do documento",
+      "calle": "Rua e número",
+      "ciudad": "Cidade",
+      "provincia": "Estado",
+      "codigoPostal": "CEP",
+      "pais": "País",
+      "comprobante": "Conta de consumo ou extrato"
+    },
+    "doc": {
+      "passport": "Passaporte",
+      "id": "RG",
+      "licence": "CNH"
+    }
   }
 };
