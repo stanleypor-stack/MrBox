@@ -191,6 +191,12 @@ export default {
     "NOTHING_TO_CLAIM": "Todavía no hay nada para cobrar.",
     "ALREADY_CLAIMED": "Ese ya lo cobraste."
   },
+  "side": {
+    "adminPanel": "Panel de administración",
+    "allBoxes": "Todas las cajas",
+    "categories": "Categorías",
+    "dashboard": "Panel"
+  },
   "affil": {
     "title": "Invitá a tus amigos",
     "sub": "Tus amigos se llevan {pct}% de bono en cada compra, y vos cobrás comisión por cada caja que abren.",
@@ -426,11 +432,6 @@ export default {
     "expand": "Agrandar el menú",
     "mainNav": "Navegación principal",
     "closeMenu": "Cerrar el menú"
-  },
-  "side": {
-    "allBoxes": "Todas las cajas",
-    "categories": "Categorías",
-    "dashboard": "Panel"
   },
   "races": {
     "daily": "CARRERA DIARIA",

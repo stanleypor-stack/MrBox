@@ -191,6 +191,12 @@ export default {
     "NOTHING_TO_CLAIM": "现在还没有可领的。",
     "ALREADY_CLAIMED": "这个你已经领过了。"
   },
+  "side": {
+    "adminPanel": "管理面板",
+    "allBoxes": "全部盲盒",
+    "categories": "分类",
+    "dashboard": "控制台"
+  },
   "affil": {
     "title": "邀请你的朋友",
     "sub": "你的朋友每次购买可获 {pct}% 奖励，你则从他们开启的每个盲盒中获得佣金。",
@@ -426,11 +432,6 @@ export default {
     "expand": "展开菜单",
     "mainNav": "主导航",
     "closeMenu": "关闭菜单"
-  },
-  "side": {
-    "allBoxes": "全部盲盒",
-    "categories": "分类",
-    "dashboard": "控制台"
   },
   "races": {
     "daily": "每日竞赛",

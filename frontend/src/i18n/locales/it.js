@@ -191,6 +191,12 @@ export default {
     "NOTHING_TO_CLAIM": "Non c’è ancora nulla da riscuotere.",
     "ALREADY_CLAIMED": "Quello l’hai già riscosso."
   },
+  "side": {
+    "adminPanel": "Pannello admin",
+    "allBoxes": "Tutte le box",
+    "categories": "Categorie",
+    "dashboard": "Pannello"
+  },
   "affil": {
     "title": "Invita i tuoi amici",
     "sub": "I tuoi amici ricevono il {pct}% di bonus su ogni acquisto e tu guadagni una commissione su ogni box che aprono.",
@@ -426,11 +432,6 @@ export default {
     "expand": "Espandi il menu",
     "mainNav": "Navigazione principale",
     "closeMenu": "Chiudi il menu"
-  },
-  "side": {
-    "allBoxes": "Tutte le box",
-    "categories": "Categorie",
-    "dashboard": "Pannello"
   },
   "races": {
     "daily": "GARA DEL GIORNO",

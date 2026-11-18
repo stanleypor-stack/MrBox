@@ -191,6 +191,12 @@ export default {
     "NOTHING_TO_CLAIM": "Пока нечего забирать.",
     "ALREADY_CLAIMED": "Вы уже это забрали."
   },
+  "side": {
+    "adminPanel": "Админ-панель",
+    "allBoxes": "Все коробки",
+    "categories": "Категории",
+    "dashboard": "Панель"
+  },
   "affil": {
     "title": "Приглашайте друзей",
     "sub": "Ваши друзья получают бонус {pct}% к каждой покупке, а вы — комиссию с каждой открытой ими коробки.",
@@ -426,11 +432,6 @@ export default {
     "expand": "Развернуть меню",
     "mainNav": "Основное меню",
     "closeMenu": "Закрыть меню"
-  },
-  "side": {
-    "allBoxes": "Все коробки",
-    "categories": "Категории",
-    "dashboard": "Панель"
   },
   "races": {
     "daily": "ДНЕВНАЯ ГОНКА",

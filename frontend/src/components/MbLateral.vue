@@ -62,6 +62,12 @@
           <router-link to="/dashboard" class="mb-grupo__item" active-class="is-activo">
             {{ $t('side.dashboard') }}
           </router-link>
+
+          <!-- Para el equipo. El guardia de verdad esta en el servidor:
+               cada ruta de /api/admin pide rango. Esto es el atajo. -->
+          <router-link v-if="esAdmin" to="/admin" class="mb-grupo__item mb-grupo__item--admin">
+            {{ $t('side.adminPanel') }}
+          </router-link>
         </div>
       </div>
 
@@ -125,6 +131,7 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 import api from "@/api";
 import MbSelectorDeIdioma from "@/components/MbSelectorDeIdioma.vue";
 
@@ -159,6 +166,8 @@ const ICONOS = {
  */
 export default {
   name: "MbLateral",
+
+  computed: { ...mapGetters(["esAdmin"]) },
   components: { MbSelectorDeIdioma },
 
   props: {
@@ -426,6 +435,8 @@ export default {
   &.is-activo { background: #24467c; }
   &--cat { height: 40px; }
 }
+.mb-grupo__item--admin { color: $amarillo-v; font-weight: 900; }
+
 
 .mb-grupo__cuenta { margin-left: auto; color: #7f93b8; font-size: 12px; font-weight: 800; }
 

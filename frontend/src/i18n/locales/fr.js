@@ -191,6 +191,12 @@ export default {
     "NOTHING_TO_CLAIM": "Rien à réclamer pour l’instant.",
     "ALREADY_CLAIMED": "Vous l’avez déjà réclamé."
   },
+  "side": {
+    "adminPanel": "Panneau admin",
+    "allBoxes": "Tous les coffrets",
+    "categories": "Catégories",
+    "dashboard": "Tableau de bord"
+  },
   "affil": {
     "title": "Parrainez vos amis",
     "sub": "Vos amis reçoivent {pct}% de bonus sur chaque achat, et vous touchez une commission sur chaque coffret qu’ils ouvrent.",
@@ -426,11 +432,6 @@ export default {
     "expand": "Agrandir le menu",
     "mainNav": "Navigation principale",
     "closeMenu": "Fermer le menu"
-  },
-  "side": {
-    "allBoxes": "Tous les coffrets",
-    "categories": "Catégories",
-    "dashboard": "Tableau de bord"
   },
   "races": {
     "daily": "COURSE DU JOUR",

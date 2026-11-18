@@ -191,6 +191,12 @@ export default {
     "NOTHING_TO_CLAIM": "Ainda não há nada para resgatar.",
     "ALREADY_CLAIMED": "Esse você já resgatou."
   },
+  "side": {
+    "adminPanel": "Painel de administração",
+    "allBoxes": "Todas as caixas",
+    "categories": "Categorias",
+    "dashboard": "Painel"
+  },
   "affil": {
     "title": "Convide seus amigos",
     "sub": "Seus amigos ganham {pct}% de bônus em cada compra, e você recebe comissão por cada caixa que abrem.",
@@ -426,11 +432,6 @@ export default {
     "expand": "Expandir o menu",
     "mainNav": "Navegação principal",
     "closeMenu": "Fechar o menu"
-  },
-  "side": {
-    "allBoxes": "Todas as caixas",
-    "categories": "Categorias",
-    "dashboard": "Painel"
   },
   "races": {
     "daily": "CORRIDA DIÁRIA",

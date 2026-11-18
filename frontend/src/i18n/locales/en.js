@@ -191,6 +191,12 @@ export default {
     "NOTHING_TO_CLAIM": "There is nothing to claim yet.",
     "ALREADY_CLAIMED": "You already claimed that one."
   },
+  "side": {
+    "adminPanel": "Admin panel",
+    "allBoxes": "All boxes",
+    "categories": "Categories",
+    "dashboard": "Dashboard"
+  },
   "affil": {
     "title": "Refer Your Friends",
     "sub": "Your friends get a {pct}% bonus on every purchase, and you earn commission on every box they open.",
@@ -426,11 +432,6 @@ export default {
     "expand": "Expand menu",
     "mainNav": "Main navigation",
     "closeMenu": "Close the menu"
-  },
-  "side": {
-    "allBoxes": "All boxes",
-    "categories": "Categories",
-    "dashboard": "Dashboard"
   },
   "races": {
     "daily": "DAILY RACE",

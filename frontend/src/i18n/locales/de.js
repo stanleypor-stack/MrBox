@@ -191,6 +191,12 @@ export default {
     "NOTHING_TO_CLAIM": "Es gibt noch nichts abzuholen.",
     "ALREADY_CLAIMED": "Das hast du schon abgeholt."
   },
+  "side": {
+    "adminPanel": "Admin-Panel",
+    "allBoxes": "Alle Boxen",
+    "categories": "Kategorien",
+    "dashboard": "Übersicht"
+  },
   "affil": {
     "title": "Lad deine Freunde ein",
     "sub": "Deine Freunde bekommen {pct}% Bonus auf jeden Kauf, und du verdienst an jeder Box, die sie öffnen.",
@@ -426,11 +432,6 @@ export default {
     "expand": "Menü ausklappen",
     "mainNav": "Hauptnavigation",
     "closeMenu": "Menü schließen"
-  },
-  "side": {
-    "allBoxes": "Alle Boxen",
-    "categories": "Kategorien",
-    "dashboard": "Übersicht"
   },
   "races": {
     "daily": "TAGESRENNEN",

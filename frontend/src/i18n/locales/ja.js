@@ -191,6 +191,12 @@ export default {
     "NOTHING_TO_CLAIM": "まだ受け取れるものがありません。",
     "ALREADY_CLAIMED": "すでに受け取り済みです。"
   },
+  "side": {
+    "adminPanel": "管理パネル",
+    "allBoxes": "すべてのボックス",
+    "categories": "カテゴリ",
+    "dashboard": "ダッシュボード"
+  },
   "affil": {
     "title": "友達を招待しよう",
     "sub": "友達は購入ごとに {pct}% のボーナス、あなたは友達が開けたボックスごとに報酬を獲得できます。",
@@ -426,11 +432,6 @@ export default {
     "expand": "メニューを開く",
     "mainNav": "メインナビ",
     "closeMenu": "メニューを閉じる"
-  },
-  "side": {
-    "allBoxes": "すべてのボックス",
-    "categories": "カテゴリ",
-    "dashboard": "ダッシュボード"
   },
   "races": {
     "daily": "デイリーレース",
