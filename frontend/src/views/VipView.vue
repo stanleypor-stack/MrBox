@@ -93,10 +93,19 @@
       </div>
     </section>
 
-    <!-- ── Las preguntas ────────────────────────────────────────── -->
+    <!-- ── Las preguntas, por grupo ─────────────────────────────── -->
     <section v-else class="mb-vfaq">
+      <div class="mb-vfaq__grupos" role="tablist" :aria-label="$t('home.faqTitle')">
+        <button
+          v-for="g in GRUPOS" :key="g.id" type="button" role="tab"
+          :aria-selected="grupo === g.id ? 'true' : 'false'"
+          :class="{ 'is-activo': grupo === g.id }"
+          @click="grupo = g.id; abierta = -1"
+        >{{ $t('vipFaq.g.' + g.id) }}</button>
+      </div>
+
       <div
-        v-for="(q, i) in PREGUNTAS" :key="q" class="mb-vfaq__item"
+        v-for="(q, i) in preguntas" :key="q" class="mb-vfaq__item"
         :class="{ 'is-abierta': abierta === i }"
       >
         <button type="button" :aria-expanded="abierta === i ? 'true' : 'false'" @click="abierta = abierta === i ? -1 : i">
@@ -109,6 +118,28 @@
         </button>
         <p v-if="abierta === i">{{ $t('vipFaq.' + q + '.a') }}</p>
       </div>
+
+      <!--
+        EL TRASLADO DE RANGO.
+
+        El diseno lo cuenta en una pregunta: "mandale a soporte la
+        prueba de tu rango en otro lado". Como el chat de soporte ya
+        existe, el boton lo ABRE con el mensaje empezado en vez de
+        dejar a la persona redactandolo de cero.
+      -->
+      <div v-if="grupo === 'transfer'" class="mb-vmatch">
+        <div class="mb-vmatch__texto">
+          <h2>{{ $t('vip.matchTitle') }}</h2>
+          <p>{{ $t('vip.matchSub') }}</p>
+          <ul>
+            <li v-for="n in [1, 2, 3]" :key="n">{{ $t('vip.matchStep' + n) }}</li>
+          </ul>
+        </div>
+
+        <button type="button" class="mb-vmatch__b" @click="pedirTraslado">
+          {{ $t('vip.matchCta') }}
+        </button>
+      </div>
     </section>
   </div>
 </template>
@@ -117,7 +148,20 @@
 import { mapState } from "vuex";
 import api from "@/api";
 
-const PREGUNTAS = ["counts", "lose", "signup", "rakeback"];
+/*
+  LAS PREGUNTAS, EN LOS CUATRO GRUPOS DEL DISENO.
+
+  Antes eran cuatro sueltas. Separadas en grupos se pueden contestar
+  cosas distintas sin hacer una lista de veinte: el que viene a preguntar
+  por el traslado de rango no tiene que leer cuatro respuestas sobre como
+  se sube.
+*/
+const GRUPOS = [
+  { id: "general", preguntas: ["counts", "lose", "signup", "purchase"] },
+  { id: "benefits", preguntas: ["rakeback", "boost", "levelUp"] },
+  { id: "transfer", preguntas: ["match", "proof"] },
+  { id: "managers", preguntas: ["manager", "reload"] },
+];
 
 /**
  * EL CLUB VIP.
@@ -133,12 +177,17 @@ export default {
   name: "VipView",
 
   data() {
-    return { PREGUNTAS, rangos: [], miRango: null, pestana: "rangos", abierta: -1 };
+    return { GRUPOS, rangos: [], miRango: null, pestana: "rangos", grupo: "general", abierta: -1 };
   },
 
   computed: {
     ...mapState(["usuario"]),
     jugado() { return (this.usuario && this.usuario.jugadoSc) || 0; },
+
+    preguntas() {
+      const g = this.GRUPOS.find((x) => x.id === this.grupo);
+      return g ? g.preguntas : [];
+    },
   },
 
   methods: {
@@ -153,6 +202,21 @@ export default {
       if (n >= 1000000) return (n / 1000000).toFixed(n % 1000000 ? 1 : 0) + "M";
       if (n >= 1000) return Math.round(n / 1000) + "K";
       return String(n);
+    },
+
+    /**
+     * Pedir el traslado de rango.
+     *
+     * Abre el chat de soporte con el mensaje empezado. No hay una
+     * pantalla aparte a proposito: del otro lado lo contesta una
+     * persona que tiene que mirar una captura, y eso ya es soporte.
+     */
+    pedirTraslado() {
+      if (!this.$store.getters.entro) {
+        this.$router.push("/login");
+        return;
+      }
+      this.$store.dispatch("pedirSoporte", this.$t("vip.matchMessage"));
     },
 
     correr(hacia) {
@@ -381,6 +445,65 @@ export default {
 /* ── Las preguntas ────────────────────────────────────────────────── */
 
 .mb-vfaq { display: flex; flex-direction: column; gap: 10px; }
+
+.mb-vfaq__grupos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+
+  button {
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 12px;
+    border: 1px solid $borde-fuerte;
+    background: $panel;
+    color: $texto-2;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+    @include foco;
+
+    &:hover { background: $panel-hover; color: #fff; }
+    &.is-activo { background: $azul; border-color: $azul; color: #fff; }
+  }
+}
+
+/* El traslado de rango, abajo de su grupo de preguntas. */
+.mb-vmatch {
+  margin-top: 6px;
+  padding: 20px;
+  border-radius: 18px;
+  background: $panel-alto;
+  border: 1px solid $borde-fuerte;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+
+  h2 { margin: 0 0 6px; font-weight: 900; font-size: 18px; }
+  p { margin: 0 0 10px; font-size: 14px; line-height: 1.5; color: $texto-3; }
+  ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: $texto-2; }
+}
+
+.mb-vmatch__texto { flex: 1 1 280px; min-width: 0; }
+
+.mb-vmatch__b {
+  flex: none;
+  height: 50px;
+  padding: 0 24px;
+  border-radius: 25px;
+  border: 2px solid #fff;
+  background: linear-gradient(180deg, #4fa2ff, #2f6fe0);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 900;
+  font-size: 15px;
+  cursor: pointer;
+  @include foco;
+  &:hover { filter: brightness(1.06); }
+}
 
 .mb-vfaq__item {
   border-radius: 10px;

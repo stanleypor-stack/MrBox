@@ -183,6 +183,9 @@ export default {
   props: {
     /* App.vue la abre desde la cabecera, el pie y el menú de cuenta. */
     abrir: { type: Number, default: 0 },
+
+    /* Un mensaje ya empezado, para los botones que piden algo concreto. */
+    mensajeInicial: { type: String, default: "" },
   },
 
   data() {
@@ -236,7 +239,16 @@ export default {
     /* Cada vez que sube, alguien tocó "Soporte" en otro lado. */
     abrir() {
       this.abierto = true;
-      this.solapa = this.hilos.length ? "msgs" : "home";
+
+      /* Con un mensaje empezado va derecho al chat: quien toco "pedir
+         el traslado" quiere escribir, no leer la lista. */
+      if (this.mensajeInicial) {
+        this.nueva(true);
+        this.borrador = this.mensajeInicial;
+      } else {
+        this.solapa = this.hilos.length ? "msgs" : "home";
+      }
+
       this.traerHilos();
     },
 

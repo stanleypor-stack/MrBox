@@ -759,7 +759,14 @@ export default {
       "rakeback": "Rakeback de caixas",
       "vipManager": "Gerente VIP",
       "reload": "Recarga pelo suporte"
-    }
+    },
+    "matchTitle": "Traga seu rank",
+    "matchSub": "Já é VIP em outro lugar? Mostre para a gente e comece aqui no rank mais próximo.",
+    "matchStep1": "Tire um print da sua página VIP no outro site.",
+    "matchStep2": "Precisa mostrar seu usuário, seu rank e quanto jogou.",
+    "matchStep3": "Envie pelo chat de suporte. Respondemos no mesmo dia.",
+    "matchCta": "Pedir a transferência",
+    "matchMessage": "Olá! Quero transferir meu rank VIP de outro site. Envio a prova."
   },
   "vipFaq": {
     "counts": {
@@ -777,6 +784,40 @@ export default {
     "rakeback": {
       "q": "Como funciona o rakeback?",
       "a": "Parte do que você joga volta. Acumula em três janelas — diária, semanal e mensal — e cada uma é resgatada uma vez em Recompensas."
+    },
+    "g": {
+      "general": "Geral",
+      "benefits": "Benefícios",
+      "transfer": "Transferência VIP",
+      "managers": "Gerentes de conta"
+    },
+    "purchase": {
+      "q": "Preciso comprar alguma coisa?",
+      "a": "Não. Não é preciso comprar nada para jogar, subir de rank ou resgatar prêmios."
+    },
+    "boost": {
+      "q": "Como funciona o impulso de jogo?",
+      "a": "É creditado sozinho conforme o que você joga. Não precisa pedir nada."
+    },
+    "levelUp": {
+      "q": "O que ganho ao alcançar um rank?",
+      "a": "Uma caixa grátis única, que melhora a cada rank."
+    },
+    "match": {
+      "q": "Posso transferir meu rank de outro site?",
+      "a": "Sim. Envie ao suporte uma prova do seu rank em outro site e nós igualamos, ou o mais próximo possível."
+    },
+    "proof": {
+      "q": "O que serve como prova?",
+      "a": "Um print da sua página VIP no outro site mostrando usuário, rank e quanto jogou."
+    },
+    "manager": {
+      "q": "Quem tem gerente de conta?",
+      "a": "Do Ruby para cima. Respondem no mesmo chat de suporte, sem precisar escrever em outro lugar."
+    },
+    "reload": {
+      "q": "O que é uma recarga?",
+      "a": "Um crédito extra que seu gerente pode dar. Nunca é automático: peça no chat de suporte."
     }
   },
   "foot": {

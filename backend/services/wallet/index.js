@@ -202,7 +202,9 @@ async function acotarBono(userId, sesion = null) {
 
 /** El saldo de alguien, y cuánto de eso puede sacar. */
 async function saldoDe(userId) {
-  const u = await User.findById(userId).select("+balanceSc +bonoPendienteSc").lean();
+  const u = await User.findById(userId)
+    .select("+balanceSc +bonoPendienteSc jugadoSc freeOpens")
+    .lean();
   if (!u) throw errorDe("SESSION_EXPIRED", {}, 401);
 
   const balance = sc(u.balanceSc);
@@ -213,6 +215,16 @@ async function saldoDe(userId) {
     bonoPendienteSc: bono,
     /* Lo que se puede pedir para canjear: todo menos el bono sin jugar. */
     canjeableSc: sc(Math.max(0, balance - bono)),
+    /*
+      Y lo jugado, que viaja con el saldo a proposito.
+
+      De el salen el rango VIP, el puesto en la carrera y el rakeback, y
+      la pantalla los muestra arriba de todo. Sin esto, alguien abria
+      una caja y el cartel del Club VIP seguia diciendo el numero de
+      antes hasta recargar la pagina.
+    */
+    jugadoSc: sc(u.jugadoSc),
+    freeOpens: u.freeOpens,
   };
 }
 

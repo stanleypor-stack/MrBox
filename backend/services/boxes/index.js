@@ -142,9 +142,33 @@ async function abrir({ user, slug, veces = 1, demo = false }) {
   for (let i = 0; i < cuantas; i += 1) {
     /* ¿Le queda alguna gratis? Se gastan antes que el saldo. */
     const gratis = await gastarAperturaGratis(user._id);
-    const precio = gratis ? 0 : precioUnitario;
 
-    if (!gratis) {
+    /*
+      UNA APERTURA GRATIS TAMBIEN ES JUGAR.
+
+      Antes no dejaba rastro: el saldo no se movía, así que no había
+      fila en el libro. Y como TODO sale del libro --lo jugado del Club
+      VIP, las carreras, el rakeback, el margen del panel-- abrir tres
+      cajas gratis dejaba el "amount wagered" en cero y el premio que
+      salió de esas cajas no aparecía como costo en ningún lado.
+
+      Ahora entra y sale: se acredita el regalo y se cobra la apertura.
+      El saldo queda igual --neto cero-- y las dos filas dicen la
+      verdad: la casa regaló SC 5 y el jugador jugó SC 5.
+    */
+    if (gratis && precioUnitario > 0) {
+      await wallet.mover({
+        userId: user._id,
+        amountSc: precioUnitario,
+        type: "promo_code",
+        reference: { kind: "freeOpen", id: caja._id, label: caja.name },
+      });
+    }
+
+    /* Gratis o no, la apertura se cobra: el regalo ya entró. */
+    const precio = precioUnitario;
+
+    if (precio > 0) {
       await wallet.mover({
         userId: user._id,
         amountSc: -precio,
@@ -304,7 +328,13 @@ async function abrir({ user, slug, veces = 1, demo = false }) {
     demo: false,
     caja: resumenDeCaja(caja),
     resultados,
-    gastadoSc: sc(resultados.reduce((a, r) => a + r.precioSc, 0)),
+    /*
+      Lo que salió del BOLSILLO: una apertura gratis es cero aunque en
+      el libro figure cobrada, porque el regalo la pagó. Esto es lo que
+      la pantalla le muestra al jugador, y "gastaste SC 5" después de
+      usar una gratis sería mentirle.
+    */
+    gastadoSc: sc(resultados.reduce((a, r) => a + (r.conAperturaGratis ? 0 : r.precioSc), 0)),
     ganadoSc: sc(resultados.reduce((a, r) => a + r.premio.valueSc, 0)),
     ...saldo,
     freeOpens: despues ? despues.freeOpens : 0,

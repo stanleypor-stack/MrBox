@@ -759,7 +759,14 @@ export default {
       "rakeback": "Rakeback coffrets",
       "vipManager": "Responsable VIP",
       "reload": "Recharge via le support"
-    }
+    },
+    "matchTitle": "Emportez votre palier",
+    "matchSub": "Déjà VIP ailleurs ? Montrez-le et commencez ici au palier le plus proche.",
+    "matchStep1": "Faites une capture de votre page VIP sur l’autre site.",
+    "matchStep2": "Elle doit montrer votre pseudo, votre palier et le montant joué.",
+    "matchStep3": "Envoyez-la dans le chat d’assistance. Nous répondons sous un jour.",
+    "matchCta": "Demander un alignement",
+    "matchMessage": "Bonjour ! Je souhaite transférer mon palier VIP d’un autre site. Je joins la preuve."
   },
   "vipFaq": {
     "counts": {
@@ -777,6 +784,40 @@ export default {
     "rakeback": {
       "q": "Comment marche le rakeback ?",
       "a": "Une part de vos mises revient. Elle s’accumule sur trois fenêtres — jour, semaine, mois — chacune réclamable une fois dans Récompenses."
+    },
+    "g": {
+      "general": "Général",
+      "benefits": "Avantages",
+      "transfer": "Transfert VIP",
+      "managers": "Responsables de compte"
+    },
+    "purchase": {
+      "q": "Dois-je acheter quelque chose ?",
+      "a": "Non. Aucun achat n’est nécessaire pour jouer, monter en rang ou échanger des lots."
+    },
+    "boost": {
+      "q": "Comment fonctionne le bonus de jeu ?",
+      "a": "Il est crédité automatiquement selon votre jeu. Rien à réclamer."
+    },
+    "levelUp": {
+      "q": "Que reçois-je en atteignant un palier ?",
+      "a": "Un coffret gratuit unique, meilleur à chaque palier."
+    },
+    "match": {
+      "q": "Puis-je transférer mon palier d’un autre site ?",
+      "a": "Oui. Envoyez à l’assistance une preuve de votre palier ailleurs et nous l’alignons, au plus près possible."
+    },
+    "proof": {
+      "q": "Qu’est-ce qui fait office de preuve ?",
+      "a": "Une capture de votre page VIP sur l’autre site, avec pseudo, palier et montant joué."
+    },
+    "manager": {
+      "q": "Qui a droit à un responsable de compte ?",
+      "a": "À partir de Ruby. Ils répondent dans le même chat d’assistance, pas besoin d’écrire ailleurs."
+    },
+    "reload": {
+      "q": "Qu’est-ce qu’un reload ?",
+      "a": "Un crédit supplémentaire que votre responsable peut accorder. Jamais automatique : demandez-le dans le chat."
     }
   },
   "foot": {

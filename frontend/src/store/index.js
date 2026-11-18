@@ -45,6 +45,19 @@ export default new Vuex.Store({
       terminan abiertos a la vez, uno encima del otro.
     */
     abierto: { cajon: false, wallet: false, cuenta: false },
+
+    /*
+      EL GLOBITO DE SOPORTE.
+
+      `pedidos` es un contador y no una bandera: con una bandera, cerrar
+      el globito y volver a tocar "Soporte" no lo abriria otra vez,
+      porque el valor ya estaba en true.
+
+      `borrador` es para los botones que abren el chat con el mensaje
+      empezado --el traslado de rango del Club VIP-- en vez de dejar a
+      la persona redactandolo de cero.
+    */
+    soporte: { pedidos: 0, borrador: "" },
   },
 
   getters: {
@@ -74,6 +87,10 @@ export default new Vuex.Store({
       s.usuario = nuevo;
     },
 
+    soporte(s, borrador) {
+      s.soporte = { pedidos: s.soporte.pedidos + 1, borrador: borrador || "" };
+    },
+
     cajas(s, v) { s.cajas = v; },
     cargandoCajas(s, v) { s.cargandoCajas = !!v; },
     categorias(s, v) { s.categorias = v || []; },
@@ -96,6 +113,12 @@ export default new Vuex.Store({
   },
 
   actions: {
+    /** Abre el chat de soporte, con un texto ya escrito si hace falta. */
+    pedirSoporte({ commit }, borrador) {
+      commit("soporte", borrador);
+      commit("abrir", null);
+    },
+
     /** Al arrancar: si hay token, preguntar quién es. */
     async arrancar({ commit, dispatch }) {
       if (!leerToken()) {

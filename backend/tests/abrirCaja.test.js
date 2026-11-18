@@ -20,6 +20,7 @@ const { app } = require("../index");
 const { conectar } = require("../database");
 
 const User = require("../database/models/User");
+const BalanceTransaction = require("../database/models/BalanceTransaction");
 const Box = require("../database/models/Box");
 const Item = require("../database/models/Item");
 const BoxOpen = require("../database/models/BoxOpen");
@@ -172,18 +173,41 @@ test("LAS GRATIS SE GASTAN ANTES QUE EL SALDO", async (t) => {
   assert.equal(tercera.datos.data.freeOpens, 0);
 });
 
-test("una apertura gratis NO suma a lo jugado", async (t) => {
+test("una apertura gratis SI suma a lo jugado, y deja sus dos filas", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
   /*
-    Lo jugado mueve el rango VIP, las carreras y el rakeback. Si una
-    apertura regalada contara, el regalo se convertiria en una forma de
-    escalar rangos sin poner un peso.
+    ANTES NO CONTABA, Y ESTABA MAL.
+
+    Lo jugado mueve el rango VIP, las carreras, el rakeback y el margen
+    del panel, y TODO eso sale del libro. Con la apertura gratis sin
+    fila, el que abria sus tres cajas de regalo veia "jugado SC 0,00"
+    --parecia roto-- y el premio que salio de esas cajas no aparecia
+    como costo en ningun lado.
+
+    Ahora el regalo entra y la apertura se cobra: el saldo queda igual y
+    las dos filas dicen la verdad.
+
+    El miedo era escalar rangos de arriba: no da. Las gratis son tres al
+    registrarse y Silver pide SC 25.000. Y si un dia se regalan muchas,
+    estan todas en el libro como `promo_code` para poder mirarlas.
   */
   const j = await jugador({ saldo: 100, gratis: 1 });
-  await pedir("POST", "/boxes/prueba/open", { token: j.token });
+  const { datos } = await pedir("POST", "/boxes/prueba/open", { token: j.token });
+
+  /* Del bolsillo no salio nada. */
+  assert.equal(datos.data.gastadoSc, 0);
+  assert.equal(datos.data.balanceSc, 100);
 
   const u = await User.findById(j.id).lean();
-  assert.equal(u.jugadoSc, 0);
+  assert.equal(u.jugadoSc, PRECIO, "la gratis tiene que contar como jugada");
+
+  const filas = await BalanceTransaction.find({ user: j.id }).sort({ createdAt: 1 }).lean();
+  assert.equal(filas.length, 2, "el regalo y la apertura");
+  assert.equal(filas[0].type, "promo_code");
+  assert.equal(filas[0].amountSc, PRECIO);
+  assert.equal(filas[1].type, "box_open");
+  assert.equal(filas[1].amountSc, -PRECIO);
+  assert.equal(filas[1].balanceAfter, 100, "neto cero: el saldo no se movio");
 });
 
 /* ── Varias de una ────────────────────────────────────────────────── */

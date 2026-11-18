@@ -759,7 +759,14 @@ export default {
       "rakeback": "Rakeback sulle box",
       "vipManager": "Manager VIP",
       "reload": "Ricarica dal supporto"
-    }
+    },
+    "matchTitle": "Porta con te il tuo livello",
+    "matchSub": "Già VIP altrove? Mostracelo e parti qui dal livello più vicino.",
+    "matchStep1": "Fai uno screenshot della tua pagina VIP sull’altro sito.",
+    "matchStep2": "Deve mostrare nome utente, livello e quanto hai giocato.",
+    "matchStep3": "Inviala nella chat di assistenza. Rispondiamo entro un giorno.",
+    "matchCta": "Chiedi il trasferimento",
+    "matchMessage": "Ciao! Vorrei trasferire il mio livello VIP da un altro sito. Allego la prova."
   },
   "vipFaq": {
     "counts": {
@@ -777,6 +784,40 @@ export default {
     "rakeback": {
       "q": "Come funziona il rakeback?",
       "a": "Una parte del giocato torna indietro. Si accumula in tre finestre — giorno, settimana, mese — ognuna riscuotibile una volta in Premi."
+    },
+    "g": {
+      "general": "Generale",
+      "benefits": "Vantaggi",
+      "transfer": "Trasferimento VIP",
+      "managers": "Account manager"
+    },
+    "purchase": {
+      "q": "Devo comprare qualcosa?",
+      "a": "No. Non serve acquistare nulla per giocare, salire di livello o riscattare premi."
+    },
+    "boost": {
+      "q": "Come funziona il bonus di gioco?",
+      "a": "Viene accreditato da solo in base al gioco. Non serve richiederlo."
+    },
+    "levelUp": {
+      "q": "Cosa ricevo raggiungendo un livello?",
+      "a": "Una box gratuita una tantum, migliore a ogni livello."
+    },
+    "match": {
+      "q": "Posso trasferire il mio livello da un altro sito?",
+      "a": "Sì. Invia all’assistenza una prova del tuo livello altrove e lo pareggiamo, o ci avviciniamo il più possibile."
+    },
+    "proof": {
+      "q": "Cosa vale come prova?",
+      "a": "Uno screenshot della tua pagina VIP sull’altro sito con nome utente, livello e quanto hai giocato."
+    },
+    "manager": {
+      "q": "Chi ha un account manager?",
+      "a": "Da Ruby in su. Rispondono nella stessa chat di assistenza, non serve scrivere altrove."
+    },
+    "reload": {
+      "q": "Cos’è una ricarica?",
+      "a": "Un credito extra che il tuo manager può darti. Mai automatico: si chiede nella chat di assistenza."
     }
   },
   "foot": {

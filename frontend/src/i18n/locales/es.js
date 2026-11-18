@@ -759,7 +759,14 @@ export default {
       "rakeback": "Rakeback de cajas",
       "vipManager": "Un VIP manager",
       "reload": "Recarga por soporte"
-    }
+    },
+    "matchTitle": "Traete tu rango",
+    "matchSub": "¿Ya sos VIP en otro lado? Mostranos y empezá acá en el rango más parecido que podamos darte.",
+    "matchStep1": "Sacá una captura de tu página VIP en el otro sitio.",
+    "matchStep2": "Tiene que verse tu usuario, tu rango y cuánto jugaste.",
+    "matchStep3": "Mandala por el chat de soporte. Contestamos dentro del día.",
+    "matchCta": "Pedir el traslado",
+    "matchMessage": "¡Hola! Quiero trasladar mi rango VIP de otro sitio. Les mando la prueba."
   },
   "vipFaq": {
     "counts": {
@@ -777,6 +784,40 @@ export default {
     "rakeback": {
       "q": "¿Cómo funciona el rakeback?",
       "a": "Una parte de lo que jugás vuelve a tu saldo. Se junta en tres ventanas — diaria, semanal y mensual — y cada una se cobra una vez en Recompensas."
+    },
+    "g": {
+      "general": "General",
+      "benefits": "Beneficios",
+      "transfer": "Traslado VIP",
+      "managers": "Gerentes de cuenta"
+    },
+    "purchase": {
+      "q": "¿Tengo que comprar algo?",
+      "a": "No. No hace falta comprar nada para jugar, subir de rango ni canjear premios."
+    },
+    "boost": {
+      "q": "¿Cómo funciona el impulso de juego?",
+      "a": "Se acredita solo según lo que jugás. No hay que reclamar nada."
+    },
+    "levelUp": {
+      "q": "¿Qué me llevo al llegar a un rango?",
+      "a": "Una caja gratis por única vez, que mejora con cada rango."
+    },
+    "match": {
+      "q": "¿Puedo trasladar mi rango de otro sitio?",
+      "a": "Sí. Mandale a soporte una prueba de tu rango en otro lado y lo igualamos, o lo más cerca que permitan los rangos."
+    },
+    "proof": {
+      "q": "¿Qué sirve como prueba?",
+      "a": "Una captura de tu página VIP en el otro sitio donde se vean tu usuario, tu rango y cuánto jugaste."
+    },
+    "manager": {
+      "q": "¿Quién tiene gerente de cuenta?",
+      "a": "Desde Ruby para arriba. Contestan en el mismo chat de soporte, así que no hay otro lugar donde escribir."
+    },
+    "reload": {
+      "q": "¿Qué es una recarga?",
+      "a": "Un crédito extra que te puede dar tu gerente. Nunca es automático: se pide en el chat de soporte."
     }
   },
   "foot": {

@@ -52,7 +52,7 @@
 
       <!-- El globito de soporte: en todas las pantallas del sitio,
            nunca en el panel, que tiene su propia bandeja. -->
-      <MbSoporte :abrir="pedidos" />
+      <MbSoporte :abrir="soporte.pedidos" :mensaje-inicial="soporte.borrador" />
     </template>
 
     <output v-if="aviso" class="mb-aviso" :class="'mb-aviso--' + aviso.tono" aria-live="polite">
@@ -97,15 +97,10 @@ export default {
   name: "App",
   components: { MbCabecera, MbLateral, MbBarraDeAbajo, MbMenuDeCuenta, MbPie, MbSoporte },
 
-  /*
-    `pedidos` es un contador y no un booleano a proposito: con un
-    booleano, cerrar el globito y volver a tocar "Soporte" en el menu no
-    lo abriria otra vez, porque el valor ya estaba en `true`.
-  */
-  data() { return { pedidos: 0 }; },
+
 
   computed: {
-    ...mapState(["aviso", "abierto"]),
+    ...mapState(["aviso", "abierto", "soporte"]),
 
     /**
      * Las pantallas que se dibujan solas, sin cabecera ni lateral.
@@ -157,10 +152,7 @@ export default {
     },
 
     /* Cabecera, pie y menú de cuenta abren el mismo globito. */
-    pedirSoporte() {
-      this.pedidos += 1;
-      this.cerrar();
-    },
+    pedirSoporte() { this.$store.dispatch("pedirSoporte"); },
 
     /* Lo que todavía no está: se avisa, en vez de un botón mudo. */
     avisarPendiente(clave) {

@@ -759,7 +759,14 @@ export default {
       "rakeback": "Box-Rakeback",
       "vipManager": "VIP-Betreuer",
       "reload": "Reload über den Support"
-    }
+    },
+    "matchTitle": "Nimm deine Stufe mit",
+    "matchSub": "Woanders schon VIP? Zeig es uns und starte hier auf der nächstmöglichen Stufe.",
+    "matchStep1": "Mach einen Screenshot deiner VIP-Seite dort.",
+    "matchStep2": "Darauf müssen Benutzername, Stufe und gespielter Betrag zu sehen sein.",
+    "matchStep3": "Schick ihn im Support-Chat. Wir antworten binnen eines Tages.",
+    "matchCta": "Stufe angleichen lassen",
+    "matchMessage": "Hallo! Ich möchte meine VIP-Stufe von einer anderen Seite übernehmen. Nachweis hänge ich an."
   },
   "vipFaq": {
     "counts": {
@@ -777,6 +784,40 @@ export default {
     "rakeback": {
       "q": "Wie funktioniert Rakeback?",
       "a": "Ein Teil deines Einsatzes kommt zurück. Er sammelt sich in drei Fenstern — täglich, wöchentlich, monatlich — und jedes wird einmal unter Belohnungen abgeholt."
+    },
+    "g": {
+      "general": "Allgemein",
+      "benefits": "Vorteile",
+      "transfer": "VIP-Wechsel",
+      "managers": "Kundenbetreuer"
+    },
+    "purchase": {
+      "q": "Muss ich etwas kaufen?",
+      "a": "Nein. Für das Spielen, das Aufsteigen und das Einlösen von Preisen ist kein Kauf nötig."
+    },
+    "boost": {
+      "q": "Wie funktioniert der Spiel-Bonus?",
+      "a": "Er wird automatisch anhand deines Spiels gutgeschrieben. Nichts zu beantragen."
+    },
+    "levelUp": {
+      "q": "Was bekomme ich für eine neue Stufe?",
+      "a": "Eine einmalige Gratis-Box, die mit jeder Stufe besser wird."
+    },
+    "match": {
+      "q": "Kann ich meine Stufe von einer anderen Seite übernehmen?",
+      "a": "Ja. Schick dem Support einen Nachweis deiner Stufe woanders, und wir gleichen sie an, so nah es die Stufen erlauben."
+    },
+    "proof": {
+      "q": "Was gilt als Nachweis?",
+      "a": "Ein Screenshot deiner VIP-Seite dort, mit Benutzernamen, Stufe und gespieltem Betrag."
+    },
+    "manager": {
+      "q": "Wer bekommt einen Kundenbetreuer?",
+      "a": "Ab Ruby. Sie antworten im selben Support-Chat, du musst also nirgendwo anders schreiben."
+    },
+    "reload": {
+      "q": "Was ist ein Reload?",
+      "a": "Ein zusätzliches Guthaben, das dein Betreuer geben kann. Nie automatisch: du fragst im Support-Chat danach."
     }
   },
   "foot": {

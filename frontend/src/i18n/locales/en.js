@@ -759,7 +759,14 @@ export default {
       "rakeback": "Box rakeback",
       "vipManager": "VIP manager",
       "reload": "Reload by support"
-    }
+    },
+    "matchTitle": "Bring your tier with you",
+    "matchSub": "Already VIP somewhere else? Show us and start here at the closest tier we can give you.",
+    "matchStep1": "Take a screenshot of your VIP page on the other site.",
+    "matchStep2": "It has to show your username, your tier and how much you played.",
+    "matchStep3": "Send it in the support chat. We answer within a day.",
+    "matchCta": "Request a tier match",
+    "matchMessage": "Hi! I would like to match my VIP tier from another site. I am attaching proof."
   },
   "vipFaq": {
     "counts": {
@@ -777,6 +784,40 @@ export default {
     "rakeback": {
       "q": "How does rakeback work?",
       "a": "A share of what you play comes back to you. It builds up in three windows — daily, weekly and monthly — and each one can be claimed once in Rewards."
+    },
+    "g": {
+      "general": "General",
+      "benefits": "Benefits",
+      "transfer": "VIP Transfer",
+      "managers": "Account Managers"
+    },
+    "purchase": {
+      "q": "Do I have to buy anything?",
+      "a": "No. No purchase is needed to play, to climb the ranks or to redeem prizes."
+    },
+    "boost": {
+      "q": "How does the play boost work?",
+      "a": "It is credited on its own from what you play. Nothing to claim and nothing to ask for."
+    },
+    "levelUp": {
+      "q": "What do I get for reaching a tier?",
+      "a": "A one-off free box, which gets better with every tier you reach."
+    },
+    "match": {
+      "q": "Can I match my tier from another site?",
+      "a": "Yes. Send support proof of your tier somewhere else and we match it, or get as close as the tiers allow."
+    },
+    "proof": {
+      "q": "What counts as proof?",
+      "a": "A screenshot of your VIP page on the other site showing your username, your tier and how much you played."
+    },
+    "manager": {
+      "q": "Who gets an account manager?",
+      "a": "From Ruby upwards. They answer in the same support chat, so there is no other place to write."
+    },
+    "reload": {
+      "q": "What is a reload?",
+      "a": "An extra credit your manager can give you. It is never automatic: you ask for it in the support chat."
     }
   },
   "foot": {
