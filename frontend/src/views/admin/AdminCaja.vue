@@ -4,13 +4,13 @@
       <span v-if="arte" class="mb-art adc__arte" :class="arte.clase" :style="arte.estilo" aria-hidden="true"></span>
 
       <div class="adc__quien">
-        <input v-model="caja.name" class="ad-in adc__nombre" :aria-label="$t('create.name')">
+        <input v-model="caja.name" class="ad-in adc__nombre" :aria-label="$t('admin.name')">
         <span class="ad-tenue">/{{ caja.slug }}</span>
       </div>
 
-      <router-link to="/admin/boxes" class="ad-b ad-b--suave">{{ $t('common.back') }}</router-link>
+      <router-link to="/admin/boxes" class="ad-b ad-b--suave">{{ $t('admin.back') }}</router-link>
       <button type="button" class="ad-b" :disabled="guardando || !revision.ok" @click="guardar">
-        {{ guardando ? $t('common.loading') : $t('action.save') }}
+        {{ guardando ? $t('admin.loading') : $t('admin.save') }}
       </button>
     </div>
 
@@ -35,7 +35,7 @@
         <b :class="Math.abs(sumaChances - 100) > 0.01 ? 'ad-rojo' : 'ad-verde'">{{ sumaChances.toFixed(4) }}%</b>
       </div>
       <div class="ad-num">
-        <span>{{ $t('box.items', { n: caja.prizes.length }) }}</span>
+        <span>{{ $t('admin.items', { n: caja.prizes.length }) }}</span>
         <b>{{ caja.prizes.length }}</b>
       </div>
     </div>
@@ -74,8 +74,8 @@
             <tr>
               <th></th>
               <th>{{ $t('admin.col.name') }}</th>
-              <th class="ad-der">{{ $t('common.worth') }}</th>
-              <th class="ad-der">{{ $t('common.chance') }}</th>
+              <th class="ad-der">{{ $t('admin.worth') }}</th>
+              <th class="ad-der">{{ $t('admin.chance') }}</th>
               <th class="ad-der">{{ $t('admin.box.addsToPrice') }}</th>
               <th></th>
             </tr>
@@ -92,7 +92,7 @@
                   <input
                     :value="(p.chance * 100).toFixed(p.chance < 0.001 ? 4 : 2)"
                     class="ad-in adc__in-pct" inputmode="decimal"
-                    :aria-label="$t('create.chanceFor', { name: p.name })"
+                    :aria-label="$t('admin.chanceFor', { name: p.name })"
                     @change="ponerChance(i, $event.target.value)"
                   >%
                 </span>
@@ -100,7 +100,7 @@
               <td class="ad-der ad-tenue">SC {{ plata(p.valueSc * p.chance) }}</td>
               <td>
                 <button type="button" class="ad-b ad-b--chico ad-b--mal" @click="sacar(i)">
-                  {{ $t('profile.delete') }}
+                  {{ $t('admin.delete') }}
                 </button>
               </td>
             </tr>

@@ -113,6 +113,44 @@ const userSchema = new mongoose.Schema(
     freeOpens: { type: Number, default: 0 },
 
     /*
+      LAS TRABAS QUE LE PONE EL EQUIPO.
+
+      Distintas de los limites que se pone el jugador: estas las pone
+      soporte y el jugador no las puede sacar. Sirven para frenar una
+      cuenta sin cerrarla entera --por ejemplo, mientras se revisa un
+      canje raro-- que es lo que se necesita el 90% de las veces.
+
+      Cada una dice POR QUE: una traba sin motivo, tres semanas
+      despues, no la puede explicar nadie.
+    */
+    trabas: {
+      canje: { type: Boolean, default: false },
+      envio: { type: Boolean, default: false },
+      promos: { type: Boolean, default: false },
+      carreras: { type: Boolean, default: false },
+      motivo: { type: String, default: "", maxlength: 300 },
+      puestaEl: { type: Date, default: null },
+    },
+
+    /*
+      LA NOTA INTERNA.
+
+      Lo que el equipo quiere que sepa el proximo que abra esta ficha.
+      No la ve el jugador. Es el lugar donde va "pidio no recibir
+      promociones" o "el canje del 12 lo autorizo Dani".
+    */
+    notaInterna: { type: String, default: "", maxlength: 2000 },
+
+    /*
+      EL RANGO VIP PUESTO A MANO.
+
+      Para el traslado de rango: alguien que ya era VIP en otro lado
+      empieza aca en su rango sin haber jugado. Vacio quiere decir "el
+      que le corresponde por lo jugado".
+    */
+    rangoManual: { type: String, default: "" },
+
+    /*
       LOS LIMITES QUE SE PONE EL JUGADOR.
 
       Cuánto está dispuesto a jugar por día, y hasta cuándo no quiere
@@ -171,6 +209,7 @@ const userSchema = new mongoose.Schema(
 
 /** Si puede canjear SC por cripto. */
 userSchema.methods.puedeCanjear = function puedeCanjear() {
+  if (this.trabas && this.trabas.canje) return false;
   return !this.banned && !this.redemptionLock && this.verificationLevel >= 2;
 };
 
@@ -183,6 +222,7 @@ userSchema.methods.puedeCanjear = function puedeCanjear() {
  */
 userSchema.methods.puedeEnviar = function puedeEnviar(valorSc) {
   if (this.banned) return false;
+  if (this.trabas && this.trabas.envio) return false;
   if (this.verificationLevel < 2) return false;
   return Number(valorSc) <= 1000 || this.verificationLevel >= 3;
 };

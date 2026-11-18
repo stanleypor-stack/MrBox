@@ -60,7 +60,7 @@
             </router-link>
             <span class="ad-tenue">
               {{ elegido.jugador.email }}
-              · {{ $t('profile.wagered') }} SC {{ plata(elegido.jugador.jugadoSc) }}
+              · {{ $t('admin.wagered') }} SC {{ plata(elegido.jugador.jugadoSc) }}
               · {{ $t('admin.player.level', { n: elegido.jugador.verificationLevel }) }}
             </span>
           </div>

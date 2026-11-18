@@ -281,7 +281,16 @@ export default {
   position: sticky;
   top: 0;
   align-self: flex-start;
-  max-height: 100vh;
+
+  /*
+    ALTO FIJO DE UNA PANTALLA, NO "LO QUE MIDA EL CONTENIDO".
+
+    Con `max-height`, la columna mide lo que mide su contenido: al bajar
+    por una pagina larga, abajo de la barra aparecia una franja negra
+    --el fondo de la pagina-- donde deberia seguir el panel. Con `height`
+    el fondo llega siempre hasta abajo.
+  */
+  height: 100vh;
   overflow-y: auto;
 
   /* Se desliza, pero sin la barrita gris: afea la columna y en el
@@ -314,6 +323,7 @@ export default {
     position: absolute;
     inset: 0;
     top: 0;
+    height: auto;
     max-height: none;
     max-width: none;
     overflow-y: auto;

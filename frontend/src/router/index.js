@@ -139,6 +139,11 @@ const routes = [
         component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminJugador.vue"),
       },
       {
+        path: "races/:id",
+        name: "adminRace",
+        component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminCarrera.vue"),
+      },
+      {
         path: "boxes/:id",
         name: "adminBox",
         component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminCaja.vue"),

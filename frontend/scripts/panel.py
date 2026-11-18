@@ -17,6 +17,35 @@ este el sitio.
 
 PANEL = {
     # ── Los cinco grupos del menu ─────────────────────────────────────
+    # ── Los botones de siempre ────────────────────────────────────────
+    #
+    # El panel esta entero en ingles (ver arriba). Estos existen porque
+    # los del SITIO estan traducidos a nueve idiomas: con el sitio en
+    # espanol, el panel mostraba "Guardar" al lado de "Save the locks".
+    "admin.back": "Back",
+    "admin.save": "Save",
+    "admin.cancel": "Cancel",
+    "admin.delete": "Delete",
+    "admin.loading": "Loading…",
+    "admin.prev": "Previous",
+    "admin.next": "Next",
+    "admin.menu": "Menu",
+    "admin.balance": "Balance",
+    "admin.amount": "Amount",
+    "admin.kyc": "Verification",
+    "admin.kycLevel": "Level {n}",
+    "admin.wagered": "Played",
+    "admin.code": "Code",
+    "admin.players": "Players",
+    "admin.earned": "Earned",
+    "admin.name": "Name",
+    "admin.worth": "Worth",
+    "admin.chance": "Chance",
+    "admin.chanceFor": "Chance for {name}",
+    "admin.items": "{n} items",
+    "admin.when": "When",
+    "admin.prizeValue": "Prize value",
+
     "admin.group.operation": "OPERATION",
     "admin.group.catalogue": "CATALOGUE",
     "admin.group.money": "MONEY",
@@ -406,6 +435,98 @@ PANEL = {
     "admin.player.apply": "Apply",
     "admin.player.account": "The account",
     "admin.player.banHelp": "A closed account cannot sign in, open boxes or redeem. Its balance and inventory stay where they are.",
+
+    # Las solapas de la ficha
+    "admin.player.tab.resumen": "Overview",
+    "admin.player.tab.movimientos": "Movements",
+    "admin.player.tab.aperturas": "Openings",
+    "admin.player.tab.inventario": "Inventory",
+    "admin.player.tab.pedidos": "Orders",
+    "admin.player.tab.canjes": "Redemptions",
+    "admin.player.tab.accesos": "Access & addresses",
+
+    # Los numeros
+    "admin.player.bought": "Bought",
+    "admin.player.redeemed": "Redeemed",
+    "admin.player.played": "Played",
+    "admin.player.soldBack": "Sold back",
+    "admin.player.given": "Given to them",
+    "admin.player.margin": "Left with the house",
+    "admin.player.marginHelp": "What they played, minus what they took out and what they were given. In red means this account has cost the site money so far. That is not wrong in itself --luck exists-- but it is the first thing to look at before giving them anything else.",
+    "admin.player.inventory": "Inventory held",
+    "admin.player.openBoxes": "Boxes opened",
+    "admin.player.deals": "Deals played",
+    "admin.player.orders": "Shipping orders",
+    "admin.player.openRedemptions": "Redemptions waiting",
+
+    # Lo que el equipo le puede hacer
+    "admin.player.locks": "Locks",
+    "admin.player.locksHelp": "They stop one part of the account without closing it: useful while a strange redemption is being looked at. The player cannot lift them.",
+    "admin.player.lock.canje": "Cannot redeem",
+    "admin.player.lock.envio": "Cannot ship",
+    "admin.player.lock.promos": "No promo codes",
+    "admin.player.lock.carreras": "Out of races",
+    "admin.player.locksSince": "Set {fecha} — {motivo}",
+    "admin.player.saveLocks": "Save the locks",
+
+    "admin.player.note": "Internal note",
+    "admin.player.noteHelp": "What the next person who opens this file should know. The player never sees it.",
+    "admin.player.noteExample": "Asked not to get promotions. The redemption on the 12th was approved by Dani.",
+    "admin.player.saveNote": "Save the note",
+
+    "admin.player.tier": "VIP rank by hand",
+    "admin.player.tierHelp": "For someone moved over from another site, so they start in the rank they already had. It never demotes anyone: if what they have played gives them more, that wins.",
+    "admin.player.tierAuto": "Whatever they have played",
+    "admin.player.tierNow": "Right now: {rango}",
+
+    "admin.player.gifts": "Give the three welcome boxes",
+    "admin.player.giftsHelp": "One free opening in each of the three gift boxes. They go through the ledger like any other opening, so they still count for wagering, races and the margin.",
+
+    "admin.player.info": "The account",
+    "admin.player.affiliateCode": "Their own code",
+    "admin.player.referredBy": "Came in through",
+    "admin.player.freeLeft": "Free openings left",
+    "admin.player.multi": "Other accounts from the same address",
+    "admin.player.multiHelp": "These signed in from an address this account also used. It is a row to look at, not an accusation: a family, a phone on wifi and an office all share addresses.",
+    "admin.player.noMulti": "No other account has signed in from the same address.",
+
+    # El visor de verificacion
+    "admin.player.viewKyc": "See what they sent",
+    "admin.player.kycTitle": "Verification level {n}",
+    "admin.player.kycWarn": "This is a real person's name, document and address. Opening it is written to the activity log with your name on it.",
+    "admin.player.kycFiles": "Files",
+    "admin.player.kycNoFiles": "No files were attached.",
+    "admin.player.kycNone": "This player has not sent anything for verification.",
+    "admin.player.whyReject": "Why is it being rejected? The player reads this.",
+
+    "admin.player.free": "free",
+    "admin.player.fair": "Proof",
+    "admin.player.ofItems": "{n} items",
+    "admin.player.nothing": "Nothing here yet.",
+
+    # ── Una carrera por dentro ────────────────────────────────────────
+    "admin.race.title": "{tipo} race",
+    "admin.race.window": "From {desde} to {hasta}",
+    "admin.race.closedAt": "Closed {fecha}",
+    "admin.race.pool": "Pool",
+    "admin.race.places": "Places that pay",
+    "admin.race.players": "Players in it",
+    "admin.race.wagered": "Played in the window",
+    "admin.race.shareOut": "To be paid out",
+    "admin.race.paidOut": "Actually paid",
+    "admin.race.unpaid": "Prizes still unpaid",
+    "admin.race.leaderboard": "Who is winning",
+    "admin.race.leaderboardLive": "Worked out from the ledger, right now. It moves while people play.",
+    "admin.race.leaderboardDone": "Frozen when the race closed. These are the positions that were paid.",
+    "admin.race.prize": "Prize",
+    "admin.race.paid": "Paid",
+    "admin.race.payNow": "Pay",
+    "admin.race.notYet": "—",
+    "admin.race.settle": "Close it now and pay",
+    "admin.race.settleHelp": "The same thing the clock does when it runs out, but by hand. The positions freeze, the prizes are paid and the race cannot be edited again.",
+    "admin.race.whySettle": "Why is it being closed early?",
+    "admin.race.payHelp": "When a race closes, prizes are paid one by one: if one fails, the rest still get theirs and the one that failed is left here. This pays it, and it cannot pay twice --the ledger is checked first.",
+    "admin.race.empty": "Nobody has played in this window yet.",
 
     # ── El editor de una caja ─────────────────────────────────────────
     "admin.box.price": "Price",

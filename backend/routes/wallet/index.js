@@ -150,6 +150,9 @@ router.post("/code", freno, async (req, res) => {
  */
 router.post("/promo", freno, async (req, res) => {
   try {
+    /* Soporte le puede frenar las promociones a una cuenta sin cerrarla. */
+    if (req.user.trabas && req.user.trabas.promos) throw errorDe("PROMOS_LOCKED", {}, 403);
+
     const texto = String(req.body.code || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 24);
     if (!texto) throw errorDe("CODE_NOT_FOUND");
 

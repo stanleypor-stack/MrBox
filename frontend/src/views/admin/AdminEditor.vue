@@ -1,11 +1,11 @@
 <template>
   <div class="ade" @keydown.esc="$emit('cerrar')">
-    <button type="button" class="ade__fondo" :aria-label="$t('action.cancel')" @click="$emit('cerrar')"></button>
+    <button type="button" class="ade__fondo" :aria-label="$t('admin.cancel')" @click="$emit('cerrar')"></button>
 
     <form class="ade__caja" role="dialog" aria-modal="true" :aria-label="titulo" @submit.prevent="guardar">
       <header class="ade__cabeza">
         <h2>{{ titulo }}</h2>
-        <button type="button" class="ade__x" :aria-label="$t('action.cancel')" @click="$emit('cerrar')">
+        <button type="button" class="ade__x" :aria-label="$t('admin.cancel')" @click="$emit('cerrar')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8"
                stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
         </button>
@@ -44,13 +44,13 @@
         <button
           v-if="fila && cfg.editor.borrar" type="button" class="ad-b ad-b--mal"
           :disabled="ocupado" @click="borrar"
-        >{{ $t('profile.delete') }}</button>
+        >{{ $t('admin.delete') }}</button>
 
         <span class="ad-crece"></span>
 
-        <button type="button" class="ad-b ad-b--suave" @click="$emit('cerrar')">{{ $t('action.cancel') }}</button>
+        <button type="button" class="ad-b ad-b--suave" @click="$emit('cerrar')">{{ $t('admin.cancel') }}</button>
         <button type="submit" class="ad-b" :disabled="ocupado">
-          {{ ocupado ? $t('common.loading') : $t('action.save') }}
+          {{ ocupado ? $t('admin.loading') : $t('admin.save') }}
         </button>
       </footer>
     </form>

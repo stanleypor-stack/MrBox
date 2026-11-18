@@ -130,41 +130,6 @@
                 <span v-else class="mb-nivel__espera">{{ $t('kyc.finishPrevious') }}</span>
               </section>
 
-              <!-- El formulario del nivel que esté abierto. -->
-              <section v-if="nivelAbierto" class="mb-panel">
-                <h2>{{ $t('profile.level' + nivelAbierto.nivel) }}</h2>
-
-                <label v-for="c in nivelAbierto.campos" :key="c.campo" class="mb-campo-g">
-                  {{ $t('kyc.field.' + c.campo) }}
-                  <span v-if="!c.obligatorio" class="mb-tenue"> · {{ $t('create.optional') }}</span>
-
-                  <select v-if="c.tipo === 'opcion'" v-model="formaKyc[c.campo]">
-                    <option value="">—</option>
-                    <option v-for="o in c.opciones" :key="o" :value="o">{{ $t('kyc.doc.' + o) }}</option>
-                  </select>
-
-                  <input
-                    v-else-if="c.tipo === 'archivo'" type="file"
-                    accept="image/png,image/jpeg,image/webp,application/pdf"
-                    @change="subirArchivo($event, c.campo)"
-                  >
-
-                  <input
-                    v-else v-model="formaKyc[c.campo]"
-                    :type="c.tipo === 'fecha' ? 'date' : 'text'"
-                  >
-                </label>
-
-                <p class="mb-ayuda">{{ $t('kyc.fileHelp', { mb: kyc.maximoPorArchivoMb }) }}</p>
-
-                <div class="mb-verif__botones">
-                  <button type="button" class="mb-guardar" :disabled="mandando" @click="mandarNivel">
-                    {{ mandando ? $t('common.loading') : $t('kyc.send') }}
-                  </button>
-                  <button type="button" class="mb-chico" @click="nivelAbierto = null">{{ $t('action.cancel') }}</button>
-                </div>
-              </section>
-
               <div class="mb-desbloquea">
                 <h3>{{ $t('profile.whatUnlocks') }}</h3>
                 <p v-for="(u, i) in desbloqueos" :key="i"><b>{{ $t(u.que) }}</b> — {{ $t(u.nivel) }}</p>
@@ -216,25 +181,7 @@
             <button type="button" class="mb-guardar" @click="nuevaDireccion">{{ $t('profile.addAddress') }}</button>
           </div>
 
-          <section v-if="formaDir" class="mb-panel">
-            <h2>{{ formaDir._id ? $t('profile.editAddress') : $t('profile.addAddress') }}</h2>
-            <div class="mb-dos">
-              <label v-for="c in CAMPOS_DIR" :key="c.campo" class="mb-campo-g">
-                {{ $t('profile.addr.' + c.campo) }}
-                <span v-if="!c.obligatorio" class="mb-tenue"> · {{ $t('create.optional') }}</span>
-                <input
-                  v-model="formaDir[c.campo]" type="text"
-                  :maxlength="c.largo" :placeholder="c.campo === 'pais' ? 'AR' : ''"
-                >
-              </label>
-            </div>
-            <div class="mb-verif__botones">
-              <button type="button" class="mb-guardar" @click="guardarDireccion">{{ $t('action.save') }}</button>
-              <button type="button" class="mb-chico" @click="formaDir = null">{{ $t('action.cancel') }}</button>
-            </div>
-          </section>
-
-          <p v-if="!direcciones.length && !formaDir" class="mb-vacio mb-vacio--chico">{{ $t('profile.noAddresses') }}</p>
+          <p v-if="!direcciones.length" class="mb-vacio mb-vacio--chico">{{ $t('profile.noAddresses') }}</p>
 
           <div v-else class="mb-dos">
             <section v-for="d in direcciones" :key="d._id" class="mb-panel mb-dir">
@@ -554,12 +501,79 @@
         </section>
       </div>
     </div>
+
+    <!--
+      ══ Los carteles que saltan por encima ═══════════════════════════
+
+      Cargar datos --un nivel de verificación, una dirección-- pasa acá
+      arriba y no en el medio de la página: abierto ahí abajo, el
+      formulario empuja todo y el botón de guardar se pierde de vista.
+    -->
+    <MbVentana
+      v-if="nivelAbierto"
+      :titulo="$t('profile.level' + nivelAbierto.nivel)"
+      :sub="$t('profile.level' + nivelAbierto.nivel + 'Sub')"
+      @cerrar="nivelAbierto = null"
+    >
+      <label v-for="c in nivelAbierto.campos" :key="c.campo" class="mb-campo-g">
+        {{ $t('kyc.field.' + c.campo) }}
+        <span v-if="!c.obligatorio" class="mb-tenue"> · {{ $t('create.optional') }}</span>
+
+        <select v-if="c.tipo === 'opcion'" v-model="formaKyc[c.campo]">
+          <option value="">—</option>
+          <option v-for="o in c.opciones" :key="o" :value="o">{{ $t('kyc.doc.' + o) }}</option>
+        </select>
+
+        <input
+          v-else-if="c.tipo === 'archivo'" type="file"
+          accept="image/png,image/jpeg,image/webp,application/pdf"
+          @change="subirArchivo($event, c.campo)"
+        >
+
+        <input v-else v-model="formaKyc[c.campo]" :type="c.tipo === 'fecha' ? 'date' : 'text'">
+      </label>
+
+      <p class="mb-ayuda">{{ $t('kyc.fileHelp', { mb: kyc.maximoPorArchivoMb }) }}</p>
+
+      <template #pie>
+        <button type="button" class="mb-chico" @click="nivelAbierto = null">{{ $t('action.cancel') }}</button>
+        <span class="mb-crece"></span>
+        <button type="button" class="mb-guardar" :disabled="mandando" @click="mandarNivel">
+          {{ mandando ? $t('common.loading') : $t('kyc.send') }}
+        </button>
+      </template>
+    </MbVentana>
+
+    <MbVentana
+      v-if="formaDir"
+      :titulo="formaDir._id ? $t('profile.editAddress') : $t('profile.addAddress')"
+      :sub="$t('profile.addressesSub')"
+      @cerrar="formaDir = null"
+    >
+      <div class="mb-dos">
+        <label v-for="c in CAMPOS_DIR" :key="c.campo" class="mb-campo-g">
+          {{ $t('profile.addr.' + c.campo) }}
+          <span v-if="!c.obligatorio" class="mb-tenue"> · {{ $t('create.optional') }}</span>
+          <input
+            v-model="formaDir[c.campo]" type="text"
+            :maxlength="c.largo" :placeholder="c.campo === 'pais' ? 'AR' : ''"
+          >
+        </label>
+      </div>
+
+      <template #pie>
+        <button type="button" class="mb-chico" @click="formaDir = null">{{ $t('action.cancel') }}</button>
+        <span class="mb-crece"></span>
+        <button type="button" class="mb-guardar" @click="guardarDireccion">{{ $t('action.save') }}</button>
+      </template>
+    </MbVentana>
   </div>
 </template>
 
 <script>
 import { mapGetters, mapState } from "vuex";
 import api from "@/api";
+import MbVentana from "@/components/MbVentana.vue";
 
 const TIPOS = [
   "purchase", "redemption", "box_open", "item_sold", "deal", "rakeback",
@@ -605,6 +619,8 @@ const CAMPOS_DIR = [
  */
 export default {
   name: "ProfileView",
+
+  components: { MbVentana },
 
   data() {
     return {
@@ -1494,6 +1510,7 @@ export default {
 
 .mb-der { text-align: right !important; font-variant-numeric: tabular-nums; }
 .mb-tenue { color: $texto-4; }
+.mb-crece { flex: 1; }
 .mb-entra { color: #2fd47a; font-weight: 800; }
 .mb-sale { color: $texto-2; font-weight: 800; }
 

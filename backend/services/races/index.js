@@ -95,27 +95,47 @@ function ventanaDe(tipo, momento = new Date()) {
  * Sale del libro: la suma de lo que salió en aperturas y deals.
  */
 async function tablaDe({ desde, hasta, cuantos = 50 }) {
+  /*
+    SE PIDEN DE MAS A PROPOSITO.
+
+    Despues se sacan los que estan trabados para las carreras, y si se
+    hubieran pedido justos, cada uno que sale deja un puesto vacio al
+    final de la tabla en vez de correr al que sigue.
+  */
   const filas = await BalanceTransaction.aggregate([
     { $match: { type: { $in: JUGAR }, createdAt: { $gte: desde, $lt: hasta } } },
     { $group: { _id: "$user", jugadoSc: { $sum: { $abs: "$amountSc" } } } },
     { $match: { jugadoSc: { $gt: 0 } } },
     { $sort: { jugadoSc: -1, _id: 1 } },
-    { $limit: cuantos },
+    { $limit: cuantos + 10 },
   ]);
 
   if (!filas.length) return [];
 
   const usuarios = await User.find({ _id: { $in: filas.map((f) => f._id) } })
-    .select("username")
+    .select("username trabas banned")
     .lean();
-  const nombre = new Map(usuarios.map((u) => [String(u._id), u.username]));
+  const quien = new Map(usuarios.map((u) => [String(u._id), u]));
 
-  return filas.map((f, i) => ({
-    user: f._id,
-    username: nombre.get(String(f._id)) || "?",
-    puesto: i + 1,
-    jugadoSc: sc(f.jugadoSc),
-  }));
+  /*
+    FUERA DE LA CARRERA.
+
+    El que tiene la traba puesta, y el que tiene la cuenta cerrada.
+    Siguen jugando y su juego sigue contando para todo lo demas --el
+    VIP, el margen, el libro-- pero no ocupan un puesto que paga.
+  */
+  return filas
+    .filter((f) => {
+      const u = quien.get(String(f._id));
+      return u && !u.banned && !(u.trabas && u.trabas.carreras);
+    })
+    .slice(0, cuantos)
+    .map((f, i) => ({
+      user: f._id,
+      username: (quien.get(String(f._id)) || {}).username || "?",
+      puesto: i + 1,
+      jugadoSc: sc(f.jugadoSc),
+    }));
 }
 
 /** Lo que le toca al puesto `n` de un pozo. */

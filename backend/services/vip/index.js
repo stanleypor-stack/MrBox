@@ -123,12 +123,23 @@ function rangos() {
   return enMemoria.rangos;
 }
 
-/** En qué rango cae alguien que jugó tanto. */
-function rangoDe(jugadoSc) {
+/**
+ * En qué rango cae alguien que jugó tanto.
+ *
+ * `puesto` es el rango que le pusieron a mano desde el panel --el
+ * traslado desde otro sitio-- y manda sobre lo jugado: si lo jugado
+ * ya le da mas, gana lo jugado. Nunca se baja a nadie de rango.
+ */
+function rangoDe(jugadoSc, puesto) {
   const R = rangos();
   const j = Number(jugadoSc) || 0;
   let i = 0;
   for (let k = 0; k < R.length; k += 1) if (j >= R[k].desde) i = k;
+
+  if (puesto) {
+    const aMano = R.findIndex((r) => r.nombre === puesto);
+    if (aMano > i) i = aMano;
+  }
   const siguiente = R[Math.min(i + 1, R.length - 1)];
   const esElUltimo = i === R.length - 1;
 
@@ -203,7 +214,7 @@ async function rakebackDe(userId) {
   const usuario = await User.findById(userId).select("jugadoSc").lean();
   if (!usuario) throw errorDe("NOT_LOGGED_IN", {}, 401);
 
-  const rango = rangoDe(usuario.jugadoSc);
+  const rango = rangoDe(usuario.jugadoSc, usuario.rangoManual);
   const ahora = new Date();
 
   const cobrados = await RakebackClaim.find({ user: userId }).sort({ hasta: -1 }).limit(60).lean();
@@ -262,7 +273,7 @@ async function cobrarRakeback({ userId, periodo }) {
   const usuario = await User.findById(userId).select("jugadoSc").lean();
   if (!usuario) throw errorDe("NOT_LOGGED_IN", {}, 401);
 
-  const rango = rangoDe(usuario.jugadoSc);
+  const rango = rangoDe(usuario.jugadoSc, usuario.rangoManual);
   const pct = rango.rakeback[periodo];
   if (!pct) throw errorDe("RANK_TOO_LOW", { rango: rango.nombre }, 403);
 

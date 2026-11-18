@@ -1276,4 +1276,14 @@ router.use(require("./extra"));
 */
 router.use(require("./editar"));
 
+/*
+  Y la FICHA de un jugador, que es la pantalla mas grande del panel:
+  sus numeros, sus movimientos, sus aperturas, su inventario, sus
+  pedidos, sus accesos, su verificacion y sus trabas.
+*/
+router.use(require("./jugador"));
+
+/* Y una CARRERA por dentro: quien va ganando, quien cobro y quien no. */
+router.use(require("./carreras"));
+
 module.exports = router;

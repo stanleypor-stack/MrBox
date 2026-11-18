@@ -7,7 +7,7 @@
       </div>
 
       <button type="button" class="ad-b ad-b--grande" :disabled="!hayCambios || guardando" @click="guardar">
-        {{ guardando ? $t('common.loading') : $t('action.save') }}
+        {{ guardando ? $t('admin.loading') : $t('admin.save') }}
       </button>
     </div>
 

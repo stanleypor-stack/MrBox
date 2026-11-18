@@ -74,6 +74,14 @@ async function pedir({ user, ids, addressId }) {
   const completo = await User.findById(user._id);
   if (!completo) throw errorDe("NOT_LOGGED_IN", {}, 401);
 
+  /*
+    La traba va aparte del nivel de verificacion: las dos frenan el
+    envio, pero por motivos distintos, y al jugador hay que decirle
+    cual de los dos es. "Subi el documento" cuando el problema es que
+    soporte freno la cuenta manda a alguien a dar vueltas.
+  */
+  if (completo.trabas && completo.trabas.envio) throw errorDe("SHIPPING_LOCKED", {}, 403);
+
   for (const o of objetos) {
     if (o.shippable === false) throw errorDe("ITEM_NOT_SHIPPABLE", { cual: o.name });
     if (!completo.puedeEnviar(o.valueSc)) {

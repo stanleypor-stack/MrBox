@@ -1,6 +1,6 @@
 <template>
   <div class="ad">
-    <p v-if="cargando" class="ad__cargando">{{ $t('common.loading') }}</p>
+    <p v-if="cargando" class="ad__cargando">{{ $t('admin.loading') }}</p>
 
     <p v-else-if="!esAdmin" class="ad__no">{{ $t('admin.notAllowed') }}</p>
 
@@ -58,7 +58,7 @@
       <!-- ── El contenido ─────────────────────────────────────────── -->
       <main class="ad__main">
         <header class="ad__head">
-          <button type="button" class="ad__menu" :aria-label="$t('nav.menu')" @click="menuAbierto = !menuAbierto">
+          <button type="button" class="ad__menu" :aria-label="$t('admin.menu')" @click="menuAbierto = !menuAbierto">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"
                  stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
           </button>

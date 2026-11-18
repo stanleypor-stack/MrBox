@@ -73,6 +73,8 @@ router.get("/", autorizar(true), async (req, res) => {
           puedeEnviarse: o.shippable && usuario.puedeEnviar(o.valueSc),
           porQueNoSeEnvia: !o.shippable
             ? "ITEM_NOT_SHIPPABLE"
+            : (usuario.trabas && usuario.trabas.envio)
+              ? "SHIPPING_LOCKED"
             : usuario.puedeEnviar(o.valueSc)
               ? null
               : o.valueSc > cfg.envioQuePideNivel3Sc

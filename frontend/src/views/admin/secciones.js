@@ -475,7 +475,7 @@ const SECCIONES = {
     ancho: "1000px",
     w: "1fr 1fr .9fr 1.4fr 1fr 1.1fr .9fr",
     columnas: [
-      { campo: "tipo", valor: (f) => f.tipo },
+      { campo: "tipo", valor: (f) => f.tipo, enlace: (f) => `/admin/races/${f._id}` },
       { campo: "premioTotalSc", der: true, tipo: "sc" },
       { campo: "puestosQueCobran", der: true, tipo: "numero" },
       { campo: "lider" },

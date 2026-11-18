@@ -124,6 +124,17 @@ async function pedirCanje({ user, montoSc, ticker, red, direccion }) {
     throw errorDe("BELOW_MINIMUM", { minimoSc: sc(cfg.canjeMinimoSc) });
   }
 
+  /*
+    LA TRABA PRIMERO.
+
+    Antes que el nivel y antes que el saldo: si soporte frenó el canje
+    de esta cuenta, no hace falta mirar nada mas. `redemptionLock` es
+    la que pone el control automatico; `trabas.canje`, una persona.
+  */
+  if (user.banned || user.redemptionLock || (user.trabas && user.trabas.canje)) {
+    throw errorDe("REDEMPTION_LOCKED");
+  }
+
   if ((user.verificationLevel || 0) < NIVEL_PARA_CANJEAR) {
     throw errorDe("VERIFICATION_LEVEL_TOO_LOW", { nivel: NIVEL_PARA_CANJEAR });
   }

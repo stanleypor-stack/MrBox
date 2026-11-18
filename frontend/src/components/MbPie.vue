@@ -89,8 +89,7 @@ const COLUMNAS = [
   {
     titulo: "foot.explore",
     enlaces: [
-      { texto: "nav.boxes", a: "/boxes" },
-      { texto: "boxes.allBoxes", a: "/boxes" },
+      { texto: "side.allBoxes", a: "/boxes" },
       { texto: "nav.community", a: "/community" },
       { texto: "nav.deals", a: "/deals" },
       { texto: "nav.createBox", a: "/create" },

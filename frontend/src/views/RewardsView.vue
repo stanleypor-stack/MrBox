@@ -61,7 +61,9 @@
           <p class="mb-panel__p">{{ $t('rewards.promoHelp') }}</p>
           <div class="mb-codigo">
             <input v-model="codigo" :aria-label="$t('rewards.promoCode')" :placeholder="$t('rewards.enterCode')">
-            <button type="button" @click="canjear">{{ $t('rewards.redeemCode') }}</button>
+            <button type="button" :disabled="!codigo.trim() || canjeando" @click="canjear">
+              {{ canjeando ? $t('common.loading') : $t('rewards.redeemCode') }}
+            </button>
           </div>
         </section>
 
@@ -105,7 +107,7 @@ const PERIODOS = ["daily", "weekly", "monthly"];
 export default {
   name: "RewardsView",
 
-  data() { return { PERIODOS, datos: null, codigo: "", cobrando: "" }; },
+  data() { return { PERIODOS, datos: null, codigo: "", cobrando: "", canjeando: false }; },
 
   computed: { ...mapGetters(["entro"]) },
 
@@ -144,10 +146,36 @@ export default {
       }
     },
 
-    canjear() {
-      /* Los códigos promocionales los carga el panel, que todavía no
-         está: mejor decirlo que tener un botón que no hace nada. */
-      this.$store.dispatch("avisar", { texto: this.$t("auth.soon") });
+    /**
+     * Canjear un código promocional.
+     *
+     * Los códigos se crean en el panel. Lo que impide canjearlo dos
+     * veces lo decide la base, no esta pantalla: acá solo se manda el
+     * texto y se muestra lo que contestó.
+     */
+    async canjear() {
+      const texto = this.codigo.trim();
+      if (!texto) return;
+
+      this.canjeando = true;
+      try {
+        const { data } = await api.post("/wallet/promo", { code: texto });
+        this.$store.commit("saldo", data.data);
+        this.codigo = "";
+
+        const d = data.data;
+        this.$store.dispatch("avisar", {
+          texto: d.tipo === "saldo"
+            ? this.$t("rewards.codeBalance", { code: d.codigo, amount: this.plata(d.montoSc) })
+            : this.$t("rewards.codeBoxes", { code: d.codigo, n: d.aperturas }),
+        });
+
+        await this.traer();
+      } catch (err) {
+        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
+      } finally {
+        this.canjeando = false;
+      }
     },
   },
 

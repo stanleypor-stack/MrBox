@@ -44,6 +44,8 @@ const CODIGOS = {
   VERIFICATION_REQUIRED: "You need to verify your account first.",
   VERIFICATION_LEVEL_TOO_LOW: "Your verification level is not high enough.",
   REDEMPTION_LOCKED: "Redemptions are on hold for this account.",
+  SHIPPING_LOCKED: "Shipping is on hold for this account.",
+  PROMOS_LOCKED: "Promotions are on hold for this account.",
 
   /* Cajas */
   BOX_NOT_FOUND: "That box does not exist.",
@@ -64,6 +66,8 @@ const CODIGOS = {
 
   /* Carreras */
   RACE_NOT_FOUND: "That race does not exist.",
+  RACE_SETTLED: "That race is already closed.",
+  RACE_LIVE: "That race has not closed yet.",
 
   /* Limites que se puso el jugador */
   ON_A_BREAK: "You are on a break.",

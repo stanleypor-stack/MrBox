@@ -378,10 +378,10 @@ router.get("/ranks", async (req, res) => {
   try {
     const tabla = vip.tabla();
 
-    const gente = await User.find({ rank: "user" }).select("jugadoSc").lean();
+    const gente = await User.find({ rank: "user" }).select("jugadoSc rangoManual").lean();
     const cuantos = new Map();
     for (const u of gente) {
-      const r = vip.rangoDe(u.jugadoSc || 0);
+      const r = vip.rangoDe(u.jugadoSc || 0, u.rangoManual);
       cuantos.set(r.nombre, (cuantos.get(r.nombre) || 0) + 1);
     }
 

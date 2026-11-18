@@ -100,11 +100,11 @@
 
       <nav v-if="paginas > 1" class="ad-paginas">
         <button type="button" class="ad-b ad-b--suave ad-b--chico" :disabled="pagina <= 1" @click="traer(pagina - 1)">
-          {{ $t('common.previous') }}
+          {{ $t('admin.prev') }}
         </button>
         <span>{{ pagina }} / {{ paginas }}</span>
         <button type="button" class="ad-b ad-b--suave ad-b--chico" :disabled="pagina >= paginas" @click="traer(pagina + 1)">
-          {{ $t('common.next') }}
+          {{ $t('admin.next') }}
         </button>
       </nav>
     </div>
@@ -213,7 +213,7 @@ export default {
       if (c.tipo === "fechaHora") return v ? new Date(v).toLocaleString(this.$i18n.locale, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—";
       if (c.tipo === "hora") return v ? new Date(v).toLocaleTimeString(this.$i18n.locale) : "—";
       if (c.tipo === "tipoTx") return this.$t("txType." + v);
-      if (c.tipo === "siNo") return v ? this.$t("box.on") : this.$t("box.off");
+      if (c.tipo === "siNo") return v ? this.$t("admin.state.on") : this.$t("admin.state.off");
       if (c.tipo === "clave") return v ? this.$t(v) : "—";
       return String(v === "" ? "—" : v);
     },

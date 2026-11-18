@@ -59,7 +59,7 @@
 
       <div class="mb-banners__puntos">
         <button
-          v-for="(b, i) in bannersConArte" :key="i" type="button"
+          v-for="(b, i) in banners" :key="i" type="button"
           class="mb-punto" :class="{ 'is-activo': i === actual }"
           :aria-label="$t(b.title)" @click="irA(i)"
         ></button>
