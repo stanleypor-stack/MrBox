@@ -154,10 +154,21 @@ async function slugLibre(nombre) {
   return `${base}-${Date.now().toString(36)}`;
 }
 
+/*
+  LOS ESTAMPADOS DEL CARTON.
+
+  Es una lista cerrada a proposito. El color es libre --cualquier color
+  da una caja que se entiende, porque las once superficies salen de el--
+  pero el estampado lo dibuja el componente, asi que uno que no exista
+  dejaria la caja sin textura y sin decir por que.
+*/
+const TEXTURAS = ["liso", "rayas", "lunares", "cuadros", "panal", "chispas", "carton", "cinta"];
+
 /** Limpia la portada: nada de lo que llega se usa sin mirarlo. */
 function portadaLimpia(entra, cuantosPremios) {
   const p = entra || {};
   const color = /^#[0-9a-fA-F]{6}$/.test(p.color) ? p.color : "#9b30ff";
+  const textura = TEXTURAS.includes(p.textura) ? p.textura : "liso";
   const estilo = [0, 1, 2].includes(Number(p.estilo)) ? Number(p.estilo) : 2;
 
   const asoman = Array.isArray(p.asoman)
@@ -205,6 +216,7 @@ function portadaLimpia(entra, cuantosPremios) {
 
   return {
     color,
+    textura,
     estilo,
     asoman,
     posiciones,

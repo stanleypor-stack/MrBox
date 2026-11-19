@@ -700,6 +700,18 @@ export default {
       "trio": "Tres objetos derechos, el del medio adelante.",
       "spread": "Tres objetos en abanico, inclinados a los costados."
     },
+    "customColour": "Elegí cualquier color",
+    "boxTexture": "Estampado de la caja",
+    "texture": {
+      "liso": "Liso",
+      "rayas": "Rayas",
+      "lunares": "Lunares",
+      "cuadros": "Cuadros",
+      "panal": "Panal",
+      "chispas": "Chispas",
+      "carton": "Cartón",
+      "cinta": "Cinta"
+    },
     "dragItem": "Arrastrá para mover este objeto",
     "resetPositions": "Volver a las posiciones",
     "coverCount": "Todavía no asoma nada | Asoma 1 objeto | Asoman {n} objetos",

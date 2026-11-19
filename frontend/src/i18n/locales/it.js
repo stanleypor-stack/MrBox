@@ -700,6 +700,18 @@ export default {
       "trio": "Tre oggetti dritti, quello centrale davanti.",
       "spread": "Tre oggetti a ventaglio, inclinati ai lati."
     },
+    "customColour": "Scegli un colore",
+    "boxTexture": "Texture della box",
+    "texture": {
+      "liso": "Tinta unita",
+      "rayas": "Righe",
+      "lunares": "Pois",
+      "cuadros": "Quadri",
+      "panal": "Favo",
+      "chispas": "Scintille",
+      "carton": "Cartone",
+      "cinta": "Nastro"
+    },
     "dragItem": "Trascina per spostare",
     "resetPositions": "Reimposta le posizioni",
     "coverCount": "Ancora niente sulla box | 1 oggetto sulla box | {n} oggetti sulla box",

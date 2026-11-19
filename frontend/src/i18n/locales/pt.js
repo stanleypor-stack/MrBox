@@ -700,6 +700,18 @@ export default {
       "trio": "Três itens em pé, o do meio na frente.",
       "spread": "Três itens em leque, inclinados para os lados."
     },
+    "customColour": "Escolha qualquer cor",
+    "boxTexture": "Textura da caixa",
+    "texture": {
+      "liso": "Liso",
+      "rayas": "Listras",
+      "lunares": "Bolinhas",
+      "cuadros": "Xadrez",
+      "panal": "Favo",
+      "chispas": "Brilhos",
+      "carton": "Papelão",
+      "cinta": "Fita"
+    },
     "dragItem": "Arraste para mover este item",
     "resetPositions": "Redefinir posições",
     "coverCount": "Nada na caixa ainda | 1 item aparece na caixa | {n} itens aparecem na caixa",

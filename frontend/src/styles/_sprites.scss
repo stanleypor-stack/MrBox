@@ -1,10 +1,12 @@
 // =====================================================================
 //  LAS LAMINAS DE ARTE
 //
-//  El diseño dibuja los 1.712 objetos y las 163 cajas con TRES imágenes,
-//  no con 1.875 archivos. Cada cosa es un recorte: se fija el tamaño del
-//  fondo a la grilla entera y se mueve la posición hasta el casillero
-//  que toca.
+//  Las cajas, los trofeos y el feed son recortes de una lámina: se fija
+//  el tamaño del fondo a la grilla entera y se mueve la posición hasta
+//  el casillero que toca. Son pocos, pesan poco y se dibujan chicos.
+//
+//  Los objetos NO: son 1.712 y se dibujan grandes, así que cada uno es
+//  su propio archivo (ver más abajo).
 //
 //  POR QUE IMPORTA
 //
@@ -18,11 +20,20 @@
 //  backend/scripts/extraerCatalogoDelDiseno.py).
 // =====================================================================
 
-// Los objetos: 42 columnas x 41 filas.
+// Los objetos: UN ARCHIVO CADA UNO, no una lamina.
+//
+// Estaban en una lamina de 42 x 41 casilleros de 96 px. Eran 4 MB que
+// bajaba entera cualquier pantalla que mostrara un solo objeto, y 96 px
+// estirados a los 140 px de la pagina de una caja --por 3 en un
+// celular-- se ven borrosos.
+//
+// Ahora cada uno es un archivo de 192 px y la pantalla baja solo los
+// que muestra. Que archivo es, lo dice utils/sprite.js; la direccion
+// viaja en el `style` del elemento.
 .mb-prod {
-  background-image: url("/img/22cd8a3943d5d0065a2acf2b640d17e1.webp");
   background-repeat: no-repeat;
-  background-size: 4200% 4100%;
+  background-position: center;
+  background-size: contain;
 }
 
 // Las cajas: 14 x 14.

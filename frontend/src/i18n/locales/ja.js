@@ -700,6 +700,18 @@ export default {
       "trio": "3点をまっすぐに、真ん中を手前に。",
       "spread": "3点を扇のように左右に傾けて。"
     },
+    "customColour": "好きな色を選ぶ",
+    "boxTexture": "ボックスの柄",
+    "texture": {
+      "liso": "無地",
+      "rayas": "ストライプ",
+      "lunares": "水玉",
+      "cuadros": "チェック",
+      "panal": "ハニカム",
+      "chispas": "きらめき",
+      "carton": "クラフト",
+      "cinta": "リボン"
+    },
     "dragItem": "ドラッグして位置を変える",
     "resetPositions": "位置を戻す",
     "coverCount": "まだ何も出ていません | 1 点がボックスに出ます | {n} 点がボックスに出ます",

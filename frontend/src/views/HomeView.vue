@@ -244,6 +244,19 @@ const COLORES = {
   blue: "#3f7cf0", purple: "#8b4fe0", pink: "#e0418f", red: "#e2424b", gold: "#f5b80a",
 };
 
+/*
+  El dorso de las cartas del feed: arriba, abajo y el borde. Lo de
+  arriba es lo que toca el estallido de rayos, asi que va claro; lo de
+  abajo queda en sombra.
+*/
+const DORSOS = {
+  blue: ["#2a79e8", "#0e3d85", "#7db4ff"],
+  purple: ["#8b4fe0", "#371b70", "#c79bff"],
+  pink: ["#e0418f", "#71103f", "#ff9ccb"],
+  red: ["#e2424b", "#73111a", "#ff9aa0"],
+  gold: ["#e3a014", "#6f4206", "#ffd97a"],
+};
+
 /* El color de cada categoria, el mismo de las tarjetas. */
 const TINTES = {
   Audio: "#1f8fc7", Collectables: "#b13d8c", Community: "#4a5b80", Cookware: "#d27d16",
@@ -378,11 +391,18 @@ export default {
       mejor. Una cinta toda azul no dice nada; con el color, de reojo
       se ve que salio algo grande.
     */
+    /**
+     * EL COLOR DE UNA CARTA, SEGUN LO QUE SALIO.
+     *
+     * Tres numeros, no uno: el de arriba, el de abajo y el del borde.
+     * El dorso de la carta es un degrade con un estallido de rayos, y
+     * para eso hace falta saber donde empieza y donde termina (ver
+     * .mb-pull-card en los estilos).
+     */
     colorDeLaTarjeta(p) {
       const r = (p.premio && p.premio.rarity) || "blue";
-      if (r === "gold") return { background: "#a8741a", borderColor: "#ffc83d" };
-      if (r === "red" || r === "pink") return { background: "#c42a35", borderColor: "#ff6b75" };
-      return { background: "#1c63c9", borderColor: "#4f9bff" };
+      const t = DORSOS[r] || DORSOS.blue;
+      return { "--carta-alto": t[0], "--carta-bajo": t[1], "--carta-borde": t[2] };
     },
 
     plata(n) {
@@ -572,7 +592,7 @@ export default {
   width: 100%;
   aspect-ratio: 1 / 1;
   transform: rotate(-16deg);
-  background-position: 82.9268% 0%;
+  background-image: url("/img/prod/34-0.webp");
 }
 
 .mb-claim__a2 {
@@ -582,7 +602,7 @@ export default {
   width: 104%;
   aspect-ratio: 1 / 1;
   transform: rotate(6deg);
-  background-position: 82.9268% 0%;
+  background-image: url("/img/prod/34-0.webp");
 }
 
 .mb-claim__texto { display: flex; flex-direction: column; min-width: 0; }
@@ -936,7 +956,24 @@ export default {
 
 .mb-pulls__fila { display: flex; gap: 10px; overflow-x: auto; @include en-celular { gap: 8px; } }
 
+// =====================================================================
+//  LA CARTA DEL FEED
+//
+//  No es un rectangulo de un color: es el DORSO de una carta. Un
+//  estallido de rayos que sale de atras del objeto, el resplandor en el
+//  medio, cuatro chispas y el degrade que se apaga hacia abajo.
+//
+//  Todo con degrades, ningun archivo: son doce cartas que ademas se
+//  renuevan solas, y doce imagenes de fondo serian doce pedidos mas en
+//  la pantalla que mas se mira.
+//
+//  Los tres colores los pone la pantalla segun lo que salio (ver
+//  colorDeLaTarjeta): claro arriba, oscuro abajo, y el del borde.
+// =====================================================================
+
 .mb-pull-card {
+  position: relative;
+  overflow: hidden;
   flex: none;
   width: 108px;
   height: 150px;
@@ -944,9 +981,9 @@ export default {
   @include en-celular { width: 88px; height: 124px; padding: 6px; border-radius: 10px; }
   box-sizing: border-box;
   padding: 8px;
-  border: 2px solid #4f9bff;
+  border: 2px solid var(--carta-borde, #4f9bff);
   border-radius: 12px;
-  background: #1c63c9;
+  background: linear-gradient(180deg, var(--carta-alto, #1c63c9) 0%, var(--carta-bajo, #0e3d85) 100%);
   color: #fff;
   text-decoration: none;
   display: flex;
@@ -955,6 +992,44 @@ export default {
   justify-content: space-between;
   @include foco;
   &:hover { color: #fff; }
+
+  // El estallido, el resplandor y las chispas.
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 23% 30%, rgba(255, 255, 255, .8) 0 1px, transparent 1.7px),
+      radial-gradient(circle at 77% 24%, rgba(255, 255, 255, .62) 0 1px, transparent 1.7px),
+      radial-gradient(circle at 69% 54%, rgba(255, 255, 255, .5) 0 1px, transparent 1.7px),
+      radial-gradient(circle at 31% 60%, rgba(255, 255, 255, .45) 0 1px, transparent 1.7px),
+      radial-gradient(circle at 50% 38%, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, 0) 26%),
+      repeating-conic-gradient(
+        from 0deg at 50% 38%,
+        rgba(255, 255, 255, .11) 0deg 3deg,
+        rgba(255, 255, 255, 0) 3deg 9deg
+      );
+    // Los rayos se apagan antes de llegar al borde.
+    -webkit-mask-image: radial-gradient(circle at 50% 38%, #000 0%, #000 46%, transparent 88%);
+    mask-image: radial-gradient(circle at 50% 38%, #000 0%, #000 46%, transparent 88%);
+  }
+
+  // La sombrita donde apoya el objeto.
+  &::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 58%;
+    width: 68%;
+    height: 9px;
+    transform: translateX(-50%);
+    pointer-events: none;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, .45), rgba(0, 0, 0, 0));
+  }
+
+  // Todo lo que se lee va por encima del dorso.
+  > * { position: relative; z-index: 1; }
 }
 
 // La etiquetita de la casa, arriba a la izquierda.

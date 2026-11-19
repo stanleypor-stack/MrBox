@@ -380,6 +380,12 @@ export default {
   },
 
   methods: {
+    medir() {
+      if (!this.$el || !this.$el.getBoundingClientRect) return;
+      const alto = Math.round(this.$el.getBoundingClientRect().height);
+      if (alto > 0) document.documentElement.style.setProperty("--alto-cabecera", `${alto}px`);
+    },
+
     plata(n) {
       return Number(n || 0).toLocaleString("en-US", {
         minimumFractionDigits: 2, maximumFractionDigits: 2,
@@ -415,6 +421,23 @@ export default {
   },
 
   created() { this.traerInventario(); },
+
+  mounted() {
+    /*
+      EL ALTO DE LA CABECERA, PUBLICADO PARA EL RESTO.
+
+      La barra lateral se pega justo abajo y el cajon mide su alto
+      descontandola, asi que el numero tiene que salir de la cabecera
+      de verdad y no de una constante: cambia con el idioma, con el
+      zoom y entre celular y escritorio.
+    */
+    this.medir();
+    window.addEventListener("resize", this.medir);
+  },
+
+  beforeDestroy() {
+    window.removeEventListener("resize", this.medir);
+  },
 };
 </script>
 
@@ -424,7 +447,18 @@ export default {
 /* ── El marco ─────────────────────────────────────────────────────── */
 
 .mb-head {
-  position: relative;
+  /*
+    SE QUEDA ARRIBA AUNQUE BAJES HASTA EL FONDO.
+
+    El saldo, la billetera y el buscador son lo que mas se usa; con la
+    cabecera yendose con la pagina, para depositar habia que subir
+    hasta arriba de todo. Pegada, estan siempre a un clic.
+
+    `--alto-cabecera` la publica para los demas: la barra lateral se
+    pega justo abajo, y el cajon mide su alto descontandola.
+  */
+  position: sticky;
+  top: 0;
   z-index: 30;
   // El degradé del diseño: azul fuerte arriba que cae al fondo de la
   // página. Es lo que le da el aire de portada.

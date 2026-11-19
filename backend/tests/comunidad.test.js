@@ -314,3 +314,41 @@ test("la cotizacion no guarda nada", async (t) => {
 
   assert.equal(await Box.countDocuments({}), antes);
 });
+
+/* ── El estampado del carton ──────────────────────────────────────── */
+
+test("el estampado se guarda, y uno inventado cae en liso", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  /*
+    El color es libre --cualquiera da una caja que se entiende-- pero el
+    estampado lo dibuja el componente. Uno que no exista dejaria la caja
+    sin textura y sin decir por que, asi que se cae en "liso".
+  */
+  const j = await jugador();
+
+  const buena = await pedir("POST", "/community", {
+    token: j.token,
+    cuerpo: {
+      name: "Con panal",
+      premios: premiosBase(),
+      portada: { color: "#16c79a", textura: "panal", estilo: 1 },
+    },
+  });
+  assert.equal(buena.estado, 200, JSON.stringify(buena.datos));
+  const conPanal = await Box.findById(buena.datos.data._id).lean();
+  assert.equal(conPanal.portada.textura, "panal");
+  assert.equal(conPanal.portada.color, "#16c79a");
+
+  const rara = await pedir("POST", "/community", {
+    token: j.token,
+    cuerpo: {
+      name: "Con cualquiera",
+      premios: premiosBase(),
+      portada: { color: "#16c79a", textura: "<script>", estilo: 1 },
+    },
+  });
+  assert.equal(rara.estado, 200, JSON.stringify(rara.datos));
+  const otra = await Box.findById(rara.datos.data._id).lean();
+  assert.equal(otra.portada.textura, "liso");
+});

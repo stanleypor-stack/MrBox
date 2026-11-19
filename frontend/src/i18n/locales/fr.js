@@ -700,6 +700,18 @@ export default {
       "trio": "Trois objets droits, celui du milieu devant.",
       "spread": "Trois objets en éventail, inclinés sur les côtés."
     },
+    "customColour": "Choisir une couleur",
+    "boxTexture": "Texture du coffret",
+    "texture": {
+      "liso": "Uni",
+      "rayas": "Rayures",
+      "lunares": "Pois",
+      "cuadros": "Damier",
+      "panal": "Nid d’abeille",
+      "chispas": "Étincelles",
+      "carton": "Carton",
+      "cinta": "Ruban"
+    },
     "dragItem": "Faites glisser pour déplacer",
     "resetPositions": "Réinitialiser les positions",
     "coverCount": "Rien sur le coffret | 1 objet sur le coffret | {n} objets sur le coffret",

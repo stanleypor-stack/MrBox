@@ -20,7 +20,7 @@
 
       <div class="mb-perfil__cuerpo">
         <!-- ══ Perfil ═══════════════════════════════════════════════ -->
-        <section id="p-perfil" class="mb-psec">
+        <section v-show="pestana === 'perfil'" id="p-perfil" class="mb-psec">
           <section class="mb-tarjeta-user">
             <div class="mb-tarjeta-user__trama" aria-hidden="true"></div>
 
@@ -106,7 +106,7 @@
         </section>
 
         <!-- ══ Verificación ═════════════════════════════════════════ -->
-        <section id="p-verificacion" class="mb-psec">
+        <section v-show="pestana === 'verificacion'" id="p-verificacion" class="mb-psec">
           <h1>{{ $t('nav.verification') }}</h1>
 
           <div class="mb-verif">
@@ -154,7 +154,7 @@
         </section>
 
         <!-- ══ Números ══════════════════════════════════════════════ -->
-        <section id="p-numeros" class="mb-psec">
+        <section v-show="pestana === 'numeros'" id="p-numeros" class="mb-psec">
           <h1>{{ $t('profile.stats') }}</h1>
           <section class="mb-numeros">
             <div v-for="n in numeros" :key="n.clave" class="mb-numero">
@@ -172,7 +172,7 @@
         </section>
 
         <!-- ══ Direcciones ══════════════════════════════════════════ -->
-        <section id="p-direcciones" class="mb-psec">
+        <section v-show="pestana === 'direcciones'" id="p-direcciones" class="mb-psec">
           <div class="mb-titulo-fila">
             <div>
               <h1>{{ $t('profile.addresses') }}</h1>
@@ -207,7 +207,7 @@
         </section>
 
         <!-- ══ Movimientos ══════════════════════════════════════════ -->
-        <section id="p-movimientos" class="mb-psec">
+        <section v-show="pestana === 'movimientos'" id="p-movimientos" class="mb-psec">
           <div>
             <h1>{{ $t('profile.transactions') }}</h1>
             <p class="mb-sub">{{ $t('profile.transactionsSub') }}</p>
@@ -259,7 +259,7 @@
         </section>
 
         <!-- ══ Historial ════════════════════════════════════════════ -->
-        <section id="p-historial" class="mb-psec">
+        <section v-show="pestana === 'historial'" id="p-historial" class="mb-psec">
           <div>
             <h1>{{ $t('profile.history') }}</h1>
             <p class="mb-sub">{{ $t('profile.historySub') }}</p>
@@ -316,7 +316,7 @@
         </section>
 
         <!-- ══ Actividad ════════════════════════════════════════════ -->
-        <section id="p-actividad" class="mb-psec">
+        <section v-show="pestana === 'actividad'" id="p-actividad" class="mb-psec">
           <div>
             <h1>{{ $t('profile.activity') }}</h1>
             <p class="mb-sub">{{ $t('profile.activitySub') }}</p>
@@ -349,7 +349,7 @@
         </section>
 
         <!-- ══ Pedidos ══════════════════════════════════════════════ -->
-        <section id="p-pedidos" class="mb-psec">
+        <section v-show="pestana === 'pedidos'" id="p-pedidos" class="mb-psec">
           <div>
             <h1>{{ $t('profile.orders') }}</h1>
             <p class="mb-sub">{{ $t('profile.ordersSub') }}</p>
@@ -387,7 +387,7 @@
         </section>
 
         <!-- ══ Controles ════════════════════════════════════════════ -->
-        <section id="p-controles" class="mb-psec">
+        <section v-show="pestana === 'controles'" id="p-controles" class="mb-psec">
           <div>
             <h1>{{ $t('profile.controls') }}</h1>
             <p class="mb-sub">{{ $t('profile.controlsSub') }}</p>
@@ -440,7 +440,7 @@
         </section>
 
         <!-- ══ Refer & Earn ═════════════════════════════════════════ -->
-        <section id="p-refer" class="mb-psec">
+        <section v-show="pestana === 'refer'" id="p-refer" class="mb-psec">
           <section class="mb-refer">
             <div class="mb-refer__rayos mb-rays" aria-hidden="true"></div>
             <div class="mb-refer__texto">
@@ -751,16 +751,15 @@ export default {
   watch: {
     entro() { this.arrancar(); },
     /*
-      Cambio el `?tab=` estando ya en el perfil --el menu de la cuenta
-      del celular, o un enlace compartido-- asi que hay que BAJAR. Solo
-      marcar la seccion dejaba la pagina arriba de todo.
+      Cambio el `?tab=` estando ya en el perfil: el menu de la cuenta
+      del celular, o un enlace compartido.
     */
     "$route.query.tab": function (v) {
       const id = this.valida(v);
-      this.pestana = id;
-      if (!v) return;
+      if (id === this.pestana) return;
 
-      this.$nextTick(() => this.bajarA(id));
+      this.pestana = id;
+      this.$nextTick(this.arriba);
     },
   },
 
@@ -786,12 +785,14 @@ export default {
     },
 
     /**
-     * Lleva a una seccion.
+     * CAMBIA DE SECCION.
      *
-     * El perfil es UNA pagina larga, como el prototipo: el menu de la
-     * izquierda no cambia de pantalla, baja hasta la seccion. La
-     * direccion igual queda con `?tab=`, asi se puede compartir un
-     * enlace directo a "Verificacion".
+     * Se ve UNA sola, la elegida. Con las diez una abajo de la otra no
+     * se sabia donde terminaba una y empezaba la siguiente, y el menu
+     * de la izquierda no servia de menu: solo bajaba.
+     *
+     * La direccion queda con `?tab=`, asi se puede compartir un enlace
+     * directo a "Verificacion" y vuelve con el boton de atras.
      */
     irA(id) {
       this.pestana = id;
@@ -800,40 +801,22 @@ export default {
         this.$router.replace({ query: { ...this.$route.query, tab: id } }).catch(() => {});
       }
 
-      this.bajarA(id);
+      this.arriba();
     },
 
-    /**
-     * BAJA HASTA UNA SECCION.
-     *
-     * A mano y no con `scrollIntoView({ behavior: "smooth" })`: el
-     * desplazamiento suave del navegador NO CORRE en varios casos --una
-     * pestaña que todavia no termino de dibujar, una ventana sin foco,
-     * un telefono con las animaciones apagadas-- y entonces no pasa
-     * nada: se tocaba "Movimientos" y la pagina se quedaba arriba de
-     * todo, en "Perfil". Eso es lo que estaba roto.
-     *
-     * Asi siempre llega. Y si el navegador sabe animar, anima.
-     */
-    bajarA(id) {
-      const el = document.getElementById("p-" + id);
-      if (!el) return;
-
-      /* Un respiro arriba, para que el titulo no quede pegado al borde. */
-      const y = Math.max(0, el.getBoundingClientRect().top + window.scrollY - 12);
+    /** Al cambiar de seccion se empieza por el principio. */
+    arriba() {
+      const cuerpo = this.$el && this.$el.querySelector(".mb-perfil__cuerpo");
+      const y = cuerpo
+        ? Math.max(0, cuerpo.getBoundingClientRect().top + window.scrollY - 12)
+        : 0;
 
       try {
         window.scrollTo({ top: y, behavior: "smooth" });
       } catch {
         window.scrollTo(0, y);
       }
-
-      /* Si a los 300ms no se movio, el navegador no lo hizo: se salta. */
-      window.setTimeout(() => {
-        if (Math.abs(window.scrollY - y) > 24) window.scrollTo(0, y);
-      }, 300);
     },
-
 
     copiarId() { this.alPortapapeles(this.idCorto, "profile.copied"); },
 
@@ -1111,34 +1094,11 @@ export default {
 
   created() { this.arrancar(); },
 
-  /**
-   * EL MENU SIGUE A LA PANTALLA.
-   *
-   * Marca la seccion que se esta mirando mientras se baja. Sin esto, el
-   * menu de la izquierda queda siempre marcando "Perfil" aunque uno
-   * este leyendo Movimientos, y deja de servir para ubicarse.
-   */
-  mounted() {
-    if (typeof IntersectionObserver === "undefined") return;
-
-    this.mirador = new IntersectionObserver(
-      (filas) => {
-        const visible = filas
-          .filter((f) => f.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible) this.pestana = visible.target.id.replace("p-", "");
-      },
-      { rootMargin: "-20% 0px -70% 0px", threshold: [0, 0.2, 0.6] }
-    );
-
-    this.$nextTick(() => {
-      for (const s of this.$el.querySelectorAll(".mb-psec")) this.mirador.observe(s);
-    });
-  },
-
-  beforeDestroy() {
-    if (this.mirador) this.mirador.disconnect();
-  },
+  /*
+    Ya no hace falta mirar por donde va la pantalla: se ve una seccion
+    sola, asi que el menu marca la que esta abierta y listo. Antes un
+    IntersectionObserver iba marcando la que pasaba por el medio.
+  */
 };
 </script>
 

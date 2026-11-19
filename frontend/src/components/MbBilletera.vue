@@ -48,10 +48,10 @@
           >
             <span class="mb-caja__metodo-t">{{ $t('wallet.cryptocurrencies') }}</span>
             <span class="mb-caja__puntos">
-              <span
-                v-for="m in monedas.slice(0, 4)" :key="m.ticker" class="mb-caja__punto"
-                :style="{ background: m.color }" aria-hidden="true"
-              >{{ m.letra }}</span>
+              <MbMoneda
+                v-for="m in monedas.slice(0, 4)" :key="m.ticker"
+                :ticker="m.ticker" :color="m.color" :letra="m.letra"
+              />
               <span v-if="monedas.length > 4" class="mb-caja__mas">+{{ monedas.length - 4 }}</span>
             </span>
           </button>
@@ -144,7 +144,7 @@
                 <div class="mb-caja__billetera-botones">
                   <button
                     v-for="b in billeteras" :key="b.id" type="button"
-                    class="mb-caja__conectar-b" :disabled="pagando || !deposito.direccion"
+                    class="mb-caja__conectar-b" :disabled="pagando || !hayDireccion"
                     @click="pagarCon(b)"
                   >
                     <MbMarcaDeBilletera :marca-id="b.id" :nombre="b.nombre" :icono="b.icono" />
@@ -171,10 +171,10 @@
           <div class="mb-caja__soportadas">
             <span>{{ $t('wallet.supportedCoins') }}</span>
             <span class="mb-caja__puntos">
-              <span
-                v-for="m in monedasDeBilletera" :key="m.ticker" class="mb-caja__punto"
-                :style="{ background: m.color }" :title="m.ticker" aria-hidden="true"
-              >{{ m.letra }}</span>
+              <MbMoneda
+                v-for="m in monedasDeBilletera" :key="m.ticker"
+                :ticker="m.ticker" :color="m.color" :letra="m.letra"
+              />
             </span>
           </div>
 
@@ -547,6 +547,16 @@ export default {
           color: r.color,
           letra: r.letra,
         }));
+    },
+
+    /*
+      La direccion la contesta el servidor, asi que durante el primer
+      instante --y si la respuesta falla-- `deposito` es null. Sin esto,
+      el boton de pagar lo leia igual y la pantalla se caia entera en
+      vez de mostrar el cajon a medio cargar.
+    */
+    hayDireccion() {
+      return !!(this.deposito && this.deposito.direccion);
     },
 
     sePuedePagarConBilletera() {

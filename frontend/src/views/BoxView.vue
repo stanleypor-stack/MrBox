@@ -502,7 +502,18 @@ export default {
 
 .mb-abrir__barra {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  /*
+    En un telefono el nombre de la caja se montaba arriba de los tres
+    botones. Dos arreglos, los dos necesarios:
+
+    - La del medio es `minmax(0, auto)`: una columna `auto` nunca se
+      achica mas que su palabra mas larga, y asi el nombre se recorta
+      con puntitos, que es lo que ya pedia el h1.
+    - Las de los costados arrancan en `min-content`: con el minimo en
+      cero, la de los botones quedaba mas angosta que los botones y,
+      como van pegados a la derecha, se salian para el lado del nombre.
+  */
+  grid-template-columns: minmax(min-content, 1fr) minmax(0, auto) minmax(min-content, 1fr);
   align-items: center;
   gap: 10px;
 }
@@ -530,7 +541,14 @@ export default {
 }
 
 .mb-abrir__quien { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.mb-abrir__arte { width: 46px; height: 46px; flex: none; }
+.mb-abrir__arte {
+  width: 46px;
+  height: 46px;
+  flex: none;
+  /* En un telefono la tapita se va: abajo esta la caja entera, y esos
+     46 px son los que le faltaban al nombre para entrar sin puntitos. */
+  @include en-celular { display: none; }
+}
 
 .mb-abrir__quien h1 {
   margin: 0;

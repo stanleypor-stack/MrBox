@@ -700,6 +700,18 @@ export default {
       "trio": "Three items upright, the middle one in front.",
       "spread": "Three items fanned out, tilted to the sides."
     },
+    "customColour": "Pick any colour",
+    "boxTexture": "Box texture",
+    "texture": {
+      "liso": "Plain",
+      "rayas": "Stripes",
+      "lunares": "Dots",
+      "cuadros": "Check",
+      "panal": "Hive",
+      "chispas": "Sparkle",
+      "carton": "Kraft",
+      "cinta": "Ribbon"
+    },
     "dragItem": "Drag to move this item on the box",
     "resetPositions": "Reset positions",
     "coverCount": "No items on the box yet | 1 item shows on the box | {n} items show on the box",

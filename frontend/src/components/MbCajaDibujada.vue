@@ -46,6 +46,66 @@
           <stop offset="0" :stop-color="tono.degradeArriba" />
           <stop offset="1" :stop-color="tono.degradeAbajo" />
         </linearGradient>
+
+        <!-- Rayas al sesgo, como un papel de regalo. -->
+        <pattern
+          v-if="textura === 'rayas'" :id="idPatron" width="20" height="20"
+          patternUnits="userSpaceOnUse" patternTransform="rotate(45)"
+        >
+          <rect width="10" height="20" fill="#ffffff" opacity=".16" />
+        </pattern>
+
+        <!-- Lunares. -->
+        <pattern
+          v-else-if="textura === 'lunares'" :id="idPatron" width="26" height="26"
+          patternUnits="userSpaceOnUse"
+        >
+          <circle cx="7" cy="7" r="4.2" fill="#ffffff" opacity=".2" />
+          <circle cx="20" cy="20" r="4.2" fill="#000000" opacity=".16" />
+        </pattern>
+
+        <!-- Cuadros, como un mantel. -->
+        <pattern
+          v-else-if="textura === 'cuadros'" :id="idPatron" width="28" height="28"
+          patternUnits="userSpaceOnUse"
+        >
+          <rect width="14" height="14" fill="#ffffff" opacity=".17" />
+          <rect x="14" y="14" width="14" height="14" fill="#ffffff" opacity=".17" />
+        </pattern>
+
+        <!-- Panal. -->
+        <pattern
+          v-else-if="textura === 'panal'" :id="idPatron" width="30" height="52"
+          patternUnits="userSpaceOnUse"
+        >
+          <g fill="none" stroke="#ffffff" stroke-opacity=".28" stroke-width="1.6">
+            <path d="M15 1 28 8.5v15L15 31 2 23.5v-15z" />
+            <path d="M0 27 13 34.5v15L0 57M30 27 17 34.5v15L30 57" />
+          </g>
+        </pattern>
+
+        <!-- Chispas. -->
+        <pattern
+          v-else-if="textura === 'chispas'" :id="idPatron" width="44" height="44"
+          patternUnits="userSpaceOnUse"
+        >
+          <g fill="#ffffff">
+            <path d="M11 3l1.7 4.6L17.3 9l-4.6 1.7L11 15.3 9.3 10.7 4.7 9l4.6-1.4z" opacity=".55" />
+            <path d="M32 22l1.3 3.4 3.4 1.3-3.4 1.3L32 31.4l-1.3-3.4-3.4-1.3 3.4-1.3z" opacity=".4" />
+            <circle cx="36" cy="8" r="1.5" opacity=".45" />
+            <circle cx="7" cy="33" r="1.5" opacity=".35" />
+          </g>
+        </pattern>
+
+        <!-- Carton corrugado, el de una caja de verdad. -->
+        <pattern
+          v-else-if="textura === 'carton'" :id="idPatron" width="14" height="14"
+          patternUnits="userSpaceOnUse"
+        >
+          <rect width="14" height="14" fill="#000000" opacity=".06" />
+          <path d="M0 7h14" stroke="#ffffff" stroke-opacity=".14" stroke-width="3" />
+          <path d="M0 13.5h14" stroke="#000000" stroke-opacity=".12" stroke-width="1.5" />
+        </pattern>
       </defs>
       <polygon points="50,236 205,178 205,381 51,371" :fill="tono.caraIzq" />
       <polygon points="205,178 381,190 383,366 205,381" :fill="`url(#${idDegrade})`" />
@@ -57,6 +117,34 @@
       <line x1="60" y1="168" x2="200" y2="170" stroke="rgba(255,255,255,.3)" stroke-width="1.2" />
       <polygon points="200,170 395,164 409,188 214,182" :fill="tono.tapaDer" />
       <polygon points="214,182 409,188 381,190 205,178" :fill="tono.debajo" />
+
+      <!--
+        LA TEXTURA DEL CARTON.
+
+        Las mismas cuatro caras, dibujadas de nuevo y rellenas con el
+        dibujito que se repite. Va encima de los colores y debajo de los
+        logos, asi que el carton se ve estampado y no pintado.
+      -->
+      <g v-if="patron" :fill="`url(#${idPatron})`">
+        <polygon points="50,236 205,178 205,381 51,371" />
+        <polygon points="205,178 381,190 383,366 205,381" />
+        <polygon points="60,168 200,170 166,240 8,232" />
+        <polygon points="200,170 395,164 409,188 214,182" />
+      </g>
+
+      <!--
+        LA CINTA.
+
+        No es un dibujito que se repite: son cuatro tiras que siguen las
+        caras de la caja, asi que dobla en los bordes como una cinta de
+        verdad. El nudo seria un quinto trabajo y de lejos no se ve.
+      -->
+      <g v-else-if="textura === 'cinta'">
+        <polygon points="115.1,211.6 139.9,202.4 140.3,377.8 115.7,375.2" :fill="tono.cintaSombra" />
+        <polygon points="278.9,183 307.1,185 308.2,372.3 279.8,374.7" :fill="tono.cinta" />
+        <polygon points="118.8,168.8 141.2,169.2 99.6,236.6 74.4,235.4" :fill="tono.cintaClara" />
+        <polygon points="281.9,167.5 313.1,166.5 327.1,185.5 295.9,184.5" :fill="tono.cintaClara" />
+      </g>
     </svg>
 
     <!-- Los dos logos, pegados a las caras y torcidos con ellas. -->
@@ -132,6 +220,8 @@ export default {
     color: { type: String, default: "#9b30ff" },
     /** 0 Hero, 1 Trio, 2 Spread. */
     estilo: { type: Number, default: 2 },
+    /** "liso", "rayas", "lunares", "cuadros", "panal", "chispas", "carton" o "cinta". */
+    textura: { type: String, default: "liso" },
     /** Hasta tres premios: lo que asoma de la caja. */
     portada: { type: Array, default: () => [] },
     /** Corrimientos a mano, por clave: { clave: [x, y] } en por ciento. */
@@ -146,10 +236,18 @@ export default {
     /* Cada caja dibujada necesita su propio id de degradé: dos en la
        misma pantalla con el mismo id comparten el color de la primera. */
     contador += 1;
-    return { idDegrade: `mbDegrade${contador}`, arrastre: null };
+    return { idDegrade: `mbDegrade${contador}`, idPatron: `mbPatron${contador}`, arrastre: null };
   },
 
   computed: {
+    /*
+      La cinta no es un dibujito que se repita, y "liso" no es nada: en
+      los dos casos no hay `pattern` que poner.
+    */
+    patron() {
+      return ["rayas", "lunares", "cuadros", "panal", "chispas", "carton"].includes(this.textura);
+    },
+
     /** Las once superficies, derivadas del color elegido. */
     tono() {
       const hex = (this.color || "#9b30ff").replace("#", "");
@@ -174,6 +272,10 @@ export default {
         tapaDer: mx(0.12),
         debajo: f(0.43),
         brillo: `rgba(${r},${g},${b},.34)`,
+        /* La cinta: la misma familia de color, bien clara. */
+        cintaClara: mx(0.62),
+        cinta: mx(0.5),
+        cintaSombra: mx(0.3),
       };
     },
 

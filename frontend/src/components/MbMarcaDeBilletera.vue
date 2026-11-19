@@ -2,31 +2,44 @@
   <span class="mb-bmarca" :style="{ background: marca.fondo }" :title="marca.nombre">
     <img v-if="icono" :src="icono" :alt="nombre" width="20" height="20">
 
-    <!-- MetaMask: el zorro, en dos planos. -->
-    <svg v-else-if="marca.id === 'metamask'" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
-      <path d="M21 3 13.6 8.4l1.4-3.3z" fill="#e2761b" />
-      <path d="M3 3l7.3 5.5-1.3-3.4z" fill="#e4761b" />
-      <path d="M18.4 15.6l-2 3 4.2 1.2 1.2-4.1zM2.2 15.7l1.2 4.1 4.2-1.2-2-3z" fill="#e4761b" />
-      <path d="M7.4 10.6L6.2 12.4l4.2.2-.1-4.5zm9.2 0l-3-2.6-.1 4.6 4.2-.2z" fill="#e4761b" />
-      <path d="M7.6 18.6l2.5-1.2-2.2-1.7zm6.3-1.2l2.5 1.2-.3-2.9z" fill="#e4761b" />
-      <path d="M16.4 18.6l-2.5-1.2.2 1.6v.7zm-8.8 0l2.3 1.1v-.7l.2-1.6z" fill="#d7c1b3" />
-      <path d="M10 14.8l-2.1-.6 1.5-.7zm4 0l.6-1.3 1.5.7z" fill="#233447" />
+    <!--
+      MetaMask: la cabeza del zorro.
+
+      Simplificada a propósito: a 20 px, las veinte caras del logo de
+      verdad son una mancha naranja. Con las orejas, el hocico claro y
+      los dos ojos se reconoce igual, que es lo único que tiene que
+      hacer un icono de este tamaño.
+    -->
+    <svg v-else-if="marca.id === 'metamask'" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path d="M3.4 3.2 10 8h4l6.6-4.8-1.5 5.2 1.1 1.9-1.1 4.3 1 1.1-1.3 4.3-5-1.6h-3.6l-5 1.6-1.3-4.3 1-1.1-1.1-4.3 1.1-1.9z" fill="#e2761b" />
+      <path d="M3.4 3.2 10 8l-.9 2.6-5.1-.3z" fill="#e4761b" />
+      <path d="M20.6 3.2 14 8l.9 2.6 5.1-.3z" fill="#e4761b" />
+      <path d="M8.6 14.9h6.8l.6 3.1-1.4.9H9.4l-1.4-.9z" fill="#f6851b" />
+      <path d="M9.4 18.9h5.2l-.4 1.5H9.8z" fill="#c0ad9e" />
+      <ellipse cx="9.1" cy="11.6" rx="1.15" ry="1.3" fill="#233447" />
+      <ellipse cx="14.9" cy="11.6" rx="1.15" ry="1.3" fill="#233447" />
     </svg>
 
-    <!-- Phantom: el fantasma. -->
-    <svg v-else-if="marca.id === 'phantom'" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+    <!-- Phantom: el fantasma, con el ruedo ondulado. -->
+    <svg v-else-if="marca.id === 'phantom'" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
       <path
-        d="M19.8 11.4c0 4.1-3.3 7.4-7.3 7.4-1 0-1.6.5-2.4 1-.7.5-1.5 1-2.7 1-1.9 0-3.2-1.3-3.2-3.2 0-3.6 2.9-9.6 8.4-9.6 4 0 7.2 3.3 7.2 3.4z"
+        d="M12 4.4a7.7 7.7 0 0 0-7.7 7.7v6.6c0 .6.8.9 1.2.4l1.1-1.2c.3-.3.8-.3 1.1 0l1.1 1.2c.3.3.8.3 1.1 0l1.1-1.2c.3-.3.8-.3 1.1 0l1.1 1.2c.3.3.8.3 1.1 0l1.1-1.2c.3-.3.8-.3 1.1 0l1.1 1.2c.4.5 1.2.2 1.2-.4v-6.6A7.7 7.7 0 0 0 12 4.4Z"
         fill="#fff"
       />
-      <ellipse cx="10.4" cy="11.6" rx="1" ry="1.6" fill="#534bb1" />
-      <ellipse cx="14" cy="11.6" rx="1" ry="1.6" fill="#534bb1" />
+      <ellipse cx="9.6" cy="11.7" rx=".95" ry="1.55" fill="#4e44ce" />
+      <ellipse cx="14.4" cy="11.7" rx=".95" ry="1.55" fill="#4e44ce" />
     </svg>
 
-    <!-- Coinbase Wallet: el círculo con el cuadrado. -->
-    <svg v-else-if="marca.id === 'coinbase'" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" fill="#fff" />
-      <rect x="9.2" y="9.2" width="5.6" height="5.6" rx="1.4" fill="#0052ff" />
+    <!--
+      Coinbase Wallet: el cuadrado redondeado adentro del círculo.
+
+      Estaba al revés --círculo blanco, cuadrado azul-- y encima sobre
+      la chapita azul, así que el círculo desaparecía y quedaba un
+      cuadrado suelto.
+    -->
+    <svg v-else-if="marca.id === 'coinbase'" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="#fff" stroke-width="1.4" opacity=".55" />
+      <rect x="8.9" y="8.9" width="6.2" height="6.2" rx="1.6" fill="#fff" />
     </svg>
 
     <!-- Cualquier otra: la inicial. -->
@@ -83,6 +96,12 @@ export default {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  // Un filo claro arriba y la sombrita: la chapita deja de ser una
+  // mancha de color y parece el icono de una aplicación.
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .22),
+    inset 0 0 0 1px rgba(0, 0, 0, .18),
+    0 1px 3px rgba(0, 0, 0, .35);
 
   img, svg { display: block; }
   b { font-weight: 900; font-size: 12px; color: #fff; }

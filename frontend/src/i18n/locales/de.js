@@ -700,6 +700,18 @@ export default {
       "trio": "Drei Artikel aufrecht, der mittlere vorn.",
       "spread": "Drei Artikel gefächert, zur Seite geneigt."
     },
+    "customColour": "Beliebige Farbe",
+    "boxTexture": "Boxtextur",
+    "texture": {
+      "liso": "Glatt",
+      "rayas": "Streifen",
+      "lunares": "Punkte",
+      "cuadros": "Karo",
+      "panal": "Wabe",
+      "chispas": "Funkeln",
+      "carton": "Karton",
+      "cinta": "Schleife"
+    },
     "dragItem": "Zum Verschieben ziehen",
     "resetPositions": "Positionen zurücksetzen",
     "coverCount": "Noch nichts auf der Box | 1 Artikel auf der Box | {n} Artikel auf der Box",

@@ -700,6 +700,18 @@ export default {
       "trio": "三件立正，中间那件在前。",
       "spread": "三件扁开，向两边倾斜。"
     },
+    "customColour": "任选颜色",
+    "boxTexture": "盒子纹理",
+    "texture": {
+      "liso": "素面",
+      "rayas": "条纹",
+      "lunares": "圆点",
+      "cuadros": "格子",
+      "panal": "蜂巢",
+      "chispas": "闪光",
+      "carton": "牛皮纸",
+      "cinta": "丝带"
+    },
     "dragItem": "拖动可以改位置",
     "resetPositions": "恢复位置",
     "coverCount": "盒上还没有东西 | 盒上显示 1 件 | 盒上显示 {n} 件",

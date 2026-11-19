@@ -104,9 +104,21 @@
 
         <div class="mb-campo">
           <label for="rg-email">{{ esRegistro ? $t('auth.email') : $t('auth.emailOrUser') }}</label>
+          <!--
+            AL ENTRAR NO ES `type="email"`.
+
+            El rotulo dice "email o nombre de usuario" y el servidor
+            acepta los dos, pero con `type="email"` el navegador exige
+            una arroba y NO DEJA MANDAR EL FORMULARIO: el que entra con
+            su nombre de usuario veia "incluí un signo @" y no habia
+            forma de pasar de ahi. Al registrarse si es un email, y ahi
+            la validacion del navegador suma.
+          -->
           <input
-            id="rg-email" v-model="form.email" class="mb-in" type="email"
-            autocomplete="email" :placeholder="esRegistro ? $t('auth.email') : $t('auth.emailOrUser')" required
+            id="rg-email" v-model="form.email" class="mb-in"
+            :type="esRegistro ? 'email' : 'text'" inputmode="email"
+            :autocomplete="esRegistro ? 'email' : 'username'"
+            :placeholder="esRegistro ? $t('auth.email') : $t('auth.emailOrUser')" required
           >
         </div>
 

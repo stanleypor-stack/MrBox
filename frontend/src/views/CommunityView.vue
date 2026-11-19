@@ -13,7 +13,7 @@
       <router-link v-for="c in cajas" :key="c._id" :to="`/boxes/${c.slug}`" class="mb-ccaja mb-card">
         <span class="mb-ccaja__marco">
           <mb-caja-dibujada
-            :color="c.portada.color" :estilo="c.portada.estilo"
+            :color="c.portada.color" :textura="c.portada.textura || 'liso'" :estilo="c.portada.estilo"
             :portada="asoman(c)" :posiciones="c.portada.posiciones || {}"
             :logo-izquierdo="c.portada.logoIzquierdo" :logo-derecho="c.portada.logoDerecho"
           />

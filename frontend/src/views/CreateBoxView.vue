@@ -10,7 +10,7 @@
       <div class="mb-vista">
         <div class="mb-vista__tarjeta">
           <mb-caja-dibujada
-            :color="color" :estilo="estilo" :portada="asoman"
+            :color="color" :textura="textura" :estilo="estilo" :portada="asoman"
             :posiciones="posiciones" :logo-izquierdo="logoIzq" :logo-derecho="logoDer"
             arrastrable @mover="mover"
           />
@@ -51,6 +51,24 @@
                 :style="{ background: c, borderColor: color === c ? '#ffffff' : 'transparent' }"
                 @click="color = c"
               ></button>
+
+              <!--
+                EL COLOR QUE QUIERA.
+
+                Los de arriba son los que quedan bien seguro, pero no
+                hay motivo para que sean los unicos: las once
+                superficies del carton salen del color que elija, asi
+                que cualquiera da una caja que se entiende.
+              -->
+              <label
+                class="mb-colores__libre" :class="{ 'is-elegido': !esDeLaPaleta }"
+                :title="$t('create.customColour')"
+              >
+                <span class="mb-colores__rueda" aria-hidden="true"></span>
+                <span v-if="!esDeLaPaleta" class="mb-colores__punto" :style="{ background: color }"></span>
+                <input type="color" :value="color" :aria-label="$t('create.customColour')"
+                       @input="color = $event.target.value">
+              </label>
             </div>
           </div>
 
@@ -64,6 +82,19 @@
               >{{ $t('create.style.' + e) }}</button>
             </div>
             <span class="mb-ayuda">{{ $t('create.styleHelp.' + ESTILOS[estilo]) }}</span>
+          </div>
+        </div>
+
+        <div class="mb-crear__col">
+          <span class="mb-rotulo">{{ $t('create.boxTexture') }}</span>
+          <div class="mb-texturas">
+            <button
+              v-for="t in TEXTURAS" :key="t" type="button"
+              class="mb-texturas__uno" :class="[`mb-tex--${t}`, { 'is-elegido': textura === t }]"
+              :aria-pressed="textura === t ? 'true' : 'false'"
+              :style="{ '--tex-color': color }"
+              @click="textura = t"
+            ><span class="mb-texturas__nombre">{{ $t('create.texture.' + t) }}</span></button>
           </div>
         </div>
 
@@ -217,11 +248,15 @@ import { sprite } from "@/utils/sprite";
 import MbCajaDibujada from "@/components/MbCajaDibujada.vue";
 
 const COLORES = [
-  "#9b30ff", "#ffc21a", "#7be22b", "#ff6a3d", "#3fa9ff", "#e83b4f",
-  "#ff4fa3", "#16c79a", "#ff9a1a", "#8e9bb3", "#2f6fe0",
+  "#9b30ff", "#6a3df0", "#2f6fe0", "#3fa9ff", "#16c79a", "#7be22b",
+  "#ffc21a", "#ff9a1a", "#ff6a3d", "#e83b4f", "#ff4fa3", "#c6407f",
+  "#00b8c4", "#b88a2a", "#8e9bb3", "#2a3550",
 ];
 
 const ESTILOS = ["hero", "trio", "spread"];
+
+/* El estampado del cartón. La misma lista que acepta el servidor. */
+const TEXTURAS = ["liso", "rayas", "lunares", "cuadros", "panal", "chispas", "carton", "cinta"];
 
 const FONDOS = {
   blue: "radial-gradient(circle at 50% 55%, #3f7cf055 0%, #12213a 75%)",
@@ -262,12 +297,14 @@ export default {
     return {
       COLORES,
       ESTILOS,
+      TEXTURAS,
       MINIMO,
       MAXIMO,
 
       nombre: "",
       descripcion: "",
       color: "#9b30ff",
+      textura: "liso",
       estilo: 2,
       posiciones: {},
       logoIzq: "",
@@ -296,6 +333,9 @@ export default {
   },
 
   computed: {
+    /* Para marcar la rueda cuando el color no es ninguno de la fila. */
+    esDeLaPaleta() { return COLORES.includes(this.color); },
+
     ordenes() {
       return [
         { valor: "desc", texto: this.$t("boxes.sortExpensive") },
@@ -497,6 +537,7 @@ export default {
           premios: this.lista.map((o) => ({ itemId: o._id, peso: o.peso })),
           portada: {
             color: this.color,
+            textura: this.textura,
             estilo: this.estilo,
             /* Los que asoman, por su posición en la lista de premios. */
             asoman: this.asoman
@@ -667,6 +708,142 @@ export default {
   padding: 0;
   cursor: pointer;
   @include foco;
+}
+
+// La rueda de color: el <input type="color"> del navegador, que es el
+// que sabe abrir el selector de cada sistema, tapado por la rueda.
+.mb-colores__libre {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  overflow: hidden;
+  @include foco;
+
+  &.is-elegido { border-color: #fff; }
+
+  input {
+    position: absolute;
+    inset: -6px;
+    width: 46px;
+    height: 46px;
+    opacity: 0;
+    cursor: pointer;
+    border: 0;
+    padding: 0;
+  }
+}
+
+.mb-colores__rueda {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    #ff4d4d, #ffcc33, #7be22b, #16c79a, #3fa9ff, #6a3df0, #ff4fa3, #ff4d4d
+  );
+}
+
+.mb-colores__punto {
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, .45);
+}
+
+// =====================================================================
+//  LOS ESTAMPADOS
+//
+//  Cada botón es una muestra del cartón con el color que eligió: el
+//  dibujito de arriba se arma con degrades, los mismos que el SVG de la
+//  caja hace con un `pattern`. No son el dibujo exacto; son para elegir
+//  de un vistazo, y lo que manda es la caja de al lado, que se actualiza
+//  sola.
+// =====================================================================
+
+.mb-texturas { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.mb-texturas__uno {
+  width: 74px;
+  padding: 0 0 5px;
+  border: 2px solid transparent;
+  border-radius: 11px;
+  background: $panel;
+  color: $texto-3;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+  @include foco;
+
+  &::before {
+    content: "";
+    width: 100%;
+    height: 40px;
+    background-color: var(--tex-color, #9b30ff);
+  }
+
+  &:hover { border-color: #3a5687; }
+  &.is-elegido { border-color: $azul; color: #fff; }
+}
+
+.mb-texturas__nombre {
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.mb-tex--rayas::before {
+  background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, .22) 0 6px, rgba(255, 255, 255, 0) 6px 12px);
+}
+
+.mb-tex--lunares::before {
+  background-image:
+    radial-gradient(circle at 4px 4px, rgba(255, 255, 255, .3) 2.6px, rgba(255, 255, 255, 0) 3px),
+    radial-gradient(circle at 12px 12px, rgba(0, 0, 0, .24) 2.6px, rgba(0, 0, 0, 0) 3px);
+  background-size: 16px 16px;
+}
+
+.mb-tex--cuadros::before {
+  background-image:
+    linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, transparent 25% 75%, rgba(255, 255, 255, .2) 75%),
+    linear-gradient(45deg, rgba(255, 255, 255, .2) 25%, transparent 25% 75%, rgba(255, 255, 255, .2) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 8px 8px;
+}
+
+.mb-tex--panal::before {
+  background-image:
+    repeating-linear-gradient(60deg, rgba(255, 255, 255, .26) 0 1px, transparent 1px 11px),
+    repeating-linear-gradient(-60deg, rgba(255, 255, 255, .26) 0 1px, transparent 1px 11px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, .26) 0 1px, transparent 1px 11px);
+}
+
+.mb-tex--chispas::before {
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, .75) 1.4px, transparent 2px),
+    radial-gradient(circle at 70% 22%, rgba(255, 255, 255, .5) 1.2px, transparent 2px),
+    radial-gradient(circle at 46% 68%, rgba(255, 255, 255, .62) 1.5px, transparent 2px),
+    radial-gradient(circle at 84% 72%, rgba(255, 255, 255, .42) 1.2px, transparent 2px);
+}
+
+.mb-tex--carton::before {
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, .14) 0 3px,
+    rgba(0, 0, 0, .14) 3px 8px
+  );
+}
+
+.mb-tex--cinta::before {
+  background-image:
+    linear-gradient(90deg, transparent 40%, rgba(255, 255, 255, .62) 40% 60%, transparent 60%),
+    linear-gradient(0deg, transparent 38%, rgba(255, 255, 255, .45) 38% 62%, transparent 62%);
 }
 
 .mb-estilos {

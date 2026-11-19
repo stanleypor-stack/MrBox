@@ -279,7 +279,15 @@ export default {
     ella sola.
   */
   position: sticky;
-  top: 0;
+  /*
+    Justo abajo de la cabecera, que ahora tambien se queda pegada.
+
+    El alto se mide en pixeles de pantalla, pero aca adentro estamos en
+    un `zoom`, donde un pixel mide menos: sin dividir por la escala, la
+    barra arrancaba unos pixeles mas arriba y la cabecera le tapaba el
+    primer renglon.
+  */
+  top: calc(var(--alto-cabecera, 0px) / var(--escala, 1));
   align-self: flex-start;
 
   /*
@@ -290,7 +298,7 @@ export default {
     --el fondo de la pagina-- donde deberia seguir el panel. Con `height`
     el fondo llega siempre hasta abajo.
   */
-  height: calc(100vh / var(--escala, 1));
+  height: calc((100vh - var(--alto-cabecera, 0px)) / var(--escala, 1));
   overflow-y: auto;
 
   /* Se desliza, pero sin la barrita gris: afea la columna y en el

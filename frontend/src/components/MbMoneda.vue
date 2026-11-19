@@ -5,10 +5,20 @@
       <path d="M9.2 4h1.7v2.1h1.1V4h1.7v2.2c2 .2 3.3 1.1 3.3 2.9 0 1.1-.6 1.9-1.6 2.2 1.3.3 2.1 1.2 2.1 2.6 0 2-1.4 3-3.8 3.2V19h-1.7v-1.8h-1.1V19H9.2v-1.8H6.4v-1.7h1.2V8.5H6.4V6.8h2.8V4Zm1.3 4.5v2.6h1.9c1 0 1.6-.4 1.6-1.3s-.6-1.3-1.7-1.3h-1.8Zm0 4.2v2.8h2.2c1.1 0 1.8-.5 1.8-1.4s-.7-1.4-1.9-1.4h-2.1Z" />
     </svg>
 
-    <!-- Ethereum: el rombo partido. -->
+    <!--
+      Ethereum: el rombo con sus cuatro caras.
+
+      Eran dos triángulos planos. El rombo de verdad tiene la cara
+      iluminada y la cara en sombra de cada mitad, que es lo que hace
+      que se lea como un cristal y no como una flecha.
+    -->
     <svg v-else-if="marca === 'ETH'" viewBox="0 0 24 24" fill="#fff">
-      <path d="M12 2.5 6.2 12 12 15.4 17.8 12 12 2.5Z" opacity=".9" />
-      <path d="M12 16.7 6.2 13.3 12 21.5l5.8-8.2L12 16.7Z" opacity=".65" />
+      <path d="M12 2.2 6.3 12l5.7-2.6V2.2Z" opacity=".6" />
+      <path d="M12 2.2v7.2l5.7 2.6L12 2.2Z" opacity=".85" />
+      <path d="M12 10.6 6.3 13.2 12 16.4v-5.8Z" opacity=".85" />
+      <path d="M12 16.4v-5.8l5.7 2.6L12 16.4Z" opacity=".6" />
+      <path d="M12 17.6 6.4 14.4 12 21.8v-4.2Z" opacity=".75" />
+      <path d="M12 21.8l5.6-7.4-5.6 3.2v4.2Z" opacity=".55" />
     </svg>
 
     <!-- Tether: la T con la barra. -->
@@ -16,8 +26,9 @@
       <path d="M5 5h14v3.1h-5.3v1.5c3.2.2 5.6 1 5.6 2s-2.4 1.8-5.6 2v5.9h-3.4v-5.9c-3.2-.2-5.6-1-5.6-2s2.4-1.8 5.6-2V8.1H5V5Zm7 7.7c2.7 0 4.9-.4 4.9-1s-2.2-1-4.9-1-4.9.4-4.9 1 2.2 1 4.9 1Z" />
     </svg>
 
-    <!-- USD Coin: el dólar. -->
+    <!-- USD Coin: el dólar adentro del aro. -->
     <svg v-else-if="marca === 'USDC'" viewBox="0 0 24 24" fill="#fff">
+      <circle cx="12" cy="12" r="8.4" fill="none" stroke="#fff" stroke-width="1.4" opacity=".5" />
       <path d="M11.1 3h1.8v1.7c1.9.2 3.2 1.2 3.5 2.9h-2.2c-.2-.8-.9-1.2-2.2-1.2-1.4 0-2.2.5-2.2 1.3 0 .7.5 1 2.4 1.4l.9.2c2.5.5 3.6 1.4 3.6 3.2 0 1.9-1.4 3.1-3.8 3.4V18h-1.8v-1.8c-2.1-.2-3.5-1.3-3.8-3.1h2.3c.2.9 1 1.4 2.5 1.4 1.5 0 2.4-.5 2.4-1.4 0-.7-.5-1.1-2.3-1.4l-1-.2C8.7 11 7.6 10.1 7.6 8.4c0-1.8 1.3-3 3.5-3.4V3Z" />
     </svg>
 
@@ -148,6 +159,12 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  // El filo claro arriba y la sombrita abajo: deja de ser un círculo
+  // de color plano y se lee como una moneda.
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .28),
+    inset 0 -1px 0 rgba(0, 0, 0, .2),
+    0 1px 3px rgba(0, 0, 0, .35);
 
   svg { width: 16px; height: 16px; }
   &--chica { width: 20px; height: 20px; svg { width: 13px; height: 13px; } }

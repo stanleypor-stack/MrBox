@@ -198,13 +198,41 @@ router.post("/register", limite, async (req, res) => {
 
 router.post("/login", limite, async (req, res) => {
   try {
-    const email = String(req.body.email || "").trim().toLowerCase();
+    const escrito = String(req.body.email || "").trim();
     const password = String(req.body.password || "");
 
     const captcha = await turnstile.comprobar(req.body.captchaToken, req.ip);
     if (!captcha.ok) throw errorDe("CAPTCHA_FAILED", {});
 
-    const usuario = await User.findOne({ email }).select("+passwordHash").lean();
+    /*
+      ENTRA CON EL EMAIL O CON EL NOMBRE DE USUARIO.
+
+      La pantalla dice "email o nombre de usuario" --y es lo que
+      cualquiera espera-- pero acá se buscaba SOLO por email: el que se
+      acordaba de su nombre y no del email no podía entrar nunca, y el
+      mensaje que le salía era "email o contraseña incorrectos".
+
+      La arroba es lo que decide cuál de las dos cosas es. Un nombre de
+      usuario no puede llevarla (ver USUARIO_OK), así que no hay caso
+      ambiguo.
+
+      El nombre se compara sin distinguir mayúsculas, que es como lo
+      escribe la gente.
+    */
+    const esEmail = escrito.includes("@");
+    const busqueda = esEmail ? { email: escrito.toLowerCase() } : { username: escrito };
+
+    /*
+      La comparacion va con `collation` y no con una expresion regular:
+      el nombre se escribe como se escribe --dani, Dani, DANI-- y asi no
+      hay texto del jugador metido adentro de un patron.
+    */
+    const usuario = escrito
+      ? await User.findOne(busqueda)
+        .collation({ locale: "en", strength: 2 })
+        .select("+passwordHash")
+        .lean()
+      : null;
 
     /*
       MISMO ERROR PARA LAS DOS COSAS.

@@ -130,6 +130,8 @@ const boxSchema = new mongoose.Schema(
     */
     portada: {
       color: { type: String, default: "#9b30ff" },
+      /* El estampado del cartón: ver TEXTURAS en services/community. */
+      textura: { type: String, default: "liso" },
       /* 0 Hero, 1 Trio, 2 Spread. */
       estilo: { type: Number, default: 2, min: 0, max: 2 },
       /* Hasta tres premios de la caja, por su posición en `prizes`. */

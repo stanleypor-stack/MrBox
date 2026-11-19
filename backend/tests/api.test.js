@@ -179,6 +179,45 @@ test("entra con su clave, y con otra no", async (t) => {
   assert.equal(mal.datos.code, "BAD_CREDENTIALS");
 });
 
+test("entra con el nombre de usuario, escrito como sea", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  /*
+    La pantalla dice "email o nombre de usuario" y antes se buscaba solo
+    por email: el que se acordaba de su nombre y no del email veia
+    "email o contrasena incorrectos" y no habia forma de entrar.
+  */
+  const cuenta = cuentaNueva();
+  await pedir("POST", "/auth/register", { cuerpo: cuenta });
+
+  const porNombre = await pedir("POST", "/auth/login", {
+    cuerpo: { email: cuenta.username, password: cuenta.password },
+  });
+  assert.equal(porNombre.estado, 200, JSON.stringify(porNombre.datos));
+  assert.ok(porNombre.datos.token);
+
+  /* Y da igual como lo escriba. */
+  const gritando = await pedir("POST", "/auth/login", {
+    cuerpo: { email: cuenta.username.toUpperCase(), password: cuenta.password },
+  });
+  assert.equal(gritando.estado, 200);
+
+  /* Con la clave mal, sigue sin entrar. */
+  const mal = await pedir("POST", "/auth/login", {
+    cuerpo: { email: cuenta.username, password: "otracosa" },
+  });
+  assert.equal(mal.datos.code, "BAD_CREDENTIALS");
+});
+
+test("un nombre que no existe tampoco dice que no existe", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+  const r = await pedir("POST", "/auth/login", {
+    cuerpo: { email: "nohaynadieasi", password: "loquesea12345" },
+  });
+  assert.equal(r.datos.code, "BAD_CREDENTIALS");
+  assert.equal(r.estado, 401);
+});
+
 test("un email que no existe da EL MISMO error que una clave mala", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
   /*
