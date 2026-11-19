@@ -1166,6 +1166,15 @@ export default {
 
 .mb-perfil__cuerpo { flex: 999 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
 
+/*
+  CADA SECCION SEPARA LO QUE TIENE ADENTRO.
+
+  Eran bloques sueltos sin margen, asi que las tarjetas quedaban
+  pegadas una contra la otra: tres pedidos seguidos se leian como un
+  bloque solo.
+*/
+.mb-psec { display: flex; flex-direction: column; gap: 16px; }
+
 /* ── La tarjeta del jugador ───────────────────────────────────────── */
 
 .mb-tarjeta-user {
