@@ -124,6 +124,71 @@ const settingsSchema = new mongoose.Schema(
      * Dos tramos, como pidió el dueño: el normal y el de los socios
      * grandes. El tramo se decide por el código, no por el jugador.
      */
+    /*
+      ───────────────────────────────────────────────────────────────
+      EL PROGRAMA DE AFILIADOS
+      ───────────────────────────────────────────────────────────────
+
+      Ocho rangos y cuatro maneras de cobrar. El rango pone los cuatro
+      numeros de golpe; la campaña elige con cual de los cuatro cobra.
+
+      LOS CUATRO MODELOS, Y EN QUE SE DIFERENCIAN
+
+        cpa ........ un pago fijo por jugador que CALIFICA (deposito
+                     minimo, jugado minimo, verificado y una espera).
+        revshare ... un % del margen REAL del mes: lo que la casa de
+                     verdad le gano a esa gente. Si tuvieron suerte,
+                     paga menos. Nunca negativo.
+        hibrido .... un cpa mas chico cuando califica, y un revshare
+                     mas chico de ahi en adelante.
+        houseedge .. un % del margen TEORICO: lo jugado por el house
+                     edge del sitio. No depende de la suerte, que es
+                     como cobra un afiliado de Stake.
+
+      OJO CON LA DIFERENCIA DE PLATA
+
+      Con el house edge en 8%, pagar "50% del house edge" es pagar el
+      4% de TODO lo jugado, le haya ido bien o mal a la casa ese mes.
+      Un 35% sobre el margen real da, en promedio, 2,8%. No son
+      equivalentes: el de house edge paga mas y no varia.
+    */
+    rangosAfiliado: {
+      type: [
+        {
+          nombre: { type: String, required: true },
+          cpaSc: { type: Number, default: 15, min: 0 },
+          revsharePct: { type: Number, default: 35, min: 0, max: 100 },
+          hibridoCpaSc: { type: Number, default: 10, min: 0 },
+          hibridoPct: { type: Number, default: 30, min: 0, max: 100 },
+          houseEdgePct: { type: Number, default: 50, min: 0, max: 100 },
+          /* El bono que reciben SUS jugadores en cada compra. */
+          bonoPct: { type: Number, default: 5, min: 0, max: 100 },
+          minimoCobroSc: { type: Number, default: 50, min: 0 },
+          pago: { type: String, enum: ["pedido", "semanal"], default: "pedido" },
+        },
+      ],
+      default: [],
+    },
+
+    afiliados: {
+      /* El margen de la casa, en %. Sobre esto se calcula `houseedge`. */
+      houseEdgePct: { type: Number, default: 8, min: 0, max: 100 },
+
+      /* Que tiene que hacer un referido para que se pague por cabeza. */
+      cpaDepositoSc: { type: Number, default: 20, min: 0 },
+      cpaJugadoSc: { type: Number, default: 200, min: 0 },
+      cpaNivelKyc: { type: Number, default: 2, min: 0, max: 3 },
+      cpaEsperaDias: { type: Number, default: 14, min: 0 },
+      /* Cuantos cpa puede sumar UNA campaña en un dia. 0 = sin tope. */
+      cpaTopeDiario: { type: Number, default: 40, min: 0 },
+
+      /* Donde se pide subir de rango. */
+      telegram: { type: String, default: "https://t.me/mrbox_afiliados" },
+
+      /* Los modelos que el socio puede elegir solo, al crear campaña. */
+      modelos: { type: [String], default: [] },
+    },
+
     bonoPorDeposito: {
       normal: { type: Number, default: 0.05, min: 0, max: 1 },
       destacado: { type: Number, default: 0.1, min: 0, max: 1 },
@@ -316,6 +381,29 @@ settingsSchema.statics.leer = async function leer() {
   return creado.toObject();
 };
 
+/*
+  LOS OCHO RANGOS DE FABRICA.
+
+  Se exportan porque `default:` solo corre cuando se CREA el documento
+  de configuracion, y el de MR BOX ya existe: sin esto, un sitio que ya
+  estaba andando se quedaria con la escalera vacia.
+*/
+const RANGOS_AFILIADO = [
+  { nombre: "Bronce", cpaSc: 15, revsharePct: 35, hibridoCpaSc: 10, hibridoPct: 30, houseEdgePct: 50, bonoPct: 5, minimoCobroSc: 50, pago: "pedido" },
+  { nombre: "Plata", cpaSc: 20, revsharePct: 37, hibridoCpaSc: 12, hibridoPct: 31, houseEdgePct: 52, bonoPct: 5, minimoCobroSc: 50, pago: "pedido" },
+  { nombre: "Oro", cpaSc: 25, revsharePct: 39, hibridoCpaSc: 15, hibridoPct: 32, houseEdgePct: 54, bonoPct: 6, minimoCobroSc: 50, pago: "pedido" },
+  { nombre: "Zafiro", cpaSc: 30, revsharePct: 41, hibridoCpaSc: 18, hibridoPct: 33, houseEdgePct: 56, bonoPct: 7, minimoCobroSc: 50, pago: "semanal" },
+  { nombre: "Esmeralda", cpaSc: 35, revsharePct: 43, hibridoCpaSc: 20, hibridoPct: 34, houseEdgePct: 58, bonoPct: 8, minimoCobroSc: 25, pago: "semanal" },
+  { nombre: "Rubi", cpaSc: 40, revsharePct: 45, hibridoCpaSc: 24, hibridoPct: 35, houseEdgePct: 60, bonoPct: 9, minimoCobroSc: 25, pago: "semanal" },
+  { nombre: "Diamante", cpaSc: 45, revsharePct: 47, hibridoCpaSc: 28, hibridoPct: 36, houseEdgePct: 62, bonoPct: 10, minimoCobroSc: 0, pago: "pedido" },
+  { nombre: "Onix", cpaSc: 50, revsharePct: 50, hibridoCpaSc: 32, hibridoPct: 38, houseEdgePct: 65, bonoPct: 10, minimoCobroSc: 0, pago: "pedido" },
+];
+
+/* Los que puede elegir un socio sin pedir permiso. */
+const MODELOS_ABIERTOS = ["revshare", "hibrido", "houseedge"];
+
 module.exports = mongoose.model("Settings", settingsSchema);
+module.exports.RANGOS_AFILIADO = RANGOS_AFILIADO;
+module.exports.MODELOS_ABIERTOS = MODELOS_ABIERTOS;
 module.exports.RESPUESTAS_POR_DEFECTO = RESPUESTAS_POR_DEFECTO;
 module.exports.CAJAS_DE_REGALO = CAJAS_DE_REGALO;

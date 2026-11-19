@@ -104,6 +104,11 @@ const CODIGOS = {
   CODE_EXPIRED: "That code expired.",
   CODE_ALREADY_USED: "You already used that code.",
   OWN_CODE: "You cannot use your own code.",
+  CODE_TAKEN: "Someone is already using that code.",
+  CODE_TOO_SHORT: "That code is too short.",
+  MODEL_NOT_OPEN: "That payout model is not open right now.",
+  TOO_MANY_CAMPAIGNS: "You already have the most campaigns we allow.",
+  RANK_ALREADY_ASKED: "You already asked for a review. We are on it.",
 
   /* Soporte */
   MESSAGE_REQUIRED: "Write a message first.",

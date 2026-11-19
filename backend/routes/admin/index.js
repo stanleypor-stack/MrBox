@@ -894,34 +894,11 @@ router.post("/verification/:userId/:nivel", async (req, res) => {
 
 /* ══ Lo que se mira y no se toca ══════════════════════════════════ */
 
-/** Los socios y lo que llevan ganado. */
-router.get("/affiliates", async (req, res) => {
-  try {
-    const filas = await AffiliateCode.find({})
-      .sort({ ganadoSc: -1 })
-      .limit(200)
-      .populate("owner", "username")
-      .lean();
-
-    return res.json({
-      success: true,
-      data: {
-        items: filas.map((c) => ({
-          _id: c._id,
-          code: c.code,
-          socio: c.owner ? c.owner.username : "—",
-          jugadores: c.jugadores || 0,
-          jugadoPorLosSuyosSc: sc(c.jugadoPorLosSuyosSc || 0),
-          ganadoSc: sc(c.ganadoSc || 0),
-          cobradoSc: sc(c.cobradoSc || 0),
-          activo: !!c.activo,
-        })),
-      },
-    });
-  } catch (err) {
-    return responderError(res, err, "affiliates");
-  }
-});
+/*
+  Los socios no están acá: tienen su propio archivo (./afiliados), con la
+  lista, la ficha de cada uno, los pedidos de rango, la cola de pagos por
+  cabeza y la escalera editable.
+*/
 
 /** Las carreras: las tres vivas y las que cerraron. */
 router.get("/races", async (req, res) => {
@@ -1292,6 +1269,16 @@ router.post("/support/:id/state", async (req, res) => {
   Este ya tiene mil lineas de lo que TOCA plata y catalogo.
 */
 router.use(require("./extra"));
+
+/*
+  LOS AFILIADOS: los socios, la ficha de cada uno, los pedidos de rango,
+  la cola de pagos por cabeza y la escalera de los cuatro modelos.
+
+  VA ANTES DE `./editar` A PROPOSITO. Ese archivo tiene un comodín
+  --`put("/:cosa/:id")`-- que se come cualquier ruta de dos tramos, y si
+  se monta primero, `/affiliates/ladder` nunca llega hasta acá.
+*/
+router.use(require("./afiliados"));
 
 /*
   Y lo que se CREA y se EDITA desde el panel: carreras, promociones,

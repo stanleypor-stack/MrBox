@@ -3,7 +3,6 @@ const express = require("express");
 const BalanceTransaction = require("../../database/models/BalanceTransaction");
 const BoxOpen = require("../../database/models/BoxOpen");
 const InventoryItem = require("../../database/models/InventoryItem");
-const AffiliateCode = require("../../database/models/AffiliateCode");
 const User = require("../../database/models/User");
 const Address = require("../../database/models/Address");
 const Order = require("../../database/models/Order");
@@ -11,14 +10,12 @@ const SessionEvent = require("../../database/models/SessionEvent");
 const Settings = require("../../database/models/Settings");
 
 const { autorizar } = require("../../middleware/auth");
-const afiliados = require("../../services/affiliates");
 const wallet = require("../../services/wallet");
 const controles = require("../../services/controls");
 const kyc = require("../../services/verification");
 const { sc } = require("../../utils/money");
 const { errorDe, esDeJugador } = require("../../utils/errors");
 const { logger } = require("../../utils/logger");
-const { enmascarar } = require("../boxes");
 
 const router = express.Router();
 
@@ -153,156 +150,6 @@ router.get("/stats", autorizar(true), async (req, res) => {
     });
   } catch (err) {
     return responderError(res, err, "stats");
-  }
-});
-
-/* ── Afiliados ────────────────────────────────────────────────────── */
-
-/**
- * LO QUE EL SOCIO VE DE SU CODIGO.
- *
- * Cuántos trajo, cuánto jugaron, cuánto ganó y cuánto le queda por
- * cobrar.
- */
-/**
- * LA PANTALLA DE AFILIADOS.
- *
- * El codigo, el enlace, lo que trajo, lo que gano y en que tramo de
- * comision esta. Es la pantalla entera del prototipo: no hay otra.
- *
- * LOS NUMEROS SALEN DE LOS CODIGOS Y DEL LIBRO
- *
- * Los jugadores que trajo y lo que jugaron salen del codigo, que se
- * actualiza con cada apertura. Lo que DEPOSITARON sale del libro, que
- * es el unico lugar donde eso esta de verdad.
- */
-router.get("/affiliate", autorizar(true), async (req, res) => {
-  try {
-    const codigos = await AffiliateCode.find({ owner: req.user._id }).lean();
-
-    const total = codigos.reduce(
-      (acc, c) => ({
-        jugadores: acc.jugadores + (c.jugadores || 0),
-        jugadoSc: sc(acc.jugadoSc + (c.jugadoPorLosSuyosSc || 0)),
-        ganadoSc: sc(acc.ganadoSc + (c.ganadoSc || 0)),
-        cobradoSc: sc(acc.cobradoSc + (c.cobradoSc || 0)),
-      }),
-      { jugadores: 0, jugadoSc: 0, ganadoSc: 0, cobradoSc: 0 }
-    );
-
-    /* Los que trajo, y lo que cada uno deposito y jugo. */
-    const traidos = await User.find({ referredBy: req.user._id })
-      .select("username createdAt jugadoSc affiliateCode")
-      .sort({ createdAt: -1 })
-      .limit(100)
-      .lean();
-
-    const compras = traidos.length
-      ? await BalanceTransaction.aggregate([
-        { $match: { user: { $in: traidos.map((u) => u._id) }, type: "purchase" } },
-        { $group: { _id: "$user", total: { $sum: "$amountSc" } } },
-      ])
-      : [];
-
-    const deposito = new Map(compras.map((c) => [String(c._id), sc(c.total)]));
-
-    const referidos = traidos.map((u) => ({
-      _id: u._id,
-      /* El nombre se tapa a medias: el socio reconoce al suyo sin que
-         esto sea una lista de nombres de jugadores. */
-      username: enmascarar(u.username),
-      desde: u.createdAt,
-      jugadoSc: sc(u.jugadoSc),
-      depositadoSc: deposito.get(String(u._id)) || 0,
-      codigo: u.affiliateCode || "",
-    }));
-
-    const depositadoSc = sc(referidos.reduce((a, r) => a + r.depositadoSc, 0));
-    const tramo = afiliados.tramoDe(total.jugadoSc);
-
-    return res.json({
-      success: true,
-      data: {
-        codigos: codigos.map((c) => ({
-          _id: c._id,
-          code: c.code,
-          tramo: c.tramo,
-          comision: afiliados.comisionDe(c),
-          comisionAMano: Number(c.comision) > 0,
-          activo: c.activo,
-          jugadores: c.jugadores || 0,
-          jugadoPorLosSuyosSc: sc(c.jugadoPorLosSuyosSc || 0),
-          ganadoSc: sc(c.ganadoSc || 0),
-          cobradoSc: sc(c.cobradoSc || 0),
-          porCobrarSc: sc(Math.max(0, (c.ganadoSc || 0) - (c.cobradoSc || 0))),
-        })),
-        total: {
-          ...total,
-          depositadoSc,
-          porCobrarSc: sc(Math.max(0, total.ganadoSc - total.cobradoSc)),
-        },
-
-        /* El tramo de comision y lo que falta para el siguiente. */
-        tramoActual: tramo,
-        tramos: afiliados.TRAMOS,
-
-        referidos,
-
-        /* El bono que se lleva el que entra con el codigo. */
-        bonoParaElAmigo: (await Settings.leer()).bonoPorDeposito,
-
-        /* Quién lo trajo a él, si alguien lo trajo. */
-        miCodigoDeEntrada: req.user.affiliateCode || null,
-      },
-    });
-  } catch (err) {
-    return responderError(res, err, "affiliate");
-  }
-});
-
-/**
- * CAMBIAR EL CODIGO DE REFERIDO.
- *
- * El que viene por defecto es feo --sale del nombre-- y el socio lo va
- * a poner en un video: tiene que poder elegirlo. Cambiarlo NO rompe los
- * enlaces viejos, porque el jugador queda atado al socio y no al texto
- * del codigo.
- *
- * Lo unico que no se puede es pisar el codigo de otro: el indice unico
- * de la coleccion es el que lo impide, no un `if`.
- */
-router.post("/affiliate/code", autorizar(true), async (req, res) => {
-  try {
-    const limpio = String(req.body.code || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 16);
-    if (limpio.length < 3) throw errorDe("INVALID_AMOUNT", { campo: "code" });
-
-    const mio = await AffiliateCode.findOne({ owner: req.user._id });
-    if (!mio) throw errorDe("CODE_NOT_FOUND");
-
-    try {
-      await AffiliateCode.updateOne({ _id: mio._id }, { $set: { code: limpio } });
-    } catch (err) {
-      /* 11000 es el indice unico: ese codigo ya es de alguien. */
-      if (err && err.code === 11000) throw errorDe("CODE_ALREADY_USED", { code: limpio });
-      throw err;
-    }
-
-    /* Los que ya entraron con el codigo viejo siguen atados por `referredBy`,
-       pero su `affiliateCode` quedaria apuntando a un texto que ya no existe. */
-    await User.updateMany({ referredBy: req.user._id }, { $set: { affiliateCode: limpio } });
-
-    return res.json({ success: true, data: { code: limpio } });
-  } catch (err) {
-    return responderError(res, err, "affiliate/code");
-  }
-});
-
-router.post("/affiliate/claim", autorizar(true), async (req, res) => {
-  try {
-    const r = await afiliados.cobrar({ userId: req.user._id, codigoId: req.body.codigoId });
-    return res.json({ success: true, data: { ...r, ...(await wallet.saldoDe(req.user._id)) } });
-  } catch (err) {
-    return responderError(res, err, "affiliate/claim");
   }
 });
 

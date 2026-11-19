@@ -16,6 +16,7 @@ const compression = require("compression");
 
 const { conectar } = require("./database");
 const carreras = require("./services/races");
+const afiliados = require("./services/affiliates");
 const { logger } = require("./utils/logger");
 const { errorDe } = require("./utils/errors");
 
@@ -123,6 +124,19 @@ function revisarLasCarreras() {
       await carreras.ponerAlDia();
     } catch (err) {
       logger.error(`[races] la vuelta de la hora: ${err.message}`);
+    }
+
+    /*
+      Y LOS PAGOS POR CABEZA QUE YA CUMPLIERON LA ESPERA.
+
+      Va en la misma vuelta porque es lo mismo: algo que vence a una hora
+      en la que no hay nadie mirando. Las que tienen señales NO se pagan
+      acá; esperan a que una persona las mire en el panel.
+    */
+    try {
+      await afiliados.liberarCalificados();
+    } catch (err) {
+      logger.error(`[afiliados] la vuelta de la hora: ${err.message}`);
     }
   };
 

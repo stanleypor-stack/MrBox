@@ -195,6 +195,18 @@ const userSchema = new mongoose.Schema(
     affiliateCode: { type: String, default: "", trim: true, index: true },
 
     /*
+      EL RANGO COMO SOCIO. Del 1 (Bronce) al 8 (Onix).
+
+      No sube solo: lo otorga el equipo. Decide los cuatro numeros con
+      los que cobran TODAS sus campañas, y tambien el bono que reciben
+      los jugadores que entran con sus codigos.
+    */
+    rangoAfiliado: { type: Number, default: 1, min: 1, max: 20 },
+
+    /* Cuando pidio subir. Se limpia cuando se le contesta. */
+    pidioRangoEl: { type: Date, default: null },
+
+    /*
       Bloqueos. `banned` no puede entrar; `redemptionLock` puede jugar pero
       no sacar plata, que es lo que se pone cuando el control automático
       marca algo y todavía no lo miró una persona.

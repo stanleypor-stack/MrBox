@@ -218,10 +218,12 @@ test("una cuenta cerrada no entra aunque tenga token", async (t) => {
 
 test("se registra con un codigo y queda atado al socio", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
+  /* Un socio de rango alto: el bono del jugador sale de AHI, no del codigo. */
   const socio = await User.create({
     username: "socio" + Date.now(), email: `socio${Date.now()}@test.local`, passwordHash: "x",
+    rangoAfiliado: 8,
   });
-  await AffiliateCode.create({ code: "TEST10", owner: socio._id, tramo: "destacado", comision: 0.3 });
+  await AffiliateCode.create({ code: "TEST10", owner: socio._id, modelo: "hibrido" });
 
   /* En minuscula a proposito: nadie se acuerda de como estaba escrito. */
   const { datos } = await pedir("POST", "/auth/register", {
@@ -229,7 +231,7 @@ test("se registra con un codigo y queda atado al socio", async (t) => {
   });
 
   assert.equal(datos.affiliate.code, "TEST10");
-  assert.equal(datos.affiliate.bono, 0.1, "el tramo destacado da 10%");
+  assert.equal(datos.affiliate.bono, 0.1, "el rango Onix da 10%");
   assert.equal(datos.user.affiliateCode, "TEST10");
 
   const codigo = await AffiliateCode.findOne({ code: "TEST10" }).lean();
@@ -254,8 +256,9 @@ test("EL BONO DEL 10% SE ACREDITA Y NO SE PUEDE CANJEAR HASTA JUGARLO", async (t
   if (!hayBase) return t.skip("sin MongoDB");
   const socio = await User.create({
     username: "socio2" + Date.now(), email: `socio2${Date.now()}@test.local`, passwordHash: "x",
+    rangoAfiliado: 8,
   });
-  await AffiliateCode.create({ code: "BONO10", owner: socio._id, tramo: "destacado", comision: 0.3 });
+  await AffiliateCode.create({ code: "BONO10", owner: socio._id, modelo: "hibrido" });
 
   const { datos } = await pedir("POST", "/auth/register", {
     cuerpo: cuentaNueva({ affiliateCode: "BONO10" }),
@@ -290,7 +293,7 @@ test("nadie se trae a si mismo", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
   const cuenta = cuentaNueva();
   const { datos } = await pedir("POST", "/auth/register", { cuerpo: cuenta });
-  await AffiliateCode.create({ code: "YOMISMO", owner: datos.user._id, tramo: "normal" });
+  await AffiliateCode.create({ code: "YOMISMO", owner: datos.user._id });
 
   const atado = await afiliados.atarAlSocio({ _id: datos.user._id }, "YOMISMO");
   assert.equal(atado, null, "el autofraude mas viejo que hay");
@@ -303,7 +306,7 @@ test("la comision del socio sale del MARGEN, no de lo jugado", async (t) => {
   const socio = await User.create({
     username: "socio3" + Date.now(), email: `socio3${Date.now()}@test.local`, passwordHash: "x",
   });
-  await AffiliateCode.create({ code: "MARGEN", owner: socio._id, tramo: "normal", comision: 0.3 });
+  await AffiliateCode.create({ code: "MARGEN", owner: socio._id, modelo: "hibrido" });
 
   const { datos } = await pedir("POST", "/auth/register", {
     cuerpo: cuentaNueva({ affiliateCode: "MARGEN" }),
@@ -313,7 +316,7 @@ test("la comision del socio sale del MARGEN, no de lo jugado", async (t) => {
   /* Jugo SC 1.000 en cajas al 92%: el margen son SC 80. */
   const r = await afiliados.anotarComision({ jugador, jugadoSc: 1000, margenSc: 80 });
 
-  assert.equal(r.ganado, 24, "30% de los 80 de margen, no 300 de los 1000 jugados");
+  assert.equal(r.ganado, 24, "30% de los 80 de margen (hibrido Bronce), no 300 de los 1000 jugados");
 
   const codigo = await AffiliateCode.findOne({ code: "MARGEN" }).lean();
   assert.equal(codigo.jugadoPorLosSuyosSc, 1000);
@@ -325,7 +328,7 @@ test("una jugada que dejo margen negativo no le descuenta al socio", async (t) =
   const socio = await User.create({
     username: "socio4" + Date.now(), email: `socio4${Date.now()}@test.local`, passwordHash: "x",
   });
-  await AffiliateCode.create({ code: "SUERTE", owner: socio._id, comision: 0.3, ganadoSc: 50 });
+  await AffiliateCode.create({ code: "SUERTE", owner: socio._id, modelo: "hibrido", ganadoSc: 50 });
 
   const { datos } = await pedir("POST", "/auth/register", {
     cuerpo: cuentaNueva({ affiliateCode: "SUERTE" }),
@@ -350,7 +353,7 @@ test("el socio cobra, y no puede cobrar dos veces lo mismo", async (t) => {
 
   /* Diez pedidos de cobro al mismo tiempo: tiene que cobrar UNA vez. */
   const intentos = Array.from({ length: 10 }, () =>
-    pedir("POST", "/profile/affiliate/claim", { token: datos.token, cuerpo: { codigoId: codigo._id } })
+    pedir("POST", `/affiliates/campaigns/${codigo._id}/claim`, { token: datos.token })
   );
   const rs = await Promise.all(intentos);
   const pasaron = rs.filter((r) => r.datos.success).length;

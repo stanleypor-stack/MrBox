@@ -38,6 +38,33 @@ const affiliateCodeSchema = new mongoose.Schema(
 
     owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
 
+    /*
+      UN CODIGO ES UNA CAMPAÑA.
+
+      Un socio tiene varias --YouTube, Telegram, un stream-- y cada una
+      cobra como quiere. El nombre y el canal son para el socio: le
+      sirven para saber cual anda y cual no.
+    */
+    nombre: { type: String, default: "", trim: true, maxlength: 60 },
+    canal: { type: String, default: "", trim: true, maxlength: 30 },
+
+    /**
+     * COMO COBRA ESTA CAMPAÑA.
+     *
+     * Los cuatro del programa (ver Settings). El numero de cada uno lo
+     * pone el RANGO del socio, no la campaña: asi subir de rango mejora
+     * todas sus campañas de una, sin tocar ninguna.
+     */
+    modelo: {
+      type: String,
+      enum: ["cpa", "revshare", "hibrido", "houseedge"],
+      default: "hibrido",
+      index: true,
+    },
+
+    /* Cuanta gente toco el enlace. Es lo unico que no sale del libro. */
+    clics: { type: Number, default: 0 },
+
     /* `normal` o `destacado`. Decide el bono, mirando Settings. */
     tramo: { type: String, enum: ["normal", "destacado"], default: "normal" },
 

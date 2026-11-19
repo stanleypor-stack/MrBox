@@ -1,13 +1,18 @@
 /**
  * EL BONO DE LOS CODIGOS DE AFILIADO.
  *
- * Tres numeros distintos pueden decidir cuanto bono da un codigo:
+ * Tres numeros distintos pueden decidir cuanto bono recibe el jugador que
+ * entra con un codigo:
  *
  *   1. el que tenga puesto ESE codigo (`bonoPropio`), si le pusieron uno
- *   2. el de su tramo --normal o destacado-- que vive en la configuracion
+ *   2. el del RANGO del socio que lo trajo: 5% abajo, 10% arriba
  *   3. nada, si el codigo no sirve mas
  *
- * Cada uno de esos caminos se prueba acá, y despues el camino completo:
+ * Y una cosa que vale la pena dejar escrita en un test: el bono va con
+ * LOS CUATRO MODELOS. No existe un modelo donde el jugador cobre menos
+ * para que el socio cobre mas.
+ *
+ * Cada uno de esos caminos se prueba aca, y despues el camino completo:
  * que cuando entra la plata de verdad, al jugador se le acredite lo que
  * compro MAS el bono, y que el bono quede atado hasta jugarlo.
  */
@@ -63,13 +68,14 @@ test.after(async () => {
 
 let n = 0;
 
-/** Un socio con un código, como lo crearía el panel. */
-async function socioCon(campos) {
+/** Un socio de rango `rango` con una campaña, como la crearía el panel. */
+async function socioCon(campos = {}, rango = 1) {
   n += 1;
   const socio = await User.create({
     username: `socio${n}x`,
     email: `socio${n}x@test.local`,
     passwordHash: "x",
+    rangoAfiliado: rango,
   });
   const codigo = await AffiliateCode.create({
     code: `COD${n}`,
@@ -98,14 +104,15 @@ async function jugadorDe(code) {
 
 /* ── Cuánto da cada código ────────────────────────────────────────── */
 
-test("un código normal da el 5% y uno destacado el 10%", async (t) => {
+test("el bono sale del RANGO del socio: 5% el primero, 10% el último", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
 
-  const normal = await socioCon({ tramo: "normal" });
-  const destacado = await socioCon({ tramo: "destacado" });
+  const escalera = afiliados.rangos();
+  const abajo = await socioCon({}, 1);
+  const arriba = await socioCon({}, escalera.length);
 
-  const a = await jugadorDe(normal.codigo.code);
-  const b = await jugadorDe(destacado.codigo.code);
+  const a = await jugadorDe(abajo.codigo.code);
+  const b = await jugadorDe(arriba.codigo.code);
 
   const uno = await User.findById(a.id).lean();
   const dos = await User.findById(b.id).lean();
@@ -113,21 +120,52 @@ test("un código normal da el 5% y uno destacado el 10%", async (t) => {
   const bonoA = await afiliados.bonoDeCompra(uno, 200);
   const bonoB = await afiliados.bonoDeCompra(dos, 200);
 
-  assert.equal(bonoA.porcentaje, 0.05);
+  assert.equal(bonoA.porcentaje, escalera[0].bonoPct / 100);
   assert.equal(bonoA.bonoSc, 10, "5% de 200");
 
-  assert.equal(bonoB.porcentaje, 0.1);
+  assert.equal(bonoB.porcentaje, escalera[escalera.length - 1].bonoPct / 100);
   assert.equal(bonoB.bonoSc, 20, "10% de 200");
 
   /* Y lo mismo que se le dijo al registrarse. */
-  assert.equal(a.affiliate.bono, 0.05);
-  assert.equal(b.affiliate.bono, 0.1);
+  assert.equal(a.affiliate.bono, escalera[0].bonoPct / 100);
+  assert.equal(b.affiliate.bono, escalera[escalera.length - 1].bonoPct / 100);
 });
 
-test("el porcentaje propio de un código manda sobre el de su tramo", async (t) => {
+test("subirle el rango al socio le sube el bono a sus jugadores, sin tocar el código", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
 
-  const { codigo } = await socioCon({ tramo: "normal", bonoPropio: 0.25 });
+  const { socio, codigo } = await socioCon({}, 1);
+  const jug = await jugadorDe(codigo.code);
+  const u = await User.findById(jug.id).lean();
+
+  assert.equal((await afiliados.bonoDeCompra(u, 100)).bonoSc, 5, "Bronce da 5%");
+
+  await afiliados.otorgarRango({ userId: socio._id, numero: 8 });
+
+  assert.equal((await afiliados.bonoDeCompra(u, 100)).bonoSc, 10, "Onix da 10%");
+
+  /* Y la campaña no se tocó: el número no vive ahí. */
+  const sinTocar = await AffiliateCode.findById(codigo._id).lean();
+  assert.equal(sinTocar.bonoPropio, null);
+});
+
+test("EL BONO VA CON LOS CUATRO MODELOS", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  for (const modelo of afiliados.MODELOS) {
+    const { codigo } = await socioCon({ modelo }, 3);
+    const jug = await jugadorDe(codigo.code);
+    const u = await User.findById(jug.id).lean();
+
+    const { bonoSc } = await afiliados.bonoDeCompra(u, 100);
+    assert.equal(bonoSc, 6, `el modelo ${modelo} tiene que dar el 6% del rango Oro igual`);
+  }
+});
+
+test("el porcentaje propio de un código manda sobre el del rango", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  const { codigo } = await socioCon({ bonoPropio: 0.25 }, 1);
   const jug = await jugadorDe(codigo.code);
   const u = await User.findById(jug.id).lean();
 
@@ -142,30 +180,34 @@ test("el porcentaje propio de un código manda sobre el de su tramo", async (t) 
   assert.equal(sinBono.bonoSc, 0);
 });
 
-test("cambiar el porcentaje en la configuración cambia lo que dan los códigos", async (t) => {
+test("editar la escalera cambia lo que dan los códigos", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
 
-  const { codigo } = await socioCon({ tramo: "normal" });
+  const { codigo } = await socioCon({}, 1);
   const jug = await jugadorDe(codigo.code);
   const u = await User.findById(jug.id).lean();
 
-  await Settings.updateOne({}, { $set: { "bonoPorDeposito.normal": 0.08 } }, { upsert: true });
+  const original = afiliados.rangos();
+  const tocada = original.map((r, i) => (i === 0 ? { ...r, bonoPct: 8 } : r));
+
+  await Settings.updateOne({}, { $set: { rangosAfiliado: tocada } }, { upsert: true });
+  await afiliados.recargar();
 
   const { porcentaje, bonoSc } = await afiliados.bonoDeCompra(u, 100);
   assert.equal(porcentaje, 0.08);
   assert.equal(bonoSc, 8);
 
-  await Settings.updateOne({}, { $set: { "bonoPorDeposito.normal": 0.05 } });
+  /* Y se deja como estaba, que los demás tests leen la de fábrica. */
+  await Settings.updateOne({}, { $set: { rangosAfiliado: [] } });
+  await afiliados.recargar();
+  assert.equal(afiliados.rangoNumero(1).bonoPct, 5);
 });
 
 test("un código apagado o vencido no da bono", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
 
-  const apagado = await socioCon({ tramo: "destacado", activo: false });
-  const vencido = await socioCon({
-    tramo: "destacado",
-    venceEl: new Date(Date.now() - 60 * 1000),
-  });
+  const apagado = await socioCon({ activo: false }, 8);
+  const vencido = await socioCon({ venceEl: new Date(Date.now() - 60 * 1000) }, 8);
 
   /* El jugador se ata igual: el codigo existe, lo que no sirve es el bono. */
   const a = await jugadorDe(apagado.codigo.code);
@@ -215,7 +257,7 @@ async function avisoDePago({ userId, monto, trackId }) {
 test("EL DEPOSITO ACREDITA LA COMPRA MAS EL BONO, Y EL BONO QUEDA ATADO", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
 
-  const { codigo } = await socioCon({ tramo: "destacado" });
+  const { codigo } = await socioCon({}, 8);
   const jug = await jugadorDe(codigo.code);
 
   const r = await avisoDePago({ userId: jug.id, monto: 300, trackId: "T-" + Date.now() });
@@ -239,7 +281,7 @@ test("EL DEPOSITO ACREDITA LA COMPRA MAS EL BONO, Y EL BONO QUEDA ATADO", async 
 test("el mismo aviso dos veces no acredita dos veces", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
 
-  const { codigo } = await socioCon({ tramo: "normal" });
+  const { codigo } = await socioCon({}, 1);
   const jug = await jugadorDe(codigo.code);
   const track = "T-repetido-" + Date.now();
 
@@ -270,4 +312,28 @@ test("un aviso mal firmado no acredita nada", async (t) => {
 
   const saldo = await wallet.saldoDe(jug.id);
   assert.equal(saldo.balanceSc, 0, "cualquiera con la direccion del aviso se regalaba SC");
+});
+
+/* ── Lo que el jugador ve cuando pone el código después ───────────── */
+
+test("poner el código después dice el porcentaje del rango que de verdad le toca", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  const { codigo } = await socioCon({}, 7);
+  const jug = await jugadorDe("");
+
+  const r = await fetch(`${base}/wallet/code`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-auth-token": jug.token },
+    body: JSON.stringify({ code: codigo.code }),
+  });
+  const datos = await r.json();
+
+  assert.equal(datos.success, true);
+  assert.equal(datos.data.bonoPct, 10, "Diamante da 10%, no el 5% de siempre");
+
+  /* Y lo que se le dijo es lo que se le acredita. */
+  await avisoDePago({ userId: jug.id, monto: 100, trackId: "T-tarde-" + Date.now() });
+  const saldo = await wallet.saldoDe(jug.id);
+  assert.equal(saldo.balanceSc, 110);
 });

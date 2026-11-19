@@ -124,8 +124,13 @@ router.post("/code", freno, async (req, res) => {
     const codigo = await afiliados.atarAlSocio(req.user, req.body.code);
     if (!codigo) throw errorDe("CODE_NOT_FOUND");
 
-    const cfg = await Settings.leer();
-    const pct = codigo.tramo === "destacado" ? cfg.bonoPorDeposito.destacado : cfg.bonoPorDeposito.normal;
+    /*
+      El porcentaje lo contesta el servicio, que es el que sabe el rango
+      del socio: del 5% al 10%. Calcularlo acá con el número normal le
+      mostraba de menos al jugador de un socio grande, y después se le
+      acreditaba de más, que es peor que no decirle nada.
+    */
+    const pct = await afiliados.bonoDe(codigo);
 
     return res.json({
       success: true,

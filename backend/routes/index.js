@@ -20,6 +20,7 @@ router.use("/promotions", require("./promotions"));
 router.use("/challenges", require("./challenges"));
 router.use("/support", require("./support"));
 router.use("/wallet", require("./wallet"));
+router.use("/affiliates", require("./affiliates"));
 
 /* El aviso de pago de la pasarela. Va aparte porque no es del jugador:
    lo llama OxaPay y se valida por firma, no por sesion. */
