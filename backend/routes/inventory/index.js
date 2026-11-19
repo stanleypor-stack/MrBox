@@ -41,6 +41,9 @@ router.get("/", autorizar(true), async (req, res) => {
     const filtro = { user: req.user._id };
     if (estado !== "all") filtro.state = estado;
 
+    /* El piso de verificacion para enviar lo dice el panel. */
+    const nivelEnvio = Number(cfg.envioNivelMinimo) || 3;
+
     const ORDENES = { nuevo: { createdAt: -1 }, caro: { valueSc: -1 }, barato: { valueSc: 1 } };
     const orden = ORDENES[req.query.sort] || ORDENES.nuevo;
 
@@ -70,16 +73,16 @@ router.get("/", autorizar(true), async (req, res) => {
           /* Lo que se le paga si lo vende, ya calculado con la tasa. */
           seVendePorSc: sc(o.valueSc * (cfg.tasaDeRecompra ?? 1)),
           /* Si lo puede mandar a su casa, y si no, por que. */
-          puedeEnviarse: o.shippable && usuario.puedeEnviar(o.valueSc),
+          puedeEnviarse: o.shippable && usuario.puedeEnviar(o.valueSc, nivelEnvio, cfg.envioQuePideNivel3Sc),
           porQueNoSeEnvia: !o.shippable
             ? "ITEM_NOT_SHIPPABLE"
             : (usuario.trabas && usuario.trabas.envio)
               ? "SHIPPING_LOCKED"
-            : usuario.puedeEnviar(o.valueSc)
+            : usuario.puedeEnviar(o.valueSc, nivelEnvio, cfg.envioQuePideNivel3Sc)
               ? null
               : o.valueSc > cfg.envioQuePideNivel3Sc
                 ? "NECESITA_NIVEL_3"
-                : "NECESITA_NIVEL_2",
+                : `NECESITA_NIVEL_${nivelEnvio}`,
           createdAt: o.createdAt,
         })),
         page: pagina, perPage: porPagina, total, pages: Math.ceil(total / porPagina),
@@ -88,6 +91,9 @@ router.get("/", autorizar(true), async (req, res) => {
           valorSc: sc((resumen[0] && resumen[0].valor) || 0),
         },
         verificationLevel: usuario.verificationLevel,
+        /* Lo que pide el envio, para que la pantalla lo diga sin adivinar. */
+        envioNivelMinimo: nivelEnvio,
+        envioQuePideNivel3Sc: sc(cfg.envioQuePideNivel3Sc),
       },
     });
   } catch (err) {

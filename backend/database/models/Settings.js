@@ -261,6 +261,15 @@ const settingsSchema = new mongoose.Schema(
     /** Arriba de esto, un envío pide verificación de domicilio (nivel 3). */
     envioQuePideNivel3Sc: { type: Number, default: 1000 },
 
+    /*
+      QUE NIVEL PIDE UN ENVIO.
+
+      Por el paquete va algo fisico a una casa: hay que saber a quien se
+      le manda. Arranca en 3 --documento y domicilio-- y se puede bajar
+      a 2 desde el panel si algun dia conviene.
+    */
+    envioNivelMinimo: { type: Number, default: 3, min: 2, max: 3 },
+
     /* ── Deals ───────────────────────────────────────────────────────── */
 
     deals: {

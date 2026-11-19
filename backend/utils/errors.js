@@ -86,6 +86,7 @@ const CODIGOS = {
   NO_ADDRESS: "You need a shipping address first.",
   ADDRESS_NOT_FOUND: "That address does not exist.",
   NOTHING_TO_SHIP: "There is nothing to ship.",
+  NO_DEMOS_LEFT: "You have used your free demo opens.",
 
   /* Cajas de la comunidad */
   BOX_NOT_VALID: "That box does not add up.",

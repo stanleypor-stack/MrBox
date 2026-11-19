@@ -1083,7 +1083,7 @@ router.put("/settings", soloAdmin(["owner"]), async (req, res) => {
       "aperturasDeRegalo", "aperturasDeDemo",
       "bonoPorDeposito.normal", "bonoPorDeposito.destacado", "vecesAJugarElBono",
       /* Canjes y envios */
-      "canjeMinimoSc", "canjeNivelMinimo", "envioQuePideNivel3Sc",
+      "canjeMinimoSc", "canjeNivelMinimo", "envioQuePideNivel3Sc", "envioNivelMinimo",
       /* Deals */
       "deals.chanceMinima", "deals.chanceMaxima", "deals.margen",
       "deals.ruedasALaVez", "deals.tiradasGratisPorItem",

@@ -32,6 +32,7 @@
 
 const InventoryItem = require("../../database/models/InventoryItem");
 const Address = require("../../database/models/Address");
+const Settings = require("../../database/models/Settings");
 const Order = require("../../database/models/Order");
 const User = require("../../database/models/User");
 
@@ -50,6 +51,10 @@ const MAXIMO_POR_PEDIDO = 20;
  * @param {string} o.addressId  a cuál de sus direcciones
  */
 async function pedir({ user, ids, addressId }) {
+  const cfg = await Settings.leer();
+  /* El piso de verificacion para enviar lo dice el panel, no el codigo. */
+  const nivelEnvio = Number(cfg.envioNivelMinimo) || 3;
+
   const lista = Array.isArray(ids) ? [...new Set(ids.map(String))] : [];
   if (!lista.length) throw errorDe("NOTHING_TO_SHIP");
   if (lista.length > MAXIMO_POR_PEDIDO) throw errorDe("TOO_MANY_AT_ONCE", { maximo: MAXIMO_POR_PEDIDO });
@@ -84,10 +89,10 @@ async function pedir({ user, ids, addressId }) {
 
   for (const o of objetos) {
     if (o.shippable === false) throw errorDe("ITEM_NOT_SHIPPABLE", { cual: o.name });
-    if (!completo.puedeEnviar(o.valueSc)) {
+    if (!completo.puedeEnviar(o.valueSc, nivelEnvio, cfg.envioQuePideNivel3Sc)) {
       throw errorDe("VERIFICATION_LEVEL_TOO_LOW", {
         cual: o.name,
-        necesita: sc(o.valueSc) > 1000 ? 3 : 2,
+        necesita: sc(o.valueSc) > sc(cfg.envioQuePideNivel3Sc) ? 3 : nivelEnvio,
         tiene: completo.verificationLevel,
       }, 403);
     }

@@ -165,7 +165,7 @@
                 <span class="mb-wallet__linea-izq">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="#a9bbe6" aria-hidden="true">
                     <path d="M3 13h8v8H3zM13 13h8v8h-8zM8 3h8v8H8z" />
-                  </svg>{{ $t('nav.boxes') }}
+                  </svg>{{ $t('wallet.freeOpens') }}
                 </span>
                 <span class="mb-wallet__linea-der mb-wallet__linea-der--sola">{{ aperturasGratis }}</span>
               </div>
@@ -255,15 +255,15 @@
 
           <div v-if="cuentaAbierta && entro" role="menu" :aria-label="$t('header.account')" class="mb-menu">
             <div class="mb-menu__grupo">
-              <router-link
-                v-for="m in menuCuenta" :key="m.a" :to="m.a" role="menuitem"
-                class="mb-menu__item" @click.native="cuentaAbierta = false"
+              <button
+                v-for="m in menuCuenta" :key="m.id" type="button" role="menuitem"
+                class="mb-menu__item" @click="irA(m)"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9d7f7"
                      stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <path :d="m.icono" />
                 </svg>{{ $t(m.texto) }}
-              </router-link>
+              </button>
             </div>
             <button type="button" role="menuitem" class="mb-menu__pie" @click="$emit('soporte')">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9d7f7"
@@ -286,6 +286,7 @@
 
 <script>
 import { mapState, mapGetters } from "vuex";
+import { ATAJOS, aDonde } from "@/utils/menuDeCuenta";
 import api from "@/api";
 
 /**
@@ -328,10 +329,7 @@ export default {
       avisosAbiertos: false,
       cuentaAbierta: false,
       inventario: { cuantos: 0, valorSc: 0 },
-      menuCuenta: [
-        { a: "/profile", texto: "nav.profile", icono: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 20a6 6 0 0 1 12 0M17 11a2.5 2.5 0 1 0 0-5M16 14.5a5 5 0 0 1 5 5.5" },
-        { a: "/inventory", texto: "nav.inventory", icono: "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" },
-      ],
+      menuCuenta: ATAJOS,
     };
   },
 
@@ -360,15 +358,21 @@ export default {
     },
   },
 
+  /*
+    UN SOLO `watch`.
+
+    Habia dos, y el segundo pisaba al primero: los avisos de "abrio una
+    caja" y "entro o salio" no existian, asi que el encabezado traia el
+    inventario una sola vez --al montarse, sin sesion todavia-- y se
+    quedaba diciendo "Objetos 0" con objetos adentro.
+  */
   watch: {
     /* Abrio una caja o vendio algo: la billetera de arriba quedo vieja. */
     inventarioCambio() { this.traerInventario(); },
 
     /* Al entrar o salir, el inventario del encabezado cambia. */
     entro: "traerInventario",
-  },
 
-  watch: {
     /*
       LA BILLETERA LA PUEDE ABRIR LA BARRA DE ABAJO.
 
@@ -377,6 +381,10 @@ export default {
       vive en el estado compartido y cada uno la mira.
     */
     "abierto.wallet": function (v) { this.walletAbierta = v; },
+
+    /* Y al abrirla se vuelve a contar: es un pedido chico y es el
+       momento exacto en que alguien mira los numeros. */
+    walletAbierta(v) { if (v) this.traerInventario(); },
   },
 
   methods: {
@@ -398,6 +406,40 @@ export default {
     },
     cerrarAvisos() { this.avisosAbiertos = false; },
     cerrarCuenta() { this.cuentaAbierta = false; },
+
+    /*
+      A DONDE LLEVA CADA ATAJO.
+
+      Casi todos son una PESTAÑA del perfil, no una pantalla: el perfil
+      ya las tiene. La billetera abre el cajón y no navega a ningún
+      lado, que es lo que hace también en el teléfono.
+    */
+    irA(m) {
+      const d = aDonde(m.id);
+
+      if (d.que === "wallet") {
+        this.cuentaAbierta = false;
+        this.walletAbierta = true;
+        return;
+      }
+
+      this.cuentaAbierta = false;
+
+      if (d.que === "ruta") {
+        if (this.$route.path !== d.a) this.$router.push(d.a);
+        window.scrollTo({ top: 0 });
+        return;
+      }
+
+      if (this.$route.path !== "/profile") {
+        this.$router.push({ path: "/profile", query: { tab: d.a } });
+        return;
+      }
+
+      if (this.$route.query.tab !== d.a) {
+        this.$router.replace({ query: { ...this.$route.query, tab: d.a } }).catch(() => {});
+      }
+    },
 
     async traerInventario() {
       if (!this.entro) {

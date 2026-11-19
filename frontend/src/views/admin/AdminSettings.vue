@@ -106,6 +106,7 @@ const GRUPOS = [
     campos: [
       { id: "minRedemption", ruta: "canjeMinimoSc", tipo: "numero" },
       { id: "kycLevel", ruta: "canjeNivelMinimo", tipo: "numero" },
+      { id: "shipLevel", ruta: "envioNivelMinimo", tipo: "numero" },
       { id: "shipLevel3", ruta: "envioQuePideNivel3Sc", tipo: "numero" },
     ],
   },

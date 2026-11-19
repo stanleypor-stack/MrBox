@@ -57,7 +57,7 @@
             <span v-for="c in cfg.columnas" :key="c.campo" :class="{ 'ad-der': c.der }">
               {{ $t('admin.col.' + c.campo) }}
             </span>
-            <span v-if="cfg.acciones || cfg.editor"></span>
+            <span v-if="cfg.acciones || cfg.editor || cfg.detalle"></span>
           </div>
 
           <div v-for="(f, i) in filas" :key="f._id || i" class="ad-t__fila" :style="{ gridTemplateColumns: columnas }">
@@ -88,7 +88,12 @@
               <span v-else>{{ texto(c, f) }}</span>
             </span>
 
-            <span v-if="cfg.acciones || cfg.editor" class="adl__acciones">
+            <span v-if="cfg.acciones || cfg.editor || cfg.detalle" class="adl__acciones">
+              <button
+                v-if="cfg.detalle" type="button" class="ad-b ad-b--chico ad-b--suave"
+                :disabled="ocupado === f._id" @click="verDatos(f)"
+              >{{ $t('admin.act.seeData') }}</button>
+
               <button
                 v-for="a in (cfg.acciones ? cfg.acciones(f) : [])" :key="a.clave" type="button"
                 class="ad-b ad-b--chico" :class="a.clase"
@@ -122,7 +127,61 @@
       v-if="editando && cfg.editor" :cfg="cfg" :fila="editando.fila || null"
       @cerrar="editando = null" @listo="editando = null; traer(pagina)"
     />
+
+    <!--
+      LO QUE MANDO UNA PERSONA.
+
+      Nombre real, documento y domicilio: por eso se pide aparte, no
+      viene en la lista, y el servidor anota quien lo miro. Las fotos
+      se piden de a una por lo mismo.
+    -->
+    <div v-if="detalle" class="adl__capa" @click.self="detalle = null">
+      <div class="adl__ficha" role="dialog" aria-modal="true" :aria-label="$t('admin.act.seeData')">
+        <div class="adl__ficha-cabeza">
+          <b>{{ detalle.fila.username }}</b>
+          <span class="ad-tenue">{{ $t('admin.col.nivel') }} {{ detalle.fila.nivel }}</span>
+          <button type="button" class="ad-b ad-b--chico ad-b--suave" @click="detalle = null">
+            {{ $t('action.cancel') }}
+          </button>
+        </div>
+
+        <p v-if="detalle.cargando" class="ad-tenue">{{ $t('admin.loading') }}</p>
+
+        <template v-else>
+          <dl class="adl__datos">
+            <div v-for="(v, k) in (detalle.datos || {})" :key="k">
+              <dt>{{ k }}</dt>
+              <dd>{{ v }}</dd>
+            </div>
+          </dl>
+
+          <p v-if="!Object.keys(detalle.datos || {}).length" class="ad-tenue">{{ $t('admin.empty') }}</p>
+
+          <div v-if="(detalle.adjuntos || []).length" class="adl__archivos">
+            <div v-for="a in detalle.adjuntos" :key="a" class="adl__archivo">
+              <button
+                v-if="!detalle.archivos[a]" type="button" class="ad-b ad-b--chico"
+                @click="verArchivo(a)"
+              >{{ a }}</button>
+
+              <template v-else>
+                <span class="ad-tenue">{{ detalle.archivos[a].nombre || a }}</span>
+                <img
+                  v-if="esImagen(detalle.archivos[a].contenido)"
+                  :src="detalle.archivos[a].contenido" :alt="a"
+                >
+                <a v-else :href="detalle.archivos[a].contenido" target="_blank" rel="noopener">
+                  {{ detalle.archivos[a].nombre || a }}
+                </a>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
   </div>
+
+
 </template>
 
 <script>
@@ -173,6 +232,8 @@ export default {
       busqueda: "",
       filtros: {},
       ocupado: "",
+      /* Lo que mando una persona, cuando se abre a mirarlo. */
+      detalle: null,
       editando: null,
       reloj: null,
     };
@@ -185,7 +246,7 @@ export default {
     /** Los anchos del diseño, más una columna para los botones. */
     columnas() {
       const base = this.cfg.w || this.cfg.columnas.map(() => "1fr").join(" ");
-      const hayBotones = this.cfg.acciones || this.cfg.editor;
+      const hayBotones = this.cfg.acciones || this.cfg.editor || this.cfg.detalle;
       return hayBotones ? `${base} ${this.cfg.anchoDeAcciones || "150px"}` : base;
     },
   },
@@ -310,6 +371,45 @@ export default {
     },
 
     /**
+     * VER LO QUE MANDO.
+     *
+     * Un pedido aparte --no viene en la lista-- porque devuelve el
+     * nombre real, el documento y el domicilio de una persona, y el
+     * servidor anota quien lo miro.
+     */
+    async verDatos(fila) {
+      this.ocupado = fila._id;
+      this.detalle = { fila, datos: null, archivos: {}, cargando: true };
+
+      try {
+        const { data } = await api.get(this.cfg.detalle.ruta(fila));
+        this.detalle = { fila, ...data.data, archivos: {}, cargando: false };
+      } catch (err) {
+        this.detalle = null;
+        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
+      } finally {
+        this.ocupado = "";
+      }
+    },
+
+    /* Lo que se puede dibujar: lo demas se abre aparte. */
+    esImagen(contenido) {
+      return typeof contenido === "string" && contenido.startsWith("data:image/");
+    },
+
+    /** Una foto, que tambien se pide de a una y tambien queda anotada. */
+    async verArchivo(campo) {
+      if (!this.detalle || this.detalle.archivos[campo]) return;
+
+      try {
+        const { data } = await api.get(this.cfg.detalle.archivo(this.detalle.fila, campo));
+        this.$set(this.detalle.archivos, campo, data.data);
+      } catch (err) {
+        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
+      }
+    },
+
+    /**
      * Un botón de una fila.
      *
      * Lo que pide un motivo lo pide ACA, antes de mandar nada: el
@@ -375,6 +475,64 @@ export default {
 
 .adl__buscar { flex: 1 1 280px; max-width: 420px; }
 .adl__acciones { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ── La ficha con lo que mando una persona ──────────────────────── */
+
+.adl__capa {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(4, 10, 20, .72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  overflow-y: auto;
+}
+
+.adl__ficha {
+  width: 100%;
+  max-width: 620px;
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
+  background: $panel-alto;
+  border: 1px solid #2a4170;
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.adl__ficha-cabeza {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  b { font-size: 17px; }
+  button { margin-left: auto; }
+}
+
+.adl__datos {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 150px) minmax(0, 1fr);
+  gap: 8px 14px;
+
+  dt { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: $texto-4; }
+  dd { margin: 0; font-size: 14px; word-break: break-word; }
+}
+
+.adl__archivos { display: flex; flex-direction: column; gap: 12px; }
+
+.adl__archivo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+
+  img { max-width: 100%; border-radius: 10px; border: 1px solid #2a4170; }
+  a { color: #6bb4ff; font-size: 13px; }
+}
 .adl__link { color: #9fc0ff; text-decoration: none; &:hover { color: #fff; } }
 
 .adl__foto--sin { background: $panel-alto; border: 1px dashed $borde-fuerte; }

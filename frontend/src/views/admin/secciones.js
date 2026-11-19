@@ -163,6 +163,18 @@ const SECCIONES = {
       { campo: "createdAt", tipo: "fechaHora", tenue: true },
       { campo: "estado", tipo: "estado", textos: "kyc.state" },
     ],
+    /*
+      LO QUE MANDO, DESDE ACA.
+
+      Antes habia que entrar a la ficha de cada jugador: para revisar
+      diez documentos, diez idas y vueltas. Se pide aparte y queda
+      anotado quien lo miro, que es lo que corresponde con el documento
+      de una persona.
+    */
+    detalle: {
+      ruta: (f) => `/admin/verification/${f._id}/data`,
+      archivo: (f, campo) => `/admin/verification/${f._id}/files/${campo}`,
+    },
     acciones: (f) => (f.estado !== "pending" ? [] : [
       { clave: "ok", texto: "admin.act.approve", ruta: (x) => `/admin/verification/${x.userId}/${x.nivel}`, cuerpo: () => ({ aprobar: true }) },
       { clave: "no", texto: "admin.act.reject", clase: "ad-b--mal", pideMotivo: true, pregunta: "admin.whyReject", ruta: (x) => `/admin/verification/${x.userId}/${x.nivel}`, cuerpo: () => ({ aprobar: false }) },

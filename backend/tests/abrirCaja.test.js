@@ -506,3 +506,39 @@ test("el feed enmascara los nombres", async (t) => {
     assert.ok(fila.premio.name);
   }
 });
+
+/* ── Las pruebas gratis son contadas ──────────────────────────────── */
+
+test("el demo se puede usar las veces que dice el panel, y no mas", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  /*
+    El ajuste `aperturasDeDemo` existia desde el principio y no lo
+    miraba nadie: se podia girar de gratis para siempre. Con sesion se
+    cuentan en la cuenta, que es lo unico que no se borra desde el
+    navegador.
+  */
+  const Settings = require("../database/models/Settings");
+  await Settings.updateOne({ key: "main" }, { $set: { aperturasDeDemo: 2 } }, { upsert: true });
+
+  const j = await jugador({ saldo: 50 });
+  const antes = (await User.findById(j.id).select("+balanceSc").lean()).balanceSc;
+
+  const probar = () => pedir("POST", "/boxes/prueba/demo", { token: j.token, cuerpo: { veces: 1 } });
+
+  const una = await probar();
+  assert.equal(una.estado, 200, JSON.stringify(una.datos));
+  assert.equal(una.datos.data.demosRestantes, 1);
+
+  const dos = await probar();
+  assert.equal(dos.datos.data.demosRestantes, 0);
+
+  const tres = await probar();
+  assert.equal(tres.datos.code, "NO_DEMOS_LEFT");
+
+  /* Y no cobro nada en el camino: el demo no toca el saldo. */
+  const despues = (await User.findById(j.id).select("+balanceSc").lean()).balanceSc;
+  assert.equal(despues, antes);
+
+  await Settings.updateOne({ key: "main" }, { $set: { aperturasDeDemo: 3 } });
+});

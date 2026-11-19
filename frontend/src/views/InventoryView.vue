@@ -101,11 +101,26 @@
         </div>
       </aside>
     </div>
+
+    <!--
+      PEDIR EL ENVIO.
+
+      Se dibuja solo cuando se abre: adentro hay un formulario de
+      direccion entero que no tiene por que existir en una pantalla
+      donde la mayoria viene a vender.
+    -->
+    <MbPedirEnvio
+      v-if="envioAbierto"
+      :objetos="items.filter((o) => elegidos.includes(o._id))"
+      :nivel="nivel" :nivel-que-pide="nivelQuePide"
+      @cerrar="envioAbierto = false" @hecho="envioHecho"
+    />
   </div>
 </template>
 
 <script>
 import MbElegir from "@/components/MbElegir.vue";
+import MbPedirEnvio from "@/components/MbPedirEnvio.vue";
 import { mapGetters } from "vuex";
 import api from "@/api";
 import { sprite } from "@/utils/sprite";
@@ -136,10 +151,13 @@ const COLORES = {
 export default {
   name: "InventoryView",
 
-  components: { MbElegir },
+  components: { MbElegir, MbPedirEnvio },
 
   data() {
     return {
+      envioAbierto: false,
+      nivel: 0,
+      nivelQuePide: 3,
       items: [],
       resumen: { cuantos: 0, valorSc: 0 },
       cargando: true,
@@ -236,7 +254,15 @@ export default {
     },
 
     pedirEnvio() {
-      this.$store.dispatch("avisar", { texto: this.$t("inventory.shipSoon") });
+      if (!this.elegidos.length) return;
+      this.envioAbierto = true;
+    },
+
+    /* Pedido hecho: los objetos quedan reservados, asi que la grilla
+       se vuelve a traer y la seleccion se vacia. */
+    async envioHecho() {
+      this.elegidos = [];
+      await this.traer();
     },
 
     async traer() {
@@ -245,6 +271,8 @@ export default {
         const { data } = await api.get("/inventory", { params: { perPage: 100 } });
         this.items = data.data.items;
         this.resumen = data.data.resumen;
+        this.nivel = data.data.verificationLevel || 0;
+        this.nivelQuePide = data.data.envioNivelMinimo || 3;
         const vivos = new Set(this.items.map((o) => o._id));
         this.elegidos = this.elegidos.filter((id) => vivos.has(id));
       } catch (err) {

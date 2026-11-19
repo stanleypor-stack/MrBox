@@ -72,6 +72,7 @@ async function retrato(userId) {
     rank: u.rank,
     verificationLevel: u.verificationLevel,
     freeOpens: u.freeOpens,
+    demosUsadas: u.demosUsadas || 0,
     jugadoSc: u.jugadoSc,
     affiliateCode: u.affiliateCode,
     createdAt: u.createdAt,

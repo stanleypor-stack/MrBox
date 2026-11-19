@@ -151,6 +151,16 @@ const userSchema = new mongoose.Schema(
     rangoManual: { type: String, default: "" },
 
     /*
+      CUANTAS PRUEBAS GRATIS GASTO.
+
+      El demo no cobra, no paga y no guarda nada: es para mirar como
+      gira antes de poner plata. Son pocas a proposito --el ajuste dice
+      cuantas-- porque el que las gasta todas y sigue mirando no se
+      decide nunca.
+    */
+    demosUsadas: { type: Number, default: 0 },
+
+    /*
       LOS LIMITES QUE SE PONE EL JUGADOR.
 
       Cuánto está dispuesto a jugar por día, y hasta cuándo no quiere
@@ -228,15 +238,20 @@ userSchema.methods.puedeCanjear = function puedeCanjear() {
 /**
  * Si puede pedir el envío de un objeto de este valor.
  *
- * Nivel 2 para cualquier envío, 3 cuando pasa de SC 1.000: lo caro es lo
- * que vale la pena robar, y ahí el domicilio comprobado deja de ser un
- * trámite.
+ * El piso lo dice el panel (Settings.envioNivelMinimo, 3 de fábrica) y
+ * entra por parámetro: un modelo no lee la configuración. Arriba de
+ * SC 1.000 siempre hace falta el 3, pase lo que pase con esa perilla:
+ * lo caro es lo que vale la pena robar, y ahí el domicilio comprobado
+ * deja de ser un trámite.
  */
-userSchema.methods.puedeEnviar = function puedeEnviar(valorSc) {
+userSchema.methods.puedeEnviar = function puedeEnviar(valorSc, nivelBase = 3, topeSc = 1000) {
   if (this.banned) return false;
   if (this.trabas && this.trabas.envio) return false;
-  if (this.verificationLevel < 2) return false;
-  return Number(valorSc) <= 1000 || this.verificationLevel >= 3;
+
+  const piso = Number(nivelBase) >= 2 && Number(nivelBase) <= 3 ? Number(nivelBase) : 3;
+  if (this.verificationLevel < piso) return false;
+
+  return Number(valorSc) <= Number(topeSc) || this.verificationLevel >= 3;
 };
 
 module.exports = mongoose.model("User", userSchema);

@@ -2,6 +2,7 @@ const express = require("express");
 const rateLimit = require("express-rate-limit");
 
 const Box = require("../../database/models/Box");
+const User = require("../../database/models/User");
 const BoxOpen = require("../../database/models/BoxOpen");
 const Item = require("../../database/models/Item");
 const feed = require("../../services/feed");
@@ -292,6 +293,9 @@ router.get("/:slug", autorizar(false), async (req, res) => {
         live: caja.live,
         /* Lo que se puede abrir de una, para dibujar el x1..x4. */
         maximoALaVez: cfg.cajasALaVez,
+        /* Y cuantas pruebas gratis hay en total, para el globito del
+           boton Demo. Las que ya gasto van en su cuenta. */
+        aperturasDeDemo: Number(cfg.aperturasDeDemo) || 0,
         /* El retorno, a la vista. No tenemos nada que esconder y es el
            numero que un jugador informado quiere ver. */
         retornoMostrado: Math.round((caja.retorno || 0) * 10000) / 100,
@@ -310,11 +314,38 @@ router.get("/:slug", autorizar(false), async (req, res) => {
 
 /* ── Abrir ────────────────────────────────────────────────────────── */
 
-/** De prueba: se sortea igual, no cobra, no paga y no guarda nada. */
+/**
+ * DE PRUEBA: SE SORTEA IGUAL, NO COBRA, NO PAGA Y NO GUARDA NADA.
+ *
+ * SON CONTADAS
+ *
+ * El ajuste `aperturasDeDemo` dice cuantas, y hasta ahora no lo miraba
+ * nadie: se podia girar de gratis para siempre. Con sesion se cuentan
+ * en la cuenta, que es lo unico que no se puede borrar desde el
+ * navegador. Sin sesion las cuenta la pantalla: no hay a quien
+ * contarselas, y como el demo no mueve un peso, tampoco hace falta.
+ */
 router.post("/:slug/demo", autorizar(false), limiteAbrir, async (req, res) => {
   try {
-    const r = await cajas.abrir({ user: null, slug: req.params.slug, veces: req.body.veces, demo: true });
-    return res.json({ success: true, data: r });
+    const cfg = await Settings.leer();
+    const tope = Number(cfg.aperturasDeDemo) || 0;
+    const veces = Math.max(1, Math.min(4, Number(req.body.veces) || 1));
+
+    if (req.user) {
+      const usadas = Number(req.user.demosUsadas) || 0;
+      if (usadas + veces > tope) {
+        throw errorDe("NO_DEMOS_LEFT", { quedan: Math.max(0, tope - usadas) }, 403);
+      }
+      await User.updateOne({ _id: req.user._id }, { $inc: { demosUsadas: veces } });
+    }
+
+    const r = await cajas.abrir({ user: null, slug: req.params.slug, veces, demo: true });
+
+    const usadas = (Number(req.user && req.user.demosUsadas) || 0) + (req.user ? veces : 0);
+    return res.json({
+      success: true,
+      data: { ...r, demosRestantes: Math.max(0, tope - usadas), demosTope: tope },
+    });
   } catch (err) {
     return responderError(res, err, "demo");
   }

@@ -83,12 +83,23 @@
             </span>
           </button>
 
-          <button type="button" class="mb-demo" :disabled="girando" @click="probar">
+          <!--
+            EL BOTON DE PRUEBA, CON LAS QUE LE QUEDAN.
+
+            Son contadas, asi que el numero va encima del boton: sin el
+            globito, el jugador se entera de que se le acabaron recien
+            cuando lo aprieta y no pasa nada.
+          -->
+          <button
+            type="button" class="mb-demo" :disabled="girando || !demosRestantes"
+            :title="$tc('box.demosLeft', demosRestantes, { n: demosRestantes })" @click="probar"
+          >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff"
                  stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M8 5v14l11-7z" />
             </svg>
             {{ $t('box.demo') }}
+            <span class="mb-demo__cuenta" aria-hidden="true">{{ demosRestantes }}</span>
           </button>
         </div>
 
@@ -261,6 +272,8 @@ export default {
     return {
       caja: null,
       cargando: true,
+      /* Las que gasto en esta pantalla sin sesion (ver demosRestantes). */
+      demosUsadasAqui: 0,
       veces: 1,
       rapido: false,
       mudo: false,
@@ -278,6 +291,16 @@ export default {
 
   computed: {
     ...mapGetters(["entro", "saldo"]),
+
+    /** Cuantas pruebas gratis le quedan, de las que dice el panel. */
+    demosRestantes() {
+      const tope = Number(this.caja && this.caja.aperturasDeDemo) || 0;
+      const usadas = this.entro
+        ? Number(this.$store.state.usuario && this.$store.state.usuario.demosUsadas) || 0
+        : this.demosUsadasAqui;
+
+      return Math.max(0, tope - usadas);
+    },
 
     /*
       LA GRATIS ES DE ESTA CAJA.
@@ -425,12 +448,39 @@ export default {
       }
     },
 
+    /*
+      CUANTAS PRUEBAS LE QUEDAN.
+
+      Con sesion las cuenta el servidor --van en la cuenta y no se
+      pueden borrar desde el navegador-- y sin sesion las cuenta esta
+      pantalla, que es lo unico que hay. El demo no mueve un peso, asi
+      que alcanza.
+    */
+    demosGuardadas() {
+      try {
+        return Number(window.localStorage.getItem("mrbox:demos") || 0) || 0;
+      } catch {
+        return 0;
+      }
+    },
+
+    anotarDemo(veces) {
+      if (this.entro) return;
+      try {
+        window.localStorage.setItem("mrbox:demos", String(this.demosGuardadas() + veces));
+      } catch {
+        /* Sin almacenamiento no se cuentan, y es lo de menos. */
+      }
+      this.demosUsadasAqui += veces;
+    },
+
     async probar() {
       this.girando = true;
       this.resultado = null;
       try {
         const { data } = await api.post(`/boxes/${this.caja.slug}/demo`, { veces: this.veces });
         this.pendiente = data.data;
+        this.anotarDemo(this.veces);
         await this.$refs.ruleta.girar(data.data.resultados.map((r) => r.premio));
       } catch (err) {
         this.girando = false;
@@ -470,7 +520,10 @@ export default {
     },
   },
 
-  created() { this.traer(); },
+  created() {
+    this.demosUsadasAqui = this.demosGuardadas();
+    this.traer();
+  },
 
   beforeDestroy() {
     window.clearTimeout(this.relojAuto);
@@ -599,7 +652,7 @@ export default {
       el renglón se corta solo y Demo y el rayo lo acompañan abajo.
     */
     .mb-azul { order: 4; flex: 1 1 140px; min-width: 0; }
-    .mb-demo { order: 5; flex: none; }
+.mb-demo { order: 5; flex: none; }
     .mb-cuadrado--grande { order: 6; }
   }
 }
@@ -1018,4 +1071,32 @@ export default {
 }
 
 .mb-contenido__retorno { margin: 0; font-size: 13px; color: $texto-4; }
+
+/*
+  EL GLOBITO DE LAS PRUEBAS QUE LE QUEDAN.
+
+  Pegado a la esquina del boton, como en el prototipo: sin el, uno se
+  entera de que se le acabaron recien cuando aprieta y no pasa nada.
+*/
+.mb-demo { position: relative; overflow: visible; }
+
+.mb-demo__cuenta {
+  position: absolute;
+  right: -6px;
+  top: -8px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background: $azul;
+  border: 2px solid $fondo;
+  font-weight: 900;
+  font-size: 11px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 </style>

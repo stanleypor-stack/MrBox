@@ -38,18 +38,6 @@
                 v-for="b in marcasDeBilletera" :key="b.id"
                 :marca-id="b.id" :nombre="b.nombre" :icono="b.icono"
               />
-              <span class="mb-caja__mas">{{ $t('wallet.more') }}</span>
-            </span>
-          </button>
-
-          <button
-            type="button" class="mb-caja__metodo" :class="{ 'is-elegido': metodo === 'qr' }"
-            :aria-pressed="String(metodo === 'qr')" @click="metodo = 'qr'"
-          >
-            <span class="mb-caja__metodo-t">{{ $t('wallet.scanTitle') }}</span>
-            <span class="mb-caja__puntos">
-              <MbMarcaDeBilletera marca-id="phantom" nombre="Phantom" />
-              <MbMarcaDeBilletera marca-id="metamask" nombre="MetaMask" />
               <span class="mb-caja__mas">{{ $t('wallet.scanChip') }}</span>
             </span>
           </button>
@@ -117,16 +105,40 @@
 
             <b class="mb-caja__conectar-t">{{ $t('wallet.connectTitle') }}</b>
             <p class="mb-caja__conectar-p">
-              {{ billeteras.length ? $t('wallet.connectSub') : $t('wallet.connectNone') }}
+              {{ enEsteNavegador && !billeteras.length ? $t('wallet.connectNone') : $t('wallet.connectSub') }}
             </p>
 
-            <template v-if="billeteras.length">
-              <!-- Que moneda y en que red. Solo los pares que una
-                   billetera de navegador sabe mandar. -->
+            <!--
+              LAS DOS MANERAS DE PAGAR DESDE TU BILLETERA.
+
+              Desde ESTE navegador, apretando un boton, o desde el
+              TELEFONO, escaneando. Es la misma cosa con dos caminos,
+              asi que es una perilla aca adentro y no otra tarjeta en la
+              lista de la izquierda.
+            -->
+            <div class="mb-caja__como" role="group" :aria-label="$t('wallet.connectTitle')">
+              <button
+                type="button" :class="{ 'is-elegido': comoPago === 'aqui' }"
+                :aria-pressed="String(comoPago === 'aqui')" @click="elegirComo('aqui')"
+              >{{ $t('wallet.payHere') }}</button>
+              <button
+                type="button" :class="{ 'is-elegido': comoPago === 'qr' }"
+                :aria-pressed="String(comoPago === 'qr')" @click="elegirComo('qr')"
+              >{{ $t('wallet.scanTitle') }}</button>
+            </div>
+
+            <template v-if="hayComoPagar">
+              <!-- Que moneda y en que red. Las que sabe mandar la
+                   manera elegida: escaneando entran mas, Solana entre
+                   ellas. -->
               <div class="mb-caja__conectar-campos">
                 <span class="mb-caja__campo">
                   {{ $t('wallet.coin') }}
-                  <MbElegir v-model="tickerElegido" :opciones="opcionesDeMonedaBilletera" @elegida="alCambiarMonedaBilletera">
+                  <MbElegir
+                    v-model="tickerElegido"
+                    :opciones="enEsteNavegador ? opcionesDeMonedaBilletera : opcionesDeMonedaQr"
+                    @elegida="enEsteNavegador ? alCambiarMonedaBilletera() : alCambiarMonedaQr()"
+                  >
                     <template #icono="{ o }">
                       <MbMoneda v-if="o" :ticker="o.valor" :color="o.color" :letra="o.letra" />
                     </template>
@@ -135,7 +147,11 @@
 
                 <span class="mb-caja__campo">
                   {{ $t('wallet.network') }}
-                  <MbElegir v-model="redElegida" :opciones="opcionesDeRedBilletera" @elegida="traerDeposito">
+                  <MbElegir
+                    v-model="redElegida"
+                    :opciones="enEsteNavegador ? opcionesDeRedBilletera : opcionesDeRedQr"
+                    @elegida="traerDeposito"
+                  >
                     <template #icono="{ o }">
                       <MbMoneda v-if="o" :ticker="o.valor" :color="o.color" :letra="o.letra" />
                     </template>
@@ -153,7 +169,7 @@
                   <span class="mb-caja__billetera-tk">{{ tickerElegido }}</span>
                 </div>
 
-                <div class="mb-caja__billetera-botones">
+                <div v-if="enEsteNavegador" class="mb-caja__billetera-botones">
                   <button
                     v-for="b in billeteras" :key="b.id" type="button"
                     class="mb-caja__conectar-b" :disabled="pagando || !hayDireccion"
@@ -164,7 +180,30 @@
                   </button>
                 </div>
 
-                <p class="mb-caja__fino">{{ $t('wallet.walletNote', { net: red.nombre }) }}</p>
+                <!--
+                  EL QR CON TODO PUESTO.
+
+                  No es el QR de la direccion pelada: adentro van la
+                  moneda, la red y el monto, asi la billetera del
+                  telefono abre la pantalla de enviar completa.
+                -->
+                <template v-else>
+                  <div class="mb-caja__qr mb-caja__qr--pago">
+                    <img v-if="qrDePago" :src="qrDePago" :alt="$t('wallet.qrAlt')">
+                    <span v-else class="mb-caja__qr-vacio">{{ $t('wallet.scanWaiting') }}</span>
+                  </div>
+
+                  <a
+                    v-if="enlaceDePagoActual" :href="enlaceDePagoActual"
+                    class="mb-caja__conectar-b mb-caja__qr-abrir"
+                  >{{ $t('wallet.scanOpen') }}</a>
+                </template>
+
+                <p class="mb-caja__fino">
+                  {{ enEsteNavegador
+                    ? $t('wallet.walletNote', { net: red.nombre })
+                    : $t('wallet.scanNote', { coin: tickerElegido, net: red.nombre }) }}
+                </p>
               </template>
 
               <template v-else>
@@ -191,70 +230,6 @@
           </div>
 
           <!-- Y la salida para el que paga desde un exchange o en Tron. -->
-          <button type="button" class="mb-caja__salida" @click="metodo = 'direccion'">
-            {{ $t('wallet.fromExchange') }}
-            <b>{{ $t('wallet.useAddress') }}</b>
-          </button>
-        </template>
-
-        <!--
-          EL QR CON TODO PUESTO.
-
-          No es el QR de la direccion pelada: es un enlace de pago con
-          la moneda, la red y el monto adentro, asi la billetera abre la
-          pantalla de enviar completa. Copiar una direccion de cuarenta
-          caracteres y escribir el monto a mano son las dos maneras de
-          perder un deposito.
-        -->
-        <template v-else-if="metodo === 'qr'">
-          <div class="mb-caja__conectar">
-            <b class="mb-caja__conectar-t">{{ $t('wallet.scanTitle') }}</b>
-            <p class="mb-caja__conectar-p">{{ $t('wallet.scanSub') }}</p>
-
-            <div class="mb-caja__conectar-campos">
-              <span class="mb-caja__campo">
-                {{ $t('wallet.coin') }}
-                <MbElegir v-model="tickerElegido" :opciones="opcionesDeMonedaQr" @elegida="alCambiarMonedaQr">
-                  <template #icono="{ o }">
-                    <MbMoneda v-if="o" :ticker="o.valor" :color="o.color" :letra="o.letra" />
-                  </template>
-                </MbElegir>
-              </span>
-
-              <span class="mb-caja__campo">
-                {{ $t('wallet.network') }}
-                <MbElegir v-model="redElegida" :opciones="opcionesDeRedQr" @elegida="traerDeposito">
-                  <template #icono="{ o }">
-                    <MbMoneda v-if="o" :ticker="o.valor" :color="o.color" :letra="o.letra" />
-                  </template>
-                </MbElegir>
-              </span>
-            </div>
-
-            <div class="mb-caja__billetera-fila">
-              <input
-                v-model="montoCripto" class="mb-caja__in" inputmode="decimal"
-                :placeholder="$t('wallet.amountIn', { coin: tickerElegido })"
-                :aria-label="$t('wallet.amountIn', { coin: tickerElegido })"
-              >
-              <span class="mb-caja__billetera-tk">{{ tickerElegido }}</span>
-            </div>
-
-            <div class="mb-caja__qr mb-caja__qr--pago">
-              <img v-if="qrDePago" :src="qrDePago" :alt="$t('wallet.qrAlt')">
-              <span v-else class="mb-caja__qr-vacio">{{ $t('wallet.scanWaiting') }}</span>
-            </div>
-
-            <a
-              v-if="enlaceDePagoActual" :href="enlaceDePagoActual"
-              class="mb-caja__conectar-b mb-caja__qr-abrir"
-            >{{ $t('wallet.scanOpen') }}</a>
-
-            <p class="mb-caja__fino">
-              {{ $t('wallet.scanNote', { coin: tickerElegido, net: red.nombre }) }}
-            </p>
-          </div>
-
           <button type="button" class="mb-caja__salida" @click="metodo = 'direccion'">
             {{ $t('wallet.fromExchange') }}
             <b>{{ $t('wallet.useAddress') }}</b>
@@ -391,15 +366,32 @@
           <form v-else class="mb-caja__form" @submit.prevent="canjear">
             <label class="mb-caja__campo">
               {{ $t('profile.amount') }}
-              <span class="mb-caja__select">
+              <span class="mb-caja__select mb-caja__select--monto">
                 <span class="mb-sc mb-sc--18 mb-caja__scico" aria-hidden="true">SC</span>
                 <input
-                  v-model="monto" inputmode="decimal" :placeholder="String(canje.minimoSc)"
+                  v-model="monto" inputmode="decimal" placeholder="0.00"
                   :disabled="!puedeCanjear"
                 >
+
+                <!--
+                  CUANTO ES ESO EN LA MONEDA QUE ELIGIO.
+
+                  Solo cuando se puede decir exacto: SC esta atado al
+                  dolar, asi que en USDT y USDC es uno a uno. Para
+                  bitcoin haria falta una cotizacion, y un numero
+                  inventado al lado de un monto de plata no va.
+                -->
+                <span v-if="enMoneda" class="mb-caja__igual">
+                  = <MbMoneda :ticker="tickerElegido" :color="moneda.color" :letra="moneda.letra" chica />
+                  {{ enMoneda }}
+                </span>
+
                 <button type="button" class="mb-caja__todo" :disabled="!puedeCanjear" @click="monto = String(canje.disponibleSc)">
                   {{ $t('wallet.max') }}
                 </button>
+              </span>
+              <span class="mb-caja__minimo">
+                {{ $t('wallet.minCashOut', { n: plata(canje.minimoSc) }) }}
               </span>
             </label>
 
@@ -440,7 +432,6 @@
               <input v-model="direccion" class="mb-caja__in" :disabled="!puedeCanjear" :placeholder="$t('wallet.addressPlaceholder')">
             </label>
 
-            <p class="mb-caja__fino">{{ $t('wallet.minCashOut', { n: plata(canje.minimoSc) }) }}</p>
             <p class="mb-caja__fino">{{ $t('wallet.checkAddress') }}</p>
 
             <button type="submit" class="mb-caja__enviar" :disabled="!sePuedePedir || mandando">
@@ -523,6 +514,14 @@ export default {
       qr: "",
       /* El del enlace de pago, que es otro: lleva monto y moneda. */
       qrDePago: "",
+      /*
+        COMO PAGA DESDE SU BILLETERA: "aqui" o "qr".
+
+        Arranca en la del navegador si tiene alguna instalada --es la
+        que menos pasos tiene-- y en el QR si no tiene ninguna, que es
+        lo unico que le sirve.
+      */
+      comoPago: "aqui",
       relojDelQr: null,
       copiado: false,
       monto: "",
@@ -662,6 +661,31 @@ export default {
         }));
     },
 
+    enEsteNavegador() { return this.comoPago === "aqui"; },
+
+    /*
+      EL MONTO EN LA MONEDA ELEGIDA.
+
+      SC esta atado al dolar, asi que en las monedas atadas al dolar es
+      uno a uno y se puede decir exacto. En las demas no: hace falta
+      una cotizacion, y hasta que la haya es mejor no decir nada que
+      decir un numero que no es.
+    */
+    enMoneda() {
+      const ATADAS = ["USDT", "USDC"];
+      if (!ATADAS.includes(this.tickerElegido)) return "";
+
+      const n = Number(String(this.monto).replace(",", "."));
+      if (!Number.isFinite(n) || n <= 0) return "0";
+
+      return this.plata(n);
+    },
+
+    /* Con qué se puede pagar de la manera elegida. */
+    hayComoPagar() {
+      return this.enEsteNavegador ? this.billeteras.length > 0 : this.monedasDeQr.length > 0;
+    },
+
     /** El enlace de pago de lo que esta elegido ahora, o "". */
     enlaceDePagoActual() {
       if (!this.hayDireccion) return "";
@@ -727,8 +751,9 @@ export default {
   watch: {
     metodo(v) {
       this.txHash = "";
-      if (v === "billetera") this.aUnParDeBilletera();
-      if (v === "qr") this.alCambiarMonedaQr();
+      if (v !== "billetera") return;
+      if (this.enEsteNavegador) this.aUnParDeBilletera();
+      else this.alCambiarMonedaQr();
     },
 
     /*
@@ -840,9 +865,17 @@ export default {
         Es la que menos pasos tiene y la que no deja copiar mal una
         direccion. Sin billetera, ni se ofrece de entrada.
       */
-      if (this.billeteras.length && this.lado === "in") {
+      /*
+        Sin billetera instalada, la manera util es el QR del telefono:
+        arrancar en "pagar desde este navegador" seria ofrecerle lo
+        unico que no puede hacer.
+      */
+      this.comoPago = this.billeteras.length ? "aqui" : "qr";
+
+      if (this.lado === "in") {
         this.metodo = "billetera";
-        this.aUnParDeBilletera();
+        if (this.billeteras.length) this.aUnParDeBilletera();
+        else this.alCambiarMonedaQr();
       }
     },
 
@@ -874,6 +907,21 @@ export default {
     sePuedeEscanear(ticker, red) {
       return !!(parDeBilletera(ticker, red)
         || (String(red).toLowerCase() === "solana" && SOLANA.tokens[String(ticker).toUpperCase()]));
+    },
+
+    /*
+      CAMBIAR DE MANERA.
+
+      Al pasar al QR, el par elegido puede no servir para la otra: de
+      la billetera del navegador se puede venir con uno que ella sabe
+      mandar, y escaneando entran mas. Se deja uno que sirva.
+    */
+    elegirComo(cual) {
+      if (this.comoPago === cual) return;
+      this.comoPago = cual;
+      this.txHash = "";
+      if (cual === "aqui") this.aUnParDeBilletera();
+      else this.alCambiarMonedaQr();
     },
 
     /* Igual que el de la billetera, pero con las que se escanean. */
@@ -1357,6 +1405,66 @@ export default {
 }
 
 .mb-caja__conectar-iconos { display: flex; gap: 8px; }
+
+// Las dos maneras de pagar desde la billetera, una al lado de la otra.
+/*
+  EL CAMPO DEL MONTO DEL RETIRO.
+
+  Tres cosas en una linea: lo que escribe, cuanto es eso en la moneda
+  elegida, y "Todo". El boton deja de estar en posicion absoluta: con
+  el equivalente al lado se pisaban.
+*/
+.mb-caja__select--monto {
+  input { width: auto; flex: 1; min-width: 0; padding-right: 6px; }
+  .mb-caja__todo { position: static; flex: none; margin: 0 10px 0 0; }
+}
+
+// El "= 25.00 USDT" adentro del campo, y el minimo abajo.
+.mb-caja__igual {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  padding-right: 4px;
+  font-weight: 800;
+  font-size: 14px;
+  color: $texto-3;
+}
+
+.mb-caja__minimo {
+  display: block;
+  margin-top: 7px;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #6bb4ff;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.mb-caja__como {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: $fondo;
+  border: 1px solid #1f3355;
+
+  button {
+    flex: 1;
+    min-width: 0;
+    height: 38px;
+    border-radius: 10px;
+    border: 0;
+    background: transparent;
+    color: $texto-3;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+    @include foco;
+    &.is-elegido { background: $azul; color: #fff; }
+  }
+}
 
 /* El QR del enlace de pago, y el boton de abrirlo en la billetera. */
 .mb-caja__qr--pago {

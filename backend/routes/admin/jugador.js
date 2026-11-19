@@ -448,6 +448,10 @@ router.post("/players/:id/gifts", async (req, res) => {
     const cajas = require("../../services/boxes");
     const dadas = await cajas.regalarCajasDeBienvenida(antes._id);
 
+    /* Y las pruebas gratis, de nuevo: regalarle las cajas de
+       bienvenida es volver a ponerlo donde arranca. */
+    await User.updateOne({ _id: antes._id }, { $set: { demosUsadas: 0 } });
+
     await admin.anotar({
       admin: req.user,
       evento: "player.gifts",

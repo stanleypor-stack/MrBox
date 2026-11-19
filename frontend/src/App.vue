@@ -11,7 +11,7 @@
       <MbCabecera
         @depositar="abrirCaja('in')"
         @retirar="abrirCaja('out')"
-        @canjear="abrirCaja('out')"
+        @canjear="codigoAbierto = true"
         @soporte="pedirSoporte"
       />
 
@@ -62,6 +62,16 @@
         dibujarlo que no tiene por qué bajarse quien nunca la abre.
       -->
       <MbBilletera v-if="caja" :modo="caja" @cerrar="caja = ''" />
+
+      <!--
+        CANJEAR UN CODIGO.
+
+        "Redeem" es cambiar un codigo por saldo o por cajas, no sacar
+        plata: para eso esta "Withdraw". Hasta ahora los dos botones
+        abrian lo mismo, que es justo lo contrario de lo que dice la
+        palabra.
+      -->
+      <MbCanjearCodigo v-if="codigoAbierto" @cerrar="codigoAbierto = false" />
     </template>
 
     <output v-if="aviso" class="mb-aviso" :class="'mb-aviso--' + aviso.tono" aria-live="polite">
@@ -79,6 +89,7 @@ import MbMenuDeCuenta from "@/components/MbMenuDeCuenta.vue";
 import MbPie from "@/components/MbPie.vue";
 import MbSoporte from "@/components/MbSoporte.vue";
 import MbBilletera from "@/components/MbBilletera.vue";
+import MbCanjearCodigo from "@/components/MbCanjearCodigo.vue";
 
 /**
  * EL ARMAZON DEL SITIO.
@@ -107,10 +118,11 @@ export default {
   name: "App",
   components: {
     MbCabecera, MbLateral, MbBarraDeAbajo, MbMenuDeCuenta, MbPie, MbSoporte, MbBilletera,
+    MbCanjearCodigo,
   },
 
   /* "in" deposita, "out" canjea, vacio es cerrada. */
-  data() { return { caja: "" }; },
+  data() { return { caja: "", codigoAbierto: false }; },
 
 
 
