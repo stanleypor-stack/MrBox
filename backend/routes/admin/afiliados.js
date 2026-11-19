@@ -731,6 +731,42 @@ router.post("/affiliates/:userId/rank", async (req, res) => {
 });
 
 /**
+ * CONTESTAR QUE NO.
+ *
+ * Saca el pedido de la cola sin tocarle el rango. Hace falta: si la
+ * única salida fuera otorgar, un pedido que no corresponde se queda
+ * para siempre en la lista y la cola deja de significar algo.
+ *
+ * Pide motivo igual, porque es una respuesta al socio y en dos meses
+ * alguien va a preguntar por qué se dijo que no.
+ */
+router.post("/affiliates/:userId/rank/dismiss", async (req, res) => {
+  try {
+    const motivo = String(req.body.motivo || "").trim();
+    if (motivo.length < 3) throw errorDe("REASON_REQUIRED");
+
+    const u = await User.findById(req.params.userId).select("username pidioRangoEl").lean();
+    if (!u) throw errorDe("NOT_FOUND");
+
+    await User.updateOne({ _id: u._id }, { $set: { pidioRangoEl: null } });
+
+    await admin.anotar({
+      admin: req.user,
+      evento: "affiliate.rank.dismiss",
+      sobre: { tipo: "user", id: u._id, nombre: u.username },
+      antes: { pidioEl: u.pidioRangoEl },
+      despues: { pidioEl: null },
+      motivo,
+      req,
+    });
+
+    return res.json({ success: true });
+  } catch (err) {
+    return responderError(res, err, "affiliates/rank/dismiss");
+  }
+});
+
+/**
  * TOCAR UNA CAMPAÑA DESDE EL PANEL.
  *
  * Prenderla o apagarla, ponerle fecha de vencimiento, y los dos números

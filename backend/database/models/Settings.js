@@ -395,6 +395,13 @@ settingsSchema.statics.leer = async function leer() {
  * Seis rangos y numeros redondos: el socio tiene que poder acordarse
  * de los suyos sin mirar la tabla.
  *
+ * LOS NOMBRES VAN EN INGLES, COMO LOS DEL VIP
+ *
+ * Son nombres de marca, no texto traducible: el mismo rango tiene que
+ * llamarse igual en las nueve pantallas y en el panel. Si el sitio
+ * esta en ingles y el panel muestra "Esmeralda", nadie sabe si son
+ * dos cosas distintas.
+ *
  *   CPA ......... de SC 15 a SC 60 por jugador que califica
  *   RevShare .... del 35% al 60% del margen real
  *   Hibrido ..... de SC 10 + 30% a SC 40 + 55%
@@ -405,12 +412,12 @@ settingsSchema.statics.leer = async function leer() {
  * Esto es lo de fabrica: la escalera se edita desde el panel.
  */
 const RANGOS_AFILIADO = [
-  { nombre: "Bronce", cpaSc: 15, revsharePct: 35, hibridoCpaSc: 10, hibridoPct: 30, bonoPct: 5, minimoCobroSc: 50, pago: "pedido" },
-  { nombre: "Plata", cpaSc: 25, revsharePct: 40, hibridoCpaSc: 15, hibridoPct: 35, bonoPct: 6, minimoCobroSc: 50, pago: "pedido" },
-  { nombre: "Oro", cpaSc: 35, revsharePct: 45, hibridoCpaSc: 20, hibridoPct: 40, bonoPct: 7, minimoCobroSc: 25, pago: "semanal" },
-  { nombre: "Zafiro", cpaSc: 45, revsharePct: 50, hibridoCpaSc: 30, hibridoPct: 45, bonoPct: 8, minimoCobroSc: 25, pago: "semanal" },
-  { nombre: "Esmeralda", cpaSc: 50, revsharePct: 55, hibridoCpaSc: 35, hibridoPct: 50, bonoPct: 9, minimoCobroSc: 0, pago: "semanal" },
-  { nombre: "Diamante", cpaSc: 60, revsharePct: 60, hibridoCpaSc: 40, hibridoPct: 55, bonoPct: 10, minimoCobroSc: 0, pago: "pedido" },
+  { nombre: "Bronze", cpaSc: 15, revsharePct: 35, hibridoCpaSc: 10, hibridoPct: 30, bonoPct: 5, minimoCobroSc: 50, pago: "pedido" },
+  { nombre: "Silver", cpaSc: 25, revsharePct: 40, hibridoCpaSc: 15, hibridoPct: 35, bonoPct: 6, minimoCobroSc: 50, pago: "pedido" },
+  { nombre: "Gold", cpaSc: 35, revsharePct: 45, hibridoCpaSc: 20, hibridoPct: 40, bonoPct: 7, minimoCobroSc: 25, pago: "semanal" },
+  { nombre: "Sapphire", cpaSc: 45, revsharePct: 50, hibridoCpaSc: 30, hibridoPct: 45, bonoPct: 8, minimoCobroSc: 25, pago: "semanal" },
+  { nombre: "Emerald", cpaSc: 50, revsharePct: 55, hibridoCpaSc: 35, hibridoPct: 50, bonoPct: 9, minimoCobroSc: 0, pago: "semanal" },
+  { nombre: "Diamond", cpaSc: 60, revsharePct: 60, hibridoCpaSc: 40, hibridoPct: 55, bonoPct: 10, minimoCobroSc: 0, pago: "pedido" },
 ];
 
 /* Los que puede elegir un socio sin pedir permiso. */

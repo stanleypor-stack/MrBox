@@ -108,7 +108,7 @@ test("REVSHARE paga sobre el margen REAL, y nunca negativo", async (t) => {
 
   const { codigo, jugador } = await armar({ modelo: "revshare" });
 
-  /* Jugó SC 1.000 y la casa ganó SC 80. Bronce cobra 35%: SC 28. */
+  /* Jugó SC 1.000 y la casa ganó SC 80. Bronze cobra 35%: SC 28. */
   const r = await afiliados.anotarComision({ jugador, jugadoSc: 1000, margenSc: 80 });
   assert.equal(r.ganado, 28, "35% de los 80 de margen");
 
@@ -126,7 +126,7 @@ test("HIBRIDO paga un revshare más chico por jugada", async (t) => {
 
   const { jugador } = await armar({ modelo: "hibrido" });
 
-  /* Bronce híbrido: 30% del margen. De 80, SC 24. */
+  /* Bronze híbrido: 30% del margen. De 80, SC 24. */
   const r = await afiliados.anotarComision({ jugador, jugadoSc: 1000, margenSc: 80 });
   assert.equal(r.ganado, 24);
 });
@@ -150,12 +150,12 @@ test("el RANGO sube la comisión de las campañas que ya existen", async (t) => 
   const { socio, jugador } = await armar({ modelo: "revshare", rango: 1 });
 
   const bronce = await afiliados.anotarComision({ jugador, jugadoSc: 1000, margenSc: 100 });
-  assert.equal(bronce.ganado, 35, "Bronce: 35%");
+  assert.equal(bronce.ganado, 35, "Bronze: 35%");
 
   await afiliados.otorgarRango({ userId: socio._id, numero: 6 });
 
   const arriba = await afiliados.anotarComision({ jugador, jugadoSc: 1000, margenSc: 100 });
-  assert.equal(arriba.ganado, 60, "Diamante: 60%, sin tocar la campaña");
+  assert.equal(arriba.ganado, 60, "Diamond: 60%, sin tocar la campaña");
 });
 
 test("una campaña apagada no sigue generando comisión", async (t) => {
@@ -203,7 +203,7 @@ test("CUANDO CALIFICA se congela lo que le toca y queda esperando", async (t) =>
 
   const ficha = await AffiliateConversion.findOne({ code: codigo._id, user: jugador._id }).lean();
   assert.equal(ficha.estado, "califica");
-  assert.equal(ficha.montoSc, 15, "el CPA de Bronce: SC 15");
+  assert.equal(ficha.montoSc, 15, "el CPA de Bronze: SC 15");
   assert.equal(ficha.nivelKyc, 2);
   assert.ok(ficha.calificoEl, "quedó la fecha en que calificó");
 
@@ -256,7 +256,7 @@ test("DIEZ PEDIDOS DE PAGO AL MISMO TIEMPO PAGAN UNA SOLA CABEZA", async (t) => 
 
   const antes = await AffiliateCode.findById(codigo._id).lean();
   const ficha = await AffiliateConversion.findOne({ code: codigo._id, user: jugador._id }).lean();
-  assert.equal(ficha.montoSc, 10, "el híbrido de Bronce: SC 10 por cabeza");
+  assert.equal(ficha.montoSc, 10, "el híbrido de Bronze: SC 10 por cabeza");
 
   const intentos = await Promise.all(
     Array.from({ length: 10 }, () => afiliados.pagarCabeza({ fichaId: ficha._id }))
@@ -360,13 +360,13 @@ test("el mínimo para cobrar sale del rango", async (t) => {
   const { socio, codigo } = await armar({ modelo: "revshare", rango: 1 });
   await AffiliateCode.updateOne({ _id: codigo._id }, { $set: { ganadoSc: 30 } });
 
-  /* Bronce pide SC 50. */
+  /* Bronze pide SC 50. */
   await assert.rejects(
     () => afiliados.cobrar({ userId: socio._id, codigoId: codigo._id }),
     (err) => err.code === "BELOW_MINIMUM"
   );
 
-  /* Esmeralda no pide mínimo. */
+  /* Emerald no pide mínimo. */
   await afiliados.otorgarRango({ userId: socio._id, numero: 5 });
   const r = await afiliados.cobrar({ userId: socio._id, codigoId: codigo._id });
   assert.equal(r.cobradoSc, 30);

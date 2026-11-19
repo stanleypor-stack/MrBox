@@ -18,9 +18,52 @@
           >{{ l === 'in' ? $t('action.deposit') : $t('action.redeem') }}</button>
         </div>
 
-        <!-- Lo que se puede pagar. Cripto anda; el resto llega con la
-             pasarela, y se dice en vez de poner un botón mudo. -->
-        <button type="button" class="mb-caja__metodo is-elegido" aria-pressed="true">
+        <!--
+          COMO PAGAR.
+
+          Dos maneras, las dos de cripto: desde la billetera del
+          navegador, o copiando la dirección. Es la misma plata y la
+          misma dirección; cambia quién la escribe.
+        -->
+        <template v-if="lado === 'in'">
+          <span class="mb-caja__grupo">{{ $t('wallet.groupCrypto') }}</span>
+
+          <button
+            type="button" class="mb-caja__metodo" :class="{ 'is-elegido': metodo === 'billetera' }"
+            :aria-pressed="String(metodo === 'billetera')" @click="metodo = 'billetera'"
+          >
+            <span class="mb-caja__metodo-t">{{ $t('wallet.connectWallet') }}</span>
+            <span class="mb-caja__puntos">
+              <span
+                v-for="b in billeteras.slice(0, 3)" :key="b.id" class="mb-caja__icono"
+                aria-hidden="true"
+              >
+                <img v-if="b.icono" :src="b.icono" alt="" width="20" height="20">
+                <template v-else>{{ b.nombre.slice(0, 1) }}</template>
+              </span>
+              <span v-if="billeteras.length > 3" class="mb-caja__mas">
+                +{{ billeteras.length - 3 }}
+              </span>
+              <span v-if="!billeteras.length" class="mb-caja__mas">{{ $t('wallet.noWallet') }}</span>
+            </span>
+          </button>
+
+          <button
+            type="button" class="mb-caja__metodo" :class="{ 'is-elegido': metodo === 'direccion' }"
+            :aria-pressed="String(metodo === 'direccion')" @click="metodo = 'direccion'"
+          >
+            <span class="mb-caja__metodo-t">{{ $t('wallet.cryptocurrencies') }}</span>
+            <span class="mb-caja__puntos">
+              <span
+                v-for="m in monedas.slice(0, 4)" :key="m.ticker" class="mb-caja__punto"
+                :style="{ background: m.color }" aria-hidden="true"
+              >{{ m.letra }}</span>
+              <span v-if="monedas.length > 4" class="mb-caja__mas">+{{ monedas.length - 4 }}</span>
+            </span>
+          </button>
+        </template>
+
+        <button v-else type="button" class="mb-caja__metodo is-elegido" aria-pressed="true">
           <span class="mb-caja__metodo-t">{{ $t('wallet.crypto') }}</span>
           <span class="mb-caja__puntos">
             <span
@@ -39,7 +82,7 @@
       <!-- ── Depositar ────────────────────────────────────────────── -->
       <div v-if="lado === 'in'" class="mb-caja__cuerpo">
         <div class="mb-caja__cabeza">
-          <span>{{ $t('wallet.payWithCrypto') }}</span>
+          <span>{{ metodo === 'billetera' ? $t('wallet.payFromWallet') : $t('wallet.payWithCrypto') }}</span>
           <button type="button" class="mb-caja__x" :aria-label="$t('action.cancel')" @click="cerrar">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"
                  stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
@@ -49,6 +92,112 @@
         <p v-if="deposito && !deposito.conectada" class="mb-caja__aviso">
           {{ $t('wallet.notConnected') }}
         </p>
+
+        <!--
+          ══ PAGAR DESDE LA BILLETERA ═══════════════════════════════
+
+          La plata va a la MISMA direccion que muestra la otra manera.
+          Esto le ahorra al jugador copiarla y pegarla, que es donde se
+          pierden los depositos.
+        -->
+        <template v-else-if="metodo === 'billetera'">
+          <div class="mb-caja__conectar">
+            <span class="mb-caja__conectar-iconos" aria-hidden="true">
+              <span v-for="b in billeteras.slice(0, 3)" :key="b.id" class="mb-caja__icono mb-caja__icono--grande">
+                <img v-if="b.icono" :src="b.icono" alt="" width="28" height="28">
+                <template v-else>{{ b.nombre.slice(0, 1) }}</template>
+              </span>
+
+              <span v-if="!billeteras.length" class="mb-caja__icono mb-caja__icono--grande">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8ea3c7"
+                     stroke-width="2" stroke-linejoin="round">
+                  <rect x="3" y="6" width="18" height="13" rx="2.5" />
+                  <path d="M3 10h18M16 14.5h2" />
+                </svg>
+              </span>
+            </span>
+
+            <b class="mb-caja__conectar-t">{{ $t('wallet.connectTitle') }}</b>
+            <p class="mb-caja__conectar-p">
+              {{ billeteras.length ? $t('wallet.connectSub') : $t('wallet.connectNone') }}
+            </p>
+
+            <template v-if="billeteras.length">
+              <!-- Que moneda y en que red. Solo los pares que una
+                   billetera de navegador sabe mandar. -->
+              <div class="mb-caja__conectar-campos">
+                <span class="mb-caja__campo">
+                  {{ $t('wallet.coin') }}
+                  <MbElegir v-model="tickerElegido" :opciones="opcionesDeMonedaBilletera" @elegida="alCambiarMonedaBilletera">
+                    <template #icono="{ o }">
+                      <MbMoneda v-if="o" :ticker="o.valor" :color="o.color" :letra="o.letra" />
+                    </template>
+                  </MbElegir>
+                </span>
+
+                <span class="mb-caja__campo">
+                  {{ $t('wallet.network') }}
+                  <MbElegir v-model="redElegida" :opciones="opcionesDeRedBilletera" @elegida="traerDeposito">
+                    <template #icono="{ o }">
+                      <MbMoneda v-if="o" :ticker="o.valor" :color="o.color" :letra="o.letra" />
+                    </template>
+                  </MbElegir>
+                </span>
+              </div>
+
+              <template v-if="!txHash">
+                <div class="mb-caja__billetera-fila">
+                  <input
+                    v-model="montoCripto" class="mb-caja__in" inputmode="decimal"
+                    :placeholder="$t('wallet.amountIn', { coin: tickerElegido })"
+                    :aria-label="$t('wallet.amountIn', { coin: tickerElegido })"
+                  >
+                  <span class="mb-caja__billetera-tk">{{ tickerElegido }}</span>
+                </div>
+
+                <div class="mb-caja__billetera-botones">
+                  <button
+                    v-for="b in billeteras" :key="b.id" type="button"
+                    class="mb-caja__conectar-b" :disabled="pagando || !deposito.direccion"
+                    @click="pagarCon(b)"
+                  >
+                    <img v-if="b.icono" :src="b.icono" alt="" width="20" height="20">
+                    {{ $t('wallet.payWith', { wallet: b.nombre }) }}
+                  </button>
+                </div>
+
+                <p class="mb-caja__fino">{{ $t('wallet.walletNote', { net: red.nombre }) }}</p>
+              </template>
+
+              <template v-else>
+                <p class="mb-caja__billetera-ok">{{ $t('wallet.walletSent') }}</p>
+                <a :href="enlaceDeLaTx" target="_blank" rel="noopener" class="mb-caja__billetera-link">
+                  {{ txCorto }}
+                </a>
+                <p class="mb-caja__fino">
+                  {{ $t('wallet.minAndConfirms', { min: minimo, n: red.confirmaciones, time: red.demora }) }}
+                </p>
+              </template>
+            </template>
+          </div>
+
+          <!-- Lo que se puede pagar asi, a la vista. -->
+          <div class="mb-caja__soportadas">
+            <span>{{ $t('wallet.supportedCoins') }}</span>
+            <span class="mb-caja__puntos">
+              <span
+                v-for="m in monedasDeBilletera" :key="m.ticker" class="mb-caja__punto"
+                :style="{ background: m.color }" :title="m.ticker" aria-hidden="true"
+              >{{ m.letra }}</span>
+            </span>
+          </div>
+
+          <!-- Y la salida para el que paga desde un exchange o en Tron. -->
+          <button type="button" class="mb-caja__salida" @click="metodo = 'direccion'">
+            {{ $t('wallet.fromExchange') }}
+            <b>{{ $t('wallet.useAddress') }}</b>
+          </button>
+        </template>
 
         <template v-else-if="deposito">
           <span class="mb-caja__solo" v-html="$t('wallet.sendOnly', { coin: tickerLargo, net: red.nombre })"></span>
@@ -66,81 +215,39 @@
             </svg>
             {{ copiado ? $t('wallet.copied') : $t('wallet.copyAddress') }}
           </button>
-
-          <!--
-            ══ PAGAR DESDE LA BILLETERA ═══════════════════════════════
-
-            Solo aparece si esta moneda y esta red se pueden pagar así y
-            el navegador tiene una billetera. La plata va a la MISMA
-            dirección de arriba: esto le ahorra al jugador copiarla y
-            pegarla, que es donde se pierden los depósitos.
-          -->
-          <div v-if="sePuedePagarConBilletera" class="mb-caja__billetera">
-            <div class="mb-caja__billetera-cab">
-              <span>{{ $t('wallet.payFromWallet') }}</span>
-              <span class="mb-caja__billetera-red">{{ red.nombre }}</span>
-            </div>
-
-            <template v-if="!txHash">
-              <div class="mb-caja__billetera-fila">
-                <input
-                  v-model="montoCripto" class="mb-caja__in" inputmode="decimal"
-                  :placeholder="$t('wallet.amountIn', { coin: tickerElegido })"
-                  :aria-label="$t('wallet.amountIn', { coin: tickerElegido })"
-                >
-                <span class="mb-caja__billetera-tk">{{ tickerElegido }}</span>
-              </div>
-
-              <div class="mb-caja__billetera-botones">
-                <button
-                  v-for="b in billeteras" :key="b.id" type="button"
-                  class="mb-caja__billetera-b" :disabled="pagando" @click="pagarCon(b)"
-                >
-                  <img v-if="b.icono" :src="b.icono" alt="" width="18" height="18">
-                  {{ b.nombre }}
-                </button>
-              </div>
-
-              <p class="mb-caja__fino">{{ $t('wallet.walletNote', { net: red.nombre }) }}</p>
-            </template>
-
-            <template v-else>
-              <p class="mb-caja__billetera-ok">{{ $t('wallet.walletSent') }}</p>
-              <a :href="enlaceDeLaTx" target="_blank" rel="noopener" class="mb-caja__billetera-link">
-                {{ txCorto }}
-              </a>
-              <p class="mb-caja__fino">
-                {{ $t('wallet.minAndConfirms', { min: minimo, n: red.confirmaciones, time: red.demora }) }}
-              </p>
-            </template>
-          </div>
         </template>
 
         <p v-else class="mb-caja__nota">{{ $t('common.loading') }}</p>
 
-        <!-- La moneda y la red: los dos selectores del diseño -->
-        <span class="mb-caja__campo">
-          {{ $t('wallet.coin') }}
-          <MbElegir v-model="tickerElegido" :opciones="opcionesDeMoneda" @elegida="alCambiarMoneda">
-            <template #icono="{ o }">
-              <MbMoneda v-if="o" :ticker="o.valor" :color="o.color" :letra="o.letra" />
-            </template>
-          </MbElegir>
-        </span>
+        <!--
+          La moneda y la red, los dos selectores del diseño. Solo en la
+          manera de la dirección: la otra tiene los suyos adentro del
+          panel, con las monedas que una billetera sabe mandar.
+        -->
+        <template v-if="metodo === 'direccion'">
+          <span class="mb-caja__campo">
+            {{ $t('wallet.coin') }}
+            <MbElegir v-model="tickerElegido" :opciones="opcionesDeMoneda" @elegida="alCambiarMoneda">
+              <template #icono="{ o }">
+                <MbMoneda v-if="o" :ticker="o.valor" :color="o.color" :letra="o.letra" />
+              </template>
+            </MbElegir>
+          </span>
 
-        <span class="mb-caja__campo">
-          {{ $t('wallet.network') }}
-          <MbElegir v-model="redElegida" :opciones="opcionesDeRed" @elegida="traerDeposito">
-            <template #icono="{ o }">
-              <MbMoneda v-if="o" :ticker="o.valor" :color="o.color" :letra="o.letra" />
-            </template>
-          </MbElegir>
-        </span>
+          <span class="mb-caja__campo">
+            {{ $t('wallet.network') }}
+            <MbElegir v-model="redElegida" :opciones="opcionesDeRed" @elegida="traerDeposito">
+              <template #icono="{ o }">
+                <MbMoneda v-if="o" :ticker="o.valor" :color="o.color" :letra="o.letra" />
+              </template>
+            </MbElegir>
+          </span>
 
-        <p class="mb-caja__fino">
-          {{ $t('wallet.minAndConfirms', { min: minimo, n: red.confirmaciones, time: red.demora }) }}
-          <br>{{ $t('wallet.belowMin') }}
-        </p>
+          <p class="mb-caja__fino">
+            {{ $t('wallet.minAndConfirms', { min: minimo, n: red.confirmaciones, time: red.demora }) }}
+            <br>{{ $t('wallet.belowMin') }}
+          </p>
+        </template>
 
         <!--
           EL CODIGO DE AFILIADO, QUE SE PUEDE PONER ACA.
@@ -336,7 +443,10 @@ export default {
       codigoAbierto: false,
       aplicando: false,
 
-      /* Pagar desde la billetera del navegador. */
+      /* Como se paga: desde la billetera del navegador, o copiando
+         la direccion. Arranca en la direccion y pasa sola a la
+         billetera si el navegador tiene una. */
+      metodo: "direccion",
       billeteras: [],
       montoCripto: "",
       pagando: false,
@@ -397,6 +507,33 @@ export default {
       alguna billetera instalada. Si falta una, queda la dirección y el
       QR, que es lo que siempre hubo.
     */
+    /* Las monedas que una billetera de navegador sabe mandar. */
+    monedasDeBilletera() {
+      return this.monedas.filter((m) => (m.redes || []).some((r) => parDeBilletera(m.ticker, r.clave)));
+    },
+
+    opcionesDeMonedaBilletera() {
+      return this.monedasDeBilletera.map((m) => ({
+        valor: m.ticker,
+        texto: m.nombre,
+        derecha: m.ticker,
+        color: m.color,
+        letra: m.letra,
+      }));
+    },
+
+    opcionesDeRedBilletera() {
+      return (this.moneda.redes || [])
+        .filter((r) => parDeBilletera(this.tickerElegido, r.clave))
+        .map((r) => ({
+          valor: r.clave,
+          texto: r.nombre,
+          derecha: r.clave.toUpperCase() === r.nombre.toUpperCase() ? "" : r.clave,
+          color: r.color,
+          letra: r.letra,
+        }));
+    },
+
     sePuedePagarConBilletera() {
       return !!(this.deposito && this.deposito.direccion
         && this.billeteras.length
@@ -427,6 +564,11 @@ export default {
   },
 
   watch: {
+    metodo(v) {
+      this.txHash = "";
+      if (v === "billetera") this.aUnParDeBilletera();
+    },
+
     lado(v) {
       if (v === "in") this.traerDeposito();
       else this.traerCanje();
@@ -519,6 +661,41 @@ export default {
       } catch {
         this.billeteras = [];
       }
+
+      /*
+        CON UNA BILLETERA INSTALADA, ESA ES LA MANERA DE ARRANQUE.
+        Es la que menos pasos tiene y la que no deja copiar mal una
+        direccion. Sin billetera, ni se ofrece de entrada.
+      */
+      if (this.billeteras.length && this.lado === "in") {
+        this.metodo = "billetera";
+        this.aUnParDeBilletera();
+      }
+    },
+
+    /** Deja elegida una moneda y una red que la billetera sepa mandar. */
+    aUnParDeBilletera() {
+      if (parDeBilletera(this.tickerElegido, this.redElegida)) return;
+
+      const moneda = this.monedasDeBilletera.find((m) => m.ticker === this.tickerElegido)
+        || this.monedasDeBilletera[0];
+      if (!moneda) return;
+
+      const red = (moneda.redes || []).find((r) => parDeBilletera(moneda.ticker, r.clave));
+      if (!red) return;
+
+      this.tickerElegido = moneda.ticker;
+      this.redElegida = red.clave;
+      this.traerDeposito();
+    },
+
+    /* Al cambiar de moneda en el panel de la billetera, la red tiene
+       que ser una que esa billetera sepa mandar. */
+    alCambiarMonedaBilletera() {
+      const moneda = this.monedas.find((m) => m.ticker === this.tickerElegido);
+      const red = ((moneda && moneda.redes) || []).find((r) => parDeBilletera(this.tickerElegido, r.clave));
+      this.redElegida = red ? red.clave : this.redElegida;
+      this.traerDeposito();
     },
 
     async traerDeposito() {
@@ -907,6 +1084,115 @@ export default {
   font-family: inherit;
   font-size: 14px;
   &:focus { outline: none; border-color: $azul; }
+}
+
+/* ── Las dos maneras de pagar ──────────────────────────────────────── */
+
+.mb-caja__grupo {
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: $texto-4;
+}
+
+.mb-caja__icono {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  /* Un escalón más claro que la tarjeta: si fuera el mismo tono, la
+     letra flotaría sin chapa y no se leería como un icono. */
+  background: #1d3354;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 12px;
+  overflow: hidden;
+
+  img { display: block; }
+  &--grande { width: 44px; height: 44px; border-radius: 12px; }
+}
+
+/* El panel grande de conectar, como en el diseño de referencia. */
+.mb-caja__conectar {
+  border-radius: 16px;
+  background: $panel-alto;
+  border: 1px solid $borde;
+  padding: 22px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+
+  @include en-celular { padding: 18px 14px; }
+}
+
+.mb-caja__conectar-iconos { display: flex; gap: 8px; }
+.mb-caja__conectar-t { font-weight: 900; font-size: 17px; }
+
+.mb-caja__conectar-p {
+  margin: 0;
+  max-width: 340px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: $texto-3;
+}
+
+.mb-caja__conectar-campos {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  gap: 10px;
+  text-align: left;
+}
+
+.mb-caja__conectar-b {
+  width: 100%;
+  height: 50px;
+  padding: 0 20px;
+  border-radius: 25px;
+  border: 3px solid #fff;
+  background: linear-gradient(180deg, #4fa2ff, #2f6fe0);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 900;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  @include foco;
+
+  img { border-radius: 5px; }
+  &:hover:not(:disabled) { filter: brightness(1.07); }
+  &:disabled { opacity: .5; cursor: default; }
+}
+
+.mb-caja__soportadas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 4px;
+
+  > span:first-child { font-weight: 800; font-size: 13px; color: $texto-4; }
+}
+
+.mb-caja__salida {
+  border: 0;
+  background: transparent;
+  color: $texto-4;
+  font-family: inherit;
+  font-size: 13px;
+  text-align: center;
+  cursor: pointer;
+  @include foco;
+
+  b { color: #8fb4ff; }
+  &:hover b { color: #fff; }
 }
 
 /* ── Pagar desde la billetera ──────────────────────────────────────── */

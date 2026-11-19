@@ -46,30 +46,84 @@
       <h2>{{ $t('admin.afi.rank') }}</h2>
       <p>{{ $t('admin.afi.rankHelp') }}</p>
 
+      <!--
+        EL PEDIDO, CON LOS DOS CAMINOS A LA VISTA.
+
+        Un cartel que dice "pidió revisión" y nada más deja a cualquiera
+        preguntándose qué hay que apretar. Acá está el paso siguiente
+        escrito: subirlo al que le toca, o contestar que no.
+      -->
+      <div v-if="d.pidioRangoEl" class="adso__pedido">
+        <span class="adso__pedido-que">
+          <b>{{ $t('admin.afi.askedOn', { date: fecha(d.pidioRangoEl) }) }}</b>
+          <em>{{ $t('admin.afi.askedHelp') }}</em>
+        </span>
+
+        <div class="adso__pedido-botones">
+          <button
+            v-if="d.rango.siguiente" type="button" class="ad-b"
+            @click="proponer(d.rango.siguiente.numero)"
+          >
+            {{ $t('admin.afi.moveUpTo', {
+              rank: d.rango.siguiente.numero + ' · ' + d.rango.siguiente.nombre,
+            }) }}
+          </button>
+
+          <button type="button" class="ad-b ad-b--suave" @click="rechazando = true">
+            {{ $t('admin.afi.dismiss') }}
+          </button>
+        </div>
+      </div>
+
       <div class="adso__rango">
         <span class="adso__ahora">
-          <mb-gema :numero="d.rango.numero" :lado="36" />
+          <mb-gema :numero="gemaDe(d.rango.numero)" :lado="36" />
           <span>
             <b>{{ d.rango.numero }} · {{ d.rango.nombre }}</b>
             <em>
               SC {{ d.rango.cpaSc }} · {{ d.rango.revsharePct }}% ·
               SC {{ d.rango.hibridoCpaSc }} + {{ d.rango.hibridoPct }}% ·
-{{ $t('admin.afi.bonus', { pct: d.rango.bonoPct }) }}
+              {{ $t('admin.afi.bonus', { pct: d.rango.bonoPct }) }}
             </em>
           </span>
         </span>
 
         <div class="adso__dar">
           <mb-elegir v-model="nuevoRango" class="ad-elegir" :opciones="opcionesDeRango" />
-          <input v-model="motivo" class="ad-in adso__motivo" :placeholder="$t('admin.reason')" maxlength="300">
-          <button
-            type="button" class="ad-b"
-            :disabled="motivo.trim().length < 3 || nuevoRango === d.rango.numero || dando"
-            @click="dar"
-          >{{ $t('admin.afi.grant') }}</button>
+          <input
+            ref="motivo" v-model="motivo" class="ad-in adso__motivo"
+            :placeholder="$t('admin.reason')" maxlength="300"
+          >
+          <button type="button" class="ad-b" :disabled="!sePuedeDar" @click="dar">
+            {{ $t('admin.afi.grant') }}
+          </button>
         </div>
       </div>
+
+      <!-- Por qué el botón no se puede apretar todavía. -->
+      <p v-if="!sePuedeDar" class="adso__porque">{{ porQueNo }}</p>
     </section>
+
+    <!-- Contestar que no: también pide motivo. -->
+    <mb-ventana
+      v-if="rechazando" :titulo="$t('admin.afi.dismissTitle')"
+      :sub="$t('admin.afi.dismissSub')" @cerrar="rechazando = false"
+    >
+      <label class="ad-campo">
+        {{ $t('admin.reason') }}
+        <input v-model="motivoRechazo" class="ad-in" maxlength="300">
+      </label>
+
+      <template #pie>
+        <button type="button" class="ad-b ad-b--suave" @click="rechazando = false">
+          {{ $t('admin.cancel') }}
+        </button>
+        <button
+          type="button" class="ad-b" :disabled="motivoRechazo.trim().length < 3"
+          @click="rechazar"
+        >{{ $t('admin.afi.dismiss') }}</button>
+      </template>
+    </mb-ventana>
 
     <!-- ── Las campañas ─────────────────────────────────────────── -->
     <section class="ad-caja">
@@ -297,6 +351,8 @@ export default {
       nuevoRango: 1,
       motivo: "",
       dando: false,
+      rechazando: false,
+      motivoRechazo: "",
       campana: null,
       edicion: { modelo: "hibrido", activo: true, bonoPropio: "" },
       motivoCampana: "",
@@ -304,6 +360,26 @@ export default {
   },
 
   computed: {
+    /*
+      SI SE PUEDE OTORGAR, Y SI NO, POR QUE.
+
+      Un botón apagado sin explicación es un botón roto para el que lo
+      mira: hay que decir qué falta.
+    */
+    sePuedeDar() {
+      return !!this.d
+        && this.motivo.trim().length >= 3
+        && this.nuevoRango !== this.d.rango.numero
+        && !this.dando;
+    },
+
+    porQueNo() {
+      if (!this.d) return "";
+      if (this.nuevoRango === this.d.rango.numero) return this.$t("admin.afi.pickAnother");
+      if (this.motivo.trim().length < 3) return this.$t("admin.afi.needReason");
+      return "";
+    },
+
     houseEdge() {
       /* El margen teórico que muestra la ficha sale del mismo house edge
          con el que se calcula el modelo. Se lee del servidor. */
@@ -336,6 +412,31 @@ export default {
 
   methods: {
     num(n) { return Number(n || 0).toLocaleString("en-US"); },
+
+    /* La misma piedra que el VIP: seis rangos, nueve gemas. */
+    gemaDe(numero) {
+      return [1, 2, 3, 4, 5, 7][Math.max(0, Math.min(5, (Number(numero) || 1) - 1))];
+    },
+
+    /* El botón del pedido: deja el rango elegido y el foco en el motivo. */
+    proponer(numero) {
+      this.nuevoRango = numero;
+      this.$nextTick(() => { if (this.$refs.motivo) this.$refs.motivo.focus(); });
+    },
+
+    async rechazar() {
+      try {
+        await api.post(`/admin/affiliates/${this.$route.params.userId}/rank/dismiss`, {
+          motivo: this.motivoRechazo,
+        });
+        this.rechazando = false;
+        this.motivoRechazo = "";
+        this.$store.dispatch("avisar", { texto: this.$t("admin.done") });
+        await this.traer();
+      } catch (err) {
+        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
+      }
+    },
     plata(n) {
       return Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
@@ -444,6 +545,31 @@ export default {
   b { font-weight: 900; font-size: 20px; }
   em { font-style: normal; font-weight: 700; font-size: 12px; color: $texto-4; }
 }
+
+.adso__pedido {
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(255, 211, 90, .08);
+  border: 1px solid rgba(255, 211, 90, .35);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.adso__pedido-que {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  b { font-weight: 900; font-size: 14px; color: $amarillo; }
+  em { font-style: normal; font-size: 13px; color: $texto-3; }
+}
+
+.adso__pedido-botones { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.adso__porque { margin: 8px 0 0; font-size: 13px; color: $texto-4; }
 
 .adso__dar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .adso__motivo { min-width: 240px; flex: 1; }

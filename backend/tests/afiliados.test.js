@@ -138,11 +138,11 @@ test("subirle el rango al socio le sube el bono a sus jugadores, sin tocar el c�
   const jug = await jugadorDe(codigo.code);
   const u = await User.findById(jug.id).lean();
 
-  assert.equal((await afiliados.bonoDeCompra(u, 100)).bonoSc, 5, "Bronce da 5%");
+  assert.equal((await afiliados.bonoDeCompra(u, 100)).bonoSc, 5, "Bronze da 5%");
 
   await afiliados.otorgarRango({ userId: socio._id, numero: 6 });
 
-  assert.equal((await afiliados.bonoDeCompra(u, 100)).bonoSc, 10, "Diamante da 10%");
+  assert.equal((await afiliados.bonoDeCompra(u, 100)).bonoSc, 10, "Diamond da 10%");
 
   /* Y la campaña no se tocó: el número no vive ahí. */
   const sinTocar = await AffiliateCode.findById(codigo._id).lean();
@@ -158,7 +158,7 @@ test("EL BONO VA CON LOS TRES MODELOS", async (t) => {
     const u = await User.findById(jug.id).lean();
 
     const { bonoSc } = await afiliados.bonoDeCompra(u, 100);
-    assert.equal(bonoSc, 7, `el modelo ${modelo} tiene que dar el 7% del rango Oro igual`);
+    assert.equal(bonoSc, 7, `el modelo ${modelo} tiene que dar el 7% del rango Gold igual`);
   }
 });
 
@@ -330,7 +330,7 @@ test("poner el código después dice el porcentaje del rango que de verdad le to
   const datos = await r.json();
 
   assert.equal(datos.success, true);
-  assert.equal(datos.data.bonoPct, 10, "Diamante da 10%, no el 5% de siempre");
+  assert.equal(datos.data.bonoPct, 10, "Diamond da 10%, no el 5% de siempre");
 
   /* Y lo que se le dijo es lo que se le acredita. */
   await avisoDePago({ userId: jug.id, monto: 100, trackId: "T-tarde-" + Date.now() });

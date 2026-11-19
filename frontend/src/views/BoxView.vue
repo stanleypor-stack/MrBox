@@ -549,6 +549,41 @@ export default {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+
+  /*
+    EN EL TELEFONO SE ARMA EN DOS RENGLONES, COMO EL DISEÑO.
+
+      [1][2][3][4]                    [Auto ●]
+      [      ABRIR  SC 1,12      ][Demo][rayo]
+
+    En la compu no cambia nada: ahí los tres grupos entran en una línea
+    y es como está dibujado.
+
+    Para poder mezclar los grupos sin tocar el HTML, en celular los dos
+    contenedores pasan a `display: contents`: sus botones se vuelven
+    hijos directos de esta fila y se acomodan con `order`. Es la única
+    manera de que el Auto suba al primer renglón y el rayo baje al
+    segundo sin armar un DOM distinto para cada tamaño.
+  */
+  @include en-celular {
+    gap: 8px;
+
+    .mb-mandos__botones, .mb-mandos__dos { display: contents; }
+
+    .mb-veces { order: 1; }
+    .mb-auto { order: 2; margin-left: auto; }
+
+    /* El de gratis, cuando está, se lleva el renglón entero. */
+    .mb-amarillo { order: 3; flex: 1 1 100%; justify-content: center; }
+
+    /*
+      Y el de abrir empuja: con 140px de base no entra arriba, así que
+      el renglón se corta solo y Demo y el rayo lo acompañan abajo.
+    */
+    .mb-azul { order: 4; flex: 1 1 140px; min-width: 0; }
+    .mb-demo { order: 5; flex: none; }
+    .mb-cuadrado--grande { order: 6; }
+  }
 }
 
 

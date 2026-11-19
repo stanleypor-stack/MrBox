@@ -98,9 +98,9 @@ test("la pantalla del socio trae su rango, la escalera y el bono de sus jugadore
 
   const d = r.datos.data;
   assert.equal(d.rango.numero, 1, "todo el mundo arranca en el primero");
-  assert.equal(d.rango.nombre, "Bronce");
+  assert.equal(d.rango.nombre, "Bronze");
   assert.equal(d.escalera.length, 6);
-  assert.equal(d.bonoParaElAmigo, 5, "Bronce: 5% para el que entra con su código");
+  assert.equal(d.bonoParaElAmigo, 5, "Bronze: 5% para el que entra con su código");
   assert.equal(d.reglas.houseEdgePct, 8);
   assert.deepEqual(d.reglas.modelosAbiertos, ["revshare", "hibrido"]);
   assert.equal(d.campanas.length, 0, "todavía no creó ninguna");
@@ -263,7 +263,7 @@ test("el socio cobra una sola vez, y respeta el mínimo de su rango", async (t) 
 
   await AffiliateCode.updateOne({ _id: id }, { $set: { ganadoSc: 40 } });
   const corto = await pedir("POST", `/affiliates/campaigns/${id}/claim`, { token: yo.token });
-  assert.equal(corto.datos.code, "BELOW_MINIMUM", "Bronce pide SC 50");
+  assert.equal(corto.datos.code, "BELOW_MINIMUM", "Bronze pide SC 50");
 
   await AffiliateCode.updateOne({ _id: id }, { $set: { ganadoSc: 120 } });
 
@@ -337,7 +337,7 @@ test("otorgar un rango pide motivo, y queda en el registro", async (t) => {
   });
   assert.equal(r.estado, 200);
   assert.equal(r.datos.data.rango.numero, 5);
-  assert.equal(r.datos.data.rango.nombre, "Esmeralda");
+  assert.equal(r.datos.data.rango.nombre, "Emerald");
 
   const u = await User.findById(socio.id).lean();
   assert.equal(u.rangoAfiliado, 5);
@@ -352,7 +352,7 @@ test("otorgar un rango pide motivo, y queda en el registro", async (t) => {
   /* Y el socio ve el rango nuevo en su pantalla, con el bono nuevo. */
   const mio = await pedir("GET", "/affiliates", { token: socio.token });
   assert.equal(mio.datos.data.rango.numero, 5);
-  assert.equal(mio.datos.data.bonoParaElAmigo, 9, "Esmeralda da 9% a sus jugadores");
+  assert.equal(mio.datos.data.bonoParaElAmigo, 9, "Emerald da 9% a sus jugadores");
 });
 
 test("la cola de pedidos de rango trae los números para decidir", async (t) => {
@@ -462,7 +462,7 @@ test("la ficha de un socio cuenta sus campañas, su embudo y lo que cobró", asy
   assert.equal(d.socio.username, socio.username);
   assert.equal(d.campanas.length, 1);
   assert.equal(d.campanas[0].modelo, "hibrido");
-  assert.equal(d.campanas[0].cobra.pct, 30, "el hibrido de Bronce paga 30%");
+  assert.equal(d.campanas[0].cobra.pct, 30, "el hibrido de Bronze paga 30%");
   assert.equal(d.campanas[0].cobra.porCabezaSc, 10, "mas SC 10 por cabeza");
   assert.equal(d.numeros.pagadoSc, 75, "del libro");
   assert.equal(d.rango.numero, 1);
