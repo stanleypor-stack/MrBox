@@ -1,13 +1,13 @@
 /**
- * LOS CUATRO MODELOS DE COMISION, Y LA VIDA DE UN REFERIDO.
+ * LOS TRES MODELOS DE COMISION, Y LA VIDA DE UN REFERIDO.
  *
  * Esto es la plata del programa de afiliados, asi que cada numero se
  * prueba contra una cuenta hecha a mano en el comentario:
  *
  *   cpa ........ nada por jugada; SC fijos una vez, cuando califica
  *   revshare ... % del margen REAL; una jugada perdedora paga cero
- *   hibrido .... un cpa mas chico al calificar + un revshare mas chico
- *   houseedge .. % del margen TEORICO; no depende de la suerte
+ *   hibrido .... CPA + RevShare: un cpa mas chico al calificar, y un
+ *                revshare mas chico de ahi en adelante
  *
  * Y la parte que mas duele si sale mal: que una cabeza se pague UNA vez.
  * No con un `if`, sino con el indice unico `(code, user)` y con la
@@ -121,26 +121,6 @@ test("REVSHARE paga sobre el margen REAL, y nunca negativo", async (t) => {
   assert.equal(c.jugadoPorLosSuyosSc, 1050, "lo jugado se cuenta igual");
 });
 
-test("HOUSEEDGE paga sobre el margen TEORICO, con suerte o sin suerte", async (t) => {
-  if (!hayBase) return t.skip("sin MongoDB");
-
-  const { codigo, jugador } = await armar({ modelo: "houseedge" });
-
-  /*
-    Jugó SC 1.000. El house edge del sitio es 8%, así que el margen
-    teórico son SC 80, y Bronce se lleva el 50% de eso: SC 40.
-    El margen real --que la casa haya ganado o perdido-- no entra.
-  */
-  const gano = await afiliados.anotarComision({ jugador, jugadoSc: 1000, margenSc: 80 });
-  assert.equal(gano.ganado, 40);
-
-  const perdio = await afiliados.anotarComision({ jugador, jugadoSc: 1000, margenSc: -900 });
-  assert.equal(perdio.ganado, 40, "el modelo no mira la suerte, y por eso se elige");
-
-  const c = await AffiliateCode.findById(codigo._id).lean();
-  assert.equal(c.ganadoSc, 80);
-});
-
 test("HIBRIDO paga un revshare más chico por jugada", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
 
@@ -172,10 +152,10 @@ test("el RANGO sube la comisión de las campañas que ya existen", async (t) => 
   const bronce = await afiliados.anotarComision({ jugador, jugadoSc: 1000, margenSc: 100 });
   assert.equal(bronce.ganado, 35, "Bronce: 35%");
 
-  await afiliados.otorgarRango({ userId: socio._id, numero: 8 });
+  await afiliados.otorgarRango({ userId: socio._id, numero: 6 });
 
-  const onix = await afiliados.anotarComision({ jugador, jugadoSc: 1000, margenSc: 100 });
-  assert.equal(onix.ganado, 50, "Onix: 50%, sin tocar la campaña");
+  const arriba = await afiliados.anotarComision({ jugador, jugadoSc: 1000, margenSc: 100 });
+  assert.equal(arriba.ganado, 60, "Diamante: 60%, sin tocar la campaña");
 });
 
 test("una campaña apagada no sigue generando comisión", async (t) => {
@@ -360,18 +340,16 @@ test("anular una cabeza pide motivo y no paga nada", async (t) => {
   assert.equal(c.ganadoSc, 0);
 });
 
-test("revshare y houseedge no generan pagos por cabeza", async (t) => {
+test("el revshare puro no genera pagos por cabeza", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
 
-  for (const modelo of ["revshare", "houseedge"]) {
-    const { codigo, jugador } = await armar({ modelo });
-    const u = await queCalifique(jugador);
-    await afiliados.anotarComision({ jugador: u, jugadoSc: 200, margenSc: 16 });
+  const { codigo, jugador } = await armar({ modelo: "revshare" });
+  const u = await queCalifique(jugador);
+  await afiliados.anotarComision({ jugador: u, jugadoSc: 200, margenSc: 16 });
 
-    const ficha = await AffiliateConversion.findOne({ code: codigo._id, user: jugador._id }).lean();
-    assert.equal(ficha.estado, "nuevo", `${modelo} no mueve la ficha: no hay cabeza que pagar`);
-    assert.equal(ficha.montoSc, 0);
-  }
+  const ficha = await AffiliateConversion.findOne({ code: codigo._id, user: jugador._id }).lean();
+  assert.equal(ficha.estado, "nuevo", "el revshare no mueve la ficha: no hay cabeza que pagar");
+  assert.equal(ficha.montoSc, 0);
 });
 
 /* ══ 3. Cobrar ════════════════════════════════════════════════════ */
@@ -388,8 +366,8 @@ test("el mínimo para cobrar sale del rango", async (t) => {
     (err) => err.code === "BELOW_MINIMUM"
   );
 
-  /* Diamante no pide mínimo. */
-  await afiliados.otorgarRango({ userId: socio._id, numero: 7 });
+  /* Esmeralda no pide mínimo. */
+  await afiliados.otorgarRango({ userId: socio._id, numero: 5 });
   const r = await afiliados.cobrar({ userId: socio._id, codigoId: codigo._id });
   assert.equal(r.cobradoSc, 30);
 
@@ -416,14 +394,14 @@ test("crear una campaña: el modelo tiene que estar abierto", async (t) => {
     nombre: "YouTube · reviews",
     code: "mi-codigo",
     canal: "YouTube",
-    modelo: "houseedge",
+    modelo: "revshare",
   });
   assert.equal(buena.code, "MI-CODIGO", "el código se guarda en mayúsculas");
-  assert.equal(buena.modelo, "houseedge");
+  assert.equal(buena.modelo, "revshare");
 
   /* Y nadie pisa el código de otro. */
   await assert.rejects(
-    () => afiliados.crearCampana({ usuario: socio, code: "MI-CODIGO", modelo: "revshare" }),
+    () => afiliados.crearCampana({ usuario: socio, code: "MI-CODIGO", modelo: "hibrido" }),
     (err) => err.code === "CODE_TAKEN"
   );
 

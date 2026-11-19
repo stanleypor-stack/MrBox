@@ -132,7 +132,7 @@
 
               <div class="mb-desbloquea">
                 <h3>{{ $t('profile.whatUnlocks') }}</h3>
-                <p v-for="(u, i) in desbloqueos" :key="i"><b>{{ $t(u.que) }}</b> — {{ $t(u.nivel) }}</p>
+                <p v-for="(u, i) in desbloqueos" :key="i"><b>{{ $t(u.que) }}</b> &middot; {{ $t(u.nivel) }}</p>
               </div>
             </div>
 

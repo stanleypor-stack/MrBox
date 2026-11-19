@@ -70,7 +70,7 @@
           </div>
         </div>
 
-        <!-- El rango, con los cuatro números que de verdad se miran -->
+        <!-- El rango, con los tres números que de verdad se miran -->
         <div class="mb-acaja mb-acaja--col">
           <div class="mb-arango">
             <div class="mb-arango__cab">
@@ -82,7 +82,7 @@
             </div>
 
             <span class="mb-arango__quien">
-              <mb-gema :numero="rango.numero" :lado="40" />
+              <mb-gema :numero="gemaDe(rango.numero)" :lado="40" />
               <span>
                 <b>{{ rango.nombre }}</b>
                 <span>{{ $t('affil.bonusForYours', { pct: rango.bonoPct }) }}</span>
@@ -98,13 +98,9 @@
                 <span>{{ $t('affil.mRev') }}</span>
                 <b class="mb-azul">{{ rango.revsharePct }}%</b>
               </span>
-              <span>
+              <span class="mb-arango__ancho">
                 <span>{{ $t('affil.mHyb') }}</span>
                 <b class="mb-verde">SC {{ rango.hibridoCpaSc }} + {{ rango.hibridoPct }}%</b>
-              </span>
-              <span>
-                <span>{{ $t('affil.mHouse') }}</span>
-                <b class="mb-lila">{{ rango.houseEdgePct }}%</b>
               </span>
             </div>
 
@@ -114,9 +110,7 @@
                   {{ $t('affil.next') }} <b>{{ rango.siguiente.nombre }}</b>
                 </span>
                 <span class="mb-azul">
-                  {{ rango.siguiente.revsharePct }}% ·
-                  SC {{ rango.siguiente.cpaSc }} ·
-                  {{ rango.siguiente.houseEdgePct }}%
+                  SC {{ rango.siguiente.cpaSc }} · {{ rango.siguiente.revsharePct }}%
                 </span>
               </div>
               <span class="mb-anota">{{ $t('affil.ranksNotAuto') }}</span>
@@ -326,10 +320,8 @@
         <div class="mb-aprog">
           <span class="mb-aprog__texto">
             <span class="mb-alab">{{ $t('affil.program') }}</span>
-            <b>{{ $t('affil.programTitle', { pct: tope.houseEdgePct }) }}</b>
-            <span class="mb-tenue">
-              {{ $t('affil.programSub', { rev: tope.revsharePct, cpa: tope.cpaSc }) }}
-            </span>
+            <b>{{ $t('affil.programTitle', { cpa: tope.cpaSc, rev: tope.revsharePct }) }}</b>
+            <span class="mb-tenue">{{ $t('affil.programSub') }}</span>
           </span>
           <router-link to="/affiliates/ranks" class="mb-acartel__b mb-acartel__b--chico">
             {{ $t('affil.seeRanks') }}
@@ -397,7 +389,7 @@ export default {
     /** El último rango de la escalera: lo que se promete arriba. */
     tope() {
       const e = (this.d && this.d.escalera) || [];
-      return e.length ? e[e.length - 1] : { houseEdgePct: 65, revsharePct: 50, cpaSc: 50 };
+      return e.length ? e[e.length - 1] : { cpaSc: 60, revsharePct: 60 };
     },
 
     principal() {
@@ -450,12 +442,6 @@ export default {
           sub: this.$t("affil.mHybSub"),
           cuanto: `SC ${r.hibridoCpaSc} + ${r.hibridoPct}%`,
         },
-        {
-          id: "houseedge",
-          titulo: this.$t("affil.mHouseTitle"),
-          sub: this.$t("affil.mHouseSub"),
-          cuanto: `${r.houseEdgePct}%`,
-        },
       ];
 
       return todos.filter((m) => abiertos.includes(m.id));
@@ -468,18 +454,24 @@ export default {
 
       if (m === "cpa") return this.$t("affil.endsCpa", { cpa: r.cpaSc });
       if (m === "revshare") return this.$t("affil.endsRev", { pct: r.revsharePct });
-      if (m === "houseedge") {
-        return this.$t("affil.endsHouse", {
-          pct: r.houseEdgePct,
-          edge: (this.d && this.d.reglas.houseEdgePct) || 8,
-        });
-      }
       return this.$t("affil.endsHyb", { cpa: r.hibridoCpaSc, pct: r.hibridoPct });
     },
   },
 
   methods: {
     num(n) { return Number(n || 0).toLocaleString("en-US"); },
+
+    /**
+     * LA PIEDRA DE CADA RANGO.
+     *
+     * Las gemas son nueve y los rangos de afiliado son seis, asi que no
+     * van uno a uno: el ultimo usa el diamante y no la piedra que le
+     * tocaria por posicion. Es la misma piedra que el VIP, para que un
+     * color siempre quiera decir lo mismo.
+     */
+    gemaDe(numero) {
+      return [1, 2, 3, 4, 5, 7][Math.max(0, Math.min(5, (Number(numero) || 1) - 1))];
+    },
 
     plata(n) {
       return Number(n || 0).toLocaleString("en-US", {
@@ -497,9 +489,8 @@ export default {
 
     /** El sello de la campaña: el modelo y lo que paga hoy. */
     etiqueta(c) {
-      if (c.modelo === "cpa") return `${this.$t("affil.mCpaTitle")} · SC ${c.cobra.porCabezaSc}`;
-      if (c.modelo === "revshare") return `${this.$t("affil.mRevTitle")} · ${c.cobra.pct}%`;
-      if (c.modelo === "houseedge") return `${this.$t("affil.mHouseTitle")} · ${c.cobra.pct}%`;
+      if (c.modelo === "cpa") return `CPA · SC ${c.cobra.porCabezaSc}`;
+      if (c.modelo === "revshare") return `RevShare · ${c.cobra.pct}%`;
       return `${this.$t("affil.mHybTitle")} · SC ${c.cobra.porCabezaSc} + ${c.cobra.pct}%`;
     },
 
@@ -750,13 +741,25 @@ export default {
 
   &--rejilla { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
   &--col { display: flex; flex-direction: column; }
+
+  /* La ultima tarjeta de la columna se queda con el espacio que sobra. */
+  &--col > .mb-adato:last-child { flex: 1; }
 }
 
+/*
+  LAS DOS COLUMNAS, DE LA MISMA ALTURA.
+
+  La de cobrar tiene menos texto que la del rango, asi que sin esto
+  quedaba media caja vacia al lado de una llena. Las dos estiran y la
+  tarjeta de abajo se queda con lo que sobre.
+*/
 .mb-ados {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
   gap: 20px;
   align-items: stretch;
+
+  > .mb-acaja { height: 100%; }
 }
 
 .mb-adato {
@@ -844,6 +847,9 @@ export default {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+
+  /* El hibrido es el numero mas largo: ocupa la fila entera. */
+  .mb-arango__ancho { grid-column: 1 / -1; }
 
   > span {
     padding: 10px 12px;
@@ -1054,7 +1060,6 @@ export default {
   &.is-cpa { color: $amarillo-v; }
   &.is-revshare { color: #3f9bff; }
   &.is-hibrido { color: $verde; }
-  &.is-houseedge { color: #c4b5fd; }
 }
 
 .mb-acomo {
@@ -1082,7 +1087,6 @@ export default {
   &.is-cpa, &.is-deposito { background: rgba(255, 200, 61, .14); border: 1px solid rgba(255, 200, 61, .45); color: $amarillo-v; }
   &.is-revshare { background: rgba(63, 155, 255, .14); border: 1px solid rgba(63, 155, 255, .45); color: #3f9bff; }
   &.is-hibrido, &.is-califica, &.is-pagado { background: rgba(93, 255, 176, .14); border: 1px solid rgba(93, 255, 176, .45); color: $verde; }
-  &.is-houseedge { background: rgba(167, 139, 250, .16); border: 1px solid rgba(167, 139, 250, .55); color: #c4b5fd; }
   &.is-nuevo { background: rgba(142, 163, 199, .14); border: 1px solid rgba(142, 163, 199, .4); color: $texto-4; }
   &.is-anulado { background: rgba(255, 154, 165, .14); border: 1px solid rgba(255, 154, 165, .45); color: #ff9aa5; }
 }

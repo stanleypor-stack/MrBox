@@ -129,28 +129,26 @@ const settingsSchema = new mongoose.Schema(
       EL PROGRAMA DE AFILIADOS
       ───────────────────────────────────────────────────────────────
 
-      Ocho rangos y cuatro maneras de cobrar. El rango pone los cuatro
-      numeros de golpe; la campaña elige con cual de los cuatro cobra.
+      Seis rangos y TRES maneras de cobrar. El rango pone los tres
+      numeros de golpe; la campaña elige con cual de los tres cobra.
 
-      LOS CUATRO MODELOS, Y EN QUE SE DIFERENCIAN
+      LOS TRES MODELOS, CON SU NOMBRE DE LA INDUSTRIA
 
         cpa ........ un pago fijo por jugador que CALIFICA (deposito
                      minimo, jugado minimo, verificado y una espera).
+                     De SC 15 a SC 60 segun el rango.
         revshare ... un % del margen REAL del mes: lo que la casa de
                      verdad le gano a esa gente. Si tuvieron suerte,
-                     paga menos. Nunca negativo.
-        hibrido .... un cpa mas chico cuando califica, y un revshare
-                     mas chico de ahi en adelante.
-        houseedge .. un % del margen TEORICO: lo jugado por el house
-                     edge del sitio. No depende de la suerte, que es
-                     como cobra un afiliado de Stake.
+                     paga menos. Nunca negativo. Del 35% al 60%.
+        hibrido .... CPA + RevShare: un cpa mas chico cuando califica,
+                     y un revshare mas chico de ahi en adelante.
+                     Desde SC 10 + 30%.
 
-      OJO CON LA DIFERENCIA DE PLATA
+      EL HIBRIDO SIEMPRE PAGA MENOS QUE LOS PUROS
 
-      Con el house edge en 8%, pagar "50% del house edge" es pagar el
-      4% de TODO lo jugado, le haya ido bien o mal a la casa ese mes.
-      Un 35% sobre el margen real da, en promedio, 2,8%. No son
-      equivalentes: el de house edge paga mas y no varia.
+      Es lo que lo hace hibrido: se cobra algo el primer dia y algo
+      todos los meses, pero menos de cada cosa. Si el hibrido igualara
+      al CPA, nadie elegiria otra cosa.
     */
     rangosAfiliado: {
       type: [
@@ -160,7 +158,6 @@ const settingsSchema = new mongoose.Schema(
           revsharePct: { type: Number, default: 35, min: 0, max: 100 },
           hibridoCpaSc: { type: Number, default: 10, min: 0 },
           hibridoPct: { type: Number, default: 30, min: 0, max: 100 },
-          houseEdgePct: { type: Number, default: 50, min: 0, max: 100 },
           /* El bono que reciben SUS jugadores en cada compra. */
           bonoPct: { type: Number, default: 5, min: 0, max: 100 },
           minimoCobroSc: { type: Number, default: 50, min: 0 },
@@ -171,7 +168,11 @@ const settingsSchema = new mongoose.Schema(
     },
 
     afiliados: {
-      /* El margen de la casa, en %. Sobre esto se calcula `houseedge`. */
+      /*
+        El margen de la casa, en %. No es un modelo: es con lo que el
+        panel calcula el margen teorico que genero cada socio, para
+        ponerlo al lado de lo que se le pago.
+      */
       houseEdgePct: { type: Number, default: 8, min: 0, max: 100 },
 
       /* Que tiene que hacer un referido para que se pague por cabeza. */
@@ -388,19 +389,32 @@ settingsSchema.statics.leer = async function leer() {
   de configuracion, y el de MR BOX ya existe: sin esto, un sitio que ya
   estaba andando se quedaria con la escalera vacia.
 */
+/**
+ * LA ESCALERA DE AFILIADOS, DE FABRICA.
+ *
+ * Seis rangos y numeros redondos: el socio tiene que poder acordarse
+ * de los suyos sin mirar la tabla.
+ *
+ *   CPA ......... de SC 15 a SC 60 por jugador que califica
+ *   RevShare .... del 35% al 60% del margen real
+ *   Hibrido ..... de SC 10 + 30% a SC 40 + 55%
+ *
+ * El hibrido va siempre abajo de los dos puros, que es lo que lo hace
+ * hibrido. Y el bono del jugador sube del 5% al 10% con el rango.
+ *
+ * Esto es lo de fabrica: la escalera se edita desde el panel.
+ */
 const RANGOS_AFILIADO = [
-  { nombre: "Bronce", cpaSc: 15, revsharePct: 35, hibridoCpaSc: 10, hibridoPct: 30, houseEdgePct: 50, bonoPct: 5, minimoCobroSc: 50, pago: "pedido" },
-  { nombre: "Plata", cpaSc: 20, revsharePct: 37, hibridoCpaSc: 12, hibridoPct: 31, houseEdgePct: 52, bonoPct: 5, minimoCobroSc: 50, pago: "pedido" },
-  { nombre: "Oro", cpaSc: 25, revsharePct: 39, hibridoCpaSc: 15, hibridoPct: 32, houseEdgePct: 54, bonoPct: 6, minimoCobroSc: 50, pago: "pedido" },
-  { nombre: "Zafiro", cpaSc: 30, revsharePct: 41, hibridoCpaSc: 18, hibridoPct: 33, houseEdgePct: 56, bonoPct: 7, minimoCobroSc: 50, pago: "semanal" },
-  { nombre: "Esmeralda", cpaSc: 35, revsharePct: 43, hibridoCpaSc: 20, hibridoPct: 34, houseEdgePct: 58, bonoPct: 8, minimoCobroSc: 25, pago: "semanal" },
-  { nombre: "Rubi", cpaSc: 40, revsharePct: 45, hibridoCpaSc: 24, hibridoPct: 35, houseEdgePct: 60, bonoPct: 9, minimoCobroSc: 25, pago: "semanal" },
-  { nombre: "Diamante", cpaSc: 45, revsharePct: 47, hibridoCpaSc: 28, hibridoPct: 36, houseEdgePct: 62, bonoPct: 10, minimoCobroSc: 0, pago: "pedido" },
-  { nombre: "Onix", cpaSc: 50, revsharePct: 50, hibridoCpaSc: 32, hibridoPct: 38, houseEdgePct: 65, bonoPct: 10, minimoCobroSc: 0, pago: "pedido" },
+  { nombre: "Bronce", cpaSc: 15, revsharePct: 35, hibridoCpaSc: 10, hibridoPct: 30, bonoPct: 5, minimoCobroSc: 50, pago: "pedido" },
+  { nombre: "Plata", cpaSc: 25, revsharePct: 40, hibridoCpaSc: 15, hibridoPct: 35, bonoPct: 6, minimoCobroSc: 50, pago: "pedido" },
+  { nombre: "Oro", cpaSc: 35, revsharePct: 45, hibridoCpaSc: 20, hibridoPct: 40, bonoPct: 7, minimoCobroSc: 25, pago: "semanal" },
+  { nombre: "Zafiro", cpaSc: 45, revsharePct: 50, hibridoCpaSc: 30, hibridoPct: 45, bonoPct: 8, minimoCobroSc: 25, pago: "semanal" },
+  { nombre: "Esmeralda", cpaSc: 50, revsharePct: 55, hibridoCpaSc: 35, hibridoPct: 50, bonoPct: 9, minimoCobroSc: 0, pago: "semanal" },
+  { nombre: "Diamante", cpaSc: 60, revsharePct: 60, hibridoCpaSc: 40, hibridoPct: 55, bonoPct: 10, minimoCobroSc: 0, pago: "pedido" },
 ];
 
 /* Los que puede elegir un socio sin pedir permiso. */
-const MODELOS_ABIERTOS = ["revshare", "hibrido", "houseedge"];
+const MODELOS_ABIERTOS = ["revshare", "hibrido"];
 
 module.exports = mongoose.model("Settings", settingsSchema);
 module.exports.RANGOS_AFILIADO = RANGOS_AFILIADO;

@@ -320,7 +320,6 @@ export default {
         { valor: "cpa", texto: this.$t("admin.afi.m_cpa") },
         { valor: "revshare", texto: this.$t("admin.afi.m_revshare") },
         { valor: "hibrido", texto: this.$t("admin.afi.m_hibrido") },
-        { valor: "houseedge", texto: this.$t("admin.afi.m_houseedge") },
       ];
     },
 
@@ -520,7 +519,6 @@ export default {
     &.is-cpa { background: rgba(255, 211, 90, .14); color: $amarillo; }
     &.is-revshare { background: rgba(63, 155, 255, .16); color: #8fb4ff; }
     &.is-hibrido { background: rgba(93, 255, 176, .14); color: $verde; }
-    &.is-houseedge { background: rgba(167, 139, 250, .16); color: #c4b5fd; }
   }
 }
 
@@ -534,7 +532,6 @@ export default {
   &.is-cpa { background: rgba(255, 211, 90, .14); color: $amarillo; }
   &.is-revshare { background: rgba(63, 155, 255, .16); color: #8fb4ff; }
   &.is-hibrido { background: rgba(93, 255, 176, .14); color: $verde; }
-  &.is-houseedge { background: rgba(167, 139, 250, .16); color: #c4b5fd; }
 }
 
 .ads__senal { margin-right: 4px; }

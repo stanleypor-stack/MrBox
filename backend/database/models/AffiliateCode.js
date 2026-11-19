@@ -57,7 +57,7 @@ const affiliateCodeSchema = new mongoose.Schema(
      */
     modelo: {
       type: String,
-      enum: ["cpa", "revshare", "hibrido", "houseedge"],
+      enum: ["cpa", "revshare", "hibrido"],
       default: "hibrido",
       index: true,
     },

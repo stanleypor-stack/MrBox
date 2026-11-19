@@ -54,7 +54,7 @@
             <em>
               SC {{ d.rango.cpaSc }} · {{ d.rango.revsharePct }}% ·
               SC {{ d.rango.hibridoCpaSc }} + {{ d.rango.hibridoPct }}% ·
-              {{ d.rango.houseEdgePct }}% · {{ $t('admin.afi.bonus', { pct: d.rango.bonoPct }) }}
+{{ $t('admin.afi.bonus', { pct: d.rango.bonoPct }) }}
             </em>
           </span>
         </span>
@@ -316,12 +316,12 @@ export default {
       return ((this.d && this.d.escalera) || []).map((r) => ({
         valor: r.numero,
         texto: `${r.numero} · ${r.nombre}`,
-        derecha: `SC ${r.cpaSc} · ${r.revsharePct}% · ${r.houseEdgePct}%`,
+        derecha: `SC ${r.cpaSc} · ${r.revsharePct}%`,
       }));
     },
 
     opcionesDeModelo() {
-      return ["cpa", "revshare", "hibrido", "houseedge"].map((m) => ({
+      return ["cpa", "revshare", "hibrido"].map((m) => ({
         valor: m, texto: this.$t("admin.afi.m_" + m),
       }));
     },
@@ -463,7 +463,6 @@ export default {
   &.is-cpa { background: rgba(255, 211, 90, .14); color: $amarillo; }
   &.is-revshare { background: rgba(63, 155, 255, .16); color: #8fb4ff; }
   &.is-hibrido { background: rgba(93, 255, 176, .14); color: $verde; }
-  &.is-houseedge { background: rgba(167, 139, 250, .16); color: #c4b5fd; }
 }
 
 /* ── El embudo ────────────────────────────────────────────────────── */

@@ -140,16 +140,16 @@ test("subirle el rango al socio le sube el bono a sus jugadores, sin tocar el c�
 
   assert.equal((await afiliados.bonoDeCompra(u, 100)).bonoSc, 5, "Bronce da 5%");
 
-  await afiliados.otorgarRango({ userId: socio._id, numero: 8 });
+  await afiliados.otorgarRango({ userId: socio._id, numero: 6 });
 
-  assert.equal((await afiliados.bonoDeCompra(u, 100)).bonoSc, 10, "Onix da 10%");
+  assert.equal((await afiliados.bonoDeCompra(u, 100)).bonoSc, 10, "Diamante da 10%");
 
   /* Y la campaña no se tocó: el número no vive ahí. */
   const sinTocar = await AffiliateCode.findById(codigo._id).lean();
   assert.equal(sinTocar.bonoPropio, null);
 });
 
-test("EL BONO VA CON LOS CUATRO MODELOS", async (t) => {
+test("EL BONO VA CON LOS TRES MODELOS", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
 
   for (const modelo of afiliados.MODELOS) {
@@ -158,7 +158,7 @@ test("EL BONO VA CON LOS CUATRO MODELOS", async (t) => {
     const u = await User.findById(jug.id).lean();
 
     const { bonoSc } = await afiliados.bonoDeCompra(u, 100);
-    assert.equal(bonoSc, 6, `el modelo ${modelo} tiene que dar el 6% del rango Oro igual`);
+    assert.equal(bonoSc, 7, `el modelo ${modelo} tiene que dar el 7% del rango Oro igual`);
   }
 });
 
@@ -206,8 +206,8 @@ test("editar la escalera cambia lo que dan los códigos", async (t) => {
 test("un código apagado o vencido no da bono", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
 
-  const apagado = await socioCon({ activo: false }, 8);
-  const vencido = await socioCon({ venceEl: new Date(Date.now() - 60 * 1000) }, 8);
+  const apagado = await socioCon({ activo: false }, 6);
+  const vencido = await socioCon({ venceEl: new Date(Date.now() - 60 * 1000) }, 6);
 
   /* El jugador se ata igual: el codigo existe, lo que no sirve es el bono. */
   const a = await jugadorDe(apagado.codigo.code);
@@ -257,7 +257,7 @@ async function avisoDePago({ userId, monto, trackId }) {
 test("EL DEPOSITO ACREDITA LA COMPRA MAS EL BONO, Y EL BONO QUEDA ATADO", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
 
-  const { codigo } = await socioCon({}, 8);
+  const { codigo } = await socioCon({}, 6);
   const jug = await jugadorDe(codigo.code);
 
   const r = await avisoDePago({ userId: jug.id, monto: 300, trackId: "T-" + Date.now() });
@@ -319,7 +319,7 @@ test("un aviso mal firmado no acredita nada", async (t) => {
 test("poner el código después dice el porcentaje del rango que de verdad le toca", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
 
-  const { codigo } = await socioCon({}, 7);
+  const { codigo } = await socioCon({}, 6);
   const jug = await jugadorDe("");
 
   const r = await fetch(`${base}/wallet/code`, {

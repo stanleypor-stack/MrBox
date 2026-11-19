@@ -25,7 +25,6 @@
             <span class="ad-der">{{ $t('admin.afi.m_revshare') }}</span>
             <span class="ad-der">{{ $t('admin.afi.hybCpa') }}</span>
             <span class="ad-der">{{ $t('admin.afi.hybPct') }}</span>
-            <span class="ad-der">{{ $t('admin.afi.m_houseedge') }}</span>
             <span class="ad-der">{{ $t('admin.afi.playerBonus') }}</span>
             <span class="ad-der">{{ $t('admin.afi.minClaim') }}</span>
             <span>{{ $t('admin.afi.payout') }}</span>
@@ -42,7 +41,6 @@
             <span class="ad-der"><input v-model="f.revsharePct" class="ad-in ade__in" inputmode="decimal"></span>
             <span class="ad-der"><input v-model="f.hibridoCpaSc" class="ad-in ade__in" inputmode="decimal"></span>
             <span class="ad-der"><input v-model="f.hibridoPct" class="ad-in ade__in" inputmode="decimal"></span>
-            <span class="ad-der"><input v-model="f.houseEdgePct" class="ad-in ade__in" inputmode="decimal"></span>
             <span class="ad-der"><input v-model="f.bonoPct" class="ad-in ade__in" inputmode="decimal"></span>
             <span class="ad-der"><input v-model="f.minimoCobroSc" class="ad-in ade__in" inputmode="decimal"></span>
 
@@ -150,7 +148,7 @@ export default {
       original: "",
       motivo: "",
       guardando: false,
-      modelos: ["cpa", "revshare", "hibrido", "houseedge"],
+      modelos: ["cpa", "revshare", "hibrido"],
     };
   },
 
@@ -183,16 +181,11 @@ export default {
     /**
      * LO QUE SE LLEVA EL SOCIO DE SC 10.000 JUGADOS.
      *
-     * El más caro de los tres modelos que cobran por jugada, que es el
-     * que de verdad hay que mirar: el socio elige el que más le
-     * conviene, no el promedio.
+     * El RevShare, que es el que más paga de los que cobran por jugada:
+     * el socio elige el que más le conviene, no el promedio.
      */
     cuesta(f) {
-      const margen = this.margen;
-      const porComision = margen * ((Number(f.revsharePct) || 0) / 100);
-      const porHouseEdge = margen * ((Number(f.houseEdgePct) || 0) / 100);
-      const porHibrido = margen * ((Number(f.hibridoPct) || 0) / 100);
-      return Math.max(porComision, porHouseEdge, porHibrido);
+      return this.margen * ((Number(f.revsharePct) || 0) / 100);
     },
 
     async traer() {
@@ -221,7 +214,6 @@ export default {
             revsharePct: Number(f.revsharePct) || 0,
             hibridoCpaSc: Number(f.hibridoCpaSc) || 0,
             hibridoPct: Number(f.hibridoPct) || 0,
-            houseEdgePct: Number(f.houseEdgePct) || 0,
             bonoPct: Number(f.bonoPct) || 0,
             minimoCobroSc: Number(f.minimoCobroSc) || 0,
             pago: f.pago,
@@ -255,7 +247,7 @@ export default {
 .ade__que { max-width: 720px; font-size: 14px; line-height: 1.5; color: $texto-3; }
 
 .ade__ancho { min-width: 1280px; }
-.ade__fila { grid-template-columns: 1.5fr .8fr .8fr .8fr .8fr .9fr .9fr .9fr 1.1fr 1.3fr; }
+.ade__fila { grid-template-columns: 1.6fr .9fr .9fr .9fr .9fr 1fr 1fr 1.2fr 1.4fr; }
 
 .ade__quien-rango { display: flex; align-items: center; gap: 8px; }
 .ade__in { width: 100%; height: 34px; box-sizing: border-box; font-size: 13px; text-align: right; }

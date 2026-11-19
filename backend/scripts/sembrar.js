@@ -197,7 +197,7 @@ async function sembrar({ limpiar = false } = {}) {
 
   const CAMPANAS = [
     { code: "FUNK", owner: funk._id, nombre: "YouTube · reviews", canal: "YouTube", modelo: "hibrido" },
-    { code: "FUNKTG", owner: funk._id, nombre: "Telegram · canal", canal: "Telegram", modelo: "houseedge" },
+    { code: "FUNKTG", owner: funk._id, nombre: "Telegram · canal", canal: "Telegram", modelo: "cpa" },
     { code: "KAY", owner: kay._id, nombre: "TikTok", canal: "TikTok", modelo: "revshare" },
   ];
 
@@ -253,7 +253,7 @@ async function sembrar({ limpiar = false } = {}) {
 
   const socios = await AffiliateCode.find({}).lean();
   console.log(`  afiliados: ${socios.length} campañas, ${TRAIDOS.length} jugadores traidos`);
-  console.log(`    FUNK (hibrido) y FUNKTG (house edge) son de funkmaster, rango 4 · KAY (comision) de kaylope`);
+  console.log(`    FUNK (hibrido) y FUNKTG (cpa) son de funkmaster, rango 4 · KAY (revshare) de kaylope`);
 
   /* Las cajas. El precio sale de los objetos. */
   for (const caja of CAJAS) {

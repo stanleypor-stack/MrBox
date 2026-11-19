@@ -14,7 +14,7 @@
  *                         números al lado para poder decidir sin salir.
  *   4. LAS CABEZAS ...... la cola de pagos por cabeza: las que esperan
  *                         liberación y las que tienen señales.
- *   5. LA ESCALERA ...... los ocho rangos y las reglas, editables.
+ *   5. LA ESCALERA ...... los rangos y las reglas, editables.
  *
  * DE DONDE SALEN LOS NUMEROS
  *
@@ -461,15 +461,14 @@ router.get("/affiliates/ladder", async (req, res) => {
 /**
  * EDITAR LA ESCALERA.
  *
- * Los ocho rangos con sus cuatro modelos, y las reglas del pago por
- * cabeza. Cada número se limpia y se le pone tope:
+ * Los rangos con sus tres modelos, y las reglas del pago por cabeza.
+ * Cada número se limpia y se le pone tope:
  *
  *   - un revshare arriba del 70% paga más de lo que entra en casi
  *     cualquier mes, y casi siempre es un dedo de más en el teclado
  *   - un bono de jugador arriba del 20% lo paga la casa, no el socio
- *   - el house edge del sitio no se edita acá: ese sale de la economía
- *     de las cajas, y tocarlo desde esta pantalla sería mentirle a la
- *     cuenta de los cuatro modelos
+ *   - el CPA tiene tope de SC 5.000, que ya es absurdo: es para que un
+ *     cero de más no se guarde sin que nadie lo note
  */
 router.put("/affiliates/ladder", async (req, res) => {
   try {
@@ -485,7 +484,6 @@ router.put("/affiliates/ladder", async (req, res) => {
       revsharePct: pct(r.revsharePct, 70),
       hibridoCpaSc: plata(r.hibridoCpaSc),
       hibridoPct: pct(r.hibridoPct, 70),
-      houseEdgePct: pct(r.houseEdgePct, 80),
       bonoPct: pct(r.bonoPct, 20),
       minimoCobroSc: plata(r.minimoCobroSc),
       pago: ["pedido", "semanal", "mensual"].includes(r.pago) ? r.pago : "pedido",

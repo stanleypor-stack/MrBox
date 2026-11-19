@@ -7,29 +7,28 @@
       <div class="mb-rays mb-arcartel__rayos" aria-hidden="true"></div>
       <div class="mb-arcartel__texto">
         <span class="mb-arcartel__lab">{{ $t('affil.ranksKicker', { n: escalera.length }) }}</span>
-        <h1>{{ $t('affil.programTitle', { pct: tope.houseEdgePct }) }}</h1>
+        <h1>{{ $t('affil.programTitle', { cpa: tope.cpaSc, rev: tope.revsharePct }) }}</h1>
         <p>
           {{ $t('affil.ranksSub', {
             name: piso.nombre,
             cpa: piso.cpaSc,
             rev: piso.revsharePct,
-            edge: piso.houseEdgePct,
           }) }}
         </p>
       </div>
     </section>
 
-    <!-- ── Las cuatro maneras de cobrar ─────────────────────────── -->
+    <!-- ── Las tres maneras de cobrar ───────────────────────────── -->
     <section class="mb-arcaja">
       <div class="mb-arin">
         <div class="mb-arcab">
-          <h2>{{ $t('affil.fourWays') }}</h2>
-          <span class="mb-tenue">{{ $t('affil.fourWaysSub') }}</span>
+          <h2>{{ $t('affil.ways') }}</h2>
+          <span class="mb-tenue">{{ $t('affil.waysSub') }}</span>
         </div>
 
         <div class="mb-armodelos">
           <article class="mb-armodelo is-cpa">
-            <span class="mb-armodelo__lab">{{ $t('affil.mCpaLong') }}</span>
+            <span class="mb-armodelo__lab">CPA</span>
             <span class="mb-armodelo__num">
               SC {{ piso.cpaSc }} <span>→ SC {{ tope.cpaSc }}</span>
             </span>
@@ -38,7 +37,7 @@
           </article>
 
           <article class="mb-armodelo is-revshare">
-            <span class="mb-armodelo__lab">{{ $t('affil.mRevLong') }}</span>
+            <span class="mb-armodelo__lab">REVSHARE</span>
             <span class="mb-armodelo__num">
               {{ piso.revsharePct }}% <span>→ {{ tope.revsharePct }}%</span>
             </span>
@@ -47,30 +46,22 @@
           </article>
 
           <article class="mb-armodelo is-hibrido">
-            <span class="mb-armodelo__lab">{{ $t('affil.mHybTitle') }}</span>
+            <span class="mb-armodelo__lab">{{ $t('affil.mHyb') }}</span>
             <span class="mb-armodelo__num">
               SC {{ piso.hibridoCpaSc }} + {{ piso.hibridoPct }}%
+              <span>→ SC {{ tope.hibridoCpaSc }} + {{ tope.hibridoPct }}%</span>
             </span>
             <p>{{ $t('affil.mHybText') }}</p>
             <span class="mb-armodelo__pie">{{ $t('affil.mHybFor') }}</span>
           </article>
-
-          <article class="mb-armodelo is-houseedge">
-            <span class="mb-armodelo__lab">{{ $t('affil.mHouseTitle') }}</span>
-            <span class="mb-armodelo__num">
-              {{ piso.houseEdgePct }}% <span>→ {{ tope.houseEdgePct }}%</span>
-            </span>
-            <p>{{ $t('affil.mHouseText', { edge: houseEdge }) }}</p>
-            <span class="mb-armodelo__pie">{{ $t('affil.mHouseFor') }}</span>
-          </article>
         </div>
 
-        <!-- La misma cuenta, con números -->
+        <!-- Cuál conviene, en tres líneas -->
         <div class="mb-arcuenta">
-          <span class="mb-alab">{{ $t('affil.diffTitle') }}</span>
-          <p>{{ $t('affil.diff1', { played: '10.000', edge: houseEdge, margin: margen }) }}</p>
-          <p>{{ $t('affil.diff2', { pct: piso.houseEdgePct, margin: margen, pays: conHouseEdge }) }}</p>
-          <p>{{ $t('affil.diff3', { pct: piso.revsharePct }) }}</p>
+          <span class="mb-alab">{{ $t('affil.whichTitle') }}</span>
+          <p><b class="mb-ambar">CPA</b> {{ $t('affil.which1') }}</p>
+          <p><b class="mb-azul">RevShare</b> {{ $t('affil.which2') }}</p>
+          <p><b class="mb-verde">{{ $t('affil.mHybTitle') }}</b> {{ $t('affil.which3') }}</p>
         </div>
       </div>
     </section>
@@ -89,7 +80,6 @@
             <span class="mb-der">{{ $t('affil.mCpa') }}</span>
             <span class="mb-der">{{ $t('affil.mRev') }}</span>
             <span class="mb-der">{{ $t('affil.mHyb') }}</span>
-            <span class="mb-der">{{ $t('affil.mHouse') }}</span>
             <span class="mb-der">{{ $t('affil.yourBonus') }}</span>
             <span>{{ $t('affil.whatAdds') }}</span>
           </div>
@@ -99,7 +89,7 @@
             :class="{ 'is-mio': r.numero === mio }"
           >
             <span class="mb-arquien">
-              <mb-gema :numero="r.numero" :lado="22" />
+              <mb-gema :numero="gemaDe(r.numero)" :lado="22" />
               <b>{{ r.numero }} · {{ r.nombre }}</b>
               <span v-if="r.numero === mio" class="mb-arsello">{{ $t('affil.youAreHere') }}</span>
             </span>
@@ -107,7 +97,6 @@
             <span class="mb-der mb-ambar">SC {{ r.cpaSc }}</span>
             <span class="mb-der mb-azul">{{ r.revsharePct }}%</span>
             <span class="mb-der mb-verde">SC {{ r.hibridoCpaSc }} + {{ r.hibridoPct }}%</span>
-            <span class="mb-der mb-lila">{{ r.houseEdgePct }}%</span>
             <span class="mb-der">{{ r.bonoPct }}%</span>
             <span class="mb-tenue mb-arsuma">{{ queSuma(r) }}</span>
           </div>
@@ -165,7 +154,7 @@ export default {
   components: { MbGema },
 
   data() {
-    return { escalera: [], houseEdge: 8, telegram: "", mio: 0 };
+    return { escalera: [], telegram: "", mio: 0 };
   },
 
   computed: {
@@ -173,8 +162,8 @@ export default {
 
     piso() {
       return this.escalera[0] || {
-        nombre: "—", cpaSc: 15, revsharePct: 35, hibridoCpaSc: 10, hibridoPct: 30,
-        houseEdgePct: 50, bonoPct: 5, minimoCobroSc: 50, pago: "pedido",
+        nombre: "", cpaSc: 15, revsharePct: 35, hibridoCpaSc: 10, hibridoPct: 30,
+        bonoPct: 5, minimoCobroSc: 50, pago: "pedido",
       };
     },
 
@@ -182,18 +171,15 @@ export default {
       return this.escalera[this.escalera.length - 1] || this.piso;
     },
 
-    /* La cuenta del ejemplo: SC 10.000 jugados por el house edge. */
-    margen() {
-      return this.num(10000 * (this.houseEdge / 100));
-    },
-
-    conHouseEdge() {
-      return this.num(10000 * (this.houseEdge / 100) * (this.piso.houseEdgePct / 100));
-    },
   },
 
   methods: {
     num(n) { return Number(n || 0).toLocaleString("en-US"); },
+
+    /* La misma piedra que el VIP: seis rangos, nueve gemas. */
+    gemaDe(numero) {
+      return [1, 2, 3, 4, 5, 7][Math.max(0, Math.min(5, (Number(numero) || 1) - 1))];
+    },
 
     /**
      * QUE SUMA ESE RANGO, LEIDO DE SUS PROPIOS NUMEROS.
@@ -242,7 +228,6 @@ export default {
       try {
         const { data } = await api.get("/affiliates/ranks");
         this.escalera = data.data.escalera;
-        this.houseEdge = data.data.houseEdgePct;
         this.telegram = data.data.telegram;
         this.mio = data.data.mio || 0;
       } catch (err) {
@@ -359,7 +344,6 @@ export default {
   &.is-cpa { border: 1px solid rgba(255, 200, 61, .5); .mb-armodelo__lab, .mb-armodelo__num { color: $amarillo-v; } }
   &.is-revshare { border: 1px solid rgba(63, 155, 255, .5); .mb-armodelo__lab, .mb-armodelo__num { color: #3f9bff; } }
   &.is-hibrido { border: 1px solid rgba(93, 255, 176, .5); .mb-armodelo__lab, .mb-armodelo__num { color: $verde; } }
-  &.is-houseedge { border: 1px solid rgba(167, 139, 250, .6); .mb-armodelo__lab, .mb-armodelo__num { color: #c4b5fd; } }
 }
 
 .mb-armodelo__lab { font-weight: 900; font-size: 11px; letter-spacing: .12em; }
@@ -391,7 +375,7 @@ export default {
 
 .mb-arfila {
   display: grid;
-  grid-template-columns: 1.5fr .8fr .8fr 1.2fr .9fr .9fr 1.6fr;
+  grid-template-columns: 1.4fr .8fr .9fr 1.3fr .9fr 1.7fr;
   gap: 10px;
   align-items: center;
   padding: 12px 16px;

@@ -10,7 +10,7 @@
  *
  *   2. ALGUIEN COMPRA → se le suma el bono, del 5% al 10% según el RANGO
  *      del socio que lo trajo. Lo paga la casa, no el socio, y va con los
- *      cuatro modelos: nunca se le saca el bono a un jugador para pagarle
+ *      tres modelos: nunca se le saca el bono a un jugador para pagarle
  *      más a quien lo trajo.
  *
  *   3. ALGUIEN JUEGA → el socio se lleva su parte, calculada según el
@@ -19,17 +19,14 @@
  *
  *   4. EL SOCIO COBRA → lo ganado pasa a saldo SC.
  *
- * LOS CUATRO MODELOS
+ * LOS TRES MODELOS
  *
  *   cpa ........ SC fijos por jugador que CALIFICA. Nada por jugada.
  *   revshare ... % del margen REAL de cada jugada, lo que la casa de
  *                verdad ganó. Una jugada perdedora paga cero, nunca
  *                negativo: el socio no maneja la suerte de nadie.
- *   hibrido .... un cpa más chico al calificar, más un revshare más
- *                chico de ahí en adelante.
- *   houseedge .. % del margen TEORICO: lo jugado por el house edge del
- *                sitio. No depende de la suerte. Es como cobra un
- *                afiliado de Stake.
+ *   hibrido .... CPA + RevShare: un cpa más chico al calificar, más un
+ *                revshare más chico de ahí en adelante.
  *
  * LOS NUMEROS SALEN DEL RANGO, NO DE LA CAMPAÑA
  *
@@ -50,7 +47,7 @@ const { logger } = require("../../utils/logger");
 
 const { RANGOS_AFILIADO, MODELOS_ABIERTOS } = Settings;
 
-const MODELOS = ["cpa", "revshare", "hibrido", "houseedge"];
+const MODELOS = ["cpa", "revshare", "hibrido"];
 
 /* ── La escalera ───────────────────────────────────────────────────── */
 
@@ -81,7 +78,6 @@ function normalizar(r, i) {
     revsharePct: numeroO(r && r.revsharePct, base.revsharePct),
     hibridoCpaSc: numeroO(r && r.hibridoCpaSc, base.hibridoCpaSc),
     hibridoPct: numeroO(r && r.hibridoPct, base.hibridoPct),
-    houseEdgePct: numeroO(r && r.houseEdgePct, base.houseEdgePct),
     bonoPct: numeroO(r && r.bonoPct, base.bonoPct),
     minimoCobroSc: numeroO(r && r.minimoCobroSc, base.minimoCobroSc),
     pago: (r && r.pago) || base.pago,
@@ -180,12 +176,6 @@ function porJugada({ modelo, rango, jugadoSc, margenSc }) {
   if (!(jugado > 0)) return 0;
   if (modelo === "cpa") return 0;
 
-  if (modelo === "houseedge") {
-    /* El margen TEORICO: no mira si la casa ganó o perdió esta vez. */
-    const teorico = jugado * (reglas().houseEdgePct / 100);
-    return sc(teorico * (rango.houseEdgePct / 100));
-  }
-
   /*
     `revshare` e `hibrido` van sobre el margen de verdad, y nunca en rojo:
     una jugada que gana el jugador paga cero, no negativo. El socio no
@@ -206,12 +196,9 @@ function porCabeza({ modelo, rango }) {
 
 /** Cómo se le cuenta al socio lo que cobra, para la UI. */
 function comoCobra({ modelo, rango }) {
-  if (modelo === "cpa") return { porCabezaSc: sc(rango.cpaSc), pct: 0, sobre: null };
-  if (modelo === "revshare") return { porCabezaSc: 0, pct: rango.revsharePct, sobre: "margen" };
-  if (modelo === "hibrido") {
-    return { porCabezaSc: sc(rango.hibridoCpaSc), pct: rango.hibridoPct, sobre: "margen" };
-  }
-  return { porCabezaSc: 0, pct: rango.houseEdgePct, sobre: "houseedge" };
+  if (modelo === "cpa") return { porCabezaSc: sc(rango.cpaSc), pct: 0 };
+  if (modelo === "revshare") return { porCabezaSc: 0, pct: rango.revsharePct };
+  return { porCabezaSc: sc(rango.hibridoCpaSc), pct: rango.hibridoPct };
 }
 
 /* ── El código ─────────────────────────────────────────────────────── */
@@ -375,7 +362,7 @@ async function mirarCalificacion({ jugador, codigo, rango }) {
 
   const elRango = rango || rangoNumero(1);
   const paga = porCabeza({ modelo: codigo.modelo, rango: elRango });
-  if (!(paga > 0)) return null; /* revshare y houseedge no pagan por cabeza */
+  if (!(paga > 0)) return null; /* el revshare puro no paga por cabeza */
 
   const ficha = await AffiliateConversion.findOne({ code: codigo._id, user: jugador._id });
   if (!ficha) return null;

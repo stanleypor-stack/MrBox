@@ -99,10 +99,10 @@ test("la pantalla del socio trae su rango, la escalera y el bono de sus jugadore
   const d = r.datos.data;
   assert.equal(d.rango.numero, 1, "todo el mundo arranca en el primero");
   assert.equal(d.rango.nombre, "Bronce");
-  assert.equal(d.escalera.length, 8);
+  assert.equal(d.escalera.length, 6);
   assert.equal(d.bonoParaElAmigo, 5, "Bronce: 5% para el que entra con su código");
   assert.equal(d.reglas.houseEdgePct, 8);
-  assert.deepEqual(d.reglas.modelosAbiertos, ["revshare", "hibrido", "houseedge"]);
+  assert.deepEqual(d.reglas.modelosAbiertos, ["revshare", "hibrido"]);
   assert.equal(d.campanas.length, 0, "todavía no creó ninguna");
   assert.deepEqual(d.embudo, { nuevo: 0, deposito: 0, califica: 0, pagado: 0, anulado: 0 });
 });
@@ -112,18 +112,28 @@ test("la escalera se puede mirar sin cuenta", async (t) => {
   const r = await pedir("GET", "/affiliates/ranks");
 
   assert.equal(r.estado, 200);
-  assert.equal(r.datos.data.escalera.length, 8);
+  assert.equal(r.datos.data.escalera.length, 6);
   assert.equal(r.datos.data.mio, null);
 
   /* Y los extremos son los que dijo el dueño. */
   const E = r.datos.data.escalera;
-  assert.equal(E[0].cpaSc, 15);
-  assert.equal(E[0].revsharePct, 35);
+  assert.equal(E[0].cpaSc, 15, "el CPA arranca en SC 15");
+  assert.equal(E[0].revsharePct, 35, "el RevShare arranca en 35%");
   assert.equal(E[0].hibridoCpaSc, 10);
-  assert.equal(E[0].hibridoPct, 30);
-  assert.equal(E[0].houseEdgePct, 50);
-  assert.equal(E[7].revsharePct, 50);
-  assert.equal(E[7].houseEdgePct, 65);
+  assert.equal(E[0].hibridoPct, 30, "el hibrido arranca en SC 10 + 30%");
+  assert.equal(E[5].cpaSc, 60, "y el CPA llega a SC 60");
+  assert.equal(E[5].revsharePct, 60, "y el RevShare al 60%");
+
+  /*
+    EL HIBRIDO VA SIEMPRE ABAJO DE LOS DOS PUROS.
+    Es lo que lo hace hibrido: algo el primer dia y algo todos los
+    meses, pero menos de cada cosa. Si igualara al CPA, nadie elegiria
+    otra cosa.
+  */
+  for (const fila of E) {
+    assert.ok(fila.hibridoCpaSc < fila.cpaSc, fila.nombre + ": el hibrido iguala al CPA");
+    assert.ok(fila.hibridoPct < fila.revsharePct, fila.nombre + ": el hibrido iguala al RevShare");
+  }
 });
 
 test("crea una campaña y elige modelo; el cpa no se elige solo", async (t) => {
@@ -138,14 +148,14 @@ test("crea una campaña y elige modelo; el cpa no se elige solo", async (t) => {
 
   const bueno = await pedir("POST", "/affiliates/campaigns", {
     token: yo.token,
-    cuerpo: { nombre: "YouTube · reviews", code: "yt" + n, canal: "YouTube", modelo: "houseedge" },
+    cuerpo: { nombre: "YouTube · reviews", code: "yt" + n, canal: "YouTube", modelo: "revshare" },
   });
   assert.equal(bueno.estado, 200);
 
   const c = bueno.datos.data.campana;
-  assert.equal(c.modelo, "houseedge");
-  assert.equal(c.cobra.pct, 50, "el 50% del house edge de Bronce");
-  assert.equal(c.cobra.sobre, "houseedge");
+  assert.equal(c.modelo, "revshare");
+  assert.equal(c.cobra.pct, 35, "el RevShare de Bronce");
+  assert.equal(c.cobra.porCabezaSc, 0, "el RevShare no paga por cabeza");
   assert.equal(c.nombre, "YouTube · reviews");
 
   /* Y aparece en su pantalla. */
@@ -342,7 +352,7 @@ test("otorgar un rango pide motivo, y queda en el registro", async (t) => {
   /* Y el socio ve el rango nuevo en su pantalla, con el bono nuevo. */
   const mio = await pedir("GET", "/affiliates", { token: socio.token });
   assert.equal(mio.datos.data.rango.numero, 5);
-  assert.equal(mio.datos.data.bonoParaElAmigo, 8, "Esmeralda da 8% a sus jugadores");
+  assert.equal(mio.datos.data.bonoParaElAmigo, 9, "Esmeralda da 9% a sus jugadores");
 });
 
 test("la cola de pedidos de rango trae los números para decidir", async (t) => {
@@ -441,7 +451,7 @@ test("la ficha de un socio cuenta sus campañas, su embudo y lo que cobró", asy
 
   await pedir("POST", "/affiliates/campaigns", {
     token: socio.token,
-    cuerpo: { code: "FICHA" + n, modelo: "houseedge" },
+    cuerpo: { code: "FICHA" + n, modelo: "hibrido" },
   });
   await wallet.mover({ userId: socio.id, amountSc: 75, type: "affiliate" });
 
@@ -451,8 +461,9 @@ test("la ficha de un socio cuenta sus campañas, su embudo y lo que cobró", asy
   const d = r.datos.data;
   assert.equal(d.socio.username, socio.username);
   assert.equal(d.campanas.length, 1);
-  assert.equal(d.campanas[0].modelo, "houseedge");
-  assert.equal(d.campanas[0].cobra.pct, 50);
+  assert.equal(d.campanas[0].modelo, "hibrido");
+  assert.equal(d.campanas[0].cobra.pct, 30, "el hibrido de Bronce paga 30%");
+  assert.equal(d.campanas[0].cobra.porCabezaSc, 10, "mas SC 10 por cabeza");
   assert.equal(d.numeros.pagadoSc, 75, "del libro");
   assert.equal(d.rango.numero, 1);
 });
@@ -473,7 +484,8 @@ test("editar la escalera: se limpia, se le pone tope y no puede ir al revés", a
   assert.equal(mal.datos.code, "INVALID_AMOUNT");
 
   /* Un revshare del 200% se recorta al tope, no se guarda. */
-  const exagerada = original.map((r, i) => (i === 7 ? { ...r, revsharePct: 200 } : r));
+  const ultimo = original.length - 1;
+  const exagerada = original.map((r, i) => (i === ultimo ? { ...r, revsharePct: 200 } : r));
   const r = await pedir("PUT", "/admin/affiliates/ladder", {
     token: jefe.token,
     cuerpo: {
@@ -485,24 +497,24 @@ test("editar la escalera: se limpia, se le pone tope y no puede ir al revés", a
         cpaEsperaDias: 10,
         cpaTopeDiario: 30,
         telegram: "https://t.me/mrbox_socios",
-        modelos: ["revshare", "hibrido", "houseedge", "inventado"],
+        modelos: ["revshare", "hibrido", "inventado"],
       },
       motivo: "subimos el último rango",
     },
   });
 
   assert.equal(r.estado, 200);
-  assert.equal(r.datos.data.escalera[7].revsharePct, 70, "tope del 70%");
+  assert.equal(r.datos.data.escalera[ultimo].revsharePct, 70, "tope del 70%");
   assert.equal(r.datos.data.reglas.cpaEsperaDias, 10);
   assert.deepEqual(
     r.datos.data.reglas.modelos,
-    ["revshare", "hibrido", "houseedge"],
+    ["revshare", "hibrido"],
     "un modelo inventado no entra"
   );
   assert.equal(r.datos.data.reglas.houseEdgePct, 8, "el house edge del sitio no se edita acá");
 
   /* El servicio ya lo ve, sin esperar el minuto. */
-  assert.equal(afiliados.rangoNumero(8).revsharePct, 70);
+  assert.equal(afiliados.rangoNumero(6).revsharePct, 70);
   const log = await AdminLog.findOne({ evento: "affiliate.ladder.edit" }).lean();
   assert.ok(log);
 
@@ -511,5 +523,5 @@ test("editar la escalera: se limpia, se le pone tope y no puede ir al revés", a
     token: jefe.token,
     cuerpo: { escalera: original, reglas: {}, motivo: "volver a la de siempre" },
   });
-  assert.equal(afiliados.rangoNumero(8).revsharePct, 50);
+  assert.equal(afiliados.rangoNumero(6).revsharePct, 60);
 });
