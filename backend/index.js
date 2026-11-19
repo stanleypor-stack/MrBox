@@ -11,6 +11,7 @@ const path = require("path");
 const fs = require("fs");
 
 const express = require("express");
+const helmet = require("helmet");
 const cors = require("cors");
 const compression = require("compression");
 
@@ -34,7 +35,24 @@ const app = express();
 */
 app.set("trust proxy", 1);
 
-app.use(cors());
+/*
+  DE DONDE SE PUEDE LLAMAR A LA API.
+
+  En produccion el sitio y la API viven en el mismo dominio, asi que no
+  hace falta que ningun otro origen pueda llamarla: `SITIO_URL` dice
+  cual es el nuestro y el resto queda afuera. Sin esa variable --o en
+  desarrollo, donde el sitio corre en otro puerto-- se deja pasar a
+  todos, que es lo que hacia siempre.
+
+  Como la sesion viaja en una cabecera y no en una cookie, esto no es
+  lo que impide un CSRF: eso ya estaba resuelto. Es una puerta menos.
+*/
+const ORIGENES = String(process.env.SITIO_URL || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+app.use(cors(ORIGENES.length ? { origin: ORIGENES } : {}));
 
 /*
   TODO VIAJA COMPRIMIDO.
@@ -48,8 +66,38 @@ app.use(cors());
 */
 app.use(compression());
 
-/* Un cuerpo de mas de esto no es un pedido de este sitio, es un ataque. */
-app.use(express.json({ limit: "200kb" }));
+/*
+  LAS CABECERAS QUE NO CUESTAN NADA.
+
+  `frameguard` es la que importa en un sitio con botones de plata: sin
+  ella, esto se puede meter adentro de un iframe en otra pagina,
+  taparlo con algo y hacer que el jugador toque "Pedir el retiro"
+  creyendo que toca otra cosa.
+
+  El CSP queda apagado: el frontend de desarrollo usa `eval` y estilos
+  en linea, y un CSP que hay que apagar a mano en desarrollo es un CSP
+  que alguien va a dejar apagado en produccion. Va cuando el sitio se
+  sirva construido.
+*/
+app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+
+/*
+  EL CUERPO: 200 KB, SALVO DONDE SE SUBEN ARCHIVOS.
+
+  Las fotos del documento y los logos de las cajas viajan adentro del
+  JSON como `data:`, asi que esas dos rutas necesitan lugar. El resto
+  del sitio no manda nunca mas de unos kilobytes, y dejarlo en 200 KB
+  es lo que hace que un cuerpo enorme en cualquier otro lado no sea un
+  problema.
+*/
+const SUBEN_ARCHIVOS = [/^\/api\/profile\/verification(\/|$)/, /^\/api\/community(\/|$)/];
+const cuerpoChico = express.json({ limit: "200kb" });
+const cuerpoGrande = express.json({ limit: "12mb" });
+
+app.use((req, res, next) => {
+  const grande = SUBEN_ARCHIVOS.some((r) => r.test(req.path));
+  return (grande ? cuerpoGrande : cuerpoChico)(req, res, next);
+});
 
 app.use("/api", require("./routes"));
 

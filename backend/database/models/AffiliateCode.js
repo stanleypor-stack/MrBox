@@ -94,6 +94,17 @@ const affiliateCodeSchema = new mongoose.Schema(
     jugadores: { type: Number, default: 0 },
     jugadoPorLosSuyosSc: { type: Number, default: 0 },
     ganadoSc: { type: Number, default: 0 },
+
+    /*
+      EL MARGEN QUE TODAVIA NO SE REPARTIO.
+
+      Se suma el margen de cada jugada de los suyos, NEGATIVO INCLUIDO,
+      y el revshare se paga solo cuando el acumulado esta en verde. Sin
+      esto el socio cobra sobre las jugadas que gana la casa y no
+      devuelve nada en las que pierde, que con una caja de premio gordo
+      deja a la casa en rojo.
+    */
+    margenPendienteSc: { type: Number, default: 0 },
     cobradoSc: { type: Number, default: 0 },
   },
   { timestamps: true }

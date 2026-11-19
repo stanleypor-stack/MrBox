@@ -60,8 +60,17 @@ const EDAD_MINIMA = 18;
 /** Lo más grande que puede pesar una foto de documento. */
 const MAXIMO_POR_ARCHIVO = 6 * 1024 * 1024;
 
-/** Los tipos de archivo que se aceptan. Nada de PDF con javascript adentro. */
-const TIPOS_OK = /^data:(image\/(png|jpeg|webp))|application\/pdf;base64,/;
+/**
+ * LOS TIPOS DE ARCHIVO QUE SE ACEPTAN.
+ *
+ * El `|` de una expresion regular separa TODO lo de un lado de TODO lo
+ * del otro, asi que la de antes --sin el grupo y sin cerrar el final--
+ * daba por buena cualquier cosa que empezara con `data:image/png` y
+ * cualquier cosa que contuviera `application/pdf;base64,` en el medio.
+ *
+ * Esta pide las dos mitades: el tipo, y que lo que sigue sea base64.
+ */
+const TIPOS_OK = /^data:(image\/(png|jpeg|webp)|application\/pdf);base64,[A-Za-z0-9+/=]+$/;
 
 /** Cuántos años tiene alguien nacido ese día. */
 function edadDe(fecha) {

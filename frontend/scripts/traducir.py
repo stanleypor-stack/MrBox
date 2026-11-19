@@ -68,6 +68,9 @@ T = {
  "support.help":       {"en":"Help","de":"Hilfe","fr":"Aide","es":"Ayuda","pt":"Ajuda","it":"Aiuto","ru":"Помощь","ja":"ヘルプ","zh":"帮助"},
  # ── El globito de soporte ─────────────────────────────────────────────
  "support.msgs":       {"en":"Messages","de":"Nachrichten","fr":"Messages","es":"Mensajes","pt":"Mensagens","it":"Messaggi","ru":"Сообщения","ja":"メッセージ","zh":"消息"},
+ "support.hiName1":    {"en":"Hi {nombre},","de":"Hallo {nombre},","fr":"Bonjour {nombre},","es":"Hola {nombre},","pt":"Olá {nombre},","it":"Ciao {nombre},","ru":"Привет, {nombre},","ja":"{nombre} さん、","zh":"你好 {nombre}，"},
+ "support.hiAnon1":    {"en":"Hi,","de":"Hallo,","fr":"Bonjour,","es":"Hola,","pt":"Olá,","it":"Ciao,","ru":"Привет,","ja":"こんにちは、","zh":"你好，"},
+ "support.hi2":        {"en":"how can we help?","de":"wie können wir helfen?","fr":"comment aider ?","es":"¿en qué te ayudamos?","pt":"como podemos ajudar?","it":"come possiamo aiutarti?","ru":"чем помочь?","ja":"どうされましたか？","zh":"需要什么帮助？"},
  "support.hiName":     {"en":"Hi {nombre},<br>how can we help?","de":"Hallo {nombre},<br>wie können wir helfen?","fr":"Bonjour {nombre},<br>comment aider ?","es":"Hola {nombre},<br>¿en qué te ayudamos?","pt":"Olá {nombre},<br>como podemos ajudar?","it":"Ciao {nombre},<br>come possiamo aiutarti?","ru":"Привет, {nombre}!<br>Чем помочь?","ja":"{nombre} さん、<br>どうされましたか？","zh":"你好 {nombre}，<br>需要什么帮助？"},
  "support.hiAnon":     {"en":"Hi,<br>how can we help?","de":"Hallo,<br>wie können wir helfen?","fr":"Bonjour,<br>comment aider ?","es":"Hola,<br>¿en qué te ayudamos?","pt":"Olá,<br>como podemos ajudar?","it":"Ciao,<br>come possiamo aiutarti?","ru":"Здравствуйте!<br>Чем помочь?","ja":"こんにちは。<br>どうされましたか？","zh":"你好，<br>需要什么帮助？"},
  "support.sendUs":     {"en":"Send us a message","de":"Schreib uns","fr":"Envoyez-nous un message","es":"Escribinos","pt":"Fale com a gente","it":"Scrivici","ru":"Написать нам","ja":"メッセージを送る","zh":"给我们留言"},

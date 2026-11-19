@@ -197,6 +197,9 @@ async function pedirCanje({ user, montoSc, ticker, red, direccion }) {
       userId: user._id,
       amountSc: -monto,
       type: "redemption",
+      /* Lo canjeable lo vuelve a mirar la base al descontar: el control
+         de arriba no sobrevive a dos pedidos al mismo tiempo. */
+      soloCanjeable: true,
       reference: { kind: "redemption", id: pedido._id, label: `${par.moneda.ticker} · ${par.red.clave}` },
     });
   } catch (err) {

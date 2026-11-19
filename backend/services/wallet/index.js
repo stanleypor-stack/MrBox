@@ -82,6 +82,7 @@ async function mover({
   juegaSc = 0,
   byAdmin = null,
   reason = "",
+  soloCanjeable = false,
 }) {
   const monto = sc(amountSc);
 
@@ -101,6 +102,26 @@ async function mover({
     que la decida la base y no nosotros. Ver el comentario de arriba.
   */
   if (monto < 0) filtro.balanceSc = { $gte: -monto };
+
+  /*
+    SACAR PLATA PIDE ADEMAS QUE SEA CANJEABLE.
+
+    El bono que todavia hay que jugar esta en el saldo pero no se puede
+    sacar. Mirarlo antes y descontar despues deja una ventana: dos
+    pedidos a la vez leen el mismo canjeable y los dos pasan, porque lo
+    unico que la base exige al descontar es que alcance el saldo.
+
+    Con `$expr` la condicion la decide la base en el mismo momento en
+    que descuenta, que es lo unico que no tiene ventana.
+  */
+  if (monto < 0 && soloCanjeable) {
+    filtro.$expr = {
+      $gte: [
+        { $subtract: ["$balanceSc", { $max: [{ $ifNull: ["$bonoPendienteSc", 0] }, 0] }] },
+        -monto,
+      ],
+    };
+  }
 
   /* El bono que se acredita queda pendiente de jugar. */
   if (bonoSc > 0) cambios.$inc.bonoPendienteSc = sc(bonoSc);

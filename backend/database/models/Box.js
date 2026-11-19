@@ -145,6 +145,17 @@ const boxSchema = new mongoose.Schema(
     /* Lo que el creador ya se llevó de esta caja, para su panel. */
     ganadoPorElCreadorSc: { type: Number, default: 0 },
 
+    /*
+      EL MARGEN QUE TODAVIA NO SE REPARTIO.
+
+      Se suma el margen de cada apertura, NEGATIVO INCLUIDO, y solo se
+      paga cuando el acumulado esta en verde. Sin esto, la casa paga la
+      mitad de lo que gana y se come entera la apertura en la que
+      pierde: con un premio gordo adentro, la caja le saca plata a la
+      casa aunque tenga 92% de retorno.
+    */
+    margenPendienteSc: { type: Number, default: 0 },
+
     /* Para ordenar la portada sin contar aperturas cada vez. */
     opens: { type: Number, default: 0 },
   },

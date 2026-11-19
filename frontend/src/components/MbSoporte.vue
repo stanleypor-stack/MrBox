@@ -26,7 +26,9 @@
       <div ref="cuerpo" class="mb-sop__cuerpo mb-snap">
         <!-- Inicio -->
         <div v-if="solapa === 'home'" class="mb-sop__col">
-          <span class="mb-sop__hola" v-html="saludo"></span>
+          <span class="mb-sop__hola">
+            {{ saludo.uno }}<br>{{ saludo.dos }}
+          </span>
 
           <button type="button" class="mb-sop__opcion" @click="nueva(false)">
             <span class="mb-sop__opcion-t">
@@ -210,11 +212,17 @@ export default {
     ...mapGetters(["entro"]),
     ...mapState(["usuario"]),
 
+    /*
+      Dos lineas, no una con `<br>`: el nombre del jugador va como
+      TEXTO. Interpolado adentro de html, un nombre con una etiqueta
+      adentro se ejecutaria.
+    */
     saludo() {
       const nombre = (this.usuario && this.usuario.username) || "";
-      return nombre
-        ? this.$t("support.hiName", { nombre })
-        : this.$t("support.hiAnon");
+      return {
+        uno: nombre ? this.$t("support.hiName1", { nombre }) : this.$t("support.hiAnon1"),
+        dos: this.$t("support.hi2"),
+      };
     },
 
     /** La ayuda, filtrada por lo que se escribió en el buscador. */

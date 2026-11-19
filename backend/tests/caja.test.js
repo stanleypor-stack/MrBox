@@ -326,3 +326,32 @@ test("el nivel de verificacion que pide un canje sale de los ajustes", async (t)
   /* Se deja como estaba, que las otras pruebas usan el 2. */
   await Settings.updateOne({ key: "main" }, { $set: { canjeNivelMinimo: 2 } });
 });
+
+/* ── El bono sin jugar no sale, ni con dos pedidos a la vez ───────── */
+
+test("dos canjes al mismo tiempo no se llevan el bono sin jugar", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  /*
+    Saldo 200 con 120 de bono pendiente: canjeable 80. Antes los dos
+    pedidos leian el mismo canjeable y los dos pasaban, porque lo unico
+    que la base exigia al descontar era que alcanzara el SALDO.
+  */
+  const j = await jugador({ saldo: 200, nivel: 3 });
+  await User.updateOne({ _id: j.id }, { $set: { bonoPendienteSc: 120 } });
+
+  const pedir1 = pedir("POST", "/wallet/withdraw", {
+    token: j.token,
+    cuerpo: { montoSc: 80, coin: "USDT", network: "TRC20", address: DIRECCION },
+  });
+  const pedir2 = pedir("POST", "/wallet/withdraw", {
+    token: j.token,
+    cuerpo: { montoSc: 80, coin: "USDT", network: "TRC20", address: DIRECCION },
+  });
+
+  const [a, b] = await Promise.all([pedir1, pedir2]);
+  const pasaron = [a, b].filter((r) => r.estado === 200).length;
+
+  assert.equal(pasaron, 1, `uno solo puede pasar: ${JSON.stringify([a.datos, b.datos])}`);
+  assert.equal(await saldoDe(j.id), 120, "quedan los 120 del bono");
+});

@@ -352,3 +352,48 @@ test("el estampado se guarda, y uno inventado cae en liso", async (t) => {
   const otra = await Box.findById(rara.datos.data._id).lean();
   assert.equal(otra.portada.textura, "liso");
 });
+
+/* ── El margen negativo se arrastra ───────────────────────────────── */
+
+test("el creador no cobra hasta que la caja vuelve a estar en verde", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  /*
+    EL AGUJERO QUE ESTO TAPA.
+
+    Se pagaba la mitad del margen de CADA apertura con el negativo
+    pisado en cero: la apertura que ganaba el jugador la perdia la casa
+    sola. Con un premio gordo adentro, una caja de 92% de retorno le
+    sacaba plata a la casa.
+  */
+  const j = await jugador();
+  const caja = await Box.create({
+    slug: "arrastre", name: "Arrastre", category: "Community", live: true,
+    creator: j.id, priceSc: 10,
+    prizes: [{ item: objetos[0]._id, name: "x", valueSc: 1, chance: 1, rarity: "blue" }],
+  });
+
+  const pagado = async () => {
+    const c = await Box.findById(caja._id).select("ganadoPorElCreadorSc margenPendienteSc").lean();
+    return { ganado: sc(c.ganadoPorElCreadorSc), pendiente: sc(c.margenPendienteSc) };
+  };
+
+  /* Una apertura en rojo: no paga, y queda anotada la deuda. */
+  await comunidad.pagarAlCreador({ caja, margenSc: -100 });
+  assert.deepEqual(await pagado(), { ganado: 0, pendiente: -100 });
+
+  /* Cuarenta de margen bueno: sigue en rojo, sigue sin pagar. */
+  await comunidad.pagarAlCreador({ caja, margenSc: 40 });
+  assert.deepEqual(await pagado(), { ganado: 0, pendiente: -60 });
+
+  /* Y recien cuando la caja vuelve al verde se reparte lo que sobra. */
+  await comunidad.pagarAlCreador({ caja, margenSc: 100 });
+  const fin = await pagado();
+  assert.equal(fin.pendiente, 0, "el acumulado se consume entero");
+  assert.equal(fin.ganado, 20, "la mitad de los 40 que quedaron en verde");
+
+  /*
+    La cuenta cierra: la casa gano 40 en total (-100 +40 +100) y el
+    creador se llevo 20, la mitad. Antes se habria llevado 70.
+  */
+});

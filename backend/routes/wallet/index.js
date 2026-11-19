@@ -8,6 +8,7 @@ const wallet = require("../../services/wallet");
 const Settings = require("../../database/models/Settings");
 const BalanceTransaction = require("../../database/models/BalanceTransaction");
 const User = require("../../database/models/User");
+const DepositoAvisado = require("../../database/models/DepositoAvisado");
 const afiliados = require("../../services/affiliates");
 const cajas = require("../../services/boxes");
 const PromoCode = require("../../database/models/PromoCode");
@@ -368,15 +369,29 @@ aviso.post("/oxapay", express.raw({ type: "*/*" }), async (req, res) => {
     const monto = sc(Number(datos.amount) || 0);
     if (!userId || monto <= 0 || !trackId) return res.json({ success: true, ignorado: "incompleto" });
 
-    const yaEsta = await BalanceTransaction.findOne({
-      type: "purchase",
-      "reference.kind": "oxapay",
-      "reference.label": trackId,
-    }).lean();
-    if (yaEsta) return res.json({ success: true, repetido: true });
-
     const jugador = await User.findById(userId).select("referredBy affiliateCode").lean();
     if (!jugador) return res.json({ success: true, ignorado: "sin jugador" });
+
+    /*
+      LA MARCA SE PONE ANTES DE MOVER LA PLATA.
+
+      El indice unico del `trackId` es lo que impide acreditar dos
+      veces. Preguntar "¿ya esta?" y despues acreditar deja una ventana:
+      dos avisos del mismo pago a la vez --las pasarelas reintentan--
+      leen los dos que no esta y acreditan los dos.
+    */
+    let marca;
+    try {
+      marca = await DepositoAvisado.create({
+        trackId,
+        pasarela: "oxapay",
+        user: userId,
+        montoSc: monto,
+      });
+    } catch (err) {
+      if (err && err.code === 11000) return res.json({ success: true, repetido: true });
+      throw err;
+    }
 
     /*
       El bono por código de afiliado lo calcula el servicio, que es el
@@ -395,6 +410,8 @@ aviso.post("/oxapay", express.raw({ type: "*/*" }), async (req, res) => {
       bonoSc: bono * (cfg.vecesAJugarElBono || 0),
       reference: { kind: "oxapay", label: trackId },
     });
+
+    await DepositoAvisado.updateOne({ _id: marca._id }, { $set: { acreditado: true } });
 
     logger.info(`[oxapay] acreditado SC ${monto} (+${bono}) a ${userId}`);
     return res.json({ success: true });

@@ -36,6 +36,7 @@
  */
 
 const Box = require("../../database/models/Box");
+const Settings = require("../../database/models/Settings");
 const Item = require("../../database/models/Item");
 const User = require("../../database/models/User");
 
@@ -313,7 +314,41 @@ async function borrar({ user, boxId }) {
 async function pagarAlCreador({ caja, margenSc }) {
   if (!caja || !caja.creator) return null;
 
-  const parte = sc(Math.max(0, Number(margenSc) || 0) * PARTE_DEL_CREADOR);
+  /*
+    EL MARGEN SE ACUMULA, NEGATIVO INCLUIDO.
+
+    Antes se pagaba la mitad del margen de ESTA apertura y el negativo
+    se pisaba en cero: la apertura que ganaba el jugador la perdia la
+    casa sola. Con un premio gordo adentro eso deja a la casa en rojo
+    aunque la caja tenga 92% de retorno, porque el creador cobra sobre
+    la suma de las aperturas buenas y no sobre lo que la casa gana.
+
+    Ahora se suma --en la base, atomico-- y solo se reparte cuando el
+    acumulado esta en verde.
+  */
+  const sumado = await Box.findOneAndUpdate(
+    { _id: caja._id },
+    { $inc: { margenPendienteSc: sc(Number(margenSc) || 0) } },
+    { new: true }
+  ).select("margenPendienteSc").lean();
+
+  const acumulado = sc((sumado && sumado.margenPendienteSc) || 0);
+  if (acumulado <= 0) return null;
+
+  /*
+    Se consume con la condicion adentro del filtro: si dos aperturas
+    entran juntas, una sola se lo lleva. La otra ve el acumulado ya
+    gastado y no paga dos veces lo mismo.
+  */
+  const consumido = await Box.findOneAndUpdate(
+    { _id: caja._id, margenPendienteSc: { $gte: acumulado } },
+    { $inc: { margenPendienteSc: -acumulado } }
+  ).lean();
+  if (!consumido) return null;
+
+  const cfg = await Settings.leer();
+  const porcion = Number(cfg.parteDelCreador);
+  const parte = sc(acumulado * (Number.isFinite(porcion) ? porcion : PARTE_DEL_CREADOR));
   if (parte <= 0) return null;
 
   /* Al creador no se le paga por abrir su propia caja: si no, armar una
@@ -347,7 +382,15 @@ async function panelDe(userId) {
     { cajas: 0, alAire: 0, aperturas: 0, ganadoSc: 0 }
   );
 
-  return { cajas, total, parte: PARTE_DEL_CREADOR, tope: CAJAS_POR_CREADOR };
+  const cfg = await Settings.leer();
+  const porcion = Number(cfg.parteDelCreador);
+
+  return {
+    cajas,
+    total,
+    parte: Number.isFinite(porcion) ? porcion : PARTE_DEL_CREADOR,
+    tope: CAJAS_POR_CREADOR,
+  };
 }
 
 module.exports = {

@@ -308,7 +308,45 @@ async function anotarComision({ jugador, jugadoSc, margenSc }) {
   const dueno = await User.findById(codigo.owner).select("rangoAfiliado").lean();
   const rango = rangoNumero(dueno && dueno.rangoAfiliado);
 
-  const ganado = porJugada({ modelo: codigo.modelo, rango, jugadoSc: jugado, margenSc });
+  /*
+    EL MARGEN SE ACUMULA, NEGATIVO INCLUIDO.
+
+    Antes el revshare se pagaba sobre el margen de ESA jugada con el
+    negativo pisado en cero: el socio cobraba de las jugadas buenas y
+    la casa se comia sola las malas. Con una caja de premio gordo eso
+    alcanza para dejar a la casa en rojo.
+
+    Ahora se suma --en la base, atomico-- y se reparte solo cuando el
+    acumulado esta en verde.
+  */
+  let paraRepartir = 0;
+
+  if (codigo.modelo !== "cpa") {
+    const sumado = await AffiliateCode.findOneAndUpdate(
+      { _id: codigo._id },
+      { $inc: { margenPendienteSc: sc(margenSc) } },
+      { new: true }
+    ).select("margenPendienteSc").lean();
+
+    const acumulado = sc((sumado && sumado.margenPendienteSc) || 0);
+
+    if (acumulado > 0) {
+      /* La condicion adentro del filtro: dos jugadas a la vez no se
+         llevan el mismo acumulado dos veces. */
+      const consumido = await AffiliateCode.findOneAndUpdate(
+        { _id: codigo._id, margenPendienteSc: { $gte: acumulado } },
+        { $inc: { margenPendienteSc: -acumulado } }
+      ).lean();
+      if (consumido) paraRepartir = acumulado;
+    }
+  }
+
+  const ganado = porJugada({
+    modelo: codigo.modelo,
+    rango,
+    jugadoSc: jugado,
+    margenSc: paraRepartir,
+  });
 
   await AffiliateCode.updateOne(
     { _id: codigo._id },
