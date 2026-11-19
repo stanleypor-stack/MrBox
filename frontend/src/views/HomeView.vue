@@ -140,20 +140,9 @@
         <h2>{{ $t(fila.titulo) }}</h2>
         <div class="mb-fila__mandos">
           <router-link :to="verTodo(fila.id)" class="mb-fila__todo">{{ $t('home.viewAll') }}</router-link>
-          <div class="mb-flechas">
-            <button type="button" :aria-label="$t('common.previous')" @click="correr(fila.id, -1)">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6"
-                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>
-            </button>
-            <span aria-hidden="true"></span>
-            <button type="button" :aria-label="$t('common.next')" @click="correr(fila.id, 1)">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6"
-                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
-            </button>
-          </div>
         </div>
       </div>
-      <div :ref="'tira-' + fila.id" class="mb-row mb-fila__tira">
+      <div class="mb-row mb-fila__tira">
         <MbTarjetaDeCaja v-for="c in fila.items" :key="c._id" :caja="c" class="mb-fila__caja" />
       </div>
     </section>
@@ -164,21 +153,10 @@
         <h2>{{ $t('home.top10') }}</h2>
         <div class="mb-fila__mandos">
           <router-link to="/boxes?sort=popular" class="mb-fila__todo">{{ $t('home.viewAll') }}</router-link>
-          <div class="mb-flechas">
-            <button type="button" :aria-label="$t('common.previous')" @click="correr('top', -1)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8"
-                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>
-            </button>
-            <span aria-hidden="true"></span>
-            <button type="button" :aria-label="$t('common.next')" @click="correr('top', 1)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8"
-                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
-            </button>
-          </div>
         </div>
       </div>
 
-      <div ref="tira-top" class="mb-row mb-top__tira">
+      <div class="mb-row mb-top__tira">
         <router-link
           v-for="(c, i) in top10" :key="c._id" :to="`/boxes/${c.slug}`"
           class="mb-top__caja" :aria-label="$t('home.topAria', { n: i + 1, name: c.name })"
@@ -200,20 +178,9 @@
     <section class="mb-marcas">
       <div class="mb-fila__cabeza">
         <h2>{{ $t('home.brands') }}</h2>
-        <div class="mb-flechas">
-          <button type="button" :aria-label="$t('common.previous')" @click="correr('marcas', -1)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6"
-                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>
-          </button>
-          <span aria-hidden="true"></span>
-          <button type="button" :aria-label="$t('common.next')" @click="correr('marcas', 1)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6"
-                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
-          </button>
-        </div>
       </div>
 
-      <div ref="tira-marcas" class="mb-row mb-marcas__tira">
+      <div class="mb-row mb-marcas__tira">
         <router-link
           v-for="m in MARCAS" :key="m.nombre" class="mb-marca mb-card"
           :to="{ path: '/boxes', query: { search: m.busca } }"
@@ -470,15 +437,6 @@ export default {
       }
     },
 
-    /** Mueve una fila de cajas con las flechas de su cabecera. */
-    correr(id, hacia) {
-      const tira = this.$refs["tira-" + id];
-      const caja = Array.isArray(tira) ? tira[0] : tira;
-      if (!caja) return;
-      /* Casi el ancho visible: deja una tarjeta a la vista para que no
-         se pierda el hilo de donde estabas. */
-      caja.scrollBy({ left: hacia * Math.max(200, caja.clientWidth - 206), behavior: "smooth" });
-    },
     arte(c) {
       const s = sprite(c.imageUrl);
       return s ? s.estilo : {};
@@ -1089,28 +1047,6 @@ export default {
   &:hover { background: $lateral-hover; color: #fff; }
 }
 
-// Las dos flechas, pegadas, con una rayita en el medio.
-.mb-flechas {
-  display: flex;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #1d3354;
-
-  button {
-    width: 48px;
-    height: 44px;
-    border: 0;
-    background: transparent;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    @include foco;
-    &:hover { background: $lateral-hover; }
-  }
-
-  span { width: 1px; background: #2c4670; }
-}
 
 .mb-fila__tira {
   display: flex;

@@ -77,16 +77,15 @@ const affiliateCodeSchema = new mongoose.Schema(
      */
     bonoPropio: { type: Number, default: null, min: 0, max: 1 },
 
-    /**
-     * Lo que se lleva el socio, sobre el MARGEN de lo que juegan los
-     * suyos. No sobre lo que juegan.
-     *
-     * La diferencia es toda: si alguien juega SC 1.000 en cajas al 92%,
-     * el margen son SC 80. Un 30% sobre el margen son SC 24; un 30% sobre
-     * lo jugado serían SC 300, o sea casi cuatro veces lo que la casa
-     * ganó. Lo segundo funde el sitio y no avisa hasta fin de mes.
-     */
-    comision: { type: Number, default: 0.3, min: 0, max: 1 },
+    /*
+      ACA VIVIA UN `comision` PROPIO DE CADA CODIGO.
+
+      Lo saque con los cuatro modelos: lo que paga una campaña sale del
+      RANGO del socio, y el motor no mira ningun numero del codigo. Un
+      campo que el panel deja editar y el motor ignora es peor que no
+      tenerlo, porque el dia que alguien lo usa el socio cobra una cosa
+      distinta de la que dice la pantalla.
+    */
 
     activo: { type: Boolean, default: true, index: true },
     venceEl: { type: Date, default: null },

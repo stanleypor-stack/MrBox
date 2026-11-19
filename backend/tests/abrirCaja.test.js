@@ -446,7 +446,7 @@ test("abrir suma a lo jugado y le anota la comision al socio", async (t) => {
   const socio = await User.create({
     username: "sociocaja", email: "sociocaja@test.local", passwordHash: "x",
   });
-  await AffiliateCode.create({ code: "CAJA30", owner: socio._id, comision: 0.3 });
+  await AffiliateCode.create({ code: "CAJA30", owner: socio._id });
 
   const j = await jugador({ saldo: 1000, codigo: "CAJA30" });
   await pedir("POST", "/boxes/prueba/open", { token: j.token, cuerpo: { veces: 4 } });

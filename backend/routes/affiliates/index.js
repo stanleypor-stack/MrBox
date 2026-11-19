@@ -62,8 +62,6 @@ function resumirCampana(c, rango) {
     modelo: c.modelo,
     /* Lo que paga HOY, que sale del rango y no de la campaña. */
     cobra,
-    /* Un porcentaje puesto a mano manda sobre el del rango. */
-    aMano: Number(c.comision) > 0 ? Number(c.comision) : null,
     activo: !!c.activo,
     venceEl: c.venceEl || null,
     clics: c.clics || 0,

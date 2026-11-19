@@ -30,10 +30,13 @@ const Item = require("../database/models/Item");
 const Box = require("../database/models/Box");
 const Settings = require("../database/models/Settings");
 const AffiliateCode = require("../database/models/AffiliateCode");
+const BalanceTransaction = require("../database/models/BalanceTransaction");
 const UserSeed = require("../database/models/UserSeed");
 
 const eco = require("../services/boxes/economia");
 const fair = require("../services/boxes/fair");
+const wallet = require("../services/wallet");
+const { atarAlSocio, anotarComision } = require("../services/affiliates");
 const { sc } = require("../utils/money");
 
 /* ── El catálogo ──────────────────────────────────────────────────── */
@@ -177,20 +180,80 @@ async function sembrar({ limpiar = false } = {}) {
   }
   console.log(`  cuentas: ${await User.countDocuments()} (clave de todas: ${CLAVE_DE_PRUEBA})`);
 
-  /* Un socio con código destacado, y uno normal. */
+  /*
+    LOS SOCIOS.
+
+    Uno de rango alto con dos campañas de modelos distintos, y uno que
+    recién arranca. Los jugadores que traen se crean de verdad: depositan
+    y juegan por `wallet.mover`, y la comisión la anota el servicio. Así
+    la pantalla de afiliados muestra números que salen del LIBRO, y no
+    contadores escritos a mano que no coinciden con nada.
+  */
   const funk = await User.findOne({ username: "funkmaster" }).lean();
   const kay = await User.findOne({ username: "kaylope" }).lean();
-  await AffiliateCode.updateOne(
-    { code: "FUNK" },
-    { $set: { owner: funk._id, tramo: "destacado", comision: 0.3, activo: true } },
-    { upsert: true }
-  );
-  await AffiliateCode.updateOne(
-    { code: "KAY" },
-    { $set: { owner: kay._id, tramo: "normal", comision: 0.2, activo: true } },
-    { upsert: true }
-  );
-  console.log(`  codigos de afiliado: FUNK (destacado, 10% al jugador), KAY (normal, 5%)`);
+
+  await User.updateOne({ _id: funk._id }, { $set: { rangoAfiliado: 4 } });
+  await User.updateOne({ _id: kay._id }, { $set: { rangoAfiliado: 1 } });
+
+  const CAMPANAS = [
+    { code: "FUNK", owner: funk._id, nombre: "YouTube · reviews", canal: "YouTube", modelo: "hibrido" },
+    { code: "FUNKTG", owner: funk._id, nombre: "Telegram · canal", canal: "Telegram", modelo: "houseedge" },
+    { code: "KAY", owner: kay._id, nombre: "TikTok", canal: "TikTok", modelo: "revshare" },
+  ];
+
+  for (const c of CAMPANAS) {
+    await AffiliateCode.updateOne(
+      { code: c.code },
+      { $set: { ...c, activo: true }, $setOnInsert: { jugadores: 0, jugadoPorLosSuyosSc: 0, ganadoSc: 0, cobradoSc: 0 } },
+      { upsert: true }
+    );
+  }
+
+  /* Y los jugadores que trajeron, con su plata y sus jugadas. */
+  const TRAIDOS = [
+    { username: "mateo_zz", code: "FUNK", depositoSc: 120, jugadoSc: 2480, kyc: 2 },
+    { username: "sofi_ok", code: "FUNKTG", depositoSc: 60, jugadoSc: 1180, kyc: 2 },
+    { username: "cande94", code: "FUNK", depositoSc: 25, jugadoSc: 138, kyc: 1 },
+    { username: "tomi_rodri", code: "KAY", depositoSc: 40, jugadoSc: 310, kyc: 2 },
+  ];
+
+  for (const t of TRAIDOS) {
+    const codigo = await AffiliateCode.findOne({ code: t.code });
+
+    let jugador = await User.findOne({ username: t.username });
+    if (!jugador) {
+      jugador = await User.create({
+        username: t.username,
+        email: `${t.username}@mrbox.local`,
+        passwordHash,
+        verificationLevel: t.kyc,
+        freeOpens: 0,
+      });
+      await atarAlSocio(jugador, t.code);
+    }
+    await User.updateOne({ _id: jugador._id }, { $set: { verificationLevel: t.kyc } });
+
+    /* Ya sembrado antes: no se le suma la plata dos veces. */
+    const yaTiene = await BalanceTransaction.exists({ user: jugador._id, type: "purchase" });
+    if (yaTiene) continue;
+
+    await wallet.mover({
+      userId: jugador._id, amountSc: t.depositoSc + t.jugadoSc, type: "purchase",
+      reference: { kind: "semilla", label: t.code },
+    });
+    await wallet.mover({
+      userId: jugador._id, amountSc: -t.jugadoSc, type: "box_open", juegaSc: t.jugadoSc,
+      reference: { kind: "semilla", label: "aperturas" },
+    });
+
+    /* El margen de la casa sobre eso, al 8% del house edge. */
+    const fresco = await User.findById(jugador._id).lean();
+    await anotarComision({ jugador: fresco, jugadoSc: t.jugadoSc, margenSc: t.jugadoSc * 0.08 });
+  }
+
+  const socios = await AffiliateCode.find({}).lean();
+  console.log(`  afiliados: ${socios.length} campañas, ${TRAIDOS.length} jugadores traidos`);
+  console.log(`    FUNK (hibrido) y FUNKTG (house edge) son de funkmaster, rango 4 · KAY (comision) de kaylope`);
 
   /* Las cajas. El precio sale de los objetos. */
   for (const caja of CAJAS) {

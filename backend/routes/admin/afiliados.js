@@ -633,7 +633,6 @@ router.get("/affiliates/:userId", async (req, res) => {
           canal: c.canal || "",
           modelo: c.modelo,
           cobra: afiliados.comoCobra({ modelo: c.modelo, rango }),
-          aMano: Number(c.comision) > 0 ? Number(c.comision) : null,
           bonoPropio: c.bonoPropio === null || c.bonoPropio === undefined ? null : c.bonoPropio,
           activo: !!c.activo,
           venceEl: c.venceEl || null,
@@ -763,12 +762,6 @@ router.post("/affiliates/campaigns/:id", async (req, res) => {
           ? null
           : Math.max(0, Math.min(0.2, Number(req.body.bonoPropio) || 0));
     }
-    if (req.body.comision !== undefined) {
-      cambios.comision =
-        req.body.comision === null || req.body.comision === ""
-          ? 0
-          : Math.max(0, Math.min(0.7, Number(req.body.comision) || 0));
-    }
     /* El modelo se puede corregir desde el panel --un socio que eligió
        mal el primer día-- pero queda anotado quién lo cambió. */
     if (req.body.modelo !== undefined && afiliados.MODELOS.includes(req.body.modelo)) {
@@ -787,7 +780,6 @@ router.post("/affiliates/campaigns/:id", async (req, res) => {
         activo: campana.activo,
         modelo: campana.modelo,
         bonoPropio: campana.bonoPropio,
-        comision: campana.comision,
         venceEl: campana.venceEl,
       },
       despues: cambios,

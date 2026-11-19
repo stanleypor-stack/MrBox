@@ -463,7 +463,7 @@
           <section v-if="afiliado" class="mb-panel mb-panel--tabla">
             <h2>{{ $t('nav.affiliates') }}</h2>
 
-            <p v-if="!afiliado.codigos.length" class="mb-panel__vacio">{{ $t('profile.noAffiliate') }}</p>
+            <p v-if="!afiliado.campanas.length" class="mb-panel__vacio">{{ $t('profile.noAffiliate') }}</p>
 
             <table v-else class="mb-tabla">
               <thead>
@@ -477,7 +477,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="c in afiliado.codigos" :key="c._id">
+                <tr v-for="c in afiliado.campanas" :key="c._id">
                   <td><b>{{ c.code }}</b></td>
                   <td class="mb-der">{{ c.jugadores }}</td>
                   <td class="mb-der">{{ plata(c.jugadoPorLosSuyosSc) }}</td>
@@ -923,7 +923,7 @@ export default {
         }
         if (p === "controles") await this.traerControles();
         if (p === "refer") {
-          const { data } = await api.get("/profile/affiliate");
+          const { data } = await api.get("/affiliates");
           this.afiliado = data.data;
         }
       } catch (err) {
@@ -956,9 +956,9 @@ export default {
     async cobrar(c) {
       this.cobrando = true;
       try {
-        const { data } = await api.post("/profile/affiliate/claim", { codigoId: c._id });
+        const { data } = await api.post(`/affiliates/campaigns/${c._id}/claim`);
         this.$store.commit("saldo", data.data);
-        const { data: af } = await api.get("/profile/affiliate");
+        const { data: af } = await api.get("/affiliates");
         this.afiliado = af.data;
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });

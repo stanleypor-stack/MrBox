@@ -8,154 +8,332 @@
         <h1>{{ $t('affil.title') }}</h1>
         <p>{{ $t('affil.sub', { pct: bonoPct }) }}</p>
 
-        <button type="button" class="mb-acartel__b" @click="copiarEnlace">
-          {{ $t('affil.copyLink') }}
+        <button type="button" class="mb-acartel__b" @click="copiarEnlace(principal)">
+          {{ $t('affil.invite') }}
         </button>
         <span class="mb-acartel__copiado">{{ copiado ? $t('affil.copied') : '' }}</span>
       </div>
     </section>
 
     <template v-if="d">
-      <!-- ── Lo que trajo ───────────────────────────────────────── -->
-      <section class="mb-acaja mb-acaja--tres">
+      <!-- ── Los cuatro números ─────────────────────────────────── -->
+      <section class="mb-acaja mb-acaja--rejilla">
         <div class="mb-adato">
           <span>{{ $t('affil.referrals') }}</span>
           <b>{{ num(d.total.jugadores) }}</b>
         </div>
         <div class="mb-adato">
           <span>{{ $t('affil.deposits') }}</span>
-          <b><span class="mb-sc mb-sc--20" aria-hidden="true">SC</span>{{ plata(d.total.depositadoSc) }}</b>
+          <b><span class="mb-sc mb-sc--20" aria-hidden="true">SC</span>{{ corto(d.total.depositadoSc) }}</b>
         </div>
         <div class="mb-adato">
           <span>{{ $t('affil.volume') }}</span>
-          <b><span class="mb-sc mb-sc--20" aria-hidden="true">SC</span>{{ plata(d.total.jugadoSc) }}</b>
+          <b><span class="mb-sc mb-sc--20" aria-hidden="true">SC</span>{{ corto(d.total.jugadoSc) }}</b>
+        </div>
+        <div class="mb-adato">
+          <span>{{ $t('affil.totalEarned') }}</span>
+          <b class="mb-verde"><span class="mb-sc mb-sc--20" aria-hidden="true">SC</span>{{ corto(d.total.ganadoSc) }}</b>
         </div>
       </section>
 
-      <!-- ── El código y el enlace ──────────────────────────────── -->
-      <section class="mb-acaja mb-acaja--dos">
-        <div class="mb-adato">
-          <span>{{ $t('affil.code') }}</span>
-          <div class="mb-acodigo">
-            <input
-              v-if="editando" v-model="borrador" maxlength="16" class="mb-acodigo__in"
-              :aria-label="$t('affil.code')" @input="borrador = borrador.replace(/[^a-zA-Z0-9]/g, '')"
-            >
-            <b v-else>{{ codigo }}</b>
-
-            <button v-if="editando" type="button" class="mb-acodigo__b" :disabled="guardando" @click="guardar">
-              {{ $t('action.save') }}
-            </button>
-            <button v-else type="button" class="mb-acodigo__b mb-acodigo__b--suave" @click="empezarAEditar">
-              {{ $t('affil.edit') }}
-            </button>
-          </div>
-        </div>
-
-        <div class="mb-adato">
-          <span>{{ $t('affil.link') }}</span>
-          <div class="mb-acodigo">
-            <span class="mb-acodigo__enlace">{{ enlace }}</span>
-            <button type="button" class="mb-acodigo__b mb-acodigo__b--suave" @click="copiarEnlace">
-              {{ copiado ? $t('affil.copied') : $t('affil.copy') }}
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── Lo ganado y el tramo ───────────────────────────────── -->
+      <!-- ── Lo que hay para cobrar, y el rango ─────────────────── -->
       <section class="mb-ados">
         <div class="mb-acaja mb-acaja--col">
           <div class="mb-adato mb-adato--fila">
             <span class="mb-adato__t">
               {{ $t('affil.available') }}
-              <b><span class="mb-sc mb-sc--20" aria-hidden="true">SC</span>{{ plata(d.total.porCobrarSc) }}</b>
+              <b class="mb-verde">
+                <span class="mb-sc mb-sc--20" aria-hidden="true">SC</span>{{ plata(d.total.porCobrarSc) }}
+              </b>
             </span>
             <button
-              type="button" class="mb-acobrar" :disabled="!d.total.porCobrarSc || cobrando"
-              @click="cobrar"
+              type="button" class="mb-acobrar"
+              :disabled="!d.total.porCobrarSc || cobrando" @click="cobrarTodo"
             >{{ $t('affil.claim') }}</button>
           </div>
 
           <div class="mb-adato">
-            <span>{{ $t('affil.totalEarned') }}</span>
-            <b><span class="mb-sc mb-sc--20" aria-hidden="true">SC</span>{{ plata(d.total.ganadoSc) }}</b>
+            <span>{{ $t('affil.waiting') }}</span>
+            <b class="mb-ambar">
+              <span class="mb-sc mb-sc--20" aria-hidden="true">SC</span>{{ plata(d.total.enEsperaSc) }}
+            </b>
+            <p class="mb-anota">
+              {{ $t('affil.waitingSub', {
+                n: num(d.embudo.deposito + d.embudo.califica),
+                play: corto(d.reglas.cpaJugadoSc),
+                days: d.reglas.cpaEsperaDias,
+              }) }}
+            </p>
+            <p v-if="rango.minimoCobroSc" class="mb-anota">
+              {{ $t('affil.claimMin', { min: corto(rango.minimoCobroSc) }) }}
+            </p>
           </div>
         </div>
 
+        <!-- El rango, con los cuatro números que de verdad se miran -->
         <div class="mb-acaja mb-acaja--col">
-          <div class="mb-atramo">
-            <div class="mb-atramo__cab">
+          <div class="mb-arango">
+            <div class="mb-arango__cab">
               <span>
-                {{ $t('affil.commissionTier') }}
-                <b>{{ d.tramoActual.numero }}/{{ d.tramoActual.deCuantos }}</b>
+                {{ $t('affil.yourRank') }}
+                <b>{{ rango.numero }}/{{ rango.deCuantos }}</b>
               </span>
-              <button type="button" @click="tramosAbiertos = !tramosAbiertos">
-                {{ $t('affil.allTiers') }}
+              <router-link to="/affiliates/ranks">{{ $t('affil.seeAllRanks') }}</router-link>
+            </div>
+
+            <span class="mb-arango__quien">
+              <mb-gema :numero="rango.numero" :lado="40" />
+              <span>
+                <b>{{ rango.nombre }}</b>
+                <span>{{ $t('affil.bonusForYours', { pct: rango.bonoPct }) }}</span>
+              </span>
+            </span>
+
+            <div class="mb-arango__modelos">
+              <span>
+                <span>{{ $t('affil.mCpa') }}</span>
+                <b class="mb-ambar">SC {{ rango.cpaSc }}</b>
+              </span>
+              <span>
+                <span>{{ $t('affil.mRev') }}</span>
+                <b class="mb-azul">{{ rango.revsharePct }}%</b>
+              </span>
+              <span>
+                <span>{{ $t('affil.mHyb') }}</span>
+                <b class="mb-verde">SC {{ rango.hibridoCpaSc }} + {{ rango.hibridoPct }}%</b>
+              </span>
+              <span>
+                <span>{{ $t('affil.mHouse') }}</span>
+                <b class="mb-lila">{{ rango.houseEdgePct }}%</b>
+              </span>
+            </div>
+
+            <div v-if="rango.siguiente" class="mb-arango__sigue">
+              <div class="mb-arango__fila">
+                <span class="mb-tenue">
+                  {{ $t('affil.next') }} <b>{{ rango.siguiente.nombre }}</b>
+                </span>
+                <span class="mb-azul">
+                  {{ rango.siguiente.revsharePct }}% ·
+                  SC {{ rango.siguiente.cpaSc }} ·
+                  {{ rango.siguiente.houseEdgePct }}%
+                </span>
+              </div>
+              <span class="mb-anota">{{ $t('affil.ranksNotAuto') }}</span>
+            </div>
+
+            <a
+              class="mb-arango__pedir" :href="d.telegram" target="_blank" rel="noopener"
+              @click="pedirRango"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M21.5 4.3 2.9 11.4c-.9.3-.9 1.6 0 2l4.6 1.5 1.8 5.6c.3.8 1.3 1 1.9.4l2.6-2.5 4.6 3.4c.7.5 1.6.1 1.8-.7l3-15c.2-.9-.7-1.6-1.7-1.3zM9.6 14.1l9-5.6-7.6 6.8-.3 3.3-1.1-4.5z" />
+              </svg>
+              {{ $t('affil.askRank') }}
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Las campañas ───────────────────────────────────────── -->
+      <section class="mb-acaja mb-acaja--col">
+        <div class="mb-acab">
+          <h2>{{ $t('affil.campaigns') }}</h2>
+          <span class="mb-tenue">{{ $t('affil.campaignsSub') }}</span>
+        </div>
+
+        <div v-if="d.campanas.length" class="mb-acamps">
+          <article v-for="c in d.campanas" :key="c._id" class="mb-acamp">
+            <div class="mb-acamp__cab">
+              <span class="mb-acamp__quien">
+                <b v-if="editando !== c._id">{{ c.nombre }}</b>
+                <input
+                  v-else v-model="borrador" maxlength="16" class="mb-ain"
+                  :aria-label="$t('affil.code')" @input="limpiarBorrador"
+                >
+                <span class="mb-acamp__url">
+                  {{ host }}/r/<b>{{ c.code }}</b>
+                </span>
+              </span>
+
+              <span class="mb-achip" :class="'is-' + c.modelo">{{ etiqueta(c) }}</span>
+            </div>
+
+            <div class="mb-acamp__nums">
+              <span>
+                <span>{{ $t('affil.signups') }}</span>
+                <b>{{ num(c.jugadores) }}</b>
+              </span>
+              <span>
+                <span>{{ $t('affil.played') }}</span>
+                <b>SC {{ corto(c.jugadoPorLosSuyosSc) }}</b>
+              </span>
+              <span>
+                <span>{{ $t('affil.earnedYou') }}</span>
+                <b class="mb-verde">SC {{ plata(c.ganadoSc) }}</b>
+              </span>
+              <span>
+                <span>{{ $t('affil.available') }}</span>
+                <b class="mb-ambar">SC {{ plata(c.porCobrarSc) }}</b>
+              </span>
+            </div>
+
+            <div class="mb-acamp__pies">
+              <button type="button" class="mb-achico" @click="copiarEnlace(c)">
+                {{ $t('affil.copyLink') }}
+              </button>
+              <button
+                v-if="editando !== c._id" type="button" class="mb-achico"
+                @click="empezarAEditar(c)"
+              >{{ $t('affil.editCode') }}</button>
+              <button
+                v-else type="button" class="mb-achico mb-achico--azul" :disabled="guardando"
+                @click="guardarCodigo(c)"
+              >{{ $t('action.save') }}</button>
+              <button
+                type="button" class="mb-achico mb-achico--verde"
+                :disabled="!c.porCobrarSc || cobrando" @click="cobrar(c)"
+              >{{ $t('affil.claim') }}</button>
+            </div>
+          </article>
+        </div>
+
+        <div v-else class="mb-avacio">
+          <span>{{ $t('affil.noCampaigns') }}</span>
+          <span class="mb-tenue">{{ $t('affil.noCampaignsSub') }}</span>
+        </div>
+
+        <!-- Crear una campaña -->
+        <div class="mb-anueva">
+          <button
+            v-if="!creando" type="button" class="mb-acartel__b mb-acartel__b--chico"
+            :disabled="d.campanas.length >= d.reglas.comoMaximo" @click="creando = true"
+          >{{ $t('affil.newCampaign') }}</button>
+
+          <template v-else>
+            <h3>{{ $t('affil.newCampaign') }}</h3>
+
+            <label class="mb-acampo">
+              <span>{{ $t('affil.cName') }}</span>
+              <input
+                v-model="nueva.nombre" maxlength="60" class="mb-ain"
+                :aria-label="$t('affil.cName')"
+              >
+            </label>
+
+            <label class="mb-acampo">
+              <span>{{ $t('affil.cCode') }}</span>
+              <input
+                v-model="nueva.code" maxlength="16" class="mb-ain"
+                :aria-label="$t('affil.cCode')"
+                @input="nueva.code = nueva.code.replace(/[^a-zA-Z0-9_-]/g, '').toUpperCase()"
+              >
+            </label>
+
+            <label class="mb-acampo">
+              <span>{{ $t('affil.cChannel') }}</span>
+              <mb-elegir v-model="nueva.canal" :opciones="canales" />
+            </label>
+
+            <span class="mb-alab">{{ $t('affil.cModel') }}</span>
+
+            <div class="mb-amodelos">
+              <button
+                v-for="m in modelos" :key="m.id" type="button" class="mb-amodelo"
+                :class="{ 'is-elegido': nueva.modelo === m.id }" @click="nueva.modelo = m.id"
+              >
+                <span class="mb-amodelo__punto" :class="'is-' + m.id"></span>
+                <span class="mb-amodelo__texto">
+                  <b>
+                    {{ m.titulo }}
+                    <span v-if="m.id === 'hibrido'" class="mb-amodelo__sello">{{ $t('affil.mostPicked') }}</span>
+                  </b>
+                  <span>{{ m.sub }}</span>
+                </span>
+                <b class="mb-amodelo__num" :class="'is-' + m.id">{{ m.cuanto }}</b>
               </button>
             </div>
 
-            <span class="mb-atramo__ahora">
-              {{ d.tramoActual.nombre }}
-              <b>{{ (d.tramoActual.pct * 100).toFixed(0) }}%</b>
-            </span>
-
-            <div v-if="tramosAbiertos" class="mb-atramo__todos">
-              <div
-                v-for="t in d.tramos" :key="t.nombre" class="mb-atramo__uno"
-                :class="{ 'is-mio': t.nombre === d.tramoActual.nombre }"
-              >
-                <span>{{ t.nombre }}</span>
-                <b>{{ (t.pct * 100).toFixed(0) }}%</b>
-                <span class="mb-tenue">{{ corto(t.desdeSc) }}</span>
-              </div>
-            </div>
-
-            <div v-if="d.tramoActual.siguiente" class="mb-atramo__falta">
-              <div class="mb-atramo__fila">
-                <span class="mb-tenue">{{ $t('affil.next') }} <b>{{ d.tramoActual.siguiente.nombre }}</b></span>
-                <span>{{ d.tramoActual.progreso }}%</span>
-              </div>
-              <div class="mb-atramo__barra"><div :style="{ width: d.tramoActual.progreso + '%' }"></div></div>
-              <span class="mb-atramo__pie">
-                {{ $t('affil.moreToEarn', {
-                  amount: corto(d.tramoActual.faltaSc),
-                  pct: (d.tramoActual.siguiente.pct * 100).toFixed(0),
+            <div class="mb-acomo">
+              <span class="mb-alab">{{ $t('affil.howItEnds') }}</span>
+              <span class="mb-acomo__t">{{ comoQueda }}</span>
+              <span class="mb-anota">
+                {{ $t('affil.qualifies', {
+                  dep: corto(d.reglas.cpaDepositoSc),
+                  play: corto(d.reglas.cpaJugadoSc),
+                  days: d.reglas.cpaEsperaDias,
                 }) }}
+                {{ $t('affil.bonusAlways', { pct: rango.bonoPct }) }}
               </span>
             </div>
 
-            <p class="mb-atramo__nota">{{ $t('affil.ofMargin') }}</p>
-          </div>
+            <div class="mb-acamp__pies">
+              <button type="button" class="mb-acartel__b mb-acartel__b--chico" :disabled="creandola" @click="crear">
+                {{ $t('affil.create') }}
+              </button>
+              <button type="button" class="mb-achico" @click="creando = false">
+                {{ $t('action.cancel') }}
+              </button>
+            </div>
+          </template>
         </div>
       </section>
 
       <!-- ── Los que trajo ──────────────────────────────────────── -->
       <section class="mb-acaja mb-acaja--col">
-        <div class="mb-alista__cab">
+        <div class="mb-acab">
           <h2>{{ $t('affil.yourReferrals') }}</h2>
-          <span class="mb-tenue">{{ $t('admin.showing', { n: num(d.referidos.length) }) }}</span>
+          <span class="mb-tenue">
+            {{ $t('affil.funnel', {
+              total: num(d.total.jugadores),
+              qualified: num(d.embudo.califica + d.embudo.pagado),
+            }) }}
+          </span>
         </div>
 
         <div v-if="d.referidos.length" class="mb-alista">
           <div class="mb-alista__fila mb-alista__fila--cab">
             <span>{{ $t('affil.player') }}</span>
-            <span>{{ $t('affil.joined') }}</span>
+            <span>{{ $t('affil.campaign') }}</span>
+            <span>{{ $t('affil.status') }}</span>
             <span class="mb-der">{{ $t('affil.deposits') }}</span>
             <span class="mb-der">{{ $t('profile.wagered') }}</span>
+            <span class="mb-der">{{ $t('affil.earnedYou') }}</span>
           </div>
 
           <div v-for="r in d.referidos" :key="r._id" class="mb-alista__fila">
             <span>{{ r.username }}</span>
-            <span class="mb-tenue">{{ fecha(r.desde) }}</span>
+            <span class="mb-tenue">{{ r.codigo || '—' }}</span>
+            <span>
+              <span class="mb-achip" :class="'is-' + r.estado">{{ $t('affil.st_' + r.estado) }}</span>
+            </span>
             <span class="mb-der">SC {{ plata(r.depositadoSc) }}</span>
             <span class="mb-der">SC {{ plata(r.jugadoSc) }}</span>
+            <span class="mb-der" :class="r.montoSc ? 'mb-verde' : 'mb-tenue'">
+              {{ r.montoSc ? 'SC ' + plata(r.montoSc) : '—' }}
+            </span>
           </div>
         </div>
 
         <div v-else class="mb-avacio">
           <span>{{ $t('affil.noReferrals') }}</span>
           <span class="mb-tenue">{{ $t('affil.noReferralsSub') }}</span>
+        </div>
+      </section>
+
+      <!-- ── El programa de socios ──────────────────────────────── -->
+      <section class="mb-acaja mb-acaja--col">
+        <div class="mb-aprog">
+          <span class="mb-aprog__texto">
+            <span class="mb-alab">{{ $t('affil.program') }}</span>
+            <b>{{ $t('affil.programTitle', { pct: tope.houseEdgePct }) }}</b>
+            <span class="mb-tenue">
+              {{ $t('affil.programSub', { rev: tope.revsharePct, cpa: tope.cpaSc }) }}
+            </span>
+          </span>
+          <router-link to="/affiliates/ranks" class="mb-acartel__b mb-acartel__b--chico">
+            {{ $t('affil.seeRanks') }}
+          </router-link>
         </div>
       </section>
     </template>
@@ -168,96 +346,202 @@
 <script>
 import { mapGetters } from "vuex";
 import api from "@/api";
+import MbGema from "@/components/MbGema.vue";
+import MbElegir from "@/components/MbElegir.vue";
 
 /**
  * AFILIADOS.
  *
- * La pantalla del prototipo: el cartel con el enlace, lo que trajo, el
- * código, lo ganado y el tramo de comisión.
+ * Lo que ve un socio: su rango con los cuatro modelos, sus campañas, lo
+ * que hay para cobrar, lo que está esperando calificar y los que trajo.
  *
- * EL PORCENTAJE ES SOBRE EL MARGEN, NO SOBRE LO JUGADO
+ * LOS NUMEROS NO SE CALCULAN ACA
  *
- * Y la pantalla lo dice. La casa se queda con el 8% de lo que se juega:
- * pagar "15% de cada apuesta" sería pagar el doble de lo que entra, y
- * ese trato no lo puede sostener nadie. Sobre el margen, el tramo VIII
- * paga 15 centavos de cada peso que la casa gana con esos jugadores.
+ * Todos llegan del servidor, incluida la escalera: si la pantalla
+ * guardara su propia copia de "Bronce paga 35%", el día que el equipo
+ * edite la escalera el sitio mostraría un número y pagaría otro.
+ *
+ * LOS CUATRO MODELOS, EN UNA LINEA CADA UNO
+ *
+ *   por cabeza ... SC fijos por jugador que califica
+ *   comisión ..... % del margen REAL
+ *   híbrido ...... algo al calificar y algo siempre
+ *   house edge ... % del margen TEORICO, sin suerte de por medio
  */
 export default {
   name: "AffiliatesView",
+
+  components: { MbGema, MbElegir },
 
   data() {
     return {
       d: null,
       copiado: false,
-      editando: false,
+      cobrando: false,
+      creando: false,
+      creandola: false,
+      editando: "",
       borrador: "",
       guardando: false,
-      cobrando: false,
-      tramosAbiertos: false,
+      nueva: { nombre: "", code: "", canal: "YouTube", modelo: "hibrido" },
     };
   },
 
   computed: {
     ...mapGetters(["entro"]),
 
-    codigo() {
-      return (this.d && this.d.codigos.length && this.d.codigos[0].code) || "—";
+    rango() {
+      return (this.d && this.d.rango) || { numero: 1, nombre: "", bonoPct: 5, deCuantos: 8 };
     },
 
-    enlace() {
-      const base = window.location.origin.replace(/^https?:\/\//, "");
-      return `${base}/signup?ref=${this.codigo}`;
+    /** El último rango de la escalera: lo que se promete arriba. */
+    tope() {
+      const e = (this.d && this.d.escalera) || [];
+      return e.length ? e[e.length - 1] : { houseEdgePct: 65, revsharePct: 50, cpaSc: 50 };
+    },
+
+    principal() {
+      return (this.d && this.d.campanas.length && this.d.campanas[0]) || null;
+    },
+
+    host() {
+      return window.location.host;
     },
 
     bonoPct() {
-      const b = this.d && this.d.bonoParaElAmigo;
-      return b ? Math.round(b.normal * 1000) / 10 : 5;
+      return this.rango.bonoPct;
+    },
+
+    canales() {
+      return [
+        { valor: "YouTube", texto: "YouTube" },
+        { valor: "Telegram", texto: "Telegram" },
+        { valor: "Instagram", texto: "Instagram" },
+        { valor: "TikTok", texto: "TikTok" },
+        { valor: "Twitch", texto: "Twitch" },
+        { valor: "X", texto: "X" },
+        { valor: "Discord", texto: "Discord" },
+        { valor: "ads", texto: this.$t("affil.chAds") },
+        { valor: "otro", texto: this.$t("affil.chOther") },
+      ];
+    },
+
+    /** Los modelos que el socio puede elegir solo, con lo que paga su rango. */
+    modelos() {
+      const abiertos = (this.d && this.d.reglas.modelosAbiertos) || [];
+      const r = this.rango;
+
+      const todos = [
+        {
+          id: "revshare",
+          titulo: this.$t("affil.mRevTitle"),
+          sub: this.$t("affil.mRevSub"),
+          cuanto: `${r.revsharePct}%`,
+        },
+        {
+          id: "cpa",
+          titulo: this.$t("affil.mCpaTitle"),
+          sub: this.$t("affil.mCpaSub"),
+          cuanto: `SC ${r.cpaSc}`,
+        },
+        {
+          id: "hibrido",
+          titulo: this.$t("affil.mHybTitle"),
+          sub: this.$t("affil.mHybSub"),
+          cuanto: `SC ${r.hibridoCpaSc} + ${r.hibridoPct}%`,
+        },
+        {
+          id: "houseedge",
+          titulo: this.$t("affil.mHouseTitle"),
+          sub: this.$t("affil.mHouseSub"),
+          cuanto: `${r.houseEdgePct}%`,
+        },
+      ];
+
+      return todos.filter((m) => abiertos.includes(m.id));
+    },
+
+    /** La misma cuenta en una frase, antes de crear la campaña. */
+    comoQueda() {
+      const r = this.rango;
+      const m = this.nueva.modelo;
+
+      if (m === "cpa") return this.$t("affil.endsCpa", { cpa: r.cpaSc });
+      if (m === "revshare") return this.$t("affil.endsRev", { pct: r.revsharePct });
+      if (m === "houseedge") {
+        return this.$t("affil.endsHouse", {
+          pct: r.houseEdgePct,
+          edge: (this.d && this.d.reglas.houseEdgePct) || 8,
+        });
+      }
+      return this.$t("affil.endsHyb", { cpa: r.hibridoCpaSc, pct: r.hibridoPct });
     },
   },
 
   methods: {
     num(n) { return Number(n || 0).toLocaleString("en-US"); },
+
     plata(n) {
       return Number(n || 0).toLocaleString("en-US", {
         minimumFractionDigits: 2, maximumFractionDigits: 2,
       });
     },
-    fecha(d) { return d ? new Date(d).toLocaleDateString(this.$i18n.locale, { day: "2-digit", month: "short", year: "numeric" }) : ""; },
 
-    /** "SC 2.5M", "SC 10K": en una tarjeta no entra "2,500,000.00". */
+    /** "2.5M", "10K": en una tarjeta no entra "2,500,000.00". */
     corto(n) {
       const v = Number(n) || 0;
-      if (v >= 1000000) return "SC " + (v / 1000000).toFixed(v % 1000000 ? 1 : 0) + "M";
-      if (v >= 1000) return "SC " + Math.round(v / 1000) + "K";
-      return "SC " + v;
+      if (v >= 1000000) return (v / 1000000).toFixed(v % 1000000 ? 1 : 0) + "M";
+      if (v >= 10000) return Math.round(v / 1000) + "K";
+      return this.num(Math.round(v * 100) / 100);
     },
 
-    async copiarEnlace() {
+    /** El sello de la campaña: el modelo y lo que paga hoy. */
+    etiqueta(c) {
+      if (c.modelo === "cpa") return `${this.$t("affil.mCpaTitle")} · SC ${c.cobra.porCabezaSc}`;
+      if (c.modelo === "revshare") return `${this.$t("affil.mRevTitle")} · ${c.cobra.pct}%`;
+      if (c.modelo === "houseedge") return `${this.$t("affil.mHouseTitle")} · ${c.cobra.pct}%`;
+      return `${this.$t("affil.mHybTitle")} · SC ${c.cobra.porCabezaSc} + ${c.cobra.pct}%`;
+    },
+
+    enlaceDe(c) {
+      return `https://${this.host}/r/${c ? c.code : ""}`;
+    },
+
+    async copiarEnlace(c) {
+      const campana = c || this.principal;
+      if (!campana) {
+        this.$store.dispatch("avisar", { texto: this.$t("affil.noCampaigns"), tono: "error" });
+        return;
+      }
+
       try {
-        await navigator.clipboard.writeText("https://" + this.enlace);
+        await navigator.clipboard.writeText(this.enlaceDe(campana));
         this.copiado = true;
         window.setTimeout(() => { this.copiado = false; }, 2000);
       } catch (err) {
-        this.$store.dispatch("avisar", { texto: this.enlace });
+        this.$store.dispatch("avisar", { texto: this.enlaceDe(campana) });
       }
     },
 
-    empezarAEditar() {
-      this.borrador = this.codigo === "—" ? "" : this.codigo;
-      this.editando = true;
+    limpiarBorrador() {
+      this.borrador = this.borrador.replace(/[^a-zA-Z0-9_-]/g, "").toUpperCase();
     },
 
-    async guardar() {
-      const nuevo = this.borrador.trim().toUpperCase();
-      if (nuevo.length < 3) {
+    empezarAEditar(c) {
+      this.editando = c._id;
+      this.borrador = c.code;
+    },
+
+    async guardarCodigo(c) {
+      if (this.borrador.length < 3) {
         this.$store.dispatch("avisar", { texto: this.$t("affil.codeShort"), tono: "error" });
         return;
       }
 
       this.guardando = true;
       try {
-        await api.post("/profile/affiliate/code", { code: nuevo });
-        this.editando = false;
+        await api.post(`/affiliates/campaigns/${c._id}/code`, { code: this.borrador });
+        this.editando = "";
         await this.traer();
         this.$store.dispatch("avisar", { texto: this.$t("admin.done") });
       } catch (err) {
@@ -267,14 +551,29 @@ export default {
       }
     },
 
-    async cobrar() {
+    async crear() {
+      this.creandola = true;
+      try {
+        await api.post("/affiliates/campaigns", this.nueva);
+        this.creando = false;
+        this.nueva = { nombre: "", code: "", canal: "YouTube", modelo: "hibrido" };
+        await this.traer();
+        this.$store.dispatch("avisar", { texto: this.$t("admin.done") });
+      } catch (err) {
+        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
+      } finally {
+        this.creandola = false;
+      }
+    },
+
+    async cobrar(c) {
       this.cobrando = true;
       try {
-        const { data } = await api.post("/profile/affiliate/claim", {
-          codigoId: this.d.codigos[0]._id,
-        });
+        const { data } = await api.post(`/affiliates/campaigns/${c._id}/claim`);
         this.$store.commit("saldo", data.data);
-        this.$store.dispatch("avisar", { texto: this.$t("affil.claimed", { amount: this.plata(data.data.cobradoSc) }) });
+        this.$store.dispatch("avisar", {
+          texto: this.$t("affil.claimed", { amount: this.plata(data.data.cobradoSc) }),
+        });
         await this.traer();
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
@@ -283,11 +582,67 @@ export default {
       }
     },
 
+    /**
+     * Cobra todas las campañas que tengan algo.
+     *
+     * De una en una y a propósito: cada campaña es su propio cobro, con
+     * su propio mínimo. Si una no llega, las demás se cobran igual y se
+     * cuenta lo que entró.
+     */
+    async cobrarTodo() {
+      const conPlata = this.d.campanas.filter((c) => c.porCobrarSc > 0);
+      if (!conPlata.length) return;
+      if (conPlata.length === 1) return this.cobrar(conPlata[0]);
+
+      this.cobrando = true;
+      let total = 0;
+      let ultimoError = "";
+
+      for (const c of conPlata) {
+        try {
+          const { data } = await api.post(`/affiliates/campaigns/${c._id}/claim`);
+          this.$store.commit("saldo", data.data);
+          total += Number(data.data.cobradoSc) || 0;
+        } catch (err) {
+          ultimoError = err.textoParaElJugador;
+        }
+      }
+
+      this.cobrando = false;
+      await this.traer();
+
+      if (total > 0) {
+        this.$store.dispatch("avisar", {
+          texto: this.$t("affil.claimed", { amount: this.plata(total) }),
+        });
+      } else if (ultimoError) {
+        this.$store.dispatch("avisar", { texto: ultimoError, tono: "error" });
+      }
+
+      return null;
+    },
+
+    /**
+     * Deja anotado el pedido de rango.
+     *
+     * No frena el enlace de Telegram: el socio va a hablar igual, y si
+     * el pedido no se pudo anotar eso es nuestro problema, no suyo.
+     */
+    async pedirRango() {
+      try {
+        await api.post("/affiliates/rank/request");
+        this.$store.dispatch("avisar", { texto: this.$t("affil.asked") });
+      } catch (err) {
+        /* Ya pidió esta semana: no hace falta decirle nada. */
+      }
+    },
+
     async traer() {
       if (!this.entro) return;
       try {
-        const { data } = await api.get("/profile/affiliate");
+        const { data } = await api.get("/affiliates");
         this.d = data.data;
+        if (!this.nueva.nombre && !this.d.campanas.length) this.creando = true;
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
       }
@@ -317,8 +672,9 @@ export default {
   overflow: hidden;
   border-radius: 22px;
   min-height: 250px;
-  background: radial-gradient(circle at 18% 55%, rgba(255, 190, 60, .55) 0%, rgba(214, 112, 20, .5) 35%, rgba(20, 48, 106, .95) 72%), #14306a;
-  border: 1px solid #2f4fa0;
+  background:
+    radial-gradient(circle at 18% 55%, rgba(255, 190, 60, .55) 0%, rgba(255, 190, 60, 0) 32%),
+    linear-gradient(115deg, #0f2f7a 0%, #1f5fd6 45%, #2fa6f0 75%, #7fd3ff 100%);
   display: flex;
   align-items: center;
 }
@@ -330,7 +686,7 @@ export default {
   width: 1200px;
   height: 1200px;
   margin: -600px 0 0 -600px;
-  background: repeating-conic-gradient(from 0deg, rgba(255, 255, 255, .07) 0deg 6deg, rgba(255, 255, 255, 0) 6deg 18deg);
+  background: repeating-conic-gradient(from 0deg, rgba(255, 255, 255, .08) 0deg 6deg, rgba(255, 255, 255, 0) 6deg 18deg);
 }
 
 .mb-acartel__texto {
@@ -339,36 +695,45 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-width: min(620px, 100%);
+  max-width: min(640px, 100%);
 
   h1 {
     margin: 0;
     font-family: $fuente-cartel;
     font-weight: 400;
-    font-size: clamp(30px, 4.4vw, 44px);
+    font-size: clamp(28px, 4.4vw, 44px);
     line-height: 1.02;
     text-shadow: 0 3px 0 rgba(6, 20, 58, .55);
   }
 
   p { margin: 0; font-weight: 700; font-size: 16px; line-height: 1.45; color: #eef4ff; }
 
-  @include en-celular { padding: 22px 20px; }
+  @include en-celular { padding: 22px 18px; }
 }
 
 .mb-acartel__b {
   align-self: flex-start;
-  height: 46px;
-  padding: 0 26px;
-  border-radius: 23px;
+  height: 52px;
+  padding: 0 32px;
+  border-radius: 26px;
   border: 3px solid #fff;
   background: linear-gradient(180deg, #4fa2ff, #2f6fe0);
   color: #fff;
   font-family: inherit;
   font-weight: 900;
-  font-size: 15px;
+  font-size: 17px;
   cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
   @include foco;
+
   &:hover { filter: brightness(1.06); }
+  &:disabled { opacity: .5; cursor: default; }
+
+  &--chico { height: 46px; padding: 0 26px; border-radius: 23px; font-size: 15px; }
 }
 
 .mb-acartel__copiado { min-height: 16px; font-weight: 800; font-size: 13px; }
@@ -381,14 +746,18 @@ export default {
   padding: 14px;
   box-sizing: border-box;
   display: grid;
-  gap: 14px;
+  gap: 12px;
 
-  &--tres { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
-  &--dos { grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+  &--rejilla { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
   &--col { display: flex; flex-direction: column; }
 }
 
-.mb-ados { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 20px; align-items: start; }
+.mb-ados {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 20px;
+  align-items: stretch;
+}
 
 .mb-adato {
   border-radius: 16px;
@@ -400,16 +769,25 @@ export default {
   gap: 14px;
 
   > span:first-child { font-weight: 900; font-size: 11px; letter-spacing: .12em; color: $texto-4; }
-  b { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 26px; }
 
-  &--fila { flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; }
+  /* `line-height: 1` le corta la panza a la Luckiest Guy, que baja de
+     la línea de base. 1.15 la deja entera sin separar las tarjetas. */
+  b { display: flex; align-items: center; gap: 8px; font-family: $fuente-cartel; font-weight: 400; font-size: 30px; line-height: 1.15; }
+
+  &--fila { flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 12px; }
+
+  @include en-celular { padding: 16px 18px; b { font-size: 24px; } }
 }
 
-.mb-adato__t { display: flex; flex-direction: column; gap: 10px; font-weight: 900; font-size: 11px; letter-spacing: .12em; color: $texto-4; }
+.mb-adato__t { display: flex; flex-direction: column; gap: 14px; font-weight: 900; font-size: 11px; letter-spacing: .12em; color: $texto-4; }
+
+.mb-anota { margin: 0; font-weight: 700; font-size: 13px; line-height: 1.5; color: $texto-4; }
+.mb-alab { font-weight: 900; font-size: 11px; letter-spacing: .12em; color: $texto-4; }
 
 .mb-acobrar {
+  flex: none;
   height: 42px;
-  padding: 0 20px;
+  padding: 0 22px;
   border-radius: 12px;
   border: 0;
   background: $verde;
@@ -422,74 +800,23 @@ export default {
   &:disabled { opacity: .45; cursor: default; }
 }
 
-/* ── El código ────────────────────────────────────────────────────── */
+/* ── El rango ─────────────────────────────────────────────────────── */
 
-.mb-acodigo {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-height: 40px;
-
-  b { font-weight: 900; font-size: 20px; }
-}
-
-.mb-acodigo__in {
+.mb-arango {
   flex: 1;
-  min-width: 0;
-  height: 40px;
-  padding: 0 12px;
-  border-radius: 10px;
-  border: 1px solid $borde-fuerte;
-  background: $panel;
-  color: #fff;
-  font-family: inherit;
-  font-weight: 900;
-  font-size: 18px;
-  text-transform: uppercase;
-  &:focus { outline: none; border-color: $azul; }
-}
-
-.mb-acodigo__enlace {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 800;
-  font-size: 14px;
-  color: $texto-2;
-}
-
-.mb-acodigo__b {
-  flex: none;
-  height: 36px;
-  padding: 0 14px;
-  border-radius: 10px;
-  border: 0;
-  background: $azul;
-  color: #fff;
-  font-family: inherit;
-  font-weight: 800;
-  font-size: 13px;
-  cursor: pointer;
-  @include foco;
-
-  &--suave { background: #1d3354; }
-  &:disabled { opacity: .5; cursor: default; }
-}
-
-/* ── El tramo ─────────────────────────────────────────────────────── */
-
-.mb-atramo {
   border-radius: 16px;
-  background: #0b1729;
+  background:
+    radial-gradient(ellipse 70% 80% at 80% 0%, rgba(255, 200, 61, .18) 0%, rgba(11, 23, 41, 0) 70%),
+    #0b1729;
   padding: 22px 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+
+  @include en-celular { padding: 18px; }
 }
 
-.mb-atramo__cab {
+.mb-arango__cab {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -500,68 +827,275 @@ export default {
   color: $texto-4;
 
   b { color: $placeholder; }
-
-  button {
-    border: 0;
-    background: transparent;
-    color: #3f9bff;
-    font-family: inherit;
-    font-weight: 800;
-    font-size: 12px;
-    cursor: pointer;
-    @include foco;
-  }
+  a { color: $texto-4; font-weight: 800; font-size: 13px; letter-spacing: 0; text-decoration: none; &:hover { color: #fff; } }
 }
 
-.mb-atramo__ahora {
+.mb-arango__quien {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
-  font-family: $fuente-cartel;
-  font-size: 34px;
-  b { font-family: $fuente; font-weight: 900; font-size: 22px; color: #3f9bff; }
+
+  > span { display: flex; flex-direction: column; min-width: 0; }
+  b { font-family: $fuente-cartel; font-weight: 400; font-size: 28px; line-height: 1.1; }
+  > span > span { font-weight: 800; font-size: 13px; color: $texto-4; }
 }
 
-.mb-atramo__todos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.mb-arango__modelos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 
-.mb-atramo__uno {
+  > span {
+    padding: 10px 12px;
+    border-radius: 11px;
+    background: #12233d;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  > span > span { font-weight: 900; font-size: 10px; letter-spacing: .1em; color: $texto-4; }
+  b { font-weight: 900; font-size: 16px; white-space: nowrap; }
+}
+
+.mb-arango__sigue { margin-top: auto; display: flex; flex-direction: column; gap: 6px; }
+.mb-arango__fila { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; font-weight: 800; font-size: 13px; }
+
+.mb-arango__pedir {
+  height: 46px;
+  border-radius: 23px;
+  border: 3px solid #fff;
+  background: linear-gradient(180deg, #45b6ff, #1d8fe0);
+  color: #fff;
+  font-weight: 900;
+  font-size: 15px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
+  @include foco;
+  &:hover { filter: brightness(1.06); color: #fff; }
+}
+
+/* ── Las campañas ─────────────────────────────────────────────────── */
+
+.mb-acab {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px 0;
+
+  /* Con `line-height: 1` la Luckiest Guy pierde la cola de la "j". */
+  h2 { margin: 0; font-family: $fuente-cartel; font-weight: 400; font-size: 22px; line-height: 1.25; }
+  span { font-weight: 700; font-size: 13px; }
+}
+
+.mb-acamps { display: flex; flex-direction: column; gap: 10px; }
+
+.mb-acamp {
+  border-radius: 16px;
+  background: #0b1729;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @include en-celular { padding: 14px 16px; }
+}
+
+.mb-acamp__cab { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+
+.mb-acamp__quien {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  b { font-weight: 900; font-size: 16px; }
+}
+
+.mb-acamp__url {
+  font-weight: 700;
+  font-size: 12px;
+  color: $texto-4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  b { font-weight: 900; font-size: 12px; color: #8fb4ff; }
+}
+
+.mb-acamp__nums {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(45%, 120px), 1fr));
+  gap: 10px;
+
+  > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  > span > span { font-weight: 900; font-size: 10px; letter-spacing: .1em; color: $texto-4; }
+  b { font-weight: 900; font-size: 15px; }
+}
+
+.mb-acamp__pies { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.mb-achico {
+  height: 40px;
+  padding: 0 16px;
   border-radius: 10px;
-  background: #101f36;
-  padding: 8px 6px;
-  text-align: center;
+  border: 0;
+  background: #1d3354;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  @include foco;
+
+  &--azul { background: $azul; }
+  &--verde { background: $verde; color: #06331f; }
+  &:disabled { opacity: .45; cursor: default; }
+  &:hover:not(:disabled) { filter: brightness(1.1); }
+}
+
+/* ── Crear una campaña ────────────────────────────────────────────── */
+
+.mb-anueva {
+  border-radius: 16px;
+  background: #0b1729;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  h3 { margin: 0; font-family: $fuente-cartel; font-weight: 400; font-size: 20px; }
+}
+
+.mb-acampo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  > span { font-weight: 900; font-size: 11px; letter-spacing: .12em; color: $texto-4; }
+}
+
+.mb-ain {
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid $borde-fuerte;
+  background: $panel;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 15px;
+  box-sizing: border-box;
+  width: 100%;
+  &:focus { outline: none; border-color: $azul; }
+}
+
+.mb-amodelos { display: flex; flex-direction: column; gap: 8px; }
+
+.mb-amodelo {
+  padding: 14px;
+  border-radius: 14px;
+  background: $panel;
+  border: 2px solid $borde;
+  color: #fff;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  @include foco;
+
+  &.is-elegido { border-color: $verde; }
+}
+
+.mb-amodelo__punto {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid $borde;
+
+  .is-elegido & { border-color: $verde; background: $verde; }
+}
+
+.mb-amodelo__texto {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: 11px;
-  font-weight: 800;
 
-  b { font-size: 14px; color: #3f9bff; }
-  &.is-mio { background: #1d3a66; }
+  b { font-weight: 900; font-size: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  > span { font-weight: 700; font-size: 11px; color: $texto-4; }
 }
 
-.mb-atramo__falta { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
-.mb-atramo__fila { display: flex; justify-content: space-between; font-weight: 800; font-size: 13px; }
-
-.mb-atramo__barra {
-  height: 10px;
-  border-radius: 6px;
-  background: #050c18;
-  div { height: 100%; border-radius: 6px; background: #3f9bff; }
+.mb-amodelo__sello {
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(93, 255, 176, .14);
+  color: $verde;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .06em;
 }
 
-.mb-atramo__pie { font-weight: 800; font-size: 14px; }
-.mb-atramo__nota { margin: 0; font-size: 12px; line-height: 1.5; color: $texto-4; }
+.mb-amodelo__num {
+  flex: none;
+  font-family: $fuente-cartel;
+  font-weight: 400;
+  font-size: 18px;
+  text-align: right;
+
+  &.is-cpa { color: $amarillo-v; }
+  &.is-revshare { color: #3f9bff; }
+  &.is-hibrido { color: $verde; }
+  &.is-houseedge { color: #c4b5fd; }
+}
+
+.mb-acomo {
+  padding: 14px;
+  border-radius: 12px;
+  background: #12233d;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mb-acomo__t { font-weight: 800; font-size: 13px; line-height: 1.55; color: $texto-2; }
+
+/* ── Los sellos ───────────────────────────────────────────────────── */
+
+.mb-achip {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 10px;
+  letter-spacing: .04em;
+  white-space: nowrap;
+
+  &.is-cpa, &.is-deposito { background: rgba(255, 200, 61, .14); border: 1px solid rgba(255, 200, 61, .45); color: $amarillo-v; }
+  &.is-revshare { background: rgba(63, 155, 255, .14); border: 1px solid rgba(63, 155, 255, .45); color: #3f9bff; }
+  &.is-hibrido, &.is-califica, &.is-pagado { background: rgba(93, 255, 176, .14); border: 1px solid rgba(93, 255, 176, .45); color: $verde; }
+  &.is-houseedge { background: rgba(167, 139, 250, .16); border: 1px solid rgba(167, 139, 250, .55); color: #c4b5fd; }
+  &.is-nuevo { background: rgba(142, 163, 199, .14); border: 1px solid rgba(142, 163, 199, .4); color: $texto-4; }
+  &.is-anulado { background: rgba(255, 154, 165, .14); border: 1px solid rgba(255, 154, 165, .45); color: #ff9aa5; }
+}
 
 /* ── La lista ─────────────────────────────────────────────────────── */
-
-.mb-alista__cab { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px 0; h2 { margin: 0; font-family: $fuente-cartel; font-weight: 400; font-size: 22px; } }
 
 .mb-alista { border-radius: 16px; background: #0b1729; overflow: hidden; }
 
 .mb-alista__fila {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  grid-template-columns: 1.2fr 1fr 1.1fr .9fr .9fr .9fr;
   gap: 10px;
+  align-items: center;
   padding: 12px 18px;
   border-bottom: 1px solid #14233c;
   font-weight: 700;
@@ -576,9 +1110,40 @@ export default {
     color: $texto-4;
     text-transform: uppercase;
   }
+
+  @include en-celular {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 6px;
+    &--cab { display: none; }
+  }
 }
 
-.mb-der { text-align: right; font-variant-numeric: tabular-nums; }
+.mb-der { text-align: right; font-variant-numeric: tabular-nums; @include en-celular { text-align: left; } }
+
+/* ── El programa ──────────────────────────────────────────────────── */
+
+.mb-aprog {
+  border-radius: 16px;
+  background: #0b1729;
+  padding: 22px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  @include en-celular { padding: 18px; }
+}
+
+.mb-aprog__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  b { font-family: $fuente-cartel; font-weight: 400; font-size: 24px; }
+  > span:last-child { font-weight: 700; font-size: 14px; }
+}
+
+/* ── Lo vacío y los colores ───────────────────────────────────────── */
 
 .mb-avacio {
   border-radius: 16px;
@@ -592,4 +1157,8 @@ export default {
 }
 
 .mb-tenue { color: $texto-4; }
+.mb-verde { color: $verde; }
+.mb-ambar { color: $amarillo-v; }
+.mb-azul { color: #3f9bff; }
+.mb-lila { color: #c4b5fd; }
 </style>

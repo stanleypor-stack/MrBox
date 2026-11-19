@@ -313,7 +313,23 @@ export default {
     "$route.name"() { this.$nextTick(this.dibujarCaptcha); },
   },
 
-  created() { this.traerRegalo(); },
+  created() {
+    this.traerRegalo();
+
+    /*
+      EL CODIGO QUE VIENE EN EL ENLACE DEL SOCIO (/r/SUCODIGO).
+
+      Llega puesto y con la casilla marcada: el que entra por el enlace
+      de alguien no tiene que acordarse de nada. Igual lo puede borrar,
+      porque es su cuenta.
+    */
+    const ref = String(this.$route.query.ref || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 16);
+    if (ref) {
+      this.form.affiliateCode = ref.toUpperCase();
+      this.conCodigo = true;
+    }
+  },
+
   mounted() { this.dibujarCaptcha(); },
 };
 </script>

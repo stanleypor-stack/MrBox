@@ -1,6 +1,8 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 
+import api from "@/api";
+
 Vue.use(VueRouter);
 
 /**
@@ -75,6 +77,14 @@ const routes = [
     component: () => import(/* webpackChunkName: "extras" */ "@/views/AffiliatesView.vue"),
   },
   {
+    /* La escalera de rangos. Se mira SIN cuenta a proposito: es una
+       pantalla de venta, y alguien que todavia no se registro tiene que
+       poder ver lo que se paga antes de abrirse una cuenta. */
+    path: "/affiliates/ranks",
+    name: "affiliateRanks",
+    component: () => import(/* webpackChunkName: "extras" */ "@/views/AffiliateRanksView.vue"),
+  },
+  {
     path: "/vip",
     name: "vip",
     component: () => import(/* webpackChunkName: "extras" */ "@/views/VipView.vue"),
@@ -96,6 +106,26 @@ const routes = [
     una campana-- vuelven con el boton de atras, y el cartel del diseno
     entra entero. En una ventanita flotante ese cartel no cabe.
   */
+  {
+    /*
+      EL ENLACE QUE REPARTE EL SOCIO: mrbox.gg/r/SUCODIGO
+
+      Cuenta el clic y manda al registro con el código YA PUESTO. Un
+      código que hay que tipear a mano se escribe mal, y ese registro se
+      pierde para el socio y para el sitio.
+
+      El clic se cuenta y se sigue: si falla, el que entró igual tiene
+      que llegar al registro.
+    */
+    path: "/r/:code",
+    name: "ref",
+    component: () => import(/* webpackChunkName: "entrar" */ "@/views/AuthView.vue"),
+    beforeEnter(to, from, next) {
+      const code = String(to.params.code || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 16);
+      api.post(`/affiliates/click/${code}`).catch(() => {});
+      next({ name: "signup", query: { ref: code }, replace: true });
+    },
+  },
   {
     path: "/signup",
     name: "signup",
@@ -172,6 +202,28 @@ const routes = [
         path: "home",
         name: "adminHome",
         component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminTabla.vue"),
+      },
+
+      /*
+        LOS AFILIADOS: tres pantallas.
+
+        La escalera va ANTES que `affiliates/:userId`, si no "ladder" se
+        lee como el id de un socio.
+      */
+      {
+        path: "affiliates/ladder",
+        name: "adminLadder",
+        component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminEscalera.vue"),
+      },
+      {
+        path: "affiliates/:userId",
+        name: "adminPartner",
+        component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminSocio.vue"),
+      },
+      {
+        path: "affiliates",
+        name: "adminAffiliates",
+        component: () => import(/* webpackChunkName: "panel" */ "@/views/admin/AdminSocios.vue"),
       },
 
       /* Y el resto: una lista, la que diga la direccion. */

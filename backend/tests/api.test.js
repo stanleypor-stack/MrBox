@@ -348,7 +348,7 @@ test("el socio cobra, y no puede cobrar dos veces lo mismo", async (t) => {
   const cuenta = cuentaNueva();
   const { datos } = await pedir("POST", "/auth/register", { cuerpo: cuenta });
   const codigo = await AffiliateCode.create({
-    code: "COBRO" + n, owner: datos.user._id, comision: 0.3, ganadoSc: 120, cobradoSc: 0,
+    code: "COBRO" + n, owner: datos.user._id, ganadoSc: 120, cobradoSc: 0,
   });
 
   /* Diez pedidos de cobro al mismo tiempo: tiene que cobrar UNA vez. */

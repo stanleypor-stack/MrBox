@@ -401,20 +401,11 @@ const SECCIONES = {
     ],
   },
 
-  affiliates: {
-    ruta: "/admin/affiliates",
-    ancho: "900px",
-    w: "1.4fr 1fr .8fr 1.2fr 1fr 1fr .8fr",
-    columnas: [
-      { campo: "socio" },
-      { campo: "code" },
-      { campo: "jugadores", der: true, tipo: "numero" },
-      { campo: "jugadoPorLosSuyosSc", der: true, tipo: "sc" },
-      { campo: "ganadoSc", der: true, tipo: "sc" },
-      { campo: "cobradoSc", der: true, tipo: "sc" },
-      { campo: "activo", tipo: "estado", valor: (f) => (f.activo ? "active" : "off"), textos: "admin.state" },
-    ],
-  },
+  /*
+    Los AFILIADOS no estan aca: son tres pantallas propias --los socios,
+    un socio por dentro y la escalera-- porque se otorga un rango y se
+    paga por cabeza, y eso no es una lista. Ver views/admin/AdminSocios.
+  */
 
   analytics: {
     ruta: "/admin/analytics",
