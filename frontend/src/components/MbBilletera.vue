@@ -66,6 +66,54 @@
             </svg>
             {{ copiado ? $t('wallet.copied') : $t('wallet.copyAddress') }}
           </button>
+
+          <!--
+            ══ PAGAR DESDE LA BILLETERA ═══════════════════════════════
+
+            Solo aparece si esta moneda y esta red se pueden pagar así y
+            el navegador tiene una billetera. La plata va a la MISMA
+            dirección de arriba: esto le ahorra al jugador copiarla y
+            pegarla, que es donde se pierden los depósitos.
+          -->
+          <div v-if="sePuedePagarConBilletera" class="mb-caja__billetera">
+            <div class="mb-caja__billetera-cab">
+              <span>{{ $t('wallet.payFromWallet') }}</span>
+              <span class="mb-caja__billetera-red">{{ red.nombre }}</span>
+            </div>
+
+            <template v-if="!txHash">
+              <div class="mb-caja__billetera-fila">
+                <input
+                  v-model="montoCripto" class="mb-caja__in" inputmode="decimal"
+                  :placeholder="$t('wallet.amountIn', { coin: tickerElegido })"
+                  :aria-label="$t('wallet.amountIn', { coin: tickerElegido })"
+                >
+                <span class="mb-caja__billetera-tk">{{ tickerElegido }}</span>
+              </div>
+
+              <div class="mb-caja__billetera-botones">
+                <button
+                  v-for="b in billeteras" :key="b.id" type="button"
+                  class="mb-caja__billetera-b" :disabled="pagando" @click="pagarCon(b)"
+                >
+                  <img v-if="b.icono" :src="b.icono" alt="" width="18" height="18">
+                  {{ b.nombre }}
+                </button>
+              </div>
+
+              <p class="mb-caja__fino">{{ $t('wallet.walletNote', { net: red.nombre }) }}</p>
+            </template>
+
+            <template v-else>
+              <p class="mb-caja__billetera-ok">{{ $t('wallet.walletSent') }}</p>
+              <a :href="enlaceDeLaTx" target="_blank" rel="noopener" class="mb-caja__billetera-link">
+                {{ txCorto }}
+              </a>
+              <p class="mb-caja__fino">
+                {{ $t('wallet.minAndConfirms', { min: minimo, n: red.confirmaciones, time: red.demora }) }}
+              </p>
+            </template>
+          </div>
         </template>
 
         <p v-else class="mb-caja__nota">{{ $t('common.loading') }}</p>
@@ -237,6 +285,8 @@ import { mapGetters } from "vuex";
 import api from "@/api";
 import MbElegir from "@/components/MbElegir.vue";
 import MbMoneda from "@/components/MbMoneda.vue";
+import { parDeBilletera } from "@/utils/cadenas";
+import { billeterasDisponibles, enlaceDeTx, pagar } from "@/utils/billeteras";
 
 /**
  * LA CAJA: COMPRAR SC Y CANJEARLOS.
@@ -285,6 +335,12 @@ export default {
       codigo: "",
       codigoAbierto: false,
       aplicando: false,
+
+      /* Pagar desde la billetera del navegador. */
+      billeteras: [],
+      montoCripto: "",
+      pagando: false,
+      txHash: "",
     };
   },
 
@@ -330,6 +386,30 @@ export default {
       return (this.moneda.redes || []).length > 1
         ? `${this.tickerElegido} (${this.redElegida})`
         : this.tickerElegido;
+    },
+
+    /*
+      SI ESTE PAR SE PUEDE PAGAR CON UN BOTON.
+
+      Hacen falta tres cosas: que la moneda y la red sean de las que
+      habla una billetera de navegador (ver utils/cadenas.js), que la
+      pasarela ya nos haya dado la dirección, y que el navegador tenga
+      alguna billetera instalada. Si falta una, queda la dirección y el
+      QR, que es lo que siempre hubo.
+    */
+    sePuedePagarConBilletera() {
+      return !!(this.deposito && this.deposito.direccion
+        && this.billeteras.length
+        && parDeBilletera(this.tickerElegido, this.redElegida));
+    },
+
+    enlaceDeLaTx() {
+      return enlaceDeTx(this.tickerElegido, this.redElegida, this.txHash);
+    },
+
+    txCorto() {
+      const h = this.txHash || "";
+      return h.length > 18 ? `${h.slice(0, 10)}…${h.slice(-8)}` : h;
     },
 
     puedeCanjear() {
@@ -381,11 +461,72 @@ export default {
       }
     },
 
+    /**
+     * PAGA CON LA BILLETERA ELEGIDA.
+     *
+     * Todo lo delicado --que la billetera esté en la cadena correcta y
+     * que el contrato del token sea el que decimos-- pasa adentro de
+     * `pagar()`. Acá solo quedan el monto, el aviso y el hash.
+     *
+     * NO ACREDITA NADA. La plata la acredita la pasarela cuando la red
+     * confirma, igual que si hubiera copiado la dirección: este botón
+     * no es un camino nuevo para el saldo, es uno nuevo para mandar.
+     */
+    async pagarCon(billetera) {
+      const monto = String(this.montoCripto).trim();
+      if (!monto) {
+        this.$store.dispatch("avisar", { texto: this.$t("wallet.amountFirst"), tono: "error" });
+        return;
+      }
+
+      this.pagando = true;
+      try {
+        const hash = await pagar({
+          proveedor: billetera.proveedor,
+          ticker: this.tickerElegido,
+          red: this.redElegida,
+          destino: this.deposito.direccion,
+          monto,
+        });
+
+        this.txHash = hash;
+
+        /* Queda anotado para soporte: "pagué y no me llegó" es la
+           consulta más común, y sin el hash no hay nada que mirar. */
+        api.post("/wallet/deposit/tx", {
+          coin: this.tickerElegido,
+          network: this.redElegida,
+          hash,
+          address: this.deposito.direccion,
+        }).catch(() => {});
+
+        this.$store.dispatch("avisar", { texto: this.$t("wallet.walletSent") });
+      } catch (err) {
+        /* 4001 es "el jugador apretó cancelar": eso no es un error. */
+        if (err && err.code === 4001) return;
+        this.$store.dispatch("avisar", {
+          texto: this.$t("wallet.walletFailed", { why: (err && err.message) || "" }),
+          tono: "error",
+        });
+      } finally {
+        this.pagando = false;
+      }
+    },
+
+    async buscarBilleteras() {
+      try {
+        this.billeteras = await billeterasDisponibles();
+      } catch {
+        this.billeteras = [];
+      }
+    },
+
     async traerDeposito() {
       if (!this.entro) return;
       this.deposito = null;
       this.qr = "";
       this.copiado = false;
+      this.txHash = "";
 
       try {
         const { data } = await api.get("/wallet/deposit", {
@@ -494,8 +635,12 @@ export default {
 
   async created() {
     await this.traerMonedas();
-    if (this.lado === "in") this.traerDeposito();
-    else this.traerCanje();
+    if (this.lado === "in") {
+      this.traerDeposito();
+      this.buscarBilleteras();
+    } else {
+      this.traerCanje();
+    }
   },
 };
 </script>
@@ -762,6 +907,82 @@ export default {
   font-family: inherit;
   font-size: 14px;
   &:focus { outline: none; border-color: $azul; }
+}
+
+/* ── Pagar desde la billetera ──────────────────────────────────────── */
+
+.mb-caja__billetera {
+  border-radius: 14px;
+  background: $panel-alto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mb-caja__billetera-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: $texto-4;
+}
+
+.mb-caja__billetera-red { color: #8fb4ff; letter-spacing: 0; text-transform: none; font-size: 12px; }
+
+.mb-caja__billetera-fila {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .mb-caja__in { padding-right: 60px; }
+}
+
+.mb-caja__billetera-tk {
+  position: absolute;
+  right: 12px;
+  font-weight: 900;
+  font-size: 13px;
+  color: $texto-4;
+  pointer-events: none;
+}
+
+.mb-caja__billetera-botones { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.mb-caja__billetera-b {
+  flex: 1 1 120px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 0;
+  background: $azul;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  @include foco;
+
+  img { border-radius: 4px; }
+  &:hover:not(:disabled) { filter: brightness(1.08); }
+  &:disabled { opacity: .5; cursor: default; }
+}
+
+.mb-caja__billetera-ok { margin: 0; font-weight: 800; font-size: 14px; color: $verde; }
+
+.mb-caja__billetera-link {
+  font-weight: 700;
+  font-size: 12px;
+  color: #8fb4ff;
+  word-break: break-all;
 }
 
 .mb-caja__codigo {

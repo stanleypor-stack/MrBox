@@ -238,7 +238,23 @@ export default {
   Todo lleva el prefijo `ad-`, que no existe en el resto del sitio.
 */
 
-.ad { display: flex; align-items: stretch; min-height: 100vh; background: $fondo; color: #fff; }
+/*
+  EL PANEL VIVE ADENTRO DEL `zoom: .84` DEL SITIO.
+
+  Y adentro de un zoom, una medida de pantalla deja de ser la pantalla:
+  `100vh` se dibuja al 84% y abajo del menú quedaba una franja del fondo
+  de la página, ese bloque oscuro de la esquina. Dividiendo por la
+  escala, `100vh` vuelve a ser la pantalla entera. La variable la pone
+  `.mb-app` (ver App.vue); el `1` de respaldo es para el teléfono, que
+  no lleva zoom.
+*/
+.ad {
+  display: flex;
+  align-items: stretch;
+  min-height: calc(100vh / var(--escala, 1));
+  background: $fondo;
+  color: #fff;
+}
 .ad__cargando, .ad__no { margin: 80px auto; color: $texto-4; }
 
 /* ── El menú ──────────────────────────────────────────────────────── */
@@ -263,7 +279,7 @@ export default {
   position: sticky;
   top: 0;
   align-self: flex-start;
-  height: 100vh;
+  height: calc(100vh / var(--escala, 1));
 
   @media (max-width: 900px) {
     position: fixed;

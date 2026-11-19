@@ -40,6 +40,7 @@ const User = require("../database/models/User");
 const Box = require("../database/models/Box");
 const Item = require("../database/models/Item");
 const AffiliateCode = require("../database/models/AffiliateCode");
+const WalletTx = require("../database/models/WalletTx");
 const wallet = require("../services/wallet");
 const afiliados = require("../services/affiliates");
 const { sc } = require("../utils/money");
@@ -443,4 +444,55 @@ test("nadie ve el extracto de otro", async (t) => {
 
   const { datos } = await pedir("GET", "/profile/transactions", { token: otro.datos.token });
   assert.equal(datos.data.total, 0, "vio movimientos que no son suyos");
+});
+
+/* ── El pago desde la billetera del jugador ───────────────────────── */
+
+test("el hash de un pago desde la billetera se anota, y NO acredita nada", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+  const { datos } = await pedir("POST", "/auth/register", { cuerpo: cuentaNueva() });
+  const hash = "0x" + "c".repeat(64);
+
+  const r = await pedir("POST", "/wallet/deposit/tx", {
+    token: datos.token,
+    cuerpo: { coin: "USDT", network: "BEP20", hash, address: "0xd1d2617E98f590fB26cd70839984a0d46c8dcB47" },
+  });
+  assert.equal(r.estado, 200);
+
+  const fila = await WalletTx.findOne({ hash }).lean();
+  assert.ok(fila, "no quedo anotado");
+  assert.equal(fila.ticker, "USDT");
+  assert.equal(String(fila.user), String(datos.user._id));
+
+  /*
+    LO MAS IMPORTANTE DE ESTE TEST.
+    Anotar un hash no es acreditar: el saldo lo mueve el aviso de la
+    pasarela cuando la red confirma. Si esto acreditara, cualquiera se
+    regalaria SC inventando un hash.
+  */
+  const saldo = await wallet.saldoDe(datos.user._id);
+  assert.equal(saldo.balanceSc, 0, "un hash no puede acreditar saldo");
+
+  /* El mismo hash dos veces deja una sola fila. */
+  await pedir("POST", "/wallet/deposit/tx", {
+    token: datos.token,
+    cuerpo: { coin: "USDT", network: "BEP20", hash },
+  });
+  assert.equal(await WalletTx.countDocuments({ hash }), 1);
+});
+
+test("un hash que no es un hash no se guarda, y sin sesion no entra", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+  const { datos } = await pedir("POST", "/auth/register", { cuerpo: cuentaNueva() });
+
+  const feo = await pedir("POST", "/wallet/deposit/tx", {
+    token: datos.token,
+    cuerpo: { coin: "USDT", network: "BEP20", hash: "pegue cualquier cosa" },
+  });
+  assert.equal(feo.datos.success, false);
+
+  const sinSesion = await pedir("POST", "/wallet/deposit/tx", {
+    cuerpo: { coin: "USDT", network: "BEP20", hash: "0x" + "d".repeat(64) },
+  });
+  assert.equal(sinSesion.estado, 401);
 });

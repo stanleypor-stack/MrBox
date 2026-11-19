@@ -11,6 +11,7 @@ const User = require("../../database/models/User");
 const afiliados = require("../../services/affiliates");
 const cajas = require("../../services/boxes");
 const PromoCode = require("../../database/models/PromoCode");
+const WalletTx = require("../../database/models/WalletTx");
 const { sc } = require("../../utils/money");
 const { errorDe, esDeJugador } = require("../../utils/errors");
 const { logger } = require("../../utils/logger");
@@ -77,6 +78,41 @@ router.get("/deposit", freno, async (req, res) => {
     return res.json({ success: true, data: datos });
   } catch (err) {
     return responderError(res, err, "deposit");
+  }
+});
+
+/**
+ * EL HASH DE UN PAGO HECHO DESDE LA BILLETERA.
+ *
+ * Lo anota y nada más: NO acredita, no decide y no se le cree. El saldo
+ * lo sigue acreditando el aviso de la pasarela cuando la red confirma.
+ *
+ * Existe para soporte: "pagué y no me llegó" sin un hash no se puede
+ * mirar, y con el hash se abre el explorador y se ve si la transferencia
+ * salió, a dónde fue y cuántas confirmaciones lleva.
+ */
+router.post("/deposit/tx", freno, async (req, res) => {
+  try {
+    const hash = String(req.body.hash || "").trim().slice(0, 120);
+    if (!/^0x[a-fA-F0-9]{64}$/.test(hash)) throw errorDe("INVALID_AMOUNT", { campo: "hash" });
+
+    await WalletTx.updateOne(
+      { hash },
+      {
+        $setOnInsert: {
+          user: req.user._id,
+          hash,
+          ticker: String(req.body.coin || "").slice(0, 10).toUpperCase(),
+          red: String(req.body.network || "").slice(0, 20),
+          direccion: String(req.body.address || "").slice(0, 120),
+        },
+      },
+      { upsert: true }
+    );
+
+    return res.json({ success: true });
+  } catch (err) {
+    return responderError(res, err, "deposit/tx");
   }
 });
 
