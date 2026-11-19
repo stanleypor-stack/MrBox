@@ -343,6 +343,7 @@ export default {
     "network": "ネットワーク",
     "sendOnly": "<strong>{net}</strong> の <strong>{coin}</strong> のみ送金してください",
     "copyAddress": "アドレスをコピー",
+    "more": "+ ほか",
     "groupCrypto": "暗号資産",
     "connectWallet": "ウォレットを接続",
     "cryptocurrencies": "暗号資産",

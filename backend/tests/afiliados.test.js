@@ -337,3 +337,86 @@ test("poner el código después dice el porcentaje del rango que de verdad le to
   const saldo = await wallet.saldoDe(jug.id);
   assert.equal(saldo.balanceSc, 110);
 });
+
+/* ── Un campo, los dos tipos de codigo ────────────────────────────── */
+
+/** Pone un codigo desde el cajon, como lo hace la pantalla. */
+async function ponerCodigo(token, code) {
+  const r = await fetch(`${base}/wallet/code`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-auth-token": token },
+    body: JSON.stringify({ code }),
+  });
+  return { estado: r.status, datos: await r.json() };
+}
+
+test("EL CODIGO PROPIO NO DICE 'no existe', DICE QUE ES EL PROPIO", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  /*
+    Es el error que mas tiempo le hace perder a cualquiera: el socio
+    prueba su codigo, le dice "no existe", y se va a revisar como lo
+    escribio cuando el problema era otro.
+  */
+  const { codigo, socio } = await socioCon({}, 2);
+
+  /* El socio entra con su propia cuenta. */
+  const jwt = require("jsonwebtoken");
+  const token = jwt.sign({ id: String(socio._id) }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+  const r = await ponerCodigo(token, codigo.code);
+  assert.equal(r.datos.code, "OWN_CODE");
+});
+
+test("un codigo de afiliado se ata desde el cajon, y una sola vez", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  const { codigo } = await socioCon({}, 3);
+  const jug = await jugadorDe("");
+
+  const r = await ponerCodigo(jug.token, codigo.code.toLowerCase());
+  assert.equal(r.estado, 200);
+  assert.equal(r.datos.data.tipo, "afiliado");
+  assert.equal(r.datos.data.code, codigo.code, "lo toma escrito como sea");
+  assert.equal(r.datos.data.bonoPct, 7, "el bono del rango Gold");
+
+  const otra = await ponerCodigo(jug.token, codigo.code);
+  assert.equal(otra.datos.code, "CODE_ALREADY_USED");
+
+  /* Y lo que dice la pantalla es lo que se acredita. */
+  const u = await User.findById(jug.id).lean();
+  assert.equal((await afiliados.bonoDeCompra(u, 100)).bonoSc, 7);
+});
+
+test("un codigo promocional entra por el MISMO campo", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  const PromoCode = require("../database/models/PromoCode");
+  n += 1;
+  const texto = `PROMO${n}`;
+  await PromoCode.create({ codigo: texto, tipo: "saldo", montoSc: 5, activo: true });
+
+  const jug = await jugadorDe("");
+
+  /*
+    El jugador escribe "un codigo". No tiene por que saber si el suyo
+    es de un afiliado o de una promocion.
+  */
+  const r = await ponerCodigo(jug.token, texto);
+  assert.equal(r.estado, 200);
+  assert.equal(r.datos.data.tipo, "promo");
+  assert.equal(r.datos.data.montoSc, 5);
+
+  const saldo = await wallet.saldoDe(jug.id);
+  assert.equal(saldo.balanceSc, 5, "se acredito la promocion");
+
+  const otra = await ponerCodigo(jug.token, texto);
+  assert.equal(otra.datos.code, "CODE_ALREADY_USED");
+});
+
+test("uno que no existe sigue diciendo que no existe", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+  const jug = await jugadorDe("");
+  const r = await ponerCodigo(jug.token, "NOEXISTENINGUNO");
+  assert.equal(r.datos.code, "CODE_NOT_FOUND");
+});

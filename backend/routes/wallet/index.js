@@ -146,32 +146,69 @@ router.post("/withdraw", freno, async (req, res) => {
 });
 
 /**
- * ATAR UN CODIGO DE AFILIADO DESPUES.
+ * UN CODIGO, DEL TIPO QUE SEA.
  *
- * El código normalmente se pone al registrarse, pero la mitad de la
- * gente se entera del código DESPUES. Esto deja ponerlo mientras
- * todavía no tenga uno: el que ya tiene no lo puede cambiar, porque si
- * no, el primer socio pierde al jugador que trajo.
+ * El jugador escribe "un código": no tiene por qué saber si el suyo es
+ * de un afiliado o de una promoción. Acá se averigua, se hace lo que
+ * corresponda y se contesta qué pasó.
+ *
+ * Y CUANDO NO ENTRA, SE DICE POR QUE NO ENTRA
+ *
+ * "Ese código no existe" para todo es la peor respuesta posible:
+ * mandaba a alguien a revisar cómo lo escribió cuando el problema era
+ * que el código era el suyo propio, o que ya tenía uno puesto. Cada
+ * caso tiene su mensaje.
+ *
+ * EL CODIGO DE AFILIADO SE PONE UNA SOLA VEZ
+ *
+ * Normalmente al registrarse, pero la mitad de la gente se entera
+ * después. El que ya tiene uno no lo puede cambiar: si no, el primer
+ * socio pierde al jugador que trajo.
  */
 router.post("/code", freno, async (req, res) => {
   try {
-    if (req.user.referredBy) throw errorDe("CODE_ALREADY_USED");
+    const texto = codigoEscrito(req.body.code);
+    if (!texto) throw errorDe("CODE_NOT_FOUND");
 
-    const codigo = await afiliados.atarAlSocio(req.user, req.body.code);
-    if (!codigo) throw errorDe("CODE_NOT_FOUND");
+    /* ── ¿Es de un afiliado? ──────────────────────────────────── */
+    const codigo = await afiliados.buscarCodigo(texto);
+    if (codigo) {
+      const duenoId = String((codigo.owner && codigo.owner._id) || codigo.owner);
+      if (duenoId === String(req.user._id)) throw errorDe("OWN_CODE");
+      if (req.user.referredBy) throw errorDe("CODE_ALREADY_USED");
+      if (!codigo.sirve()) throw errorDe("CODE_EXPIRED");
 
-    /*
-      El porcentaje lo contesta el servicio, que es el que sabe el rango
-      del socio: del 5% al 10%. Calcularlo acá con el número normal le
-      mostraba de menos al jugador de un socio grande, y después se le
-      acreditaba de más, que es peor que no decirle nada.
-    */
-    const pct = await afiliados.bonoDe(codigo);
+      await afiliados.atarAlSocio(req.user, texto);
 
-    return res.json({
-      success: true,
-      data: { code: codigo.code, bonoPct: Math.round(pct * 1000) / 10 },
-    });
+      /*
+        El porcentaje lo contesta el servicio, que es el que sabe el
+        rango del socio: del 5% al 10%. Calcularlo acá con el número
+        normal le mostraba de menos al jugador de un socio grande, y
+        después se le acreditaba de más, que es peor que no decirle nada.
+      */
+      const pct = await afiliados.bonoDe(codigo);
+
+      return res.json({
+        success: true,
+        data: { tipo: "afiliado", code: codigo.code, bonoPct: Math.round(pct * 1000) / 10 },
+      });
+    }
+
+    /* ── ¿Es de una promoción? ────────────────────────────────── */
+    const promo = await PromoCode.findOne({ codigo: texto.replace(/[^A-Z0-9]/g, "") });
+    if (promo) {
+      const r = await canjearPromo(req.user, promo);
+
+      /*
+        El `tipo` de la promoción --saldo o aperturas-- se llama igual
+        que el tipo de código, así que va con otro nombre: con los dos
+        como `tipo`, el de adentro pisaba al de afuera y la pantalla
+        mostraba el mensaje equivocado.
+      */
+      return res.json({ success: true, data: { ...r, tipo: "promo", tipoPromo: r.tipo } });
+    }
+
+    throw errorDe("CODE_NOT_FOUND");
   } catch (err) {
     return responderError(res, err, "code");
   }
@@ -188,68 +225,85 @@ router.post("/code", freno, async (req, res) => {
  * por (código, jugador). Dos clics al mismo tiempo: el segundo choca
  * contra el índice y no acredita. Preguntando "¿ya lo usó?" y después
  * acreditando, los dos pasan.
+ *
+ * Está como función aparte porque lo usan DOS pantallas: la de
+ * recompensas y el "¿tenés un código?" del cajón, que acepta cualquiera
+ * de los dos tipos.
  */
+async function canjearPromo(usuario, codigo) {
+  /* Soporte le puede frenar las promociones a una cuenta sin cerrarla. */
+  if (usuario.trabas && usuario.trabas.promos) throw errorDe("PROMOS_LOCKED", {}, 403);
+  if (!codigo.sirve()) throw errorDe("CODE_EXPIRED");
+
+  if (codigo.minimoJugadoSc > 0 && sc(usuario.jugadoSc) < codigo.minimoJugadoSc) {
+    throw errorDe("BELOW_MINIMUM", { minimoJugadoSc: codigo.minimoJugadoSc });
+  }
+
+  /* La marca primero: es la que decide quién gana la carrera. */
+  let uso;
+  try {
+    uso = await PromoCode.PromoUse.create({
+      code: codigo._id,
+      user: usuario._id,
+      montoSc: codigo.montoSc,
+      aperturas: codigo.aperturas,
+    });
+  } catch (err) {
+    if (err && err.code === 11000) throw errorDe("CODE_ALREADY_USED");
+    throw err;
+  }
+
+  try {
+    if (codigo.tipo === "saldo" && codigo.montoSc > 0) {
+      await wallet.mover({
+        userId: usuario._id,
+        amountSc: sc(codigo.montoSc),
+        type: "promo_code",
+        reference: { kind: "promoCode", id: codigo._id, label: codigo.codigo },
+      });
+    }
+
+    if (codigo.tipo === "aperturas" && codigo.aperturas > 0) {
+      await cajas.regalarCajasDeBienvenida(usuario._id);
+    }
+  } catch (err) {
+    /* No se pudo dar: se borra la marca para que lo pueda reintentar. */
+    await PromoCode.PromoUse.deleteOne({ _id: uso._id });
+    throw err;
+  }
+
+  await PromoCode.updateOne({ _id: codigo._id }, { $inc: { usos: 1 } });
+
+  return {
+    codigo: codigo.codigo,
+    tipo: codigo.tipo,
+    montoSc: sc(codigo.montoSc),
+    aperturas: codigo.aperturas,
+    ...(await wallet.saldoDe(usuario._id)),
+  };
+}
+
+/** Limpia lo que escribió el jugador. Los de afiliado llevan - y _. */
+function codigoEscrito(texto) {
+  return String(texto || "").toUpperCase().replace(/[^A-Z0-9_-]/g, "").slice(0, 24);
+}
+
 router.post("/promo", freno, async (req, res) => {
   try {
-    /* Soporte le puede frenar las promociones a una cuenta sin cerrarla. */
+    /*
+      La traba va PRIMERO, antes de mirar si el código existe: una
+      cuenta frenada no tiene por qué poder averiguar qué códigos hay
+      probando uno por uno.
+    */
     if (req.user.trabas && req.user.trabas.promos) throw errorDe("PROMOS_LOCKED", {}, 403);
 
-    const texto = String(req.body.code || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 24);
+    const texto = codigoEscrito(req.body.code).replace(/[^A-Z0-9]/g, "");
     if (!texto) throw errorDe("CODE_NOT_FOUND");
 
     const codigo = await PromoCode.findOne({ codigo: texto });
     if (!codigo) throw errorDe("CODE_NOT_FOUND");
-    if (!codigo.sirve()) throw errorDe("CODE_EXPIRED");
 
-    if (codigo.minimoJugadoSc > 0 && sc(req.user.jugadoSc) < codigo.minimoJugadoSc) {
-      throw errorDe("BELOW_MINIMUM", { minimoJugadoSc: codigo.minimoJugadoSc });
-    }
-
-    /* La marca primero: es la que decide quién gana la carrera. */
-    let uso;
-    try {
-      uso = await PromoCode.PromoUse.create({
-        code: codigo._id,
-        user: req.user._id,
-        montoSc: codigo.montoSc,
-        aperturas: codigo.aperturas,
-      });
-    } catch (err) {
-      if (err && err.code === 11000) throw errorDe("CODE_ALREADY_USED");
-      throw err;
-    }
-
-    try {
-      if (codigo.tipo === "saldo" && codigo.montoSc > 0) {
-        await wallet.mover({
-          userId: req.user._id,
-          amountSc: sc(codigo.montoSc),
-          type: "promo_code",
-          reference: { kind: "promoCode", id: codigo._id, label: codigo.codigo },
-        });
-      }
-
-      if (codigo.tipo === "aperturas" && codigo.aperturas > 0) {
-        await cajas.regalarCajasDeBienvenida(req.user._id);
-      }
-    } catch (err) {
-      /* No se pudo dar: se borra la marca para que lo pueda reintentar. */
-      await PromoCode.PromoUse.deleteOne({ _id: uso._id });
-      throw err;
-    }
-
-    await PromoCode.updateOne({ _id: codigo._id }, { $inc: { usos: 1 } });
-
-    return res.json({
-      success: true,
-      data: {
-        codigo: codigo.codigo,
-        tipo: codigo.tipo,
-        montoSc: sc(codigo.montoSc),
-        aperturas: codigo.aperturas,
-        ...(await wallet.saldoDe(req.user._id)),
-      },
-    });
+    return res.json({ success: true, data: await canjearPromo(req.user, codigo) });
   } catch (err) {
     return responderError(res, err, "promo");
   }

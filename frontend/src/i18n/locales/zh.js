@@ -343,6 +343,7 @@ export default {
     "network": "网络",
     "sendOnly": "请仅通过 <strong>{net}</strong> 发送 <strong>{coin}</strong>",
     "copyAddress": "复制地址",
+    "more": "+ 更多",
     "groupCrypto": "加密货币",
     "connectWallet": "连接钱包",
     "cryptocurrencies": "加密货币",

@@ -343,6 +343,7 @@ export default {
     "network": "Netzwerk",
     "sendOnly": "Sende nur <strong>{coin}</strong> über <strong>{net}</strong>",
     "copyAddress": "Adresse kopieren",
+    "more": "+ Mehr",
     "groupCrypto": "Krypto",
     "connectWallet": "Wallet verbinden",
     "cryptocurrencies": "Kryptowährungen",

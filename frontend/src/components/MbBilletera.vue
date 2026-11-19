@@ -34,17 +34,11 @@
           >
             <span class="mb-caja__metodo-t">{{ $t('wallet.connectWallet') }}</span>
             <span class="mb-caja__puntos">
-              <span
-                v-for="b in billeteras.slice(0, 3)" :key="b.id" class="mb-caja__icono"
-                aria-hidden="true"
-              >
-                <img v-if="b.icono" :src="b.icono" alt="" width="20" height="20">
-                <template v-else>{{ b.nombre.slice(0, 1) }}</template>
-              </span>
-              <span v-if="billeteras.length > 3" class="mb-caja__mas">
-                +{{ billeteras.length - 3 }}
-              </span>
-              <span v-if="!billeteras.length" class="mb-caja__mas">{{ $t('wallet.noWallet') }}</span>
+              <MbMarcaDeBilletera
+                v-for="b in marcasDeBilletera" :key="b.id"
+                :marca-id="b.id" :nombre="b.nombre" :icono="b.icono"
+              />
+              <span class="mb-caja__mas">{{ $t('wallet.more') }}</span>
             </span>
           </button>
 
@@ -103,18 +97,10 @@
         <template v-else-if="metodo === 'billetera'">
           <div class="mb-caja__conectar">
             <span class="mb-caja__conectar-iconos" aria-hidden="true">
-              <span v-for="b in billeteras.slice(0, 3)" :key="b.id" class="mb-caja__icono mb-caja__icono--grande">
-                <img v-if="b.icono" :src="b.icono" alt="" width="28" height="28">
-                <template v-else>{{ b.nombre.slice(0, 1) }}</template>
-              </span>
-
-              <span v-if="!billeteras.length" class="mb-caja__icono mb-caja__icono--grande">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8ea3c7"
-                     stroke-width="2" stroke-linejoin="round">
-                  <rect x="3" y="6" width="18" height="13" rx="2.5" />
-                  <path d="M3 10h18M16 14.5h2" />
-                </svg>
-              </span>
+              <MbMarcaDeBilletera
+                v-for="b in marcasDeBilletera" :key="b.id" class="mb-caja__marca-grande"
+                :marca-id="b.id" :nombre="b.nombre" :icono="b.icono"
+              />
             </span>
 
             <b class="mb-caja__conectar-t">{{ $t('wallet.connectTitle') }}</b>
@@ -161,7 +147,7 @@
                     class="mb-caja__conectar-b" :disabled="pagando || !deposito.direccion"
                     @click="pagarCon(b)"
                   >
-                    <img v-if="b.icono" :src="b.icono" alt="" width="20" height="20">
+                    <MbMarcaDeBilletera :marca-id="b.id" :nombre="b.nombre" :icono="b.icono" />
                     {{ $t('wallet.payWith', { wallet: b.nombre }) }}
                   </button>
                 </div>
@@ -392,6 +378,7 @@ import { mapGetters } from "vuex";
 import api from "@/api";
 import MbElegir from "@/components/MbElegir.vue";
 import MbMoneda from "@/components/MbMoneda.vue";
+import MbMarcaDeBilletera from "@/components/MbMarcaDeBilletera.vue";
 import { parDeBilletera } from "@/utils/cadenas";
 import { billeterasDisponibles, enlaceDeTx, pagar } from "@/utils/billeteras";
 
@@ -417,7 +404,7 @@ import { billeterasDisponibles, enlaceDeTx, pagar } from "@/utils/billeteras";
 export default {
   name: "MbBilletera",
 
-  components: { MbElegir, MbMoneda },
+  components: { MbElegir, MbMoneda, MbMarcaDeBilletera },
 
   props: {
     /* "in" deposita, "out" canjea. */
@@ -507,6 +494,34 @@ export default {
       alguna billetera instalada. Si falta una, queda la dirección y el
       QR, que es lo que siempre hubo.
     */
+    /**
+     * LAS TRES MARCAS DE LA TARJETA.
+     *
+     * Las que el navegador tenga instaladas, y si no llega a tres, se
+     * completan con las de siempre. Una tarjeta vacía no dice de qué se
+     * trata; tres logos sí, y el "no encontramos ninguna" se cuenta
+     * adentro, cuando la elegís.
+     */
+    marcasDeBilletera() {
+      const puestas = this.billeteras.slice(0, 3).map((b) => ({
+        id: b.id, nombre: b.nombre, icono: b.icono,
+      }));
+
+      const siempre = [
+        { id: "metamask", nombre: "MetaMask", icono: "" },
+        { id: "phantom", nombre: "Phantom", icono: "" },
+        { id: "coinbase", nombre: "Coinbase Wallet", icono: "" },
+      ];
+
+      for (const m of siempre) {
+        if (puestas.length >= 3) break;
+        const yaEsta = puestas.some((p) => `${p.id} ${p.nombre}`.toLowerCase().includes(m.id));
+        if (!yaEsta) puestas.push(m);
+      }
+
+      return puestas;
+    },
+
     /* Las monedas que una billetera de navegador sabe mandar. */
     monedasDeBilletera() {
       return this.monedas.filter((m) => (m.redes || []).some((r) => parDeBilletera(m.ticker, r.clave)));
@@ -762,15 +777,34 @@ export default {
     },
 
     /** Atar un código de afiliado, si todavía no tiene uno. */
+    /**
+     * UN CODIGO, DEL TIPO QUE SEA.
+     *
+     * El servidor averigua si es de un afiliado o de una promoción y
+     * contesta qué pasó; acá solo se dice con palabras. El jugador no
+     * tiene por qué saber de qué tipo es el suyo.
+     */
     async aplicarCodigo() {
       this.aplicando = true;
       try {
         const { data } = await api.post("/wallet/code", { code: this.codigo.trim() });
+        const d = data.data;
+
         this.codigo = "";
         this.codigoAbierto = false;
-        this.$store.dispatch("avisar", {
-          texto: this.$t("wallet.codeOn", { code: data.data.code, pct: data.data.bonoPct }),
-        });
+
+        if (d.tipo === "promo") {
+          this.$store.commit("saldo", d);
+          this.$store.dispatch("avisar", {
+            texto: d.tipo === "promo" && d.tipoPromo === "aperturas"
+              ? this.$t("rewards.codeBoxes", { code: d.codigo, n: d.aperturas })
+              : this.$t("rewards.codeBalance", { code: d.codigo, amount: this.plata(d.montoSc) }),
+          });
+        } else {
+          this.$store.dispatch("avisar", {
+            texto: this.$t("wallet.codeOn", { code: d.code, pct: d.bonoPct }),
+          });
+        }
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
       } finally {
@@ -1130,6 +1164,7 @@ export default {
 }
 
 .mb-caja__conectar-iconos { display: flex; gap: 8px; }
+.mb-caja__marca-grande { width: 44px; height: 44px; border-radius: 12px; }
 .mb-caja__conectar-t { font-weight: 900; font-size: 17px; }
 
 .mb-caja__conectar-p {
