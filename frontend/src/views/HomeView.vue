@@ -182,6 +182,37 @@
       </section>
     </template>
 
+    <!--
+      Y si el panel apago TODAS las filas de cajas, el Top 10 sale
+      igual: vive adentro del `v-for` de arriba y sin filas no habria
+      vuelta que lo dibuje.
+    -->
+    <section v-if="!filas.length && top10.length" class="mb-top">
+      <div class="mb-fila__cabeza">
+        <h2>{{ $t('home.top10') }}</h2>
+        <div class="mb-fila__mandos">
+          <router-link to="/boxes?sort=popular" class="mb-fila__todo">{{ $t('home.viewAll') }}</router-link>
+        </div>
+      </div>
+
+      <div class="mb-row mb-top__tira">
+        <router-link
+          v-for="(c, i) in top10" :key="c._id" :to="`/boxes/${c.slug}`"
+          class="mb-top__caja" :aria-label="$t('home.topAria', { n: i + 1, name: c.name })"
+        >
+          <span class="mb-top__tarjeta mb-card" :style="{ background: tinte(c) }">
+            <span class="mb-top__nombre">{{ c.name }}</span>
+            <span v-if="arteDe(c)" class="mb-art mb-top__arte" :class="arteDe(c).clase"
+                  :style="arteDe(c).estilo" aria-hidden="true"></span>
+            <span class="mb-top__precio">
+              <span class="mb-sc mb-sc--15" aria-hidden="true">SC</span>{{ plata(c.priceSc) }}
+            </span>
+          </span>
+          <span class="mb-top__numero" aria-hidden="true">{{ i + 1 }}</span>
+        </router-link>
+      </div>
+    </section>
+
     <!-- ── Las marcas ───────────────────────────────────────────── -->
     <section class="mb-marcas">
       <div class="mb-fila__cabeza">
