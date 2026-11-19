@@ -84,9 +84,7 @@
           {{ $t('wallet.network') }}
           <MbElegir v-model="redElegida" :opciones="opcionesDeRed" @elegida="traerDeposito">
             <template #icono="{ o }">
-              <span v-if="o" class="mb-caja__red" :style="{ background: o.color }" aria-hidden="true">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M12 2 22 8v8l-10 6L2 16V8z" /></svg>
-              </span>
+              <MbMoneda v-if="o" :ticker="o.valor" :color="o.color" :letra="o.letra" />
             </template>
           </MbElegir>
         </span>
@@ -181,9 +179,7 @@
               {{ $t('wallet.network') }}
               <MbElegir v-model="redElegida" :opciones="opcionesDeRed" :deshabilitado="!puedeCanjear">
                 <template #icono="{ o }">
-                  <span v-if="o" class="mb-caja__red" :style="{ background: o.color }" aria-hidden="true">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#fff"><path d="M12 2 22 8v8l-10 6L2 16V8z" /></svg>
-                  </span>
+                  <MbMoneda v-if="o" :ticker="o.valor" :color="o.color" :letra="o.letra" />
                 </template>
               </MbElegir>
             </span>
@@ -322,7 +318,9 @@ export default {
         valor: r.clave,
         texto: r.nombre,
         nota: r.demora,
-        derecha: r.clave,
+        /* "TRC20" al costado de "Tron Network" ayuda; "Polygon" al
+           costado de "Polygon" es ruido. */
+        derecha: r.clave.toUpperCase() === r.nombre.toUpperCase() ? "" : r.clave,
         color: r.color,
       }));
     },

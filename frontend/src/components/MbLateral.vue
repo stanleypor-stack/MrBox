@@ -320,13 +320,17 @@ export default {
   /* De cajon ocupa todo el hueco entre la cabecera y la barra de abajo
      y se desliza solo, sin mover la pagina de atras. */
   &.is-cajon {
-    position: absolute;
-    inset: 0;
-    top: 0;
+    /*
+      Adentro del cajon mide lo que mida su contenido, y el que se
+      desliza es el cajon (ver App.vue). Asi se llega al final del
+      menu en el telefono, que antes se cortaba.
+    */
+    position: relative;
     height: auto;
+    min-height: 100%;
     max-height: none;
     max-width: none;
-    overflow-y: auto;
+    overflow: visible;
     /* `stretch` las deja todas del alto del contenido y entonces el
        fondo no llega abajo. `flex-start` las deja de su alto y el
        fondo del cajon se ve entero. */

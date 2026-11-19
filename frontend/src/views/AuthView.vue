@@ -608,7 +608,20 @@ export default {
   }
 }
 
-.mb-auth__captcha { min-height: 65px; }
+/*
+  EL CAPTCHA, CENTRADO.
+
+  Cloudflare dibuja su cuadro con un ancho fijo de 300px: suelto en una
+  columna de 400 queda pegado a la izquierda, como si se hubiera caido
+  ahi. Centrado se ve como parte del formulario.
+*/
+.mb-auth__captcha {
+  min-height: 65px;
+  display: flex;
+  justify-content: center;
+
+  iframe { margin: 0 auto; }
+}
 
 .mb-auth__error {
   margin: 0;

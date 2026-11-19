@@ -269,13 +269,34 @@ export default {
   width: min(480px, 100%);
   transform: translateX(-50%);
   z-index: 20;
-  overflow: hidden;
+
+  /*
+    EL QUE SE DESLIZA ES EL CAJON.
+
+    Antes se deslizaba la barra de adentro: quedaba `absolute` contra
+    el cajon y, con el menu entero midiendo mil quinientos pixeles,
+    simplemente se cortaba a la mitad --en el telefono no habia forma
+    de llegar a "Afiliados" ni al selector de idioma.
+
+    `overscroll-behavior: contain` es para que al llegar al final no
+    empiece a moverse la pagina de atras.
+  */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+
   @include en-escritorio { display: none; }
 }
 
+/* El velo NO se desliza con el menu: tapa siempre lo mismo. */
 .mb-cajon__fondo {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  top: 72px;
+  bottom: 72px;
+  left: 0;
+  right: 0;
   border: 0;
   background: rgba(4, 9, 20, .7);
   cursor: pointer;

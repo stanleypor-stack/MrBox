@@ -95,7 +95,8 @@
       <div class="mb-pulls__via">
         <transition-group name="mb-pull" tag="div" class="mb-row mb-pulls__fila">
           <router-link
-            v-for="p in pulls" :key="p._id" :to="`/boxes/${p.boxSlug}`" class="mb-pull-card"
+            v-for="p in pulls" :key="p._id" :to="`/boxes/${p.boxSlug}`"
+            class="mb-pull-card" :style="colorDeLaTarjeta(p)"
           >
             <span class="mb-pull-card__marca">MB</span>
             <span v-if="sprPremio(p)" class="mb-prod mb-pull-card__foto" :style="sprPremio(p)" aria-hidden="true"></span>
@@ -389,6 +390,20 @@ export default {
   },
 
   methods: {
+    /*
+      EL COLOR DE LA TARJETA, SEGUN LO QUE SALIO.
+
+      Como en el prototipo: azul lo comun, rojo lo bueno y dorado lo
+      mejor. Una cinta toda azul no dice nada; con el color, de reojo
+      se ve que salio algo grande.
+    */
+    colorDeLaTarjeta(p) {
+      const r = (p.premio && p.premio.rarity) || "blue";
+      if (r === "gold") return { background: "#a8741a", borderColor: "#ffc83d" };
+      if (r === "red" || r === "pink") return { background: "#c42a35", borderColor: "#ff6b75" };
+      return { background: "#1c63c9", borderColor: "#4f9bff" };
+    },
+
     plata(n) {
       return Number(n || 0).toLocaleString("en-US", {
         minimumFractionDigits: 2, maximumFractionDigits: 2,
