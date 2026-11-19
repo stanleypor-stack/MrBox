@@ -105,6 +105,7 @@ const GRUPOS = [
     titulo: "admin.setGroup.cashier",
     campos: [
       { id: "minRedemption", ruta: "canjeMinimoSc", tipo: "numero" },
+      { id: "kycLevel", ruta: "canjeNivelMinimo", tipo: "numero" },
       { id: "shipLevel3", ruta: "envioQuePideNivel3Sc", tipo: "numero" },
     ],
   },

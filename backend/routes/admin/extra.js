@@ -522,12 +522,13 @@ router.get("/segments", async (req, res) => {
  */
 router.get("/home", async (req, res) => {
   try {
-    const [banners, populares, destacadas, lujo, baratas] = await Promise.all([
+    const [banners, populares, destacadas, lujo, baratas, generosas] = await Promise.all([
       Banner.countDocuments({ visible: true }),
       Box.countDocuments({ live: true }),
       Box.countDocuments({ live: true, $or: [{ featured: true }, { markedNew: true }] }),
       Box.countDocuments({ live: true, priceSc: { $gte: 200 } }),
       Box.countDocuments({ live: true, priceSc: { $lt: 5 } }),
+      Box.countDocuments({ live: true, retorno: { $gt: 0 } }),
     ]);
 
     const items = [
@@ -537,6 +538,7 @@ router.get("/home", async (req, res) => {
       { _id: "featured", orden: 4, fila: "rows.featured", regla: "rows.featuredRule", cuantas: Math.min(14, destacadas), visible: destacadas > 0 },
       { _id: "luxury", orden: 5, fila: "rows.luxury", regla: "rows.luxuryRule", cuantas: Math.min(14, lujo), visible: lujo > 0 },
       { _id: "cheap", orden: 6, fila: "rows.cheap", regla: "rows.cheapRule", cuantas: Math.min(14, baratas), visible: baratas > 0 },
+      { _id: "generous", orden: 7, fila: "rows.generous", regla: "rows.generousRule", cuantas: Math.min(14, generosas), visible: generosas > 0 },
     ];
 
     return res.json({ success: true, data: { items, total: items.length } });

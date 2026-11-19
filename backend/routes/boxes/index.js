@@ -77,6 +77,8 @@ router.get("/", autorizar(false), async (req, res) => {
       baratas: { priceSc: 1 },
       caras: { priceSc: -1 },
       nombre: { name: 1 },
+      /* Lo que devuelve cada caja, de mayor a menor. */
+      retorno: { retorno: -1 },
     };
     const orden = ORDENES[req.query.sort] || ORDENES.popular;
 
@@ -155,8 +157,8 @@ router.get("/categories", autorizar(false), async (req, res) => {
 /**
  * LAS FILAS DE LA PORTADA, EN UN SOLO PEDIDO.
  *
- * Popular Picks, Featured, Luxury Picks y Under SC 5. Van juntas a
- * proposito: cuatro pedidos para dibujar una portada es medio segundo
+ * Popular Picks, Featured, Luxury Picks, Under SC 5 y Best Odds. Van
+ * juntas a proposito: cinco pedidos para dibujar una portada es medio segundo
  * de pantalla a medio armar en un telefono con mala senal, y la portada
  * es lo primero que ve cualquiera.
  *
@@ -181,12 +183,22 @@ router.get("/rows", autorizar(false), async (req, res) => {
         };
       });
 
-    const [populares, destacadas, lujo, baratas] = await Promise.all([
+    const [populares, destacadas, lujo, baratas, generosas] = await Promise.all([
       Box.find(comun).sort({ opens: -1 }).limit(14).select(campos).lean(),
       Box.find({ ...comun, $or: [{ featured: true }, { markedNew: true }] })
         .sort({ createdAt: -1 }).limit(14).select(campos).lean(),
       Box.find({ ...comun, priceSc: { $gte: 200 } }).sort({ priceSc: -1 }).limit(14).select(campos).lean(),
       Box.find({ ...comun, priceSc: { $lt: 5 } }).sort({ priceSc: 1 }).limit(14).select(campos).lean(),
+      /*
+        LAS QUE MAS DEVUELVEN.
+
+        El retorno de cada caja ya se calcula y ya se muestra en su
+        tarjeta: esta fila solo las ordena por ese numero. Es la fila
+        que una maquinita no puede tener, porque para armarla hay que
+        decir cuanto devuelve cada cosa.
+      */
+      Box.find({ ...comun, retorno: { $gt: 0 } })
+        .sort({ retorno: -1 }).limit(14).select(campos).lean(),
     ]);
 
     /*
@@ -204,6 +216,7 @@ router.get("/rows", autorizar(false), async (req, res) => {
       { id: "featured", titulo: "rows.featured", regla: "rows.featuredRule", items: resumir(destacadas) },
       { id: "luxury", titulo: "rows.luxury", regla: "rows.luxuryRule", items: resumir(lujo) },
       { id: "cheap", titulo: "rows.cheap", regla: "rows.cheapRule", items: resumir(baratas) },
+      { id: "generous", titulo: "rows.generous", regla: "rows.generousRule", items: resumir(generosas) },
     ];
 
     return res.json({

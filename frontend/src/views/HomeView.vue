@@ -134,45 +134,53 @@
       </div>
     </section>
 
-    <!-- ── Las filas de cajas ───────────────────────────────────── -->
-    <section v-for="fila in filas" :key="fila.id" class="mb-fila">
-      <div class="mb-fila__cabeza">
-        <h2>{{ $t(fila.titulo) }}</h2>
-        <div class="mb-fila__mandos">
-          <router-link :to="verTodo(fila.id)" class="mb-fila__todo">{{ $t('home.viewAll') }}</router-link>
-        </div>
-      </div>
-      <div class="mb-row mb-fila__tira">
-        <MbTarjetaDeCaja v-for="c in fila.items" :key="c._id" :caja="c" class="mb-fila__caja" />
-      </div>
-    </section>
+    <!--
+      LAS FILAS DE CAJAS, Y EL TOP 10 PEGADO A LA PRIMERA.
 
-    <!-- ── Top 10 ───────────────────────────────────────────────── -->
-    <section v-if="top10.length" class="mb-top">
-      <div class="mb-fila__cabeza">
-        <h2>{{ $t('home.top10') }}</h2>
-        <div class="mb-fila__mandos">
-          <router-link to="/boxes?sort=popular" class="mb-fila__todo">{{ $t('home.viewAll') }}</router-link>
+      El Top 10 estaba al final, despues de las cinco tiras. Es la lista
+      que mas se mira, asi que sube: sale apenas termina la primera
+      fila, que es la que arma el panel en el primer lugar.
+    -->
+    <template v-for="(fila, n) in filas">
+      <section :key="fila.id" class="mb-fila">
+        <div class="mb-fila__cabeza">
+          <h2>{{ $t(fila.titulo) }}</h2>
+          <div class="mb-fila__mandos">
+            <router-link :to="verTodo(fila.id)" class="mb-fila__todo">{{ $t('home.viewAll') }}</router-link>
+          </div>
         </div>
-      </div>
+        <div class="mb-row mb-fila__tira">
+          <MbTarjetaDeCaja v-for="c in fila.items" :key="c._id" :caja="c" class="mb-fila__caja" />
+        </div>
+      </section>
 
-      <div class="mb-row mb-top__tira">
-        <router-link
-          v-for="(c, i) in top10" :key="c._id" :to="`/boxes/${c.slug}`"
-          class="mb-top__caja" :aria-label="$t('home.topAria', { n: i + 1, name: c.name })"
-        >
-          <span class="mb-top__tarjeta mb-card" :style="{ background: tinte(c) }">
-            <span class="mb-top__nombre">{{ c.name }}</span>
-            <span v-if="arteDe(c)" class="mb-art mb-top__arte" :class="arteDe(c).clase"
-                  :style="arteDe(c).estilo" aria-hidden="true"></span>
-            <span class="mb-top__precio">
-              <span class="mb-sc mb-sc--15" aria-hidden="true">SC</span>{{ plata(c.priceSc) }}
+      <!-- ── Top 10 ───────────────────────────────────────────────── -->
+      <section v-if="n === 0 && top10.length" :key="`top-${fila.id}`" class="mb-top">
+        <div class="mb-fila__cabeza">
+          <h2>{{ $t('home.top10') }}</h2>
+          <div class="mb-fila__mandos">
+            <router-link to="/boxes?sort=popular" class="mb-fila__todo">{{ $t('home.viewAll') }}</router-link>
+          </div>
+        </div>
+
+        <div class="mb-row mb-top__tira">
+          <router-link
+            v-for="(c, i) in top10" :key="c._id" :to="`/boxes/${c.slug}`"
+            class="mb-top__caja" :aria-label="$t('home.topAria', { n: i + 1, name: c.name })"
+          >
+            <span class="mb-top__tarjeta mb-card" :style="{ background: tinte(c) }">
+              <span class="mb-top__nombre">{{ c.name }}</span>
+              <span v-if="arteDe(c)" class="mb-art mb-top__arte" :class="arteDe(c).clase"
+                    :style="arteDe(c).estilo" aria-hidden="true"></span>
+              <span class="mb-top__precio">
+                <span class="mb-sc mb-sc--15" aria-hidden="true">SC</span>{{ plata(c.priceSc) }}
+              </span>
             </span>
-          </span>
-          <span class="mb-top__numero" aria-hidden="true">{{ i + 1 }}</span>
-        </router-link>
-      </div>
-    </section>
+            <span class="mb-top__numero" aria-hidden="true">{{ i + 1 }}</span>
+          </router-link>
+        </div>
+      </section>
+    </template>
 
     <!-- ── Las marcas ───────────────────────────────────────────── -->
     <section class="mb-marcas">
@@ -185,8 +193,13 @@
           v-for="m in MARCAS" :key="m.nombre" class="mb-marca mb-card"
           :to="{ path: '/boxes', query: { search: m.busca } }"
           :aria-label="$t('home.brandAria', { name: m.nombre })"
-          :style="{ fontSize: m.tamano, letterSpacing: m.espacio, textTransform: m.caja }"
-        >{{ m.rotulo }}</router-link>
+        >
+          <MbMarca
+            :dibujo="m.dibujo || ''" :rotulo="m.rotulo" :con-nombre="!!m.conNombre"
+            :tamano="m.tamano" :espacio="m.espacio" :caja="m.caja"
+            :class="{ 'mb-marca--italica': m.italica }"
+          />
+        </router-link>
       </div>
     </section>
 
@@ -238,6 +251,7 @@
 import { mapGetters } from "vuex";
 import api from "@/api";
 import MbTarjetaDeCaja from "@/components/MbTarjetaDeCaja.vue";
+import MbMarca from "@/components/MbMarca.vue";
 import { sprite } from "@/utils/sprite";
 
 const COLORES = {
@@ -266,28 +280,30 @@ const TINTES = {
 };
 
 /*
-  LAS QUINCE MARCAS DEL DISENO.
+  LAS MARCAS DE LA PORTADA.
 
-  Van escritas, no con su logo: el logo de Rolex en nuestro sitio es
-  una marca ajena puesta donde no corresponde. El nombre con la
-  tipografia justa dice lo mismo y no mete a nadie en un problema.
+  Las que tienen un simbolo que se reconoce de lejos van DIBUJADAS
+  --simples, en un color solo, ver MbMarca-- y las demas escritas con
+  la tipografia que las distingue. Son marcas de sus duenos: estan para
+  decir "tenemos cosas de esta marca" y llevar al catalogo filtrado.
 
   `busca` es lo que se le pide al catalogo al tocarla.
 */
 const MARCAS = [
-  { nombre: "Apple", rotulo: "Apple", busca: "Apple", tamano: "30px", espacio: "0", caja: "none" },
-  { nombre: "Rolex", rotulo: "Rolex", busca: "Rolex", tamano: "24px", espacio: ".28em", caja: "uppercase" },
-  { nombre: "PlayStation", rotulo: "PS5", busca: "PS5", tamano: "24px", espacio: ".02em", caja: "none" },
+  { nombre: "Apple", rotulo: "Apple", busca: "Apple", dibujo: "apple" },
+  { nombre: "Rolex", rotulo: "Rolex", busca: "Rolex", dibujo: "rolex", conNombre: true },
+  { nombre: "PlayStation", rotulo: "PS5", busca: "PS5", dibujo: "playstation" },
   { nombre: "Pokemon", rotulo: "Pokemon", busca: "Pokemon", tamano: "26px", espacio: "0", caja: "none" },
+  { nombre: "Mercedes-Benz", rotulo: "Mercedes", busca: "Mercedes", dibujo: "mercedes", conNombre: true },
   { nombre: "Porsche", rotulo: "Porsche", busca: "Porsche", tamano: "20px", espacio: ".32em", caja: "uppercase" },
-  { nombre: "Nike", rotulo: "Nike", busca: "Nike", tamano: "30px", espacio: ".02em", caja: "uppercase" },
+  { nombre: "Nike", rotulo: "Nike", busca: "Nike", dibujo: "nike", conNombre: true },
   { nombre: "Gucci", rotulo: "Gucci", busca: "Gucci", tamano: "24px", espacio: ".26em", caja: "uppercase" },
   { nombre: "Louis Vuitton", rotulo: "LV", busca: "LV", tamano: "18px", espacio: ".12em", caja: "uppercase" },
-  { nombre: "Supreme", rotulo: "Supreme", busca: "Supreme", tamano: "24px", espacio: "0", caja: "none" },
+  { nombre: "Supreme", rotulo: "Supreme", busca: "Supreme", tamano: "24px", espacio: "-.01em", caja: "none", italica: true },
   { nombre: "Chanel", rotulo: "Chanel", busca: "Chanel", tamano: "22px", espacio: ".3em", caja: "uppercase" },
   { nombre: "Nintendo", rotulo: "Nintendo", busca: "Nintendo", tamano: "24px", espacio: "0", caja: "none" },
   { nombre: "Hublot", rotulo: "Hublot", busca: "Hublot", tamano: "22px", espacio: ".24em", caja: "uppercase" },
-  { nombre: "BMW", rotulo: "BMW", busca: "BMW", tamano: "28px", espacio: ".12em", caja: "uppercase" },
+  { nombre: "BMW", rotulo: "BMW", busca: "BMW", dibujo: "bmw", conNombre: true },
   { nombre: "Jordan", rotulo: "Jordan", busca: "Jordan", tamano: "24px", espacio: ".1em", caja: "uppercase" },
   { nombre: "Bose", rotulo: "Bose", busca: "Bose", tamano: "28px", espacio: ".04em", caja: "uppercase" },
 ];
@@ -311,7 +327,7 @@ const PREGUNTAS = ["what", "fair", "deposit", "missing", "howOpen", "support", "
  */
 export default {
   name: "HomeView",
-  components: { MbTarjetaDeCaja },
+  components: { MbTarjetaDeCaja, MbMarca },
 
   data() {
     return {
@@ -472,6 +488,7 @@ export default {
         featured: "/boxes?sort=nuevas",
         luxury: "/boxes?min=200&sort=caras",
         cheap: "/boxes?max=5&sort=baratas",
+        generous: "/boxes?sort=retorno",
       };
       return mapa[id] || "/boxes";
     },
@@ -1221,6 +1238,8 @@ export default {
 
 .mb-marcas { margin-top: 36px; }
 .mb-marcas__tira { display: flex; gap: 22px; overflow-x: auto; scroll-behavior: smooth; }
+
+.mb-marca--italica { font-style: italic; }
 
 .mb-marca {
   flex: none;

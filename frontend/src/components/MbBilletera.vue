@@ -43,6 +43,18 @@
           </button>
 
           <button
+            type="button" class="mb-caja__metodo" :class="{ 'is-elegido': metodo === 'qr' }"
+            :aria-pressed="String(metodo === 'qr')" @click="metodo = 'qr'"
+          >
+            <span class="mb-caja__metodo-t">{{ $t('wallet.scanTitle') }}</span>
+            <span class="mb-caja__puntos">
+              <MbMarcaDeBilletera marca-id="phantom" nombre="Phantom" />
+              <MbMarcaDeBilletera marca-id="metamask" nombre="MetaMask" />
+              <span class="mb-caja__mas">{{ $t('wallet.scanChip') }}</span>
+            </span>
+          </button>
+
+          <button
             type="button" class="mb-caja__metodo" :class="{ 'is-elegido': metodo === 'direccion' }"
             :aria-pressed="String(metodo === 'direccion')" @click="metodo = 'direccion'"
           >
@@ -185,6 +197,70 @@
           </button>
         </template>
 
+        <!--
+          EL QR CON TODO PUESTO.
+
+          No es el QR de la direccion pelada: es un enlace de pago con
+          la moneda, la red y el monto adentro, asi la billetera abre la
+          pantalla de enviar completa. Copiar una direccion de cuarenta
+          caracteres y escribir el monto a mano son las dos maneras de
+          perder un deposito.
+        -->
+        <template v-else-if="metodo === 'qr'">
+          <div class="mb-caja__conectar">
+            <b class="mb-caja__conectar-t">{{ $t('wallet.scanTitle') }}</b>
+            <p class="mb-caja__conectar-p">{{ $t('wallet.scanSub') }}</p>
+
+            <div class="mb-caja__conectar-campos">
+              <span class="mb-caja__campo">
+                {{ $t('wallet.coin') }}
+                <MbElegir v-model="tickerElegido" :opciones="opcionesDeMonedaQr" @elegida="alCambiarMonedaQr">
+                  <template #icono="{ o }">
+                    <MbMoneda v-if="o" :ticker="o.valor" :color="o.color" :letra="o.letra" />
+                  </template>
+                </MbElegir>
+              </span>
+
+              <span class="mb-caja__campo">
+                {{ $t('wallet.network') }}
+                <MbElegir v-model="redElegida" :opciones="opcionesDeRedQr" @elegida="traerDeposito">
+                  <template #icono="{ o }">
+                    <MbMoneda v-if="o" :ticker="o.valor" :color="o.color" :letra="o.letra" />
+                  </template>
+                </MbElegir>
+              </span>
+            </div>
+
+            <div class="mb-caja__billetera-fila">
+              <input
+                v-model="montoCripto" class="mb-caja__in" inputmode="decimal"
+                :placeholder="$t('wallet.amountIn', { coin: tickerElegido })"
+                :aria-label="$t('wallet.amountIn', { coin: tickerElegido })"
+              >
+              <span class="mb-caja__billetera-tk">{{ tickerElegido }}</span>
+            </div>
+
+            <div class="mb-caja__qr mb-caja__qr--pago">
+              <img v-if="qrDePago" :src="qrDePago" :alt="$t('wallet.qrAlt')">
+              <span v-else class="mb-caja__qr-vacio">{{ $t('wallet.scanWaiting') }}</span>
+            </div>
+
+            <a
+              v-if="enlaceDePagoActual" :href="enlaceDePagoActual"
+              class="mb-caja__conectar-b mb-caja__qr-abrir"
+            >{{ $t('wallet.scanOpen') }}</a>
+
+            <p class="mb-caja__fino">
+              {{ $t('wallet.scanNote', { coin: tickerElegido, net: red.nombre }) }}
+            </p>
+          </div>
+
+          <button type="button" class="mb-caja__salida" @click="metodo = 'direccion'">
+            {{ $t('wallet.fromExchange') }}
+            <b>{{ $t('wallet.useAddress') }}</b>
+          </button>
+        </template>
+
         <template v-else-if="deposito">
           <span class="mb-caja__solo" v-html="$t('wallet.sendOnly', { coin: tickerLargo, net: red.nombre })"></span>
 
@@ -283,13 +359,36 @@
             </div>
           </div>
 
-          <!-- Lo que falta, antes de escribir nada -->
-          <p v-if="canje.nivel < canje.nivelQuePide" class="mb-caja__aviso">
-            {{ $t('wallet.needsKyc', { n: canje.nivelQuePide }) }}
-            <router-link to="/profile?tab=verification" @click.native="cerrar">{{ $t('nav.verification') }}</router-link>
-          </p>
+          <!--
+            SIN VERIFICAR NO HAY FORMULARIO.
 
-          <form class="mb-caja__form" @submit.prevent="canjear">
+            Dejarlo escribir el monto, elegir la moneda, pegar la
+            direccion y recien ahi decirle que no, es hacerle perder el
+            tiempo dos veces: la de llenarlo y la de entender por que
+            no salio.
+          -->
+          <div v-if="!verificado" class="mb-caja__verificar">
+            <span class="mb-caja__verificar-ico" aria-hidden="true">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3l7.5 3v5.4c0 4.3-3 8.2-7.5 9.6-4.5-1.4-7.5-5.3-7.5-9.6V6z" />
+                <path d="m9 12 2.1 2.1L15.5 9.7" />
+              </svg>
+            </span>
+
+            <b class="mb-caja__verificar-t">{{ $t('wallet.verifyTitle') }}</b>
+            <p class="mb-caja__verificar-p">{{ $t('wallet.verifyBody') }}</p>
+            <p class="mb-caja__verificar-n">
+              {{ $t('wallet.verifyLevel', { tiene: canje.nivel, pide: canje.nivelQuePide }) }}
+            </p>
+
+            <router-link
+              to="/profile?tab=verification" class="mb-caja__enviar mb-caja__verificar-b"
+              @click.native="cerrar"
+            >{{ $t('wallet.verifyCta') }}</router-link>
+          </div>
+
+          <form v-else class="mb-caja__form" @submit.prevent="canjear">
             <label class="mb-caja__campo">
               {{ $t('profile.amount') }}
               <span class="mb-caja__select">
@@ -341,6 +440,7 @@
               <input v-model="direccion" class="mb-caja__in" :disabled="!puedeCanjear" :placeholder="$t('wallet.addressPlaceholder')">
             </label>
 
+            <p class="mb-caja__fino">{{ $t('wallet.minCashOut', { n: plata(canje.minimoSc) }) }}</p>
             <p class="mb-caja__fino">{{ $t('wallet.checkAddress') }}</p>
 
             <button type="submit" class="mb-caja__enviar" :disabled="!sePuedePedir || mandando">
@@ -379,7 +479,7 @@ import api from "@/api";
 import MbElegir from "@/components/MbElegir.vue";
 import MbMoneda from "@/components/MbMoneda.vue";
 import MbMarcaDeBilletera from "@/components/MbMarcaDeBilletera.vue";
-import { parDeBilletera } from "@/utils/cadenas";
+import { parDeBilletera, enlaceDePago, SOLANA } from "@/utils/cadenas";
 import { billeterasDisponibles, enlaceDeTx, pagar } from "@/utils/billeteras";
 
 /**
@@ -421,6 +521,9 @@ export default {
       canje: null,
       pedidos: [],
       qr: "",
+      /* El del enlace de pago, que es otro: lleva monto y moneda. */
+      qrDePago: "",
+      relojDelQr: null,
       copiado: false,
       monto: "",
       direccion: "",
@@ -537,6 +640,34 @@ export default {
       }));
     },
 
+    monedasDeQr() {
+      return this.monedas.filter((m) => (m.redes || []).some((r) => this.sePuedeEscanear(m.ticker, r.clave)));
+    },
+
+    opcionesDeMonedaQr() {
+      return this.monedasDeQr.map((m) => ({
+        valor: m.ticker, texto: m.nombre, derecha: m.ticker, color: m.color, letra: m.letra,
+      }));
+    },
+
+    opcionesDeRedQr() {
+      return (this.moneda.redes || [])
+        .filter((r) => this.sePuedeEscanear(this.tickerElegido, r.clave))
+        .map((r) => ({
+          valor: r.clave,
+          texto: r.nombre,
+          derecha: r.clave.toUpperCase() === r.nombre.toUpperCase() ? "" : r.clave,
+          color: r.color,
+          letra: r.letra,
+        }));
+    },
+
+    /** El enlace de pago de lo que esta elegido ahora, o "". */
+    enlaceDePagoActual() {
+      if (!this.hayDireccion) return "";
+      return enlaceDePago(this.tickerElegido, this.redElegida, this.deposito.direccion, this.montoCripto);
+    },
+
     opcionesDeRedBilletera() {
       return (this.moneda.redes || [])
         .filter((r) => parDeBilletera(this.tickerElegido, r.clave))
@@ -559,6 +690,11 @@ export default {
       return !!(this.deposito && this.deposito.direccion);
     },
 
+    /* El nivel que pide el canje lo dice el panel, no esta fijo aca. */
+    verificado() {
+      return !!this.canje && (this.canje.nivel || 0) >= this.canje.nivelQuePide;
+    },
+
     sePuedePagarConBilletera() {
       return !!(this.deposito && this.deposito.direccion
         && this.billeteras.length
@@ -575,7 +711,7 @@ export default {
     },
 
     puedeCanjear() {
-      return !!this.canje && this.canje.nivel >= this.canje.nivelQuePide;
+      return this.verificado;
     },
 
     sePuedePedir() {
@@ -592,6 +728,18 @@ export default {
     metodo(v) {
       this.txHash = "";
       if (v === "billetera") this.aUnParDeBilletera();
+      if (v === "qr") this.alCambiarMonedaQr();
+    },
+
+    /*
+      El QR se redibuja al cambiar moneda, red o monto. Con un respiro
+      de un cuarto de segundo: si no, cada tecla del monto arma un QR
+      que nadie llega a mirar.
+    */
+    enlaceDePagoActual(v) {
+      window.clearTimeout(this.relojDelQr);
+      if (!v) { this.qrDePago = ""; return; }
+      this.relojDelQr = window.setTimeout(() => this.dibujarQrDePago(v), 250);
     },
 
     lado(v) {
@@ -716,6 +864,26 @@ export default {
 
     /* Al cambiar de moneda en el panel de la billetera, la red tiene
        que ser una que esa billetera sepa mandar. */
+    /**
+     * LAS QUE SE PUEDEN ESCANEAR.
+     *
+     * Las mismas que la billetera del navegador, mas Solana: Solana no
+     * tiene boton --armar su transaccion pide la libreria entera-- pero
+     * un enlace `solana:` lo lee Phantom igual.
+     */
+    sePuedeEscanear(ticker, red) {
+      return !!(parDeBilletera(ticker, red)
+        || (String(red).toLowerCase() === "solana" && SOLANA.tokens[String(ticker).toUpperCase()]));
+    },
+
+    /* Igual que el de la billetera, pero con las que se escanean. */
+    alCambiarMonedaQr() {
+      const moneda = this.monedas.find((m) => m.ticker === this.tickerElegido);
+      const red = ((moneda && moneda.redes) || []).find((r) => this.sePuedeEscanear(this.tickerElegido, r.clave));
+      this.redElegida = red ? red.clave : this.redElegida;
+      this.traerDeposito();
+    },
+
     alCambiarMonedaBilletera() {
       const moneda = this.monedas.find((m) => m.ticker === this.tickerElegido);
       const red = ((moneda && moneda.redes) || []).find((r) => parDeBilletera(this.tickerElegido, r.clave));
@@ -773,6 +941,21 @@ export default {
       } catch (err) {
         /* Sin QR se puede copiar la dirección igual. */
         this.qr = "";
+      }
+    },
+
+    /** El QR del enlace de pago. Se dibuja igual que el de la direccion. */
+    async dibujarQrDePago(texto) {
+      try {
+        const QR = (await import(/* webpackChunkName: "qr" */ "qrcode")).default;
+        this.qrDePago = await QR.toDataURL(texto, {
+          margin: 1,
+          width: 300,
+          color: { dark: "#0b1424", light: "#ffffff" },
+        });
+      } catch (err) {
+        /* Sin QR queda el boton de abrir en la billetera. */
+        this.qrDePago = "";
       }
     },
 
@@ -1174,6 +1357,26 @@ export default {
 }
 
 .mb-caja__conectar-iconos { display: flex; gap: 8px; }
+
+/* El QR del enlace de pago, y el boton de abrirlo en la billetera. */
+.mb-caja__qr--pago {
+  margin: 4px auto 0;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mb-caja__qr-vacio { font-size: 13px; color: $texto-4; text-align: center; padding: 0 16px; }
+
+.mb-caja__qr-abrir {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  align-self: center;
+  min-width: 200px;
+}
 .mb-caja__marca-grande { width: 44px; height: 44px; border-radius: 12px; }
 .mb-caja__conectar-t { font-weight: 900; font-size: 17px; }
 
@@ -1358,6 +1561,51 @@ export default {
 }
 
 .mb-caja__fino { margin: 0; text-align: center; font-size: 12px; line-height: 1.6; color: $texto-3; }
+
+// =====================================================================
+//  LA PANTALLA DE "VERIFICATE PRIMERO"
+//
+//  Ocupa el lugar del formulario, no un costado: lo que hay que hacer
+//  antes de retirar es esto, y no hay nada mas que mirar.
+// =====================================================================
+
+.mb-caja__verificar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 26px 20px;
+  border-radius: 16px;
+  background: rgba(79, 155, 255, .08);
+  border: 1px solid #27406b;
+  text-align: center;
+}
+
+.mb-caja__verificar-ico {
+  width: 54px;
+  height: 54px;
+  flex: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(79, 155, 255, .16);
+  color: #6bb4ff;
+}
+
+.mb-caja__verificar-t { font-family: $fuente-cartel; font-size: 19px; line-height: 1.15; }
+.mb-caja__verificar-p { margin: 0; font-size: 14px; line-height: 1.5; color: $texto-2; max-width: 34em; }
+.mb-caja__verificar-n { margin: 0; font-size: 13px; font-weight: 700; color: $texto-4; }
+
+.mb-caja__verificar-b {
+  margin-top: 4px;
+  width: auto;
+  min-width: 200px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
 
 .mb-caja__aviso {
   margin: 0;

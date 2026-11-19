@@ -245,6 +245,19 @@ const settingsSchema = new mongoose.Schema(
 
     canjeMinimoSc: { type: Number, default: 50 },
 
+    /*
+      QUE NIVEL DE VERIFICACION PIDE UN CANJE.
+
+      1 son los datos basicos, 2 es el documento, 3 suma el domicilio.
+      Es una perilla y no un numero fijo porque la exigencia cambia:
+      el dia que el proveedor o el banco pidan domicilio para pagar,
+      se sube a 3 desde el panel y no hay que desplegar nada.
+
+      Abajo de 1 no baja a proposito: pagarle a alguien de quien no se
+      sabe el nombre no es una opcion que convenga dejar a mano.
+    */
+    canjeNivelMinimo: { type: Number, default: 2, min: 1, max: 3 },
+
     /** Arriba de esto, un envío pide verificación de domicilio (nivel 3). */
     envioQuePideNivel3Sc: { type: Number, default: 1000 },
 

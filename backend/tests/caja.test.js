@@ -285,3 +285,44 @@ test("sin pasarela conectada NO se inventa una dirección", async (t) => {
   assert.equal(datos.data.conectada, false);
   assert.equal(datos.data.direccion, undefined, "una direccion de mentira es plata perdida");
 });
+
+/* ── El nivel que pide el canje lo dice el panel ──────────────────── */
+
+test("el nivel de verificacion que pide un canje sale de los ajustes", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  /*
+    Era un numero fijo en el codigo. Es una perilla porque la exigencia
+    cambia: el dia que el proveedor pida domicilio para pagar, se sube a
+    3 desde el panel y no hay que desplegar nada.
+  */
+  const Settings = require("../database/models/Settings");
+  const cashier = require("../services/cashier");
+
+  const j = await jugador({ saldo: 500, nivel: 2 });
+
+  /* Con el 2 de siempre, el de nivel 2 pasa. */
+  const normal = await pedir("POST", "/wallet/withdraw", {
+    token: j.token,
+    cuerpo: { montoSc: 100, coin: "USDT", network: "TRC20", address: DIRECCION },
+  });
+  assert.equal(normal.estado, 200, JSON.stringify(normal.datos));
+
+  /* Subido a 3, el mismo jugador ya no pasa. */
+  await Settings.updateOne({ key: "main" }, { $set: { canjeNivelMinimo: 3 } }, { upsert: true });
+
+  const estricto = await pedir("POST", "/wallet/withdraw", {
+    token: j.token,
+    cuerpo: { montoSc: 100, coin: "USDT", network: "TRC20", address: DIRECCION },
+  });
+  assert.equal(estricto.datos.code, "VERIFICATION_LEVEL_TOO_LOW");
+  assert.equal(estricto.datos.data.nivel, 3, "le dice QUE nivel le falta");
+
+  /* Y la pantalla pide el mismo numero que el servidor exige. */
+  const u = await User.findById(j.id).lean();
+  const antes = await cashier.antesDeCanjear(u);
+  assert.equal(antes.nivelQuePide, 3);
+
+  /* Se deja como estaba, que las otras pruebas usan el 2. */
+  await Settings.updateOne({ key: "main" }, { $set: { canjeNivelMinimo: 2 } });
+});

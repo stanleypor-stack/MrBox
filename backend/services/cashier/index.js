@@ -102,15 +102,26 @@ async function antesDeCanjear(user) {
     /* El bono que todavía hay que jugar no se puede sacar. */
     bonoPendienteSc: saldo.bonoPendienteSc,
     nivel: user.verificationLevel || 0,
-    nivelQuePide: NIVEL_PARA_CANJEAR,
+    nivelQuePide: nivelQuePide(cfg),
     pendientes,
     monedas: monedas(),
     pasarelaLista: oxapay.listaParaPagar(),
   };
 }
 
-/* Sin identidad verificada no sale plata. Es la regla del sitio. */
+/*
+  SIN IDENTIDAD VERIFICADA NO SALE PLATA.
+
+  El numero lo dice el panel (Settings.canjeNivelMinimo): nivel 2 --el
+  documento-- de entrada, 3 si algun dia hace falta el domicilio. Esto
+  es el piso por si el ajuste no esta, no el valor.
+*/
 const NIVEL_PARA_CANJEAR = 2;
+
+function nivelQuePide(cfg) {
+  const n = Number(cfg && cfg.canjeNivelMinimo);
+  return Number.isFinite(n) && n >= 1 && n <= 3 ? n : NIVEL_PARA_CANJEAR;
+}
 
 /** Cuántos pedidos sin resolver puede tener alguien a la vez. */
 const PEDIDOS_A_LA_VEZ = 3;
@@ -135,8 +146,9 @@ async function pedirCanje({ user, montoSc, ticker, red, direccion }) {
     throw errorDe("REDEMPTION_LOCKED");
   }
 
-  if ((user.verificationLevel || 0) < NIVEL_PARA_CANJEAR) {
-    throw errorDe("VERIFICATION_LEVEL_TOO_LOW", { nivel: NIVEL_PARA_CANJEAR });
+  const pide = nivelQuePide(cfg);
+  if ((user.verificationLevel || 0) < pide) {
+    throw errorDe("VERIFICATION_LEVEL_TOO_LOW", { nivel: pide });
   }
 
   const par = buscar(ticker, red);
@@ -408,5 +420,6 @@ module.exports = {
   cola,
   resolver,
   NIVEL_PARA_CANJEAR,
+  nivelQuePide,
   PEDIDOS_A_LA_VEZ,
 };

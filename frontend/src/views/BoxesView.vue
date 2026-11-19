@@ -85,13 +85,14 @@ export default {
   },
 
   computed: {
-    /* Las cuatro maneras de ordenar, para el selector. */
+    /* Las cinco maneras de ordenar, para el selector. */
     ordenes() {
       return [
         { valor: "popular", texto: this.$t("boxes.sortPopular") },
         { valor: "nuevas", texto: this.$t("boxes.sortNew") },
         { valor: "baratas", texto: this.$t("boxes.sortCheap") },
         { valor: "caras", texto: this.$t("boxes.sortExpensive") },
+        { valor: "retorno", texto: this.$t("boxes.sortReturn") },
       ];
     },
 

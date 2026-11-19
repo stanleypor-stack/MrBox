@@ -133,3 +133,103 @@ export function parDeBilletera(ticker, red) {
   if (!par) return null;
   return { ...par, red: CADENAS[par.cadena] };
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   SOLANA
+
+   No hay forma de armar una transaccion de Solana sin la libreria
+   oficial --son 200 KB-- asi que Solana no se paga con un boton, se
+   paga con un ENLACE: `solana:` es el formato de Solana Pay, que
+   Phantom entiende tal cual. En el telefono abre la billetera; en la
+   computadora se muestra el QR y se escanea.
+
+   Las dos direcciones de token se verificaron contra la cadena,
+   preguntandole a la red cuantos decimales tiene cada una y cuanto hay
+   emitido: las dos contestaron 6 decimales.
+   ───────────────────────────────────────────────────────────────── */
+
+export const SOLANA = {
+  nombre: "Solana",
+  explorador: "https://solscan.io",
+  tokens: {
+    USDT: { mint: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", decimales: 6 },
+    USDC: { mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", decimales: 6 },
+    SOL: { mint: null, decimales: 9 },
+  },
+};
+
+/**
+ * EL ENLACE PARA PAGAR DESDE EL TELEFONO.
+ *
+ * Un enlace con el destino, la moneda, la red y el monto ya puestos.
+ * Escaneado con el QR, la billetera abre la pantalla de enviar con todo
+ * cargado: no hay que copiar una direccion de cuarenta caracteres ni
+ * escribir el monto, que son las dos maneras de perder un deposito.
+ *
+ * EVM va en EIP-681 y Solana en Solana Pay. Los dos son el formato que
+ * ya leen MetaMask, Trust, Phantom y los demas.
+ *
+ * Devuelve "" cuando el par no tiene formato: ahi queda la direccion
+ * pelada y su QR, que es lo que siempre hubo.
+ */
+export function enlaceDePago(ticker, red, destino, monto) {
+  const direccion = String(destino || "").trim();
+  const cantidad = String(monto || "").trim();
+  if (!direccion) return "";
+
+  /* ── Solana ─────────────────────────────────────────────────── */
+  if (String(red).toLowerCase() === "solana") {
+    const t = SOLANA.tokens[String(ticker).toUpperCase()];
+    if (!t) return "";
+
+    const partes = [];
+    /* Solana Pay lleva el monto en unidades de la moneda, no en las
+       chicas: 12.5 USDC es "12.5", no "12500000". */
+    if (cantidad && Number(cantidad) > 0) partes.push(`amount=${encodeURIComponent(cantidad)}`);
+    if (t.mint) partes.push(`spl-token=${t.mint}`);
+
+    return `solana:${direccion}${partes.length ? `?${partes.join("&")}` : ""}`;
+  }
+
+  /* ── EVM ────────────────────────────────────────────────────── */
+  const par = parDeBilletera(ticker, red);
+  if (!par) return "";
+
+  const cadenaId = parseInt(par.red.chainId, 16);
+  if (!Number.isFinite(cadenaId)) return "";
+
+  /* EIP-681 pide las unidades chicas, el mismo entero que viaja en la
+     transferencia. Sin monto, el enlace abre igual y lo pone la
+     persona. */
+  let unidades = "";
+  if (cantidad && Number(cantidad) > 0) {
+    try {
+      unidades = aUnidadesDeTexto(cantidad, par.decimales);
+    } catch {
+      unidades = "";
+    }
+  }
+
+  if (!par.token) {
+    return `ethereum:${direccion}@${cadenaId}${unidades ? `?value=${unidades}` : ""}`;
+  }
+
+  const cola = unidades ? `&uint256=${unidades}` : "";
+  return `ethereum:${par.token}@${cadenaId}/transfer?address=${direccion}${cola}`;
+}
+
+/**
+ * De "12.5" a "12500000" sin coma flotante.
+ *
+ * Con `Number` esto se rompe: 0.1 + 0.2 no da 0.3, y acá un centavo
+ * mal es plata de alguien. Se corta el texto y listo.
+ */
+function aUnidadesDeTexto(texto, decimales) {
+  const limpio = String(texto).replace(",", ".").trim();
+  if (!/^\d*\.?\d*$/.test(limpio) || limpio === "" || limpio === ".") throw new Error("monto");
+
+  const [entera, fraccion = ""] = limpio.split(".");
+  const rellena = (fraccion + "0".repeat(decimales)).slice(0, decimales);
+  const junto = `${entera}${rellena}`.replace(/^0+/, "") || "0";
+  return junto;
+}

@@ -418,6 +418,7 @@ PANEL = {
     "rows.featuredRule": "Boxes flagged Featured or New",
     "rows.luxuryRule": "Boxes priced SC 200 and up",
     "rows.cheapRule": "Boxes under SC 5",
+    "rows.generousRule": "Top 14 boxes by what they return",
 
     # ── Titulos de tabla ──────────────────────────────────────────────
     "admin.table.latestDeals": "Latest deals",
@@ -615,6 +616,8 @@ PANEL = {
     "admin.setHelp.playBonus": "At 0, someone can buy, take the bonus and redeem it all without opening a single box.",
     "admin.set.minRedemption": "Lowest redemption",
     "admin.setHelp.minRedemption": "Smaller requests are not accepted.",
+    "admin.set.kycLevel": "Verification to cash out",
+    "admin.setHelp.kycLevel": "1 basic details, 2 ID document, 3 proof of address. Below the level, the player is sent to verify instead of asking.",
     "admin.set.shipLevel3": "Shipping that needs level 3",
     "admin.setHelp.shipLevel3": "Parcels worth more than this need proof of address.",
     "admin.set.chanceMin": "Lowest chance",
