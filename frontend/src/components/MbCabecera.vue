@@ -161,14 +161,19 @@
                 </span>
               </router-link>
 
-              <div class="mb-wallet__linea mb-wallet__linea--quieta">
+              <!--
+                Lleva a las cajas de regalo, igual que las otras dos
+                lineas llevan a donde esta eso: un renglon que no se
+                puede tocar al lado de dos que si es una trampa.
+              -->
+              <router-link to="/inventory" class="mb-wallet__linea" @click.native="walletAbierta = false">
                 <span class="mb-wallet__linea-izq">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="#a9bbe6" aria-hidden="true">
                     <path d="M3 13h8v8H3zM13 13h8v8h-8zM8 3h8v8H8z" />
                   </svg>{{ $t('wallet.freeOpens') }}
                 </span>
                 <span class="mb-wallet__linea-der mb-wallet__linea-der--sola">{{ aperturasGratis }}</span>
-              </div>
+              </router-link>
             </div>
           </div>
         </div>

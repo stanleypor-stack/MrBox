@@ -414,14 +414,44 @@ async function regalarCajasDeBienvenida(userId) {
 
 /** Las que le quedan sin abrir, para la portada y la cabecera. */
 async function cajasGratisDe(userId) {
-  const u = await User.findById(userId).select("cajasGratis").lean();
-  if (!u || !u.cajasGratis) return [];
+  const u = await User.findById(userId).select("cajasGratis freeOpens").lean();
+  if (!u) return [];
 
-  return u.cajasGratis.map((c) => ({
-    slug: c.slug,
-    nombre: c.nombre,
-    usada: !!c.usadaEl,
-  }));
+  let lista = u.cajasGratis || [];
+
+  /*
+    CONTADOR EN TRES Y LISTA VACIA.
+
+    Las cuentas sembradas quedaron asi, y el jugador veia "no te quedan
+    aperturas gratis" con tres en la billetera. Si tiene aperturas pero
+    nadie le eligio las cajas, se le eligen ahora.
+  */
+  if (!lista.length && (u.freeOpens || 0) > 0) {
+    lista = await regalarCajasDeBienvenida(userId);
+  }
+
+  if (!lista.length) return [];
+
+  /*
+    El arte sale de la caja, no de la copia guardada: una caja a la que
+    le cambian la tapa no tiene por que quedar con la vieja aca.
+  */
+  const cajas = await Box.find({ slug: { $in: lista.map((c) => c.slug) } })
+    .select("slug imageUrl priceSc")
+    .lean();
+
+  const porSlug = new Map(cajas.map((c) => [c.slug, c]));
+
+  return lista.map((c) => {
+    const caja = porSlug.get(c.slug);
+    return {
+      slug: c.slug,
+      nombre: c.nombre,
+      usada: !!c.usadaEl,
+      imageUrl: caja ? caja.imageUrl : "",
+      priceSc: caja ? sc(caja.priceSc) : 0,
+    };
+  });
 }
 
 /** Lo que se muestra de una caja, sin lo que no hace falta. */

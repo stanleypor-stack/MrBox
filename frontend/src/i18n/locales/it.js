@@ -440,6 +440,9 @@ export default {
     "highestValue": "Più preziosi",
     "emptyTitle": "Inventario vuoto",
     "emptySub": "Apri box per riempire il tuo inventario",
+    "noFreeOpens": "Niente aperture gratis.",
+    "freeOpen": "Apertura gratis",
+    "alreadyUsed": "Già usata",
     "openABox": "Apri una box",
     "portfolio": "PORTAFOGLIO",
     "selectAll": "Seleziona tutto",
@@ -589,7 +592,6 @@ export default {
     "lockedTitle": "Verificati per spedire",
     "lockedBody": "Il pacco va a casa di qualcuno e dobbiamo sapere di chi. Bastano pochi minuti, una volta sola.",
     "nItems": "nessun oggetto | 1 oggetto | {n} oggetti",
-    "noRefund": "La spedizione non restituisce saldo: hai già pagato aprendo la box. Se preferisci il saldo, vendili.",
     "pickAddress": "Scegli l’indirizzo",
     "addressSub": "Compila i dati perché il pacco arrivi.",
     "reviewTitle": "Controlla prima di chiederlo",
@@ -1272,6 +1274,10 @@ export default {
       "makePlayer": "Remove access"
     },
     "writeReply": "Write a reply…",
+    "ship": {
+      "carrier": "Carrier",
+      "tracking": "Tracking number"
+    },
     "confirmPay": "Send this payout now? It cannot be undone.",
     "num": {
       "waitingSc": "Waiting to be paid",

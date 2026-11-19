@@ -128,6 +128,29 @@
       @cerrar="editando = null" @listo="editando = null; traer(pagina)"
     />
 
+    <!-- Los datos que pide una accion antes de mandarse. -->
+    <div v-if="pidiendo" class="adl__capa" @click.self="pidiendo = null">
+      <form class="adl__ficha adl__ficha--chica" @submit.prevent="mandarConDatos">
+        <div class="adl__ficha-cabeza">
+          <b>{{ $t(pidiendo.accion.texto) }}</b>
+        </div>
+
+        <label v-for="c in pidiendo.accion.campos" :key="c.clave" class="adl__campo">
+          <span>{{ $t(c.rotulo) }}</span>
+          <input v-model="pidiendo.valores[c.clave]" type="text" :placeholder="c.ejemplo || ''">
+        </label>
+
+        <div class="adl__pie">
+          <button type="button" class="ad-b ad-b--chico ad-b--suave" @click="pidiendo = null">
+            {{ $t('action.cancel') }}
+          </button>
+          <button type="submit" class="ad-b ad-b--chico" :disabled="ocupado === pidiendo.fila._id">
+            {{ $t('admin.save') }}
+          </button>
+        </div>
+      </form>
+    </div>
+
     <!--
       LO QUE MANDO UNA PERSONA.
 
@@ -234,6 +257,8 @@ export default {
       ocupado: "",
       /* Lo que mando una persona, cuando se abre a mirarlo. */
       detalle: null,
+      /* La accion que esta pidiendo datos antes de mandarse. */
+      pidiendo: null,
       editando: null,
       reloj: null,
     };
@@ -392,6 +417,24 @@ export default {
       }
     },
 
+    /* Listo: se manda con lo que escribio. */
+    async mandarConDatos() {
+      const { accion, fila, valores } = this.pidiendo;
+      if (accion.campos.some((c) => c.obligatorio !== false && !String(valores[c.clave]).trim())) return;
+
+      this.ocupado = fila._id;
+      try {
+        await api.post(accion.ruta(fila), { ...(accion.cuerpo ? accion.cuerpo(fila) : {}), ...valores });
+        this.$store.dispatch("avisar", { texto: this.$t("admin.done") });
+        this.pidiendo = null;
+        await this.traer(this.pagina);
+      } catch (err) {
+        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
+      } finally {
+        this.ocupado = "";
+      }
+    },
+
     /* Lo que se puede dibujar: lo demas se abre aparte. */
     esImagen(contenido) {
       return typeof contenido === "string" && contenido.startsWith("data:image/");
@@ -417,6 +460,22 @@ export default {
      * tocado el botón es una vuelta de más.
      */
     async hacer(accion, fila) {
+      /*
+        LO QUE PIDE DATOS, LOS PIDE EN UNA VENTANA.
+
+        Antes eran dos `prompt` del navegador, y cancelar el primero
+        mandaba igual un cambio de estado que no cambiaba nada: el
+        panel decia "listo" y el pedido seguia donde estaba.
+      */
+      if (accion.campos) {
+        this.pidiendo = {
+          accion,
+          fila,
+          valores: accion.campos.reduce((o, c) => ({ ...o, [c.clave]: "" }), {}),
+        };
+        return;
+      }
+
       let motivo = "";
       if (accion.pideMotivo) {
         motivo = window.prompt(this.$t(accion.pregunta || "admin.reason"));
@@ -503,6 +562,30 @@ export default {
   flex-direction: column;
   gap: 14px;
 }
+
+.adl__ficha--chica { max-width: 380px; }
+
+.adl__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  > span { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: $texto-4; }
+
+  input {
+    height: 44px;
+    border-radius: 11px;
+    border: 1px solid #2a4170;
+    background: $fondo;
+    color: #fff;
+    font-family: inherit;
+    font-size: 15px;
+    padding: 0 12px;
+    &:focus { outline: none; border-color: $azul; }
+  }
+}
+
+.adl__pie { display: flex; gap: 8px; justify-content: flex-end; }
 
 .adl__ficha-cabeza {
   display: flex;

@@ -440,6 +440,9 @@ export default {
     "highestValue": "Plus grande valeur",
     "emptyTitle": "Inventaire vide",
     "emptySub": "Ouvre des coffrets pour remplir ton inventaire",
+    "noFreeOpens": "Plus d’ouvertures offertes.",
+    "freeOpen": "Ouverture offerte",
+    "alreadyUsed": "Déjà utilisée",
     "openABox": "Ouvrir un coffret",
     "portfolio": "PORTEFEUILLE",
     "selectAll": "Tout sélectionner",
@@ -589,7 +592,6 @@ export default {
     "lockedTitle": "Vérifiez votre identité pour expédier",
     "lockedBody": "Un colis part vers un domicile, nous devons savoir lequel. Cela prend quelques minutes, une seule fois.",
     "nItems": "aucun objet | 1 objet | {n} objets",
-    "noRefund": "L’expédition ne rend pas de solde : vous avez payé en ouvrant le coffret. Si vous préférez le solde, vendez-les.",
     "pickAddress": "Choisir l’adresse",
     "addressSub": "Remplissez les champs pour que le colis arrive.",
     "reviewTitle": "Vérifiez avant d’envoyer",
@@ -1272,6 +1274,10 @@ export default {
       "makePlayer": "Remove access"
     },
     "writeReply": "Write a reply…",
+    "ship": {
+      "carrier": "Carrier",
+      "tracking": "Tracking number"
+    },
     "confirmPay": "Send this payout now? It cannot be undone.",
     "num": {
       "waitingSc": "Waiting to be paid",

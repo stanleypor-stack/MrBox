@@ -18,18 +18,50 @@
           <MbElegir v-model="orden" :opciones="ordenes" chico class="mb-sel" />
 
           <div class="mb-inv__pestanas">
-            <span class="mb-pestana is-activa">
+            <button
+              type="button" class="mb-pestana" :class="{ 'is-activa': solapa === 'objetos' }"
+              :aria-pressed="String(solapa === 'objetos')" @click="verSolapa('objetos')"
+            >
               <span>{{ $t('wallet.items') }}</span>
               <span class="mb-pestana__n">{{ resumen.cuantos }}</span>
-            </span>
-            <span class="mb-pestana">
-              <span>{{ $t('nav.boxes') }}</span>
+            </button>
+            <button
+              type="button" class="mb-pestana" :class="{ 'is-activa': solapa === 'cajas' }"
+              :aria-pressed="String(solapa === 'cajas')" @click="verSolapa('cajas')"
+            >
+              <span>{{ $t('wallet.freeOpens') }}</span>
               <span class="mb-pestana__n">{{ aperturasGratis }}</span>
-            </span>
+            </button>
           </div>
         </div>
 
         <p v-if="cargando" class="mb-vacio">{{ $t('common.loading') }}</p>
+
+        <!--
+          LAS CAJAS DE REGALO.
+
+          Las tres de bienvenida: cuales le quedan y cual ya abrio. El
+          numero de la pestaña no llevaba a ningun lado, y una apertura
+          gratis que no se puede encontrar es una apertura que no se
+          usa.
+        -->
+        <template v-else-if="solapa === 'cajas'">
+          <p v-if="!regalos.length" class="mb-vacio">{{ $t('inventory.noFreeOpens') }}</p>
+
+          <div v-else class="mb-inv__grilla">
+            <router-link
+              v-for="g in regalos" :key="g.slug" :to="`/boxes/${g.slug}`"
+              class="mb-obj mb-obj--caja" :class="{ 'is-usada': g.usada }"
+            >
+              <span v-if="arteDeCaja(g)" class="mb-art mb-obj__foto" :class="arteDeCaja(g).clase"
+                    :style="arteDeCaja(g).estilo" aria-hidden="true"></span>
+              <span class="mb-obj__nombre">{{ g.nombre }}</span>
+              <span class="mb-obj__valor">
+                {{ g.usada ? $t('inventory.alreadyUsed') : $t('inventory.freeOpen') }}
+              </span>
+            </router-link>
+          </div>
+        </template>
 
         <!-- El vacío del diseño: arte, explicación y un botón que
              lleva a abrir una caja. Un vacío que no ofrece salida es
@@ -49,6 +81,7 @@
             @click="alternar(o._id)"
           >
             <span v-if="spr(o)" class="mb-prod mb-obj__foto" :style="spr(o)" aria-hidden="true"></span>
+            <img v-else-if="o.imageUrl" class="mb-obj__foto mb-obj__foto--img" :src="o.imageUrl" alt="">
             <span class="mb-obj__nombre">{{ o.name }}</span>
             <span class="mb-obj__valor">
               <span class="mb-sc mb-sc--16" aria-hidden="true">SC</span>{{ plata(o.valueSc) }}
@@ -156,6 +189,9 @@ export default {
   data() {
     return {
       envioAbierto: false,
+      /* "objetos" o "cajas": lo que muestra la grilla. */
+      solapa: "objetos",
+      regalos: [],
       nivel: 0,
       nivelQuePide: 3,
       items: [],
@@ -252,6 +288,23 @@ export default {
     elegirTodo() {
       this.elegidos = this.todoElegido ? [] : this.visibles.map((o) => o._id);
     },
+
+    /* Cambiar de pestaña, y traer las cajas la primera vez. */
+    verSolapa(cual) {
+      this.solapa = cual;
+      if (cual === "cajas" && !this.regalos.length) this.traerRegalos();
+    },
+
+    async traerRegalos() {
+      try {
+        const { data } = await api.get("/boxes/gifts");
+        this.regalos = data.data.items || [];
+      } catch (err) {
+        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
+      }
+    },
+
+    arteDeCaja(g) { return sprite(g.imageUrl); },
 
     pedirEnvio() {
       if (!this.elegidos.length) return;
@@ -381,6 +434,16 @@ export default {
   svg { position: absolute; right: 12px; pointer-events: none; }
 }
 
+/* La foto que llega como archivo, no como recorte de lamina. */
+.mb-obj__foto--img { object-fit: contain; }
+
+/* Una caja de regalo en la grilla: la que ya uso queda apagada. */
+.mb-obj--caja {
+  text-decoration: none;
+  color: inherit;
+  &.is-usada { opacity: .45; }
+}
+
 .mb-inv__pestanas {
   flex: 1 1 300px;
   display: grid;
@@ -389,6 +452,10 @@ export default {
 }
 
 .mb-pestana {
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
   position: relative;
   overflow: hidden;
   height: 50px;

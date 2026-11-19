@@ -32,6 +32,25 @@ export function esSprite(imageUrl) {
   return typeof imageUrl === "string" && imageUrl.startsWith("sprite:");
 }
 
+/*
+  LO QUE NO TIENE FOTO ES PLATA.
+
+  Los unicos objetos sin arte son los "MR BOX Credit": no son una cosa,
+  son saldo. Sin esto salian con un hueco donde deberia haber algo, que
+  se lee como que la imagen no cargo.
+
+  Vale tambien para los que ya estan guardados con la foto vacia, que
+  es por lo que no alcanza con arreglar el sembrado.
+*/
+const CREDITO = {
+  clase: "mb-prod",
+  estilo: {
+    backgroundImage: 'url("/img/4397330e5a00828a237d1edfabb11f18.webp")',
+    /* La moneda no llena el casillero: queda centrada y mas chica. */
+    backgroundSize: "62%",
+  },
+};
+
 /** De "60.9756% 0.0000%" al archivo de ese objeto. */
 function archivoDeObjeto(posicion) {
   const partes = posicion.split(/\s+/);
@@ -51,6 +70,7 @@ function archivoDeObjeto(posicion) {
  * @returns {{ clase: string, estilo: object } | null}
  */
 export function sprite(imageUrl) {
+  if (!imageUrl) return CREDITO;
   if (!esSprite(imageUrl)) return null;
 
   const partes = imageUrl.split(":");
@@ -59,6 +79,8 @@ export function sprite(imageUrl) {
      puntos, pero se vuelve a unir por las dudas. */
   const posicion = partes.slice(2).join(":");
   if (!lamina || !posicion) return null;
+
+  if (lamina === "credito") return CREDITO;
 
   if (lamina === "prod") {
     const archivo = archivoDeObjeto(posicion);

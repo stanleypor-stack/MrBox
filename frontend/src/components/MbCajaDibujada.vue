@@ -409,7 +409,15 @@ export default {
 
   img { max-width: 80%; max-height: 80%; }
 
-  &--izq { left: 15%; top: 60%; width: 30%; height: 26%; transform: skewY(-20deg); }
-  &--der { left: 53%; top: 60%; width: 38%; height: 30%; transform: skewY(4deg); }
+  /*
+    DERECHOS, NO TORCIDOS.
+
+    Estaban inclinados para seguir las caras del carton y el resultado
+    era un logo deforme: lo que se nota no es que acompañe la
+    perspectiva, es que esta chueco. Pegados derechos se leen, que es
+    lo unico que tiene que hacer un logo.
+  */
+  &--izq { left: 14%; top: 62%; width: 31%; height: 26%; }
+  &--der { left: 54%; top: 60%; width: 36%; height: 30%; }
 }
 </style>

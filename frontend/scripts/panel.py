@@ -164,6 +164,9 @@ PANEL = {
     "admin.act.cancel": "Cancel",
     "admin.act.delivered": "Delivered",
     "admin.act.seeData": "See data",
+    "admin.ship.carrier": "Carrier",
+    "admin.ship.tracking": "Tracking number",
+
     "admin.act.approve": "Approve",
     "admin.act.reject": "Reject",
     "admin.act.openFile": "Open file",

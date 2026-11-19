@@ -440,6 +440,9 @@ export default {
     "highestValue": "Самые дорогие",
     "emptyTitle": "Инвентарь пуст",
     "emptySub": "Открывайте коробки, чтобы наполнить инвентарь",
+    "noFreeOpens": "Бесплатных открытий не осталось.",
+    "freeOpen": "Бесплатное открытие",
+    "alreadyUsed": "Уже использовано",
     "openABox": "Открыть коробку",
     "portfolio": "ПОРТФЕЛЬ",
     "selectAll": "Выбрать всё",
@@ -589,7 +592,6 @@ export default {
     "lockedTitle": "Пройдите верификацию для отправки",
     "lockedBody": "Посылка едет домой, и мы должны знать, кому. Это занимает пару минут и делается один раз.",
     "nItems": "нет предметов | 1 предмет | {n} предмета | {n} предметов",
-    "noRefund": "Отправка не возвращает баланс: вы уже заплатили при открытии коробки. Хотите баланс — продайте их.",
     "pickAddress": "Выбрать адрес",
     "addressSub": "Заполните данные, чтобы посылка дошла.",
     "reviewTitle": "Проверьте перед отправкой",
@@ -1272,6 +1274,10 @@ export default {
       "makePlayer": "Remove access"
     },
     "writeReply": "Write a reply…",
+    "ship": {
+      "carrier": "Carrier",
+      "tracking": "Tracking number"
+    },
     "confirmPay": "Send this payout now? It cannot be undone.",
     "num": {
       "waitingSc": "Waiting to be paid",

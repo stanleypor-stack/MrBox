@@ -440,6 +440,9 @@ export default {
     "highestValue": "Highest value",
     "emptyTitle": "Inventory Empty",
     "emptySub": "Open boxes to fill your inventory",
+    "noFreeOpens": "No free opens left.",
+    "freeOpen": "Free open",
+    "alreadyUsed": "Already used",
     "openABox": "Open a Box",
     "portfolio": "PORTFOLIO",
     "selectAll": "Select all",
@@ -589,7 +592,6 @@ export default {
     "lockedTitle": "Verify yourself to ship",
     "lockedBody": "A parcel goes to a home, so we need to know whose. It takes a few minutes and you only do it once.",
     "nItems": "no items | 1 item | {n} items",
-    "noRefund": "Shipping does not give you balance back: you already paid when you opened the box. If you would rather have the balance, sell them instead.",
     "pickAddress": "Pick the address",
     "addressSub": "Fill in the details so the parcel arrives.",
     "reviewTitle": "Check before you ask for it",
@@ -1272,6 +1274,10 @@ export default {
       "makePlayer": "Remove access"
     },
     "writeReply": "Write a reply…",
+    "ship": {
+      "carrier": "Carrier",
+      "tracking": "Tracking number"
+    },
     "confirmPay": "Send this payout now? It cannot be undone.",
     "num": {
       "waitingSc": "Waiting to be paid",

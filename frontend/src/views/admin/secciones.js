@@ -124,12 +124,11 @@ const SECCIONES = {
             /* El transportista y el número se piden acá: un pedido
                despachado sin seguimiento es un mail a soporte. */
             ruta: (x) => `/admin/orders/${x._id}/state`,
-            cuerpo: () => {
-              const quien = window.prompt("Carrier (DHL, UPS…)");
-              if (!quien) return { estado: "packing" };
-              const numero = window.prompt("Tracking number");
-              return { estado: "shipped", transportista: quien, seguimiento: numero };
-            },
+            campos: [
+              { clave: "transportista", rotulo: "admin.ship.carrier", ejemplo: "DHL" },
+              { clave: "seguimiento", rotulo: "admin.ship.tracking", ejemplo: "1Z999AA10123456784" },
+            ],
+            cuerpo: () => ({ estado: "shipped" }),
           },
           { clave: "cancel", texto: "admin.act.cancel", clase: "ad-b--mal", pideMotivo: true, pregunta: "admin.whyCancel", ruta: (x) => `/admin/orders/${x._id}/state`, cuerpo: () => ({ estado: "cancelled" }) },
         ];

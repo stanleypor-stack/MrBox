@@ -130,10 +130,6 @@
                 <span v-else class="mb-nivel__espera">{{ $t('kyc.finishPrevious') }}</span>
               </section>
 
-              <div class="mb-desbloquea">
-                <h3>{{ $t('profile.whatUnlocks') }}</h3>
-                <p v-for="(u, i) in desbloqueos" :key="i"><b>{{ $t(u.que) }}</b> &middot; {{ $t(u.nivel) }}</p>
-              </div>
             </div>
 
             <!-- La tarjeta de ayuda del diseño. -->
@@ -146,7 +142,7 @@
               </span>
               <span class="mb-ayuda-card__t">{{ $t('kyc.needHelp') }}</span>
               <span class="mb-ayuda-card__s">{{ $t('kyc.needHelpSub') }}</span>
-              <button type="button" class="mb-guardar mb-guardar--ancho" @click="pendiente">
+              <button type="button" class="mb-guardar mb-guardar--ancho" @click="abrirSoporte">
                 {{ $t('kyc.contactSupport') }}
               </button>
             </aside>
@@ -664,12 +660,6 @@ export default {
         { id: "controles", texto: "profile.controls", icono: "M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" },
       ],
 
-      desbloqueos: [
-        { que: "profile.unlockPlay", nivel: "profile.unlockNone" },
-        { que: "profile.unlockRedeem", nivel: "profile.unlockL2" },
-        { que: "profile.unlockShip", nivel: "profile.unlockL2" },
-        { que: "profile.unlockShipBig", nivel: "profile.unlockL3" },
-      ],
     };
   },
 
@@ -780,6 +770,9 @@ export default {
 
     pendiente() { this.$store.dispatch("avisar", { texto: this.$t("auth.soon") }); },
 
+    /* El boton dice "contactar a soporte": abre el chat de soporte. */
+    abrirSoporte() { this.$store.dispatch("pedirSoporte", ""); },
+
     valida(id) {
       return this.pestanas.some((p) => p.id === id) ? id : "perfil";
     },
@@ -850,10 +843,15 @@ export default {
       */
       await this.traerTodo();
 
-      /* Con `?tab=` en la direccion, baja hasta esa seccion. */
+      /*
+        Con `?tab=` en la direccion ya se abrio esa seccion: el perfil
+        muestra UNA, la elegida. Antes bajaba hasta ella, y ese metodo
+        se fue cuando dejaron de estar todas una abajo de la otra;
+        llamarlo rompia la pantalla entera al entrar desde un enlace.
+      */
       if (this.$route.query.tab) {
         await this.$nextTick();
-        this.bajarA(this.pestana);
+        this.arriba();
       }
     },
 
@@ -1428,16 +1426,6 @@ export default {
 
 .mb-ayuda-card__t { font-weight: 900; font-size: 18px; }
 .mb-ayuda-card__s { font-size: 14px; line-height: 1.5; color: $texto-3; }
-
-.mb-desbloquea {
-  border-radius: 14px;
-  background: #0e1a2e;
-  padding: 16px;
-
-  h3 { margin: 0 0 10px; font-size: 14px; font-weight: 900; }
-  p { margin: 0 0 6px; font-size: 13px; color: $texto-3; &:last-child { margin: 0; } }
-  b { color: #fff; }
-}
 
 /* ── Números ──────────────────────────────────────────────────────── */
 

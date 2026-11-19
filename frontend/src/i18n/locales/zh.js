@@ -440,6 +440,9 @@ export default {
     "highestValue": "价值从高",
     "emptyTitle": "背包是空的",
     "emptySub": "开盒来填满背包",
+    "noFreeOpens": "没有免费开箱了。",
+    "freeOpen": "免费开箱",
+    "alreadyUsed": "已使用",
     "openABox": "开一个盒",
     "portfolio": "持仓",
     "selectAll": "全选",
@@ -589,7 +592,6 @@ export default {
     "lockedTitle": "发货前请先完成验证",
     "lockedBody": "包裹会寄到住址，所以我们需要知道收件人是谁。只需几分钟，而且只做一次。",
     "nItems": "没有物品 | 1 件物品 | {n} 件物品",
-    "noRefund": "发货不会退回余额：开箱时你已经付过了。想要余额就把它们卖掉。",
     "pickAddress": "选择地址",
     "addressSub": "填好资料，包裹才能顺利送达。",
     "reviewTitle": "提交前请核对",
@@ -1272,6 +1274,10 @@ export default {
       "makePlayer": "Remove access"
     },
     "writeReply": "Write a reply…",
+    "ship": {
+      "carrier": "Carrier",
+      "tracking": "Tracking number"
+    },
     "confirmPay": "Send this payout now? It cannot be undone.",
     "num": {
       "waitingSc": "Waiting to be paid",

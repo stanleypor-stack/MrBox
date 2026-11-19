@@ -73,7 +73,11 @@ async function sembrar({ limpiar = false } = {}) {
                 que en el prototipo: una sola imagen para los 1.712
                 objetos en vez de 1.712 pedidos al servidor.
               */
-              imageUrl: it.spritePos ? `sprite:prod:${it.spritePos}` : "",
+              /*
+                Los "MR BOX Credit" no tienen arte porque no son una
+                cosa, son plata: les va la moneda del sitio.
+              */
+              imageUrl: it.spritePos ? `sprite:prod:${it.spritePos}` : "sprite:credito:0",
               shippable: it.shippable !== false,
               active: true,
             },

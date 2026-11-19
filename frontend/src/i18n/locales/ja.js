@@ -440,6 +440,9 @@ export default {
     "highestValue": "高額順",
     "emptyTitle": "インベントリが空です",
     "emptySub": "ボックスを開けて埋めよう",
+    "noFreeOpens": "無料オープンは残っていません。",
+    "freeOpen": "無料オープン",
+    "alreadyUsed": "使用済み",
     "openABox": "ボックスを開ける",
     "portfolio": "保有資産",
     "selectAll": "すべて選択",
@@ -589,7 +592,6 @@ export default {
     "lockedTitle": "配送には本人確認が必要です",
     "lockedBody": "荷物はご自宅に届きます。宛先の確認が必要です。数分で終わり、一度だけです。",
     "nItems": "0 点 | 1 点 | {n} 点",
-    "noRefund": "配送しても残高は戻りません。ボックスを開けた時点で支払い済みです。残高が欲しい場合は売却してください。",
     "pickAddress": "住所を選ぶ",
     "addressSub": "荷物が届くよう情報を入力してください。",
     "reviewTitle": "申し込む前に確認",
@@ -1272,6 +1274,10 @@ export default {
       "makePlayer": "Remove access"
     },
     "writeReply": "Write a reply…",
+    "ship": {
+      "carrier": "Carrier",
+      "tracking": "Tracking number"
+    },
     "confirmPay": "Send this payout now? It cannot be undone.",
     "num": {
       "waitingSc": "Waiting to be paid",

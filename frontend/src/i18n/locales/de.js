@@ -440,6 +440,9 @@ export default {
     "highestValue": "Höchster Wert",
     "emptyTitle": "Inventar leer",
     "emptySub": "Öffne Boxen, um dein Inventar zu füllen",
+    "noFreeOpens": "Keine Gratis-Öffnungen mehr.",
+    "freeOpen": "Gratis öffnen",
+    "alreadyUsed": "Schon benutzt",
     "openABox": "Box öffnen",
     "portfolio": "BESTAND",
     "selectAll": "Alle auswählen",
@@ -589,7 +592,6 @@ export default {
     "lockedTitle": "Verifiziere dich für den Versand",
     "lockedBody": "Ein Paket geht an eine Adresse, wir müssen wissen an wessen. Das dauert ein paar Minuten und ist einmalig.",
     "nItems": "keine Artikel | 1 Artikel | {n} Artikel",
-    "noRefund": "Der Versand gibt kein Guthaben zurück: du hast beim Öffnen bezahlt. Wenn du lieber Guthaben willst, verkauf sie.",
     "pickAddress": "Adresse wählen",
     "addressSub": "Fülle die Daten aus, damit das Paket ankommt.",
     "reviewTitle": "Vor dem Abschicken prüfen",
@@ -1272,6 +1274,10 @@ export default {
       "makePlayer": "Remove access"
     },
     "writeReply": "Write a reply…",
+    "ship": {
+      "carrier": "Carrier",
+      "tracking": "Tracking number"
+    },
     "confirmPay": "Send this payout now? It cannot be undone.",
     "num": {
       "waitingSc": "Waiting to be paid",

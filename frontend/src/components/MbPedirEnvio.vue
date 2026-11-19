@@ -48,6 +48,7 @@
           <div class="mb-env__objetos">
             <div v-for="o in objetos" :key="o._id" class="mb-env__objeto">
               <span v-if="arte(o)" class="mb-prod mb-env__foto" :style="arte(o)" aria-hidden="true"></span>
+              <img v-else-if="o.imageUrl" class="mb-env__foto mb-env__foto--img" :src="o.imageUrl" alt="">
               <span v-else class="mb-env__foto" aria-hidden="true"></span>
               <span class="mb-env__nombre">{{ o.name }}</span>
               <span class="mb-env__valor">
@@ -62,8 +63,6 @@
               <span class="mb-sc mb-sc--16" aria-hidden="true">SC</span>{{ plata(valorTotal) }}
             </span>
           </div>
-
-          <p class="mb-env__aviso mb-env__aviso--ojo">{{ $t('ship.noRefund') }}</p>
 
           <div class="mb-env__pie">
             <button type="button" class="mb-env__b mb-env__b--fantasma" @click="cerrar">
@@ -139,14 +138,20 @@
           <span class="mb-env__rotulo">{{ $t('ship.reviewTitle') }}</span>
 
           <div class="mb-env__objetos">
-            <div class="mb-env__objeto">
-              <span class="mb-env__foto mb-env__foto--ico" aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9db6e8"
-                     stroke-width="1.8" stroke-linejoin="round">
-                  <path d="M12 2.5 21 7v10l-9 4.5L3 17V7zM3 7l9 4.5L21 7M12 11.5v10" />
-                </svg>
+            <!-- Lo que se manda, con su foto: en el ultimo paso es
+                 cuando mas importa ver QUE se esta mandando. -->
+            <div v-for="o in objetos" :key="o._id" class="mb-env__objeto">
+              <span v-if="arte(o)" class="mb-prod mb-env__foto" :style="arte(o)" aria-hidden="true"></span>
+              <img v-else-if="o.imageUrl" class="mb-env__foto mb-env__foto--img" :src="o.imageUrl" alt="">
+              <span v-else class="mb-env__foto" aria-hidden="true"></span>
+              <span class="mb-env__nombre">{{ o.name }}</span>
+              <span class="mb-env__valor">
+                <span class="mb-sc mb-sc--16" aria-hidden="true">SC</span>{{ plata(o.valueSc) }}
               </span>
-              <span class="mb-env__nombre">{{ $tc('ship.nItems', objetos.length, { n: objetos.length }) }}</span>
+            </div>
+
+            <div class="mb-env__total">
+              <span>{{ $tc('ship.nItems', objetos.length, { n: objetos.length }) }}</span>
               <span class="mb-env__valor">
                 <span class="mb-sc mb-sc--16" aria-hidden="true">SC</span>{{ plata(valorTotal) }}
               </span>
@@ -481,14 +486,29 @@ export default {
   border: 1px solid #1f3355;
 }
 
+/*
+  Nada de `background:` a secas: la forma corta pisa el tamaño y el
+  repetido, y la foto --que llega por el estilo del elemento-- quedaba
+  a tamaño natural adentro de 46 px, o sea un pedacito gigante.
+*/
 .mb-env__foto {
   width: 46px;
   height: 46px;
   flex: none;
   border-radius: 10px;
-  background: radial-gradient(circle at 50% 55%, rgba(79, 155, 255, .3), rgba(18, 33, 58, 0) 72%), #0d1a30;
+  background-color: #0d1a30;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
 
-  &--ico { display: grid; place-items: center; }
+  /* La que llega como archivo, no como recorte de lamina. */
+  &--img { object-fit: contain; padding: 4px; box-sizing: border-box; }
+
+  &--ico {
+    display: grid;
+    place-items: center;
+    background-image: radial-gradient(circle at 50% 55%, rgba(79, 155, 255, .3), rgba(18, 33, 58, 0) 72%);
+  }
 }
 
 .mb-env__nombre {
