@@ -97,6 +97,7 @@ export default {
     "provablyFair": "Sorteio verificável",
     "opening": "Abertura",
     "howMany": "Quantas abrir",
+    "nextFree": "Suas outras aberturas grátis",
     "openFree": "ABRIR GRÁTIS",
     "fast": "Abertura rápida",
     "mute": "Silenciar",
@@ -769,6 +770,7 @@ export default {
       "carton": "Papelão",
       "cinta": "Fita"
     },
+    "dragHint": "Arraste os itens para posicioná-los",
     "dragItem": "Arraste para mover este item",
     "resetPositions": "Redefinir posições",
     "coverCount": "Nada na caixa ainda | 1 item aparece na caixa | {n} itens aparecem na caixa",

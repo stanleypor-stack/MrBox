@@ -14,7 +14,11 @@
     </router-link>
 
     <!-- ── Las aperturas gratis que le quedan ───────────────────── -->
-    <section v-if="entro && tickets.length" class="mb-gratis">
+    <!--
+      Se va cuando ya se abrieron las tres: tres tarjetas que dicen
+      "USADA" arriba de todo no son un regalo, son el recuerdo de uno.
+    -->
+    <section v-if="entro && regalosSinAbrir" class="mb-gratis">
       <div class="mb-gratis__cabeza">
         <h2>{{ $t('home.yourFreeOpens') }}</h2>
         <span>{{ $t('home.freeLeft', { n: aperturasGratis, total: regalo }) }}</span>
@@ -394,6 +398,11 @@ export default {
   },
 
   computed: {
+    /* Si queda alguna sin abrir. Con las tres usadas, la tira se va. */
+    regalosSinAbrir() {
+      return this.tickets.some((t) => !t.usada);
+    },
+
     ...mapGetters(["entro", "aperturasGratis"]),
 
     /**

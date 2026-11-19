@@ -97,6 +97,7 @@ export default {
     "provablyFair": "Sorteo verificable",
     "opening": "Apertura",
     "howMany": "Cuántas abrir",
+    "nextFree": "Tus otras aperturas gratis",
     "openFree": "ABRIR GRATIS",
     "fast": "Apertura rápida",
     "mute": "Silenciar",
@@ -769,6 +770,7 @@ export default {
       "carton": "Cartón",
       "cinta": "Cinta"
     },
+    "dragHint": "Arrastrá los objetos para acomodarlos",
     "dragItem": "Arrastrá para mover este objeto",
     "resetPositions": "Volver a las posiciones",
     "coverCount": "Todavía no asoma nada | Asoma 1 objeto | Asoman {n} objetos",

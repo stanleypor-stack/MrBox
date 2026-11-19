@@ -97,6 +97,7 @@ export default {
     "provablyFair": "Nachweislich fair",
     "opening": "Öffnen",
     "howMany": "Wie viele öffnen",
+    "nextFree": "Deine anderen Gratis-Öffnungen",
     "openFree": "GRATIS ÖFFNEN",
     "fast": "Schnell öffnen",
     "mute": "Ton aus",
@@ -769,6 +770,7 @@ export default {
       "carton": "Karton",
       "cinta": "Schleife"
     },
+    "dragHint": "Artikel zum Platzieren ziehen",
     "dragItem": "Zum Verschieben ziehen",
     "resetPositions": "Positionen zurücksetzen",
     "coverCount": "Noch nichts auf der Box | 1 Artikel auf der Box | {n} Artikel auf der Box",

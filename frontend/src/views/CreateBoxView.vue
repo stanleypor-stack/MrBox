@@ -9,6 +9,16 @@
       <!-- La vista previa, que es la caja de verdad. -->
       <div class="mb-vista">
         <div class="mb-vista__tarjeta">
+          <!-- Solo cuando hay algo que mover: un cartel arriba de una
+               caja vacia es ruido. -->
+          <span v-if="asoman.length" class="mb-vista__pista">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3v18M3 12h18M12 3 9.5 5.5M12 3l2.5 2.5M12 21l-2.5-2.5M12 21l2.5-2.5M3 12l2.5-2.5M3 12l2.5 2.5M21 12l-2.5-2.5M21 12l-2.5 2.5" />
+            </svg>
+            {{ $t('create.dragHint') }}
+          </span>
+
           <mb-caja-dibujada
             :color="color" :textura="textura" :estilo="estilo" :portada="asoman"
             :posiciones="posiciones" :logo-izquierdo="logoIzq" :logo-derecho="logoDer"
@@ -609,6 +619,21 @@ export default {
 
 .mb-vista__nombre { font-weight: 900; font-size: 14px; }
 .mb-vista__cat { font-size: 12px; color: $texto-4; }
+
+/* La pista de que los objetos se arrastran, arriba de la caja. */
+.mb-vista__pista {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(79, 155, 255, .12);
+  border: 1px solid #27406b;
+  color: $texto-3;
+  font-size: 11.5px;
+  font-weight: 700;
+}
 .mb-vista__precio { display: flex; align-items: center; gap: 6px; font-weight: 900; }
 .mb-vista__ayuda { font-size: 12px; color: $texto-4; }
 

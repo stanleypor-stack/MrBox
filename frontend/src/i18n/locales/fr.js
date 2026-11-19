@@ -97,6 +97,7 @@ export default {
     "provablyFair": "Équité vérifiable",
     "opening": "Ouverture",
     "howMany": "Combien en ouvrir",
+    "nextFree": "Vos autres ouvertures offertes",
     "openFree": "OUVRIR GRATUIT",
     "fast": "Ouverture rapide",
     "mute": "Couper le son",
@@ -769,6 +770,7 @@ export default {
       "carton": "Carton",
       "cinta": "Ruban"
     },
+    "dragHint": "Faites glisser les objets pour les placer",
     "dragItem": "Faites glisser pour déplacer",
     "resetPositions": "Réinitialiser les positions",
     "coverCount": "Rien sur le coffret | 1 objet sur le coffret | {n} objets sur le coffret",

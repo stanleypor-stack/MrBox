@@ -152,6 +152,27 @@
             <router-link to="/inventory" class="mb-salio__b">{{ $t('box.keep') }}</router-link>
           </template>
         </div>
+
+        <!--
+          LAS QUE TE QUEDAN, ACA MISMO.
+
+          El regalo son tres cajas distintas. Sin esto, para abrir la
+          segunda habia que volver a la portada, buscar la tira y
+          entrar de nuevo: tres viajes para tres aperturas que se usan
+          una atras de la otra.
+        -->
+        <div v-if="otrosRegalos.length" class="mb-sigue">
+          <span class="mb-sigue__rotulo">{{ $t('box.nextFree') }}</span>
+          <div class="mb-sigue__tira">
+            <router-link
+              v-for="g in otrosRegalos" :key="g.slug" :to="`/boxes/${g.slug}`" class="mb-sigue__caja"
+            >
+              <span v-if="arteDeRegalo(g)" class="mb-art mb-sigue__arte"
+                    :class="arteDeRegalo(g).clase" :style="arteDeRegalo(g).estilo" aria-hidden="true"></span>
+              <span class="mb-sigue__nombre">{{ g.nombre }}</span>
+            </router-link>
+          </div>
+        </div>
       </div>
 
       <!-- ── Lo que puede salir ───────────────────────────────────── -->
@@ -274,6 +295,8 @@ export default {
       cargando: true,
       /* Las que gasto en esta pantalla sin sesion (ver demosRestantes). */
       demosUsadasAqui: 0,
+      /* Las aperturas de regalo que le quedan, para seguir de largo. */
+      regalos: [],
       veces: 1,
       rapido: false,
       mudo: false,
@@ -291,6 +314,12 @@ export default {
 
   computed: {
     ...mapGetters(["entro", "saldo"]),
+
+    /* Las de regalo que todavia no abrio, menos la de esta pantalla. */
+    otrosRegalos() {
+      const aca = this.caja ? this.caja.slug : "";
+      return this.regalos.filter((g) => !g.usada && g.slug !== aca);
+    },
 
     /** Cuantas pruebas gratis le quedan, de las que dice el panel. */
     demosRestantes() {
@@ -382,6 +411,7 @@ export default {
       try {
         const { data } = await api.get(`/boxes/${this.$route.params.slug}`);
         this.caja = data.data;
+        this.traerRegalos();
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
         this.$router.push("/boxes");
@@ -420,6 +450,7 @@ export default {
         /* Si esta era la gratis de esta caja, ya no lo es. */
         if (data.data.resultados.some((r) => r.conAperturaGratis)) {
           this.caja = { ...this.caja, gratisAca: false };
+          this.traerRegalos();
         }
 
         await this.$refs.ruleta.girar(data.data.resultados.map((r) => r.premio));
@@ -472,6 +503,19 @@ export default {
         /* Sin almacenamiento no se cuentan, y es lo de menos. */
       }
       this.demosUsadasAqui += veces;
+    },
+
+    arteDeRegalo(g) { return sprite(g.imageUrl); },
+
+    async traerRegalos() {
+      if (!this.entro) { this.regalos = []; return; }
+      try {
+        const { data } = await api.get("/boxes/gifts");
+        this.regalos = data.data.items || [];
+      } catch {
+        /* Sin la tira se sigue jugando igual: no vale romper la caja. */
+        this.regalos = [];
+      }
     },
 
     async probar() {
@@ -1071,6 +1115,49 @@ export default {
 }
 
 .mb-contenido__retorno { margin: 0; font-size: 13px; color: $texto-4; }
+
+/* ── Las aperturas de regalo que le quedan ──────────────────────── */
+
+.mb-sigue {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 211, 90, .08);
+  border: 1px solid rgba(255, 211, 90, .35);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.mb-sigue__rotulo {
+  font-weight: 800;
+  font-size: 12.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: $amarillo;
+}
+
+.mb-sigue__tira { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.mb-sigue__caja {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 12px;
+  background: $panel-alto;
+  border: 1px solid #2a4170;
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  text-decoration: none;
+  @include foco;
+  &:hover { border-color: $amarillo; color: #fff; }
+}
+
+.mb-sigue__arte { width: 34px; height: 34px; flex: none; }
+.mb-sigue__nombre { white-space: nowrap; }
 
 /*
   EL GLOBITO DE LAS PRUEBAS QUE LE QUEDAN.

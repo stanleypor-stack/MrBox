@@ -97,6 +97,7 @@ export default {
     "provablyFair": "検証可能な公平性",
     "opening": "開封中",
     "howMany": "開封数",
+    "nextFree": "ほかの無料オープン",
     "openFree": "無料で開ける",
     "fast": "ファストオープン",
     "mute": "ミュート",
@@ -769,6 +770,7 @@ export default {
       "carton": "クラフト",
       "cinta": "リボン"
     },
+    "dragHint": "ドラッグして位置を決める",
     "dragItem": "ドラッグして位置を変える",
     "resetPositions": "位置を戻す",
     "coverCount": "まだ何も出ていません | 1 点がボックスに出ます | {n} 点がボックスに出ます",

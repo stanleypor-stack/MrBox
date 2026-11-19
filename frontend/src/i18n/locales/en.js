@@ -97,6 +97,7 @@ export default {
     "provablyFair": "Provably fair",
     "opening": "Opening",
     "howMany": "How many to open",
+    "nextFree": "Your other free opens",
     "openFree": "OPEN FREE",
     "fast": "Fast open",
     "mute": "Mute sound",
@@ -769,6 +770,7 @@ export default {
       "carton": "Kraft",
       "cinta": "Ribbon"
     },
+    "dragHint": "Drag the items to place them",
     "dragItem": "Drag to move this item on the box",
     "resetPositions": "Reset positions",
     "coverCount": "No items on the box yet | 1 item shows on the box | {n} items show on the box",

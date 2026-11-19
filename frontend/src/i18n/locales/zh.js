@@ -97,6 +97,7 @@ export default {
     "provablyFair": "可验证公平",
     "opening": "开启中",
     "howMany": "开启数量",
+    "nextFree": "你的其他免费开箱",
     "openFree": "免费开启",
     "fast": "快速开启",
     "mute": "静音",
@@ -769,6 +770,7 @@ export default {
       "carton": "牛皮纸",
       "cinta": "丝带"
     },
+    "dragHint": "拖动物品来摆放",
     "dragItem": "拖动可以改位置",
     "resetPositions": "恢复位置",
     "coverCount": "盒上还没有东西 | 盒上显示 1 件 | 盒上显示 {n} 件",
