@@ -93,7 +93,21 @@
       </div>
 
       <div class="mb-pulls__via">
-        <transition-group name="mb-pull" tag="div" class="mb-row mb-pulls__fila">
+        <!--
+          `duration` NO ES DECORACION.
+
+          Sin un numero explicito, Vue espera el `transitionend` del
+          navegador para sacar del DOM la tarjeta que se fue. Cuando
+          ese evento no llega --una pestaña en segundo plano, un
+          telefono con las animaciones apagadas, la clase de "moverse"
+          pisando a la de "irse"-- la tarjeta NUNCA se borra: la cinta
+          junto casi trescientas tarjetas invisibles, cada una con su
+          pedazo de lamina. Con el numero puesto, Vue usa un reloj.
+        -->
+        <transition-group
+          name="mb-pull" tag="div" class="mb-row mb-pulls__fila"
+          :duration="{ enter: 320, leave: 200 }"
+        >
           <router-link
             v-for="p in pulls" :key="p._id" :to="`/boxes/${p.boxSlug}`"
             class="mb-pull-card" :style="colorDeLaTarjeta(p)"
@@ -945,6 +959,20 @@ export default {
 .mb-pull-enter-active { transition: transform .32s ease, opacity .32s ease; }
 .mb-pull-enter { transform: translateX(-26px) scale(.96); opacity: 0; }
 .mb-pull-move { transition: transform .32s ease; }
+
+/*
+  LA QUE SE VA TIENE QUE TENER SU PROPIA TRANSICION.
+
+  Sin esto, Vue le pone la clase de "moverse" --que SI tiene duracion--
+  y despues se queda esperando un `transitionend` que nunca llega,
+  porque nada se mueve. La tarjeta no se borra nunca: la cinta junto
+  288 tarjetas invisibles en cinco minutos, cada una con su pedazo de
+  lamina, y el telefono se arrastraba.
+
+  `absolute` para que las que se van no empujen a las que quedan.
+*/
+.mb-pull-leave-active { position: absolute; transition: opacity .2s ease; }
+.mb-pull-leave-to { opacity: 0; }
 
 .mb-pulls__via { position: relative; flex: 1; min-width: 0; }
 
