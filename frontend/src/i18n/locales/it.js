@@ -606,8 +606,6 @@ export default {
     "sub": "Saldo, box gratis o un extra sul prossimo deposito.",
     "label": "Codice promozionale",
     "placeholder": "Inserisci il codice",
-    "noteBoth": "Lo stesso campo accetta codici promozionali e di affiliazione. Non devi sapere quale hai.",
-    "noteOnce": "Ogni codice vale una volta per account.",
     "wonBalance": "Accreditato sul tuo saldo.",
     "wonBalanceSub": "Puoi usarlo subito.",
     "wonOpens": "Aperture gratis.",

@@ -606,8 +606,6 @@ export default {
     "sub": "Balance, free boxes or a boost on your next deposit.",
     "label": "Promotional code",
     "placeholder": "Enter your code",
-    "noteBoth": "The same field takes a promo code and an affiliate code. You do not need to know which one you have.",
-    "noteOnce": "Each code works once per account.",
     "wonBalance": "Added to your balance.",
     "wonBalanceSub": "You can use it right away.",
     "wonOpens": "Free opens.",

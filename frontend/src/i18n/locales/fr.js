@@ -606,8 +606,6 @@ export default {
     "sub": "Du solde, des coffrets offerts ou un bonus sur votre prochain dépôt.",
     "label": "Code promotionnel",
     "placeholder": "Saisissez votre code",
-    "noteBoth": "Le même champ accepte un code promo et un code d’affilié. Vous n’avez pas à savoir lequel vous avez.",
-    "noteOnce": "Chaque code ne fonctionne qu’une fois par compte.",
     "wonBalance": "Ajouté à votre solde.",
     "wonBalanceSub": "Utilisable tout de suite.",
     "wonOpens": "Ouvertures offertes.",

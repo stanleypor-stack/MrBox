@@ -606,8 +606,6 @@ export default {
     "sub": "Guthaben, Gratis-Boxen oder ein Plus auf die nächste Einzahlung.",
     "label": "Aktionscode",
     "placeholder": "Code eingeben",
-    "noteBoth": "Dasselbe Feld nimmt Aktions- und Partnercodes. Du musst nicht wissen, welchen du hast.",
-    "noteOnce": "Jeder Code funktioniert einmal pro Konto.",
     "wonBalance": "Deinem Guthaben gutgeschrieben.",
     "wonBalanceSub": "Du kannst es sofort nutzen.",
     "wonOpens": "Gratis-Öffnungen.",

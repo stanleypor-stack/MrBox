@@ -66,27 +66,32 @@
         </div>
 
         <!--
-          GOOGLE Y STEAM.
+          GOOGLE Y FACEBOOK.
 
-          Están en el diseño y se dibujan, pero todavía no hay nada
-          detrás. Avisan en vez de no hacer nada: un botón que al tocarlo
-          no pasa NADA hace creer que el sitio está roto.
+          Steam quedo afuera: es una tienda de juegos, y entrar con
+          Steam tiene sentido en un sitio de skins, no en uno que manda
+          zapatillas a una casa. Los dos que usa la gente para
+          registrarse son estos.
+
+          Todavia no hay nada detras --faltan las claves de cada uno--
+          asi que avisan en vez de no hacer nada: un boton que al
+          tocarlo no pasa NADA hace creer que el sitio esta roto.
         -->
         <div class="mb-auth__sociales">
           <button type="button" class="mb-auth__social" @click="avisarPendiente">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff"
-                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" />
-              <path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z" />
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#4285f4" d="M21.6 12.2c0-.7-.1-1.3-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.4z" />
+              <path fill="#34a853" d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22z" />
+              <path fill="#fbbc05" d="M6.4 14c-.2-.6-.3-1.3-.3-2s.1-1.4.3-2V7.4H3.1a10 10 0 0 0 0 9.2z" />
+              <path fill="#ea4335" d="M12 5.9c1.5 0 2.8.5 3.8 1.5l2.8-2.8A10 10 0 0 0 3.1 7.4L6.4 10c.8-2.3 3-4.1 5.6-4.1z" />
             </svg>
             Google
           </button>
           <button type="button" class="mb-auth__social" @click="avisarPendiente">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff"
-                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M6 8h12a4 4 0 0 1 4 4v1a3 3 0 0 1-5.4 1.8L15 13H9l-1.6 1.8A3 3 0 0 1 2 13v-1a4 4 0 0 1 4-4zM7 11v2M6 12h2M16 11h.01M18 13h.01" />
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#1877f2" d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12z" />
             </svg>
-            Steam
+            Facebook
           </button>
         </div>
 

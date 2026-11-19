@@ -606,8 +606,6 @@ export default {
     "sub": "余额、免费盒子，或下次充值的加成。",
     "label": "促销代码",
     "placeholder": "输入代码",
-    "noteBoth": "同一个输入框接受促销代码和推广代码，你不需要分辨自己的是哪种。",
-    "noteOnce": "每个代码每个账户只能用一次。",
     "wonBalance": "已添加到你的余额。",
     "wonBalanceSub": "马上就能使用。",
     "wonOpens": "免费开箱。",

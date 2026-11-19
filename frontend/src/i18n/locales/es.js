@@ -606,8 +606,6 @@ export default {
     "sub": "Saldo, cajas gratis o un extra en tu próximo depósito.",
     "label": "Código promocional",
     "placeholder": "Escribí tu código",
-    "noteBoth": "El mismo campo acepta un código de promoción y uno de afiliado. No tenés que saber cuál es el tuyo.",
-    "noteOnce": "Cada código se usa una sola vez por cuenta.",
     "wonBalance": "Acreditado en tu saldo.",
     "wonBalanceSub": "Ya lo podés usar para abrir cajas.",
     "wonOpens": "Aperturas gratis.",
