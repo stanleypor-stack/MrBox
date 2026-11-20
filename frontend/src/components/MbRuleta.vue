@@ -12,8 +12,6 @@
       renglon en las seis a la vez.
     -->
     <template v-if="enColumnas">
-      <span class="mb-reel__banda" aria-hidden="true"></span>
-
       <svg class="mb-reel__flecha mb-reel__flecha--izq" width="14" height="18" viewBox="0 0 18 24"
            fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M3 5l6 7-6 7M10 5l6 7-6 7" />
@@ -42,7 +40,11 @@
     </template>
 
     <div class="mb-reel__cintas">
-      <div v-for="(cinta, i) in cintas" :key="i" class="mb-reel__pista">
+      <div v-for="(cinta, i) in cintas" :key="i" class="mb-reel__col">
+      <div class="mb-reel__pista">
+        <!-- La banda del centro, una por columna: con las columnas
+             partidas en dos renglones, una sola no alcanza. -->
+        <span v-if="enColumnas" class="mb-reel__banda" aria-hidden="true"></span>
         <div
           ref="tiras" class="mb-reel__tira"
           :style="{
@@ -87,24 +89,26 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!--
-      LO QUE SALIO EN CADA COLUMNA.
+      <!--
+        LO QUE SALIO, DEBAJO DE SU COLUMNA.
 
-      Una celda por cinta, abajo y alineada con su columna. Aparece
-      recien cuando frenaron: mientras giran no hay nada que decir, y
-      un renglon que cambia mientras gira distrae del unico lugar que
-      hay que mirar.
-    -->
-    <div v-if="enColumnas" class="mb-reel__salidas" aria-live="polite">
-      <div v-for="(cinta, i) in cintas" :key="`s-${i}`" class="mb-reel__salida">
+        Adentro de la columna y no en un renglon aparte: con las
+        columnas partidas en dos renglones, un renglon suelto de
+        nombres no se puede alinear con ninguna.
+
+        Aparece recien cuando freno: mientras gira no hay nada que
+        decir, y un texto que cambia distrae del unico lugar que hay
+        que mirar.
+      -->
+      <div v-if="enColumnas" class="mb-reel__salida" aria-live="polite">
         <template v-if="quieta && !cinta.enReposo">
           <span class="mb-reel__nombre">{{ cinta.items[GANADOR].name }}</span>
           <span class="mb-reel__valor">
             <span class="mb-sc mb-sc--16" aria-hidden="true">SC</span>{{ plata(cinta.items[GANADOR].valueSc) }}
           </span>
         </template>
+      </div>
       </div>
     </div>
   </section>
@@ -396,13 +400,17 @@ export default {
 }
 
 /*
-  LA BANDA DEL MEDIO, EN COLUMNAS.
+  LA BANDA DEL MEDIO, UNA POR COLUMNA.
 
-  Es el renglon donde van a frenar las seis. Sin algo que lo marque,
-  seis columnas girando son seis cosas sueltas; con la banda son una
-  sola jugada.
+  Es el renglon donde va a frenar esa columna. Sin algo que lo marque,
+  seis columnas girando son seis cosas sueltas; con la banda cada una
+  dice donde mirar.
 
-  `pointer-events: none` porque cruza por encima de las cintas.
+  Una por columna y no una sola cruzada: en el telefono las columnas
+  se parten en dos renglones, y una banda absoluta sobre toda la caja
+  no puede marcar los dos.
+
+  `pointer-events: none` porque va por encima de la cinta.
 */
 .mb-reel__banda {
   position: absolute;
@@ -415,11 +423,7 @@ export default {
   pointer-events: none;
   border-top: 1px solid rgba(255, 255, 255, .22);
   border-bottom: 1px solid rgba(255, 255, 255, .22);
-  background: linear-gradient(90deg,
-    rgba(63, 124, 240, .16),
-    rgba(63, 124, 240, .05) 30%,
-    rgba(63, 124, 240, .05) 70%,
-    rgba(63, 124, 240, .16));
+  background: rgba(63, 124, 240, .1);
 }
 
 // Las dos rayitas que salen de cada flecha hacia los costados.
@@ -464,21 +468,33 @@ export default {
   porque haya mas columnas.
 */
 .mb-reel--columnas {
-  padding: 0;
+  padding: 10px 8px;
 
+  /*
+    LAS COLUMNAS SE ACOMODAN SOLAS.
+
+    En escritorio entran todas en un renglon (`flex: 1 1 0`). En el
+    telefono la media query de abajo les pone un ancho y se parten en
+    dos renglones, que es como lo hacen krush y unbox: seis columnas
+    de 56px no se leen.
+  */
   .mb-reel__cintas {
     flex-direction: row;
-    gap: 2px;
-    height: 330px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .mb-reel__col {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
   }
 
   .mb-reel__pista {
-    flex: 1 1 0;
-    min-width: 0;
-    /* La rayita que separa una columna de la otra, como en el
-       diseno de unbox: sin esto son seis cintas flotando. */
-    border-left: 1px solid rgba(255, 255, 255, .07);
-    &:first-child { border-left: 0; }
+    height: 330px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .025);
   }
 
   /*
@@ -511,32 +527,31 @@ export default {
 }
 
 /*
-  LO QUE SALIO, UNA CELDA POR COLUMNA.
+  LO QUE SALIO, DEBAJO DE SU COLUMNA.
 
-  Mismo reparto que las cintas (`flex: 1 1 0` y el mismo hueco), asi
-  cada nombre queda debajo de su columna.
+  Siempre ocupa su lugar, haya o no texto: sin el alto reservado, la
+  cinta salta hacia arriba cuando frena.
 */
-.mb-reel__salidas {
-  display: flex;
-  gap: 2px;
-  padding: 10px 0 4px;
-  border-top: 1px solid rgba(255, 255, 255, .07);
-}
-
 .mb-reel__salida {
-  flex: 1 1 0;
-  min-width: 0;
-  /* Siempre ocupa su lugar, haya o no texto: sin esto la cinta salta
-     hacia abajo cuando frena. */
-  min-height: 34px;
+  min-height: 36px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 0 4px;
+  padding: 8px 4px 0;
   box-sizing: border-box;
   text-align: center;
+  overflow: hidden;
 }
+
+/* El nombre no puede empujar la columna: con seis, un nombre largo
+   ensancharia la suya y achicaria las otras cinco. */
+.mb-reel__salida .mb-reel__nombre {
+  max-width: 100%;
+  font-size: 12.5px;
+}
+
+.mb-reel__salida .mb-reel__valor { font-size: 12px; }
 
 /*
   CUANTAS CINTAS, QUE TAN ALTAS.
@@ -652,16 +667,41 @@ export default {
     ver el premio Y poder tocar "Abrir" otra vez sin scrollear.
   */
   /*
-    El alto del casillero NO se toca: 120 + 12 de hueco son los 132 de
-    paso con los que el guion calcula donde frenar. Lo que se achica
-    es la ventana --cuanto se ve-- y el casillero de adentro.
-  */
-  .mb-reel--columnas .mb-reel__cintas { height: 250px; }
-  .mb-reel--columnas .mb-reel__caja { max-width: 80px; }
+    EN EL TELEFONO, HASTA TRES POR RENGLON.
 
-  .mb-reel__salidas { padding: 8px 0 2px; }
-  .mb-reel__salida { min-height: 28px; padding: 0 2px; }
-  .mb-reel__salida .mb-reel__nombre { font-size: 10.5px; }
-  .mb-reel__salida .mb-reel__valor { font-size: 10.5px; }
+    Seis en fila son seis columnas de 56px: el objeto se ve mas chico
+    que su precio. Partidas, cada una mide 120 y se lee.
+
+      2 y 3  un renglon
+      4      2 + 2, que queda parejo
+      5 y 6  3 + 3
+
+    El alto del casillero NO se toca: 120 + 12 de hueco son los 132 de
+    paso con los que el guion calcula donde frenar. Lo que se achica es
+    la ventana --cuanto se ve de la cinta-- y el casillero de adentro.
+  */
+  /*
+    Las flechas de los costados, fuera.
+
+    Apuntan al renglon del medio de la caja entera, y en el telefono
+    las columnas se parten en dos renglones: la flecha quedaba
+    senalando el hueco entre los dos. Cada columna ya tiene su banda,
+    que dice lo mismo y no se puede confundir.
+  */
+  .mb-reel--columnas .mb-reel__flecha { display: none; }
+
+  .mb-reel--columnas { padding: 8px 6px; }
+  .mb-reel--columnas .mb-reel__cintas { gap: 6px; }
+  .mb-reel--columnas .mb-reel__pista { height: 150px; }
+  .mb-reel--columnas .mb-reel__banda { height: 104px; margin-top: -52px; }
+  .mb-reel--columnas .mb-reel__caja { max-width: 86px; }
+
+  .mb-reel--n4 .mb-reel__col { flex: 0 0 calc(50% - 3px); }
+  .mb-reel--n5 .mb-reel__col,
+  .mb-reel--n6 .mb-reel__col { flex: 0 0 calc(33.333% - 4px); }
+
+  .mb-reel__salida { min-height: 32px; padding: 6px 2px 0; }
+  .mb-reel__salida .mb-reel__nombre { font-size: 11px; }
+  .mb-reel__salida .mb-reel__valor { font-size: 11px; }
 }
 </style>
