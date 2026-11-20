@@ -255,12 +255,18 @@ export default {
   min-width: 0;
   box-sizing: border-box;
   /*
-    62 y no 24: mrloot deja unos 53 px de aire a cada lado de la
-    columna y nosotros llegabamos casi al borde de la pantalla. Como
-    la aplicacion se dibuja a ~0,84, 62 de maquetado son esos 53 que
-    se ven.
+    VUELVE A 24.
+
+    Lo habia subido a 62 para copiar el aire que deja mrloot a los
+    costados. Con ellos funciona porque su barra lateral FLOTA, con su
+    propio margen; la nuestra es un panel pegado al borde izquierdo,
+    asi que esos 62 se leian como un hueco entre la barra y el
+    contenido, no como aire. Se ve roto, y lo esta.
+
+    El banner no depende de esto: su alto lo decide la proporcion
+    3,55, que es la de mrloot, y esa queda.
   */
-  padding: 20px 62px 64px;
+  padding: 20px 24px 64px;
   /* En celular el relleno de abajo deja lugar a la barra de cinco
      botones, que flota sobre el final de la página. */
   @include en-celular { padding: 14px 14px 110px; }

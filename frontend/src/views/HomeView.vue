@@ -982,49 +982,102 @@ export default {
   @include en-celular { object-position: 78% center; }
 }
 
-.mb-banner__velo,
-.mb-banner__texto { display: none; }
+/*
+  EL VELO Y EL TEXTO, EN LOS DOS ANCHOS.
+
+  Antes salian solo en el telefono y en la computadora se leia el
+  texto que trae DIBUJADO el arte, que esta en ingles. Un aleman, un
+  japones y un ruso veian "50K REWARD - Reach Level 270 before anyone
+  else" igual que un ingles.
+
+  Ahora el velo tapa la mitad izquierda del arte y el titulo del sitio
+  va encima, traducido. El arte de la derecha --los cofres, los
+  relojes, el auto-- queda entero.
+
+  Hasta el 50%: medido sobre los cuatro, el texto dibujado termina en
+  el 35% del ancho en tres y en el 47% en el de lujo, que es el mas
+  largo.
+*/
+.mb-banner__velo {
+  position: absolute;
+  inset: 0;
+  /*
+    OPACO hasta el 46%, no translucido.
+
+    Con .92 el texto dibujado se seguia leyendo: es letra blanca sobre
+    fondo oscuro, asi que un velo que deja pasar un 8% la deja a la
+    vista. Tapado del todo desaparece, y la mitad derecha --que es
+    donde esta el arte-- no se toca.
+  */
+  background: linear-gradient(90deg,
+    #0a1222 0%,
+    #0a1222 46%,
+    rgba(10, 18, 34, .72) 60%,
+    rgba(10, 18, 34, 0) 80%);
+}
+
+.mb-banner__texto {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 58%;
+  box-sizing: border-box;
+  padding: 26px 34px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
 
 @include en-celular {
+  /* Opaco tambien aca: con .86 el texto dibujado se leia por detras
+     del nuestro. En el telefono el arte se recorta a la derecha, asi
+     que el velo puede llegar mas lejos sin tapar nada. */
   .mb-banner__velo {
-    display: block;
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, rgba(8, 6, 26, .94) 0%, rgba(8, 6, 26, .86) 42%, rgba(8, 6, 26, 0) 86%);
+    background: linear-gradient(90deg,
+      #0a1222 0%,
+      #0a1222 52%,
+      rgba(10, 18, 34, .7) 68%,
+      rgba(10, 18, 34, 0) 88%);
   }
 
   .mb-banner__texto {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
     width: 74%;
-    box-sizing: border-box;
     padding: 18px 20px 34px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
     gap: 9px;
   }
 }
 
+/*
+  El tamano sale del ancho del banner, no de un numero fijo: estos
+  valores venian de cuando el texto salia solo en el telefono, y en
+  una pantalla de 1.300px una letra de 26 se pierde.
+*/
 .mb-banner__titulo {
   font-family: $fuente-cartel;
-  font-size: 26px;
+  font-size: clamp(26px, 3.4vw, 44px);
   line-height: 1.04;
   text-shadow: 0 3px 0 #1c4fc4, 0 6px 0 #0b2266;
+  text-wrap: balance;
 }
 
-.mb-banner__sub { font-weight: 700; font-size: 12px; line-height: 1.35; color: #d7e4ff; }
+.mb-banner__sub {
+  font-weight: 700;
+  font-size: clamp(12px, 1.25vw, 16px);
+  line-height: 1.35;
+  color: #d7e4ff;
+  text-wrap: balance;
+}
 
 .mb-banner__cta {
   align-self: flex-start;
-  padding: 9px 16px;
+  padding: clamp(9px, 1vw, 13px) clamp(16px, 1.7vw, 24px);
   border-radius: 12px;
   background: $amarillo-v;
   color: $azul-tinta;
   font-weight: 900;
-  font-size: 13px;
+  font-size: clamp(13px, 1.25vw, 16px);
 }
 
 .mb-banners__puntos {
