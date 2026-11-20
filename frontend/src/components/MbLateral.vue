@@ -334,6 +334,16 @@ export default {
       menu en el telefono, que antes se cortaba.
     */
     position: relative;
+    /*
+      Y SIN EL DESPLAZAMIENTO DE LA PEGADA.
+
+      Arriba la barra es `sticky` con `top: 75px` para quedar debajo
+      de la cabecera. De cajon pasa a `relative`, donde ese mismo
+      `top` ya no la pega a nada: la EMPUJA 75px para abajo. Eso era
+      la franja que quedaba arriba del menu, y los 75px que faltaban
+      abajo, que se comian el selector de idioma.
+    */
+    top: 0;
     height: auto;
     min-height: 100%;
     max-height: none;

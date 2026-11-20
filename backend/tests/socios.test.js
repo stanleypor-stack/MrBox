@@ -106,7 +106,8 @@ test("la pantalla del socio trae su rango, la escalera y el bono de sus jugadore
   assert.equal(d.escalera.length, 6);
   assert.equal(d.bonoParaElAmigo, 5, "Bronze: 5% para el que entra con su código");
   assert.equal(d.reglas.houseEdgePct, 8);
-  assert.deepEqual(d.reglas.modelosAbiertos, ["revshare", "hibrido"]);
+  assert.deepEqual(d.reglas.modelosAbiertos, ["cpa", "revshare", "hibrido"],
+    "los tres modelos se eligen solos");
   assert.equal(d.campanas.length, 0, "todavía no creó ninguna");
   assert.deepEqual(d.embudo, { nuevo: 0, deposito: 0, califica: 0, pagado: 0, anulado: 0 });
 });
@@ -140,15 +141,28 @@ test("la escalera se puede mirar sin cuenta", async (t) => {
   }
 });
 
-test("crea una campaña y elige modelo; el cpa no se elige solo", async (t) => {
+test("crea una campaña y elige modelo, los tres", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
   const yo = await cuenta();
 
-  const malo = await pedir("POST", "/affiliates/campaigns", {
+  /*
+    EL CPA PURO TAMBIEN SE ELIGE SOLO.
+
+    Y paga MAS por cabeza que el hibrido --SC 15 contra SC 10 en
+    Bronce-- a cambio de no cobrar nunca mas por ese jugador. Si
+    alguna vez el hibrido igualara al cpa, nadie elegiria otra cosa:
+    por eso se comprueban los dos numeros, no solo que entre.
+  */
+  const conCpa = await pedir("POST", "/affiliates/campaigns", {
     token: yo.token,
     cuerpo: { nombre: "mía", code: "CPAYO" + n, modelo: "cpa" },
   });
-  assert.equal(malo.datos.code, "MODEL_NOT_OPEN");
+  assert.equal(conCpa.estado, 200, "el cpa se elige solo");
+
+  const cpa = conCpa.datos.data.campana;
+  assert.equal(cpa.modelo, "cpa");
+  assert.equal(cpa.cobra.porCabezaSc, 15, "el CPA de Bronce");
+  assert.equal(cpa.cobra.pct, 0, "y no paga nada por jugada");
 
   const bueno = await pedir("POST", "/affiliates/campaigns", {
     token: yo.token,
@@ -162,9 +176,9 @@ test("crea una campaña y elige modelo; el cpa no se elige solo", async (t) => {
   assert.equal(c.cobra.porCabezaSc, 0, "el RevShare no paga por cabeza");
   assert.equal(c.nombre, "YouTube · reviews");
 
-  /* Y aparece en su pantalla. */
+  /* Y aparecen las dos en su pantalla. */
   const pantalla = await pedir("GET", "/affiliates", { token: yo.token });
-  assert.equal(pantalla.datos.data.campanas.length, 1);
+  assert.equal(pantalla.datos.data.campanas.length, 2);
 });
 
 test("cambiarle el texto al código no desata a los que ya trajo", async (t) => {

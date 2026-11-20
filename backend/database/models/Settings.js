@@ -546,8 +546,20 @@ const RANGOS_AFILIADO = [
   { nombre: "Diamond", cpaSc: 60, revsharePct: 60, hibridoCpaSc: 40, hibridoPct: 55, bonoPct: 10, minimoCobroSc: 0, pago: "pedido" },
 ];
 
-/* Los que puede elegir un socio sin pedir permiso. */
-const MODELOS_ABIERTOS = ["revshare", "hibrido"];
+/*
+  Los que puede elegir un socio sin pedir permiso: LOS TRES.
+
+  El CPA puro estuvo afuera un tiempo y no tenia por que: es el modelo
+  que mas se pide, y el que lo elige cobra mas por cabeza que con el
+  hibrido --SC 15 a 60 contra SC 10 a 40-- a cambio de no cobrar nunca
+  mas por ese jugador.
+
+  Lo que lo cuida no es esconderlo, que son las reglas de calificar:
+  deposito minimo, jugado minimo, verificacion y la espera, mas el tope
+  diario por campaña. Todo eso se edita desde el panel, igual que esta
+  misma lista: afiliados.modelos.
+*/
+const MODELOS_ABIERTOS = ["cpa", "revshare", "hibrido"];
 
 module.exports = mongoose.model("Settings", settingsSchema);
 module.exports.RANGOS_AFILIADO = RANGOS_AFILIADO;

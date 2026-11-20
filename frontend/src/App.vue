@@ -147,7 +147,10 @@ export default {
        de paso mira si la direccion nueva pide abrir el cajon. */
     $route() { this.cerrar(); this.mirarLaDireccion(); },
 
-    "abierto.cajon": function (v) { this.trabarElFondo(v); },
+    "abierto.cajon": function (v) {
+      this.trabarElFondo(v);
+      if (v) this.medirLaTapa();
+    },
   },
 
   /* Al entrar por un enlace con `?cajon=in` --una promocion, un
@@ -169,6 +172,29 @@ export default {
     trabarElFondo(trabar) {
       if (typeof document === "undefined") return;
       document.body.style.overflow = trabar ? "hidden" : "";
+    },
+
+    /**
+     * DONDE EMPIEZA EL CAJON: DONDE TERMINA LA CABECERA QUE SE VE.
+     *
+     * La cabecera no esta fija, se va con el scroll. Con un `top`
+     * fijo de 72px, en una pagina bajada esa franja no era la
+     * cabecera: era el catalogo de atras asomando por arriba del
+     * menu, sin velo encima.
+     *
+     * Arriba de todo da 75 --el alto de la cabecera-- y queda igual
+     * que siempre. Bajado da 0 y el menu tapa la pantalla entera.
+     *
+     * Se mide una vez, al abrir: con el cajon abierto la pagina de
+     * atras esta trabada y no se mueve.
+     */
+    medirLaTapa() {
+      if (typeof document === "undefined") return;
+      const cabecera = document.querySelector(".mb-head");
+      const hasta = cabecera
+        ? Math.max(0, Math.round(cabecera.getBoundingClientRect().bottom))
+        : 0;
+      document.documentElement.style.setProperty("--tapa-cajon", `${hasta}px`);
     },
 
     /**
@@ -314,8 +340,13 @@ export default {
 */
 .mb-cajon {
   position: fixed;
-  top: 72px;
-  bottom: 72px;
+  /* Donde termina la cabecera que se ve. La mide `medirLaTapa` al
+     abrir; el 75 de respaldo es el alto de la cabecera arriba de
+     todo. */
+  top: var(--tapa-cajon, 75px);
+  /* La franja del sistema, en los telefonos que la tienen: la barra de
+     abajo se la suma a su relleno y el cajon se le metia por debajo. */
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   width: min(480px, 100%);
   transform: translateX(-50%);
@@ -344,8 +375,8 @@ export default {
 /* El velo NO se desliza con el menu: tapa siempre lo mismo. */
 .mb-cajon__fondo {
   position: fixed;
-  top: 72px;
-  bottom: 72px;
+  top: var(--tapa-cajon, 75px);
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   left: 0;
   right: 0;
   border: 0;

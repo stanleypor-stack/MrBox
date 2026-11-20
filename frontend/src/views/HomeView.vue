@@ -984,22 +984,23 @@ export default {
 }
 
 /*
-  EL VELO Y EL TEXTO, EN LOS DOS ANCHOS.
+  EL VELO Y EL TEXTO: SOLO EN EL TELEFONO.
 
-  Antes salian solo en el telefono y en la computadora se leia el
-  texto que trae DIBUJADO el arte, que esta en ingles. Un aleman, un
-  japones y un ruso veian "50K REWARD - Reach Level 270 before anyone
-  else" igual que un ingles.
+  En la computadora el banner es el arte y nada mas, como lo mando
+  Dani: sin velo, sin titulo encima y sin boton. Ahi el arte se ve
+  entero y se basta solo.
 
-  Ahora el velo tapa la mitad izquierda del arte y el titulo del sitio
-  va encima, traducido. El arte de la derecha --los cofres, los
-  relojes, el auto-- queda entero.
+  En el telefono no: la foto entera serian 76px de alto, asi que se
+  recorta al arte de la derecha y el texto dibujado se pierde. Por eso
+  ahi va el velo con el titulo del sitio encima, traducido.
 
-  Hasta el 50%: medido sobre los cuatro, el texto dibujado termina en
-  el 35% del ancho en tres y en el 47% en el de lujo, que es el mas
-  largo.
+  Lo que esto deja: en la computadora se lee el texto que trae DIBUJADO
+  el arte, y ese esta en ingles en los nueve idiomas. Es la decision de
+  Dani y queda anotada, no escondida.
 */
 .mb-banner__velo {
+  /* En la computadora no se dibuja: el arte va limpio. */
+  display: none;
   position: absolute;
   inset: 0;
   /*
@@ -1043,6 +1044,8 @@ export default {
 }
 
 .mb-banner__texto {
+  /* Tampoco el texto: en la computadora el titulo es el del arte. */
+  display: none;
   position: absolute;
   left: 0;
   top: 0;
@@ -1050,27 +1053,39 @@ export default {
   width: 58%;
   box-sizing: border-box;
   padding: 26px 34px;
-  display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 12px;
 }
 
 @include en-celular {
-  /* En el telefono el arte se recorta a la derecha, asi que el velo
-     puede llegar un poco mas lejos sin tapar nada. */
+  /*
+    ACA SI: el velo y el texto, que son lo unico que hace legible el
+    banner en una pantalla de 375px.
+
+    Y mas claro que antes. El que vuelve ilegible al texto dibujado es
+    el DESENFOQUE, no el oscuro: subido a 18px, el oscuro puede bajar
+    de .8 a .6 y el arte recupera su color. El ingles sigue siendo una
+    mancha.
+  */
   .mb-banner__velo {
+    display: block;
+
+    backdrop-filter: blur(18px) saturate(1.12);
+    -webkit-backdrop-filter: blur(18px) saturate(1.12);
+
     mask-image: linear-gradient(90deg, #000 0%, #000 56%, rgba(0, 0, 0, .55) 72%, transparent 90%);
     -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 56%, rgba(0, 0, 0, .55) 72%, transparent 90%);
 
     background: linear-gradient(90deg,
-      rgba(8, 14, 28, .8) 0%,
-      rgba(8, 14, 28, .7) 58%,
-      rgba(8, 14, 28, .32) 76%,
+      rgba(8, 14, 28, .6) 0%,
+      rgba(8, 14, 28, .5) 58%,
+      rgba(8, 14, 28, .22) 76%,
       rgba(8, 14, 28, 0) 100%);
   }
 
   .mb-banner__texto {
+    display: flex;
     width: 74%;
     padding: 18px 20px 34px;
     gap: 9px;

@@ -387,11 +387,30 @@ test("crear una campaña: el modelo tiene que estar abierto", async (t) => {
     username: `crea${n}`, email: `crea${n}@test.local`, passwordHash: "x",
   });
 
-  /* `cpa` no está abierto: lo habilita el equipo, campaña por campaña. */
+  /*
+    LOS TRES MODELOS SE ELIGEN SOLOS, PERO LA PUERTA TIENE QUE CERRAR.
+
+    El `cpa` ahora esta abierto como los otros dos. Lo que se prueba
+    acá es que la lista del panel --`afiliados.modelos`-- siga
+    mandando: el día que se cierre un modelo desde el panel, esto es
+    lo que avisa si la puerta no cerró.
+  */
+  const cpaAbierto = await afiliados.crearCampana({
+    usuario: socio, code: `CPAMIO${n}`, modelo: "cpa",
+  });
+  assert.equal(cpaAbierto.modelo, "cpa", "el cpa se elige solo y queda guardado");
+
+  await Settings.updateOne({}, { $set: { "afiliados.modelos": ["revshare", "hibrido"] } });
+  await afiliados.recargar();
+
   await assert.rejects(
-    () => afiliados.crearCampana({ usuario: socio, code: "CPAMIO", modelo: "cpa" }),
-    (err) => err.code === "MODEL_NOT_OPEN"
+    () => afiliados.crearCampana({ usuario: socio, code: `CPANO${n}`, modelo: "cpa" }),
+    (err) => err.code === "MODEL_NOT_OPEN",
+    "cerrado desde el panel, rebota"
   );
+
+  await Settings.updateOne({}, { $set: { "afiliados.modelos": [] } });
+  await afiliados.recargar();
 
   const buena = await afiliados.crearCampana({
     usuario: socio,

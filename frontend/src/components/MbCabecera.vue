@@ -360,10 +360,15 @@ export default {
       necesitan, así que es una directiva y no tres copias del mismo
       oyente. Se limpia sola al desmontarse: un oyente en `document` que
       queda vivo es una pérdida de memoria de las que no avisan.
+
+      PASA EL EVENTO porque no todo lo de afuera es "afuera": el botón
+      de la barra de abajo que ABRE la billetera también está fuera de
+      la cabecera, y cerrar con él sería apagarla en el mismo toque que
+      la prendió. Quien recibe decide.
     */
     "click-fuera": {
       bind(el, binding) {
-        el.__fuera = (e) => { if (!el.contains(e.target)) binding.value(); };
+        el.__fuera = (e) => { if (!el.contains(e.target)) binding.value(e); };
         document.addEventListener("click", el.__fuera);
       },
       unbind(el) {
@@ -374,8 +379,10 @@ export default {
 
   data() {
     return {
-      walletAbierta: false,
       avisosAbiertos: false,
+      /* Este es el desplegable DE LA CABECERA, que en el telefono ni
+         se dibuja. No confundir con `abierto.cuenta`, que es el menu
+         del telefono y lo dibuja App.vue. */
       cuentaAbierta: false,
       inventario: { cuantos: 0, valorSc: 0 },
       menuCuenta: ATAJOS,
@@ -392,6 +399,35 @@ export default {
 
     inicial() {
       return (this.usuario && this.usuario.username || "?").charAt(0).toUpperCase();
+    },
+
+    /*
+      UNA SOLA FUENTE DE VERDAD.
+
+      La billetera la abren tres cosas: el saldo de acá arriba, el
+      botón de la barra de abajo y el menú de cuenta del teléfono. Las
+      dos últimas son componentes hermanos que no se ven entre sí, así
+      que lo único que comparten es el estado.
+
+      Tener ADEMÁS una bandera acá adentro es lo que permitió que se
+      desincronizaran: el botón de abajo movía una y el panel miraba la
+      otra. Ahora las dos son la misma, y el estado ya sabe dejar uno
+      solo abierto.
+
+      El menú de cuenta NO se muda: `abierto.cuenta` es el del
+      teléfono, que dibuja App.vue, y el de acá es otro. Compartir la
+      bandera abriría los dos juntos en la computadora.
+
+      Al cerrar se pregunta si estaba abierta: `cerrarWallet` corre en
+      CUALQUIER toque de afuera, y apagar sin mirar cerraría también el
+      menú lateral que alguien acabara de abrir.
+    */
+    walletAbierta: {
+      get() { return this.abierto.wallet; },
+      set(v) {
+        if (v) this.$store.commit("abrir", "wallet");
+        else if (this.abierto.wallet) this.$store.commit("abrir", null);
+      },
     },
 
     /** Saldo más lo que vale el inventario: lo que de verdad tiene. */
@@ -426,16 +462,7 @@ export default {
     /* Al entrar o salir, el inventario del encabezado cambia. */
     entro: "traerInventario",
 
-    /*
-      LA BILLETERA LA PUEDE ABRIR LA BARRA DE ABAJO.
-
-      En celular, el tercer boton de la barra abre esta misma billetera.
-      Son dos componentes hermanos que no se ven, asi que la bandera
-      vive en el estado compartido y cada uno la mira.
-    */
-    "abierto.wallet": function (v) { this.walletAbierta = v; },
-
-    /* Y al abrirla se vuelve a contar: es un pedido chico y es el
+    /* Al abrirla se vuelve a contar: es un pedido chico y es el
        momento exacto en que alguien mira los numeros. */
     walletAbierta(v) { if (v) this.traerInventario(); },
   },
@@ -453,12 +480,34 @@ export default {
       });
     },
 
-    cerrarWallet() {
-      this.walletAbierta = false;
-      if (this.abierto.wallet) this.$store.commit("abrir", null);
+    /*
+      EL TOQUE QUE ABRE NO PUEDE SER EL QUE CIERRA.
+
+      La barra de abajo y el menú de cuenta abren la billetera, y su
+      click sigue subiendo hasta `document`, que es donde escucha el
+      "tocar afuera". Sin esta excepción el mismo toque la prendía y la
+      apagaba: por eso la billetera no abría nunca.
+
+      Cerrar desde acá no hace falta: los dos piden abrir POR EL
+      ESTADO, y el estado deja uno solo abierto.
+    */
+    deUnBotonQueAbre(e) {
+      const t = e && e.target;
+      return !!(t && t.closest && t.closest(".mb-abajo, .mb-menuc"));
     },
-    cerrarAvisos() { this.avisosAbiertos = false; },
-    cerrarCuenta() { this.cuentaAbierta = false; },
+
+    cerrarWallet(e) {
+      if (this.deUnBotonQueAbre(e)) return;
+      this.walletAbierta = false;
+    },
+    cerrarAvisos(e) {
+      if (this.deUnBotonQueAbre(e)) return;
+      this.avisosAbiertos = false;
+    },
+    cerrarCuenta(e) {
+      if (this.deUnBotonQueAbre(e)) return;
+      this.cuentaAbierta = false;
+    },
 
     /*
       A DONDE LLEVA CADA ATAJO.
@@ -760,6 +809,21 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+/*
+  EN EL TELEFONO, CENTRADA EN LA PANTALLA.
+
+  Colgada debajo del saldo se salía 20px por la izquierda: el saldo no
+  está en el medio de la pantalla y el panel mide 320. Fija y centrada
+  entra siempre, y queda justo debajo de la cabecera.
+*/
+@include en-celular {
+  .mb-wallet__panel {
+    position: fixed;
+    top: calc(var(--alto-cabecera, 64px) + 8px);
+    width: min(340px, calc(100vw - 24px));
+  }
 }
 
 .mb-wallet__total { display: flex; flex-direction: column; align-items: center; gap: 4px; }
