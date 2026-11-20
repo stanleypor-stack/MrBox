@@ -668,13 +668,16 @@ export default {
   gap: 14px;
   padding: 14px 18px;
   border-radius: 18px;
-  background: $amarillo-v;
-  color: $azul-tinta;
+  /* El mismo azul de la pastilla del encabezado: es la misma oferta,
+     y el amarillo lleno era el unico de toda la pantalla. */
+  border: 2px solid rgba(255, 255, 255, .85);
+  background: linear-gradient(180deg, #4d93ff, #1f62d8);
+  color: #fff;
   text-decoration: none;
-  box-shadow: 0 5px 0 #c9921a;
+  box-shadow: 0 5px 0 rgba(8, 28, 72, .55), inset 0 2px 0 rgba(255, 255, 255, .35);
   @include foco;
 
-  &:hover { color: $azul-tinta; filter: brightness(1.04); }
+  &:hover { color: #fff; filter: brightness(1.07); }
 
   /*
     En escritorio, fuera: la misma oferta esta arriba, en la pastilla
@@ -734,8 +737,9 @@ export default {
   flex: none;
   padding: 12px 18px;
   border-radius: 12px;
-  background: $azul-tinta;
-  color: #fff;
+  /* Blanco sobre el azul lleno: es lo que mas contrasta. */
+  background: #fff;
+  color: $azul-tinta;
   font-weight: 900;
   font-size: 15px;
 }

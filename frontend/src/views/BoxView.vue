@@ -59,7 +59,7 @@
       <div class="mb-mandos">
         <div class="mb-veces" role="radiogroup" :aria-label="$t('box.howMany')">
           <button
-            v-for="n in [1, 2, 3, 4]" :key="n" type="button" role="radio"
+            v-for="n in cuantasSePuede" :key="n" type="button" role="radio"
             :aria-checked="veces === n ? 'true' : 'false'"
             :class="{ 'is-activo': veces === n }" :disabled="girando" @click="veces = n"
           >{{ n }}</button>
@@ -317,6 +317,23 @@ export default {
 
   computed: {
     ...mapGetters(["entro", "saldo"]),
+
+    /*
+      CUANTAS SE PUEDEN ABRIR DE UNA.
+
+      Lo dice el servidor (`maximoALaVez`, que sale del panel). Estaba
+      escrito a mano como 1-2-3-4, asi que subir el tope en el panel no
+      cambiaba nada: los botones seguian siendo cuatro.
+
+      El techo de 6 es de la pantalla, no del servidor: de costado
+      entran seis columnas en un telefono y a partir de ahi el objeto
+      se ve mas chico que su precio.
+    */
+    cuantasSePuede() {
+      const n = Number(this.caja && this.caja.maximoALaVez);
+      const tope = Number.isFinite(n) && n > 0 ? Math.min(n, 6) : 4;
+      return Array.from({ length: tope }, (uno, i) => i + 1);
+    },
 
     /* Las de regalo que todavia no abrio, menos la de esta pantalla. */
     otrosRegalos() {

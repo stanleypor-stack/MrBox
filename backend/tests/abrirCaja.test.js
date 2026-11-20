@@ -290,7 +290,13 @@ test("no se pueden abrir mas de las permitidas de una", async (t) => {
   const j = await jugador({ saldo: 1000 });
   const { datos } = await pedir("POST", "/boxes/prueba/open", { token: j.token, cuerpo: { veces: 99 } });
   assert.equal(datos.code, "TOO_MANY_AT_ONCE");
-  assert.equal(datos.data.maximo, 4);
+
+  /* Contra el valor configurado y no contra un numero escrito aca: el
+     tope es una perilla del panel y subirlo no tiene por que romper
+     una prueba que lo unico que mira es que exista el tope. */
+  const Settings = require("../database/models/Settings");
+  const cfg = await Settings.leer();
+  assert.equal(datos.data.maximo, cfg.cajasALaVez);
 });
 
 test("aperturas al mismo tiempo no comparten nonce ni gastan de mas", async (t) => {
@@ -516,7 +522,10 @@ test("una caja sola trae los premios con sus chances a la vista", async (t) => {
   const { datos } = await pedir("GET", "/boxes/prueba");
   assert.equal(datos.data.prizes.length, 2);
   assert.equal(datos.data.prizes.find((p) => p.name === "Lo caro").chance, 0.1);
-  assert.equal(datos.data.maximoALaVez, 4);
+
+  const Settings = require("../database/models/Settings");
+  const cfg = await Settings.leer();
+  assert.equal(datos.data.maximoALaVez, cfg.cajasALaVez);
   assert.ok(datos.data.retornoMostrado > 0, "el retorno se muestra");
 });
 

@@ -1,28 +1,54 @@
 <template>
   <section
-    class="mb-reel" :class="`mb-reel--n${cuantas}`"
+    class="mb-reel" :class="[`mb-reel--n${cuantas}`, enColumnas ? 'mb-reel--columnas' : 'mb-reel--fila']"
     :aria-label="$t('box.reelAria', { name: nombreDeLaCaja })"
   >
-    <!-- Las marcas de arriba y abajo, que señalan el centro. -->
-    <svg class="mb-reel__flecha mb-reel__flecha--arriba" width="18" height="14" viewBox="0 0 24 18"
-         fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M5 3l7 6 7-6M5 10l7 6 7-6" />
-    </svg>
-    <span class="mb-reel__raya mb-reel__raya--ai" aria-hidden="true"></span>
-    <span class="mb-reel__raya mb-reel__raya--ad" aria-hidden="true"></span>
+    <!--
+      LAS MARCAS DEL CENTRO.
 
-    <svg class="mb-reel__flecha mb-reel__flecha--abajo" width="18" height="14" viewBox="0 0 24 18"
-         fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M5 15l7-6 7 6M5 8l7-6 7 6" />
-    </svg>
-    <span class="mb-reel__raya mb-reel__raya--bi" aria-hidden="true"></span>
-    <span class="mb-reel__raya mb-reel__raya--bd" aria-hidden="true"></span>
+      Con una cinta, las dos flechas arriba y abajo del medio, como
+      siempre. Con varias --que giran hacia abajo, una al lado de la
+      otra-- las flechas se corren a los costados y senalan el mismo
+      renglon en las seis a la vez.
+    -->
+    <template v-if="enColumnas">
+      <span class="mb-reel__banda" aria-hidden="true"></span>
+
+      <svg class="mb-reel__flecha mb-reel__flecha--izq" width="14" height="18" viewBox="0 0 18 24"
+           fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 5l6 7-6 7M10 5l6 7-6 7" />
+      </svg>
+
+      <svg class="mb-reel__flecha mb-reel__flecha--der" width="14" height="18" viewBox="0 0 18 24"
+           fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 5l-6 7 6 7M8 5l-6 7 6 7" />
+      </svg>
+    </template>
+
+    <template v-else>
+      <svg class="mb-reel__flecha mb-reel__flecha--arriba" width="18" height="14" viewBox="0 0 24 18"
+           fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 3l7 6 7-6M5 10l7 6 7-6" />
+      </svg>
+      <span class="mb-reel__raya mb-reel__raya--ai" aria-hidden="true"></span>
+      <span class="mb-reel__raya mb-reel__raya--ad" aria-hidden="true"></span>
+
+      <svg class="mb-reel__flecha mb-reel__flecha--abajo" width="18" height="14" viewBox="0 0 24 18"
+           fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 15l7-6 7 6M5 8l7-6 7 6" />
+      </svg>
+      <span class="mb-reel__raya mb-reel__raya--bi" aria-hidden="true"></span>
+      <span class="mb-reel__raya mb-reel__raya--bd" aria-hidden="true"></span>
+    </template>
 
     <div class="mb-reel__cintas">
       <div v-for="(cinta, i) in cintas" :key="i" class="mb-reel__pista">
         <div
           ref="tiras" class="mb-reel__tira"
-          :style="{ transform: `translateX(${cinta.x}px)`, transition: transicion }"
+          :style="{
+            transform: enColumnas ? `translateY(${cinta.x}px)` : `translateX(${cinta.x}px)`,
+            transition: transicion,
+          }"
         >
           <div
             v-for="(it, n) in cinta.items" :key="n"
@@ -44,8 +70,15 @@
               <img v-else-if="it.imageUrl" class="mb-reel__foto" :src="it.imageUrl" :alt="it.name">
             </div>
 
-            <!-- El nombre solo aparece en el que salió, cuando frenó. -->
-            <div class="mb-reel__rotulo" :style="{ visibility: ganador(cinta, n) ? 'visible' : 'hidden' }">
+            <!--
+              El nombre, solo en el que salio y solo cuando freno. En
+              columnas no va aca: la columna es muy angosta y el
+              renglon de abajo lo dice mejor.
+            -->
+            <div
+              v-if="!enColumnas" class="mb-reel__rotulo"
+              :style="{ visibility: ganador(cinta, n) ? 'visible' : 'hidden' }"
+            >
               <span class="mb-reel__nombre">{{ it.name }}</span>
               <span class="mb-reel__valor">
                 <span class="mb-sc mb-sc--16" aria-hidden="true">SC</span>{{ plata(it.valueSc) }}
@@ -53,6 +86,25 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!--
+      LO QUE SALIO EN CADA COLUMNA.
+
+      Una celda por cinta, abajo y alineada con su columna. Aparece
+      recien cuando frenaron: mientras giran no hay nada que decir, y
+      un renglon que cambia mientras gira distrae del unico lugar que
+      hay que mirar.
+    -->
+    <div v-if="enColumnas" class="mb-reel__salidas" aria-live="polite">
+      <div v-for="(cinta, i) in cintas" :key="`s-${i}`" class="mb-reel__salida">
+        <template v-if="quieta && !cinta.enReposo">
+          <span class="mb-reel__nombre">{{ cinta.items[GANADOR].name }}</span>
+          <span class="mb-reel__valor">
+            <span class="mb-sc mb-sc--16" aria-hidden="true">SC</span>{{ plata(cinta.items[GANADOR].valueSc) }}
+          </span>
+        </template>
       </div>
     </div>
   </section>
@@ -125,10 +177,22 @@ export default {
       animando: false,
       girandoAhora: false,
       quieta: true,
+      /* Para el renglon de abajo, que lee `cinta.items[GANADOR]`. */
+      GANADOR,
     };
   },
 
   computed: {
+    /*
+      DE COSTADO EN CUANTO HAY MAS DE UNA.
+
+      Con una sola, la cinta horizontal de siempre. Con varias, una
+      columna por caja: cuatro cintas horizontales apiladas son cuatro
+      cosas moviendose igual, una debajo de otra, y no se sabe donde
+      mirar.
+    */
+    enColumnas() { return this.cuantas > 1; },
+
     duracion() { return this.rapido ? DURACION_RAPIDA : DURACION; },
 
     transicion() {
@@ -284,7 +348,7 @@ export default {
         cintas sonando a la vez es ruido, no juego.
       */
       const tira = Array.isArray(this.$refs.tiras) ? this.$refs.tiras[0] : this.$refs.tiras;
-      ticsDeLaCinta(tira, this.duracion, PASO);
+      ticsDeLaCinta(tira, this.duracion, PASO, this.enColumnas ? "y" : "x");
 
       return new Promise((listo) => {
         window.setTimeout(() => {
@@ -319,12 +383,43 @@ export default {
 
 .mb-reel__flecha {
   position: absolute;
-  left: 50%;
-  margin-left: -9px;
-  z-index: 2;
+  z-index: 3;
 
+  &--arriba, &--abajo { left: 50%; margin-left: -9px; }
   &--arriba { top: 8px; }
   &--abajo { bottom: 8px; }
+
+  /* En columnas apuntan al renglon del medio desde los costados. */
+  &--izq, &--der { top: 50%; margin-top: -9px; }
+  &--izq { left: 7px; }
+  &--der { right: 7px; }
+}
+
+/*
+  LA BANDA DEL MEDIO, EN COLUMNAS.
+
+  Es el renglon donde van a frenar las seis. Sin algo que lo marque,
+  seis columnas girando son seis cosas sueltas; con la banda son una
+  sola jugada.
+
+  `pointer-events: none` porque cruza por encima de las cintas.
+*/
+.mb-reel__banda {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 120px;
+  margin-top: -60px;
+  z-index: 2;
+  pointer-events: none;
+  border-top: 1px solid rgba(255, 255, 255, .22);
+  border-bottom: 1px solid rgba(255, 255, 255, .22);
+  background: linear-gradient(90deg,
+    rgba(63, 124, 240, .16),
+    rgba(63, 124, 240, .05) 30%,
+    rgba(63, 124, 240, .05) 70%,
+    rgba(63, 124, 240, .16));
 }
 
 // Las dos rayitas que salen de cada flecha hacia los costados.
@@ -358,35 +453,101 @@ export default {
 .mb-reel__pista { position: relative; overflow: hidden; }
 
 /*
+  ══ DE COSTADO: UNA COLUMNA POR CAJA ═══════════════════════════════
+
+  Las columnas se reparten el ancho en partes iguales (`flex: 1 1 0`),
+  asi que seis en un telefono son seis columnas de 56px y no hay que
+  escribir un ancho por cada cantidad.
+
+  El alto es el MISMO para todas las cantidades: es el alto de la
+  ventana por la que se ve pasar la cinta, y no tiene por que cambiar
+  porque haya mas columnas.
+*/
+.mb-reel--columnas {
+  padding: 0;
+
+  .mb-reel__cintas {
+    flex-direction: row;
+    gap: 2px;
+    height: 330px;
+  }
+
+  .mb-reel__pista {
+    flex: 1 1 0;
+    min-width: 0;
+    /* La rayita que separa una columna de la otra, como en el
+       diseno de unbox: sin esto son seis cintas flotando. */
+    border-left: 1px solid rgba(255, 255, 255, .07);
+    &:first-child { border-left: 0; }
+  }
+
+  /*
+    LA TIRA, EN VERTICAL.
+
+    `top: 50%` es el ancla: el `translateY` de la cuenta mide desde
+    ahi, igual que el `translateX` medía desde `left: 50%`.
+  */
+  .mb-reel__tira {
+    left: 0;
+    right: 0;
+    top: 50%;
+    bottom: auto;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mb-reel__item {
+    width: 100%;
+    height: 120px;
+  }
+
+  /* El casillero se adapta al ancho de la columna, con un techo para
+     que con una o dos no quede un objeto gigante. */
+  .mb-reel__caja {
+    width: 100%;
+    max-width: 104px;
+    height: auto;
+  }
+}
+
+/*
+  LO QUE SALIO, UNA CELDA POR COLUMNA.
+
+  Mismo reparto que las cintas (`flex: 1 1 0` y el mismo hueco), asi
+  cada nombre queda debajo de su columna.
+*/
+.mb-reel__salidas {
+  display: flex;
+  gap: 2px;
+  padding: 10px 0 4px;
+  border-top: 1px solid rgba(255, 255, 255, .07);
+}
+
+.mb-reel__salida {
+  flex: 1 1 0;
+  min-width: 0;
+  /* Siempre ocupa su lugar, haya o no texto: sin esto la cinta salta
+     hacia abajo cuando frena. */
+  min-height: 34px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 4px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/*
   CUANTAS CINTAS, QUE TAN ALTAS.
 
   Cuatro de 230 son 920px: no entran ni en una notebook. Y el numero
   tiene que estar en el CSS y no en un estilo en linea, para que la
   media query de abajo pueda achicarlo.
 */
-.mb-reel--n1 .mb-reel__pista { height: 230px; }
-.mb-reel--n2 .mb-reel__pista { height: 150px; }
-.mb-reel--n3 .mb-reel__pista { height: 124px; }
-.mb-reel--n4 .mb-reel__pista { height: 108px; }
-
-.mb-reel--n1 .mb-reel__caja { width: 120px; }
-.mb-reel--n2 .mb-reel__caja { width: 92px; }
-.mb-reel--n3 .mb-reel__caja { width: 76px; }
-.mb-reel--n4 .mb-reel__caja { width: 66px; }
-
-/* Con varias cintas el renglon del nombre se achica: con cuatro, 34px
-   por cinta son 136px gastados en texto que casi no se lee. */
-.mb-reel--n3 .mb-reel__rotulo,
-.mb-reel--n4 .mb-reel__rotulo { height: 26px; }
-
-.mb-reel--n3 .mb-reel__nombre,
-.mb-reel--n4 .mb-reel__nombre { font-size: 12px; }
-
-.mb-reel--n3 .mb-reel__valor,
-.mb-reel--n4 .mb-reel__valor { font-size: 11.5px; }
-
-/* Con varias, el relleno de arriba y abajo tambien sobra. */
-.mb-reel--n2, .mb-reel--n3, .mb-reel--n4 { padding: 20px 0; }
+/* Con una sola caja, la cinta horizontal de siempre. */
+.mb-reel--fila .mb-reel__pista { height: 230px; }
+.mb-reel--fila .mb-reel__caja { width: 120px; }
 
 .mb-reel__tira {
   position: absolute;
@@ -482,24 +643,25 @@ export default {
   queda abajo del pliegue y hay que scrollear despues de cada tirada.
 */
 @media (max-width: 760px) {
-  .mb-reel--n1 .mb-reel__pista { height: 186px; }
-  .mb-reel--n2 .mb-reel__pista { height: 124px; }
-  .mb-reel--n3 .mb-reel__pista { height: 100px; }
-  .mb-reel--n4 .mb-reel__pista { height: 88px; }
+  .mb-reel--fila .mb-reel__pista { height: 186px; }
+  .mb-reel--fila .mb-reel__caja { width: 104px; }
 
-  .mb-reel--n1 .mb-reel__caja { width: 104px; }
-  .mb-reel--n2 .mb-reel__caja { width: 76px; }
-  .mb-reel--n3 .mb-reel__caja { width: 62px; }
-  .mb-reel--n4 .mb-reel__caja { width: 54px; }
+  /*
+    De costado, la ventana se achica para que debajo sigan entrando el
+    boton de abrir y lo que salio: en el telefono lo que importa es
+    ver el premio Y poder tocar "Abrir" otra vez sin scrollear.
+  */
+  /*
+    El alto del casillero NO se toca: 120 + 12 de hueco son los 132 de
+    paso con los que el guion calcula donde frenar. Lo que se achica
+    es la ventana --cuanto se ve-- y el casillero de adentro.
+  */
+  .mb-reel--columnas .mb-reel__cintas { height: 250px; }
+  .mb-reel--columnas .mb-reel__caja { max-width: 80px; }
 
-  .mb-reel--n2, .mb-reel--n3, .mb-reel--n4 { padding: 14px 0; }
-
-  .mb-reel--n2 .mb-reel__rotulo { height: 28px; }
-  .mb-reel--n3 .mb-reel__rotulo,
-  .mb-reel--n4 .mb-reel__rotulo { height: 22px; }
-
-  .mb-reel--n2 .mb-reel__nombre { font-size: 12px; }
-  .mb-reel--n3 .mb-reel__nombre,
-  .mb-reel--n4 .mb-reel__nombre { font-size: 11px; }
+  .mb-reel__salidas { padding: 8px 0 2px; }
+  .mb-reel__salida { min-height: 28px; padding: 0 2px; }
+  .mb-reel__salida .mb-reel__nombre { font-size: 10.5px; }
+  .mb-reel__salida .mb-reel__valor { font-size: 10.5px; }
 }
 </style>

@@ -78,7 +78,12 @@ const settingsSchema = new mongoose.Schema(
     topePremioSc: { type: Number, default: 300000 },
 
     /** Cuántas cajas se pueden abrir de una (el selector x1 a x4). */
-    cajasALaVez: { type: Number, default: 4, min: 1, max: 10 },
+    /*
+      Seis, que es lo que entra de costado en un telefono: con la cinta
+      en columnas, seis de 56px llenan los 375px de ancho. Mas que eso
+      y el objeto se ve mas chico que su precio.
+    */
+    cajasALaVez: { type: Number, default: 6, min: 1, max: 10 },
 
     /** Lo que se le paga al jugador por vender un objeto, sobre su valor. */
     tasaDeRecompra: { type: Number, default: 1, min: 0, max: 1 },

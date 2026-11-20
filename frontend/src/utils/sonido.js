@@ -86,18 +86,23 @@ export function nota(f, d, tipo = "square", vol = 0.04, demora = 0) {
  * @param {number}  ms      cuánto dura la tirada
  * @param {number}  paso    cada cuántos píxeles hay un objeto
  */
-export function ticsDeLaCinta(tira, ms, paso = 132) {
+export function ticsDeLaCinta(tira, ms, paso = 132, eje = "x") {
   if (!tira || mudo) return;
 
   const desde = Date.now();
   let ultimo = null;
+
+  /* La matriz es `matrix(a, b, c, d, tx, ty)`: el 5to valor es el
+     corrimiento en X y el 6to en Y. Con varias cajas la cinta se mueve
+     en Y, asi que hay que leer el otro. */
+  const cual = eje === "y" ? 5 : 4;
 
   const cuadro = () => {
     const m = getComputedStyle(tira).transform;
     let x = 0;
     if (m && m !== "none") {
       const v = m.match(/matrix\(([^)]+)\)/);
-      if (v) x = parseFloat(v[1].split(",")[4]);
+      if (v) x = parseFloat(v[1].split(",")[cual]);
     }
 
     const i = Math.floor(-x / paso);
