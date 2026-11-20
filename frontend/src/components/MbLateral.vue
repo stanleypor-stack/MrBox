@@ -257,7 +257,15 @@ export default {
 @import "@/styles/tokens";
 
 .mb-side {
-  flex: 1 1 250px;
+  /*
+    207, QUE ES LA DE MRLOOT.
+
+    Era `flex: 1 1 250px` y el reparto le daba 211 en una pantalla de
+    1365 --y otra cosa en cada ancho--. Clavada, el contenido de al
+    lado empieza siempre en el mismo lugar, que es de donde sale el
+    ancho del banner.
+  */
+  flex: 0 0 calc(207px / var(--escala, 1));
   max-width: 300px;
   box-sizing: border-box;
   padding: 16px 14px;

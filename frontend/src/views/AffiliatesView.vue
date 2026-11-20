@@ -494,8 +494,18 @@ export default {
       return `${this.$t("affil.mHybTitle")} · SC ${c.cobra.porCabezaSc} + ${c.cobra.pct}%`;
     },
 
+    /*
+      EL ENLACE QUE SE COPIA, CON EL ESQUEMA QUE DE VERDAD TIENE.
+
+      Decia `https://` a mano. En mrbox.gg esta bien, pero en la
+      maquina de desarrollo escupia https://localhost:8090, que no
+      habla https: el que copiaba el enlace y lo abria se comia un
+      ERR_SSL_PROTOCOL_ERROR y parecia que el codigo no servia.
+
+      `origin` ya trae el esquema correcto en los dos lados.
+    */
     enlaceDe(c) {
-      return `https://${this.host}/r/${c ? c.code : ""}`;
+      return `${window.location.origin}/r/${c ? c.code : ""}`;
     },
 
     async copiarEnlace(c) {

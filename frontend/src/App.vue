@@ -308,18 +308,35 @@ export default {
   min-width: 0;
   box-sizing: border-box;
   /*
-    VUELVE A 24.
+    43 A LA IZQUIERDA Y 55 A LA DERECHA: LOS DE MRLOOT, MEDIDOS.
 
-    Lo habia subido a 62 para copiar el aire que deja mrloot a los
-    costados. Con ellos funciona porque su barra lateral FLOTA, con su
-    propio margen; la nuestra es un panel pegado al borde izquierdo,
-    asi que esos 62 se leian como un hueco entre la barra y el
-    contenido, no como aire. Se ve roto, y lo esta.
+    Abri mrloot.com al lado, misma ventana y mismo ancho, y lei sus
+    cajas con el inspector:
 
-    El banner no depende de esto: su alto lo decide la proporcion
-    3,55, que es la de mrloot, y esa queda.
+      ancho   barra   empieza   banner
+      1280     207      250     975 x 274
+      1365     207      250     1060 x 297
+      1600     207      250     1295 x 363
+
+    Su banner mide siempre `ancho - 305`: 250 a la izquierda --207 de
+    barra mas 43 de aire-- y 55 a la derecha. El nuestro media
+    `ancho - 253`, o sea 52px mas ancho y 15 mas alto.
+
+    Antes habia puesto 62 de los dos lados y quedaba un hueco, y deje
+    escrito que era porque la barra de ellos flota. No flota: esta
+    pegada al borde, igual que la nuestra. El numero estaba mal y la
+    explicacion tambien.
+
+    El alto del banner no se toca: sale de la proporcion 3,56 --la de
+    ellos-- asi que al achicar el ancho se acomoda solo.
   */
-  padding: 20px 24px 64px;
+  /*
+    DIVIDIDOS POR LA ESCALA, porque adentro del `zoom: .84` de arriba
+    un pixel no es un pixel: 43px escritos aca se dibujan 36 en la
+    pantalla. Dividiendo, en la pantalla miden los 43 y 55 de verdad,
+    que son los que se comparan con mrloot.
+  */
+  padding: 20px calc(55px / var(--escala, 1)) 64px calc(43px / var(--escala, 1));
   /* En celular el relleno de abajo deja lugar a la barra de cinco
      botones, que flota sobre el final de la página. */
   @include en-celular { padding: 14px 14px 110px; }
