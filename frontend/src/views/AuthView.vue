@@ -34,7 +34,11 @@
           <!-- v-html porque el texto trae un <br>: el cartel del diseño va
              en dos renglones, y con interpolación normal el <br> se
              escaparia y se leeria tal cual. -->
+        <!-- Las cajas son del registro: van en el carton, que es lo
+             que se lleva por registrarse. El bono es del deposito y va
+             en el renglon de abajo. -->
         <span class="mb-auth__regalo" v-html="$t('auth.freeOpens', { n: aperturasDeRegalo })"></span>
+        <span class="mb-auth__ademas">{{ $t('auth.plusBonus', { pct: pctBono }) }}</span>
         </div>
 
         <!-- El arte del diseño: tres cajas y tres premios flotando. -->
@@ -134,9 +138,13 @@
           </div>
           <div class="mb-campo__ojo">
             <input
-              id="rg-pass" v-model="form.password" class="mb-in" :type="verClave ? 'text' : 'password'"
+              id="rg-pass" v-model="form.password" class="mb-in"
+              :class="{ 'is-mal': claveCorta }" :type="verClave ? 'text' : 'password'"
               :autocomplete="esRegistro ? 'new-password' : 'current-password'"
-              :placeholder="$t('auth.password')" required
+              :placeholder="$t('auth.password')"
+              :aria-invalid="String(claveCorta)"
+              :aria-describedby="claveCorta ? 'rg-pass-mal' : null"
+              required @blur="miroLaClave = true"
             >
             <button
               type="button" class="mb-campo__ojo-b"
@@ -151,6 +159,13 @@
               </svg>
             </button>
           </div>
+
+          <!-- El aviso, debajo del campo y en rojo: el servidor la
+               rebota igual, pero enterarse despues de apretar el boton
+               es enterarse tarde. -->
+          <p v-if="claveCorta" id="rg-pass-mal" class="mb-campo__mal">
+            {{ $t('auth.passwordShort', { n: CLAVE_MINIMA }) }}
+          </p>
         </div>
 
         <div v-if="esRegistro" class="mb-auth__extras">
@@ -203,24 +218,53 @@
  */
 import api from "@/api";
 
+/* Lo mismo que exige el servidor (`routes/auth/index.js`). Si cambia
+   alla, cambia aca: un minimo distinto en cada lado es un formulario
+   que deja mandar algo que va a rebotar. */
+const CLAVE_MINIMA = 8;
+
 export default {
   name: "AuthView",
 
   data() {
     return {
-      form: { username: "", email: "", password: "", affiliateCode: "" },
+
+      form: {
+        username: "",
+        email: "",
+        password: "",
+        affiliateCode: "",
+      },
       verClave: false,
+      /* Si ya salio del campo o intento mandar: ver `claveCorta`. */
+      miroLaClave: false,
+      CLAVE_MINIMA,
       conCodigo: false,
       aceptaTerminos: false,
       enviando: false,
       error: "",
       aperturasDeRegalo: 3,
+      pctBono: 50,
       sitioCaptcha: process.env.VUE_APP_TURNSTILE_SITE_KEY || "",
       widgetCaptcha: null,
     };
   },
 
   computed: {
+    /*
+      LA CLAVE ES CORTA Y YA LA MIRO.
+
+      No salta con la primera letra: espera a que salga del campo o a
+      que haya intentado mandar. Un cartel rojo apenas tocas el campo
+      es ansiedad, no ayuda.
+    */
+    claveCorta() {
+      return this.esRegistro
+        && this.miroLaClave
+        && this.form.password.length > 0
+        && this.form.password.length < CLAVE_MINIMA;
+    },
+
     esRegistro() { return this.$route.name === "signup"; },
     titulo() {
       return this.esRegistro ? this.$t("auth.createTitle") : this.$t("auth.welcomeBack");
@@ -228,7 +272,11 @@ export default {
     listo() {
       const f = this.form;
       if (!this.esRegistro) return !!(f.email.trim() && f.password);
-      return !!(f.username.trim() && f.email.trim() && f.password && this.aceptaTerminos);
+      return !!(
+        f.username.trim() && f.email.trim()
+        && f.password.length >= CLAVE_MINIMA
+        && this.aceptaTerminos
+      );
     },
   },
 
@@ -279,6 +327,10 @@ export default {
     },
 
     async enviar() {
+      /* Intentar mandar cuenta como haber mirado el campo. */
+      this.miroLaClave = true;
+      if (this.claveCorta) return;
+
       if (!this.listo) return;
       this.enviando = true;
       this.error = "";
@@ -318,6 +370,13 @@ export default {
         const { data } = await api.get("/public/settings");
         if (data.data && data.data.aperturasDeRegalo) {
           this.aperturasDeRegalo = data.data.aperturasDeRegalo;
+
+          /* La oferta sale de las perillas: si Dani cambia el 50% o el
+             piso de $50 en el panel, el cartel cambia solo. */
+          const b = data.data.bonoDeBienvenida;
+          if (b) {
+            if (Number(b.pct) > 0) this.pctBono = Math.round(Number(b.pct) * 100);
+          }
         }
       } catch {
         /* Se queda con 3, que es el valor por defecto del sitio. */
@@ -352,6 +411,20 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+/* El campo en rojo y el motivo debajo: lo del diseno. */
+.mb-in.is-mal {
+  border-color: #ff5f78;
+  box-shadow: 0 0 0 1px rgba(255, 95, 120, .35);
+}
+
+.mb-campo__mal {
+  margin: 7px 0 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #ff5f78;
+}
+
 @import "@/styles/tokens";
 
 .mb-auth {
@@ -448,6 +521,17 @@ export default {
   transform: rotate(-2deg);
 }
 
+/* El renglon de las cajas, debajo del carton amarillo. */
+.mb-auth__ademas {
+  margin-top: 9px;
+  font-weight: 900;
+  font-size: 15px;
+  line-height: 1.2;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 2px 0 #1c4fc4, 0 4px 0 #0b2266;
+}
+
 .mb-auth__caja1 { position: absolute; left: 50%; bottom: 120px; width: 200px; height: 200px; margin-left: -100px; }
 .mb-auth__caja2 { position: absolute; left: -10px; bottom: 150px; width: 140px; height: 140px; transform: rotate(-10deg); }
 .mb-auth__caja3 { position: absolute; right: -10px; bottom: 150px; width: 140px; height: 140px; transform: rotate(10deg); }
@@ -456,9 +540,30 @@ export default {
 .mb-auth__pull3 { position: absolute; right: 20px; bottom: 20px; width: 120px; height: 120px; }
 
 @include en-celular {
-  .mb-auth__caja1 { width: 120px; height: 120px; margin-left: -60px; bottom: 70px; }
-  .mb-auth__caja2, .mb-auth__caja3 { width: 86px; height: 86px; bottom: 90px; }
-  .mb-auth__pull1, .mb-auth__pull2, .mb-auth__pull3 { width: 70px; height: 70px; }
+  /*
+    EN EL TELEFONO EL ARTE SE VA ABAJO Y EL TEXTO VA ARRIBA.
+
+    El carton mide 300px y las cajas estaban flotando a 70-90px del
+    piso: con el renglon del bono, el texto bajaba lo suficiente como
+    para que la caja negra le quedara encima y no se leyera ni la
+    oferta ni el titulo.
+
+    Ahora el arte queda pegado al piso y mas chico, y el texto tiene su
+    propio plano. Las dos cosas se ven enteras.
+  */
+  /* 356 y no 340: con 340 la caja del medio arranca en 240 y el
+     renglon del bono termina en 247, o sea 7px encimados. Medido. */
+  .mb-auth__cartel { min-height: 356px; }
+
+  .mb-auth__marca { z-index: 2; padding-top: 18px; }
+
+  .mb-auth__caja1 { width: 96px; height: 96px; margin-left: -48px; bottom: 4px; }
+  .mb-auth__caja2, .mb-auth__caja3 { width: 70px; height: 70px; bottom: 14px; }
+  .mb-auth__pull1, .mb-auth__pull2, .mb-auth__pull3 { width: 54px; height: 54px; }
+
+  .mb-auth__grito { font-size: 27px; }
+  .mb-auth__regalo { font-size: 21px; padding: 8px 18px; }
+  .mb-auth__ademas { font-size: 13.5px; margin-top: 7px; }
 }
 
 /* ── El formulario ────────────────────────────────────────────────── */

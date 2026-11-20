@@ -25,7 +25,26 @@
             <div class="mb-tarjeta-user__trama" aria-hidden="true"></div>
 
             <div class="mb-tarjeta-user__avatar">
-              <span class="mb-avatar">{{ inicial }}</span>
+              <!-- La foto, o la inicial si todavia no puso ninguna. -->
+              <img v-if="usuario.avatarUrl" class="mb-avatar mb-avatar--foto" :src="usuario.avatarUrl" alt="">
+              <span v-else class="mb-avatar">{{ inicial }}</span>
+
+              <button
+                type="button" class="mb-avatar__cambiar" :disabled="subiendoFoto"
+                :aria-label="$t('profile.changePhoto')" :title="$t('profile.changePhoto')"
+                @click="$refs.foto.click()"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff"
+                     stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 9a2 2 0 0 1 2-2h2l1.5-2h7L17 7h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <circle cx="12" cy="13" r="3.5" />
+                </svg>
+              </button>
+
+              <input
+                ref="foto" class="mb-avatar__input" type="file"
+                accept="image/png,image/jpeg,image/webp" @change="elegirFoto"
+              >
             </div>
 
             <div class="mb-tarjeta-user__datos">
@@ -44,7 +63,7 @@
 
               <div class="mb-progreso__rotulo">
                 <span>{{ $t('profile.progressTo', { rango: rango.siguiente }) }}</span>
-                <span class="mb-tenue">SC {{ plata(usuario.jugadoSc) }} / {{ plata(rango.faltaPara) }}</span>
+                <span class="mb-tenue">SC {{ plata(jugadoVip) }} / {{ plata(rango.faltaPara) }}</span>
               </div>
               <div class="mb-progreso"><div :style="{ width: rango.pct }"></div></div>
               <span class="mb-tarjeta-user__puesto">
@@ -100,7 +119,38 @@
                 </span>
                 <button type="button" class="mb-chico" @click="pendiente">{{ $t('profile.enable') }}</button>
               </div>
-              <button type="button" class="mb-chico" @click="pendiente">{{ $t('profile.changePassword') }}</button>
+              <!-- Un recuadro como los dos de arriba, no un boton suelto. -->
+              <div class="mb-caja-chica mb-caja-chica--fila">
+                <span>
+                  <span class="mb-caja-chica__t">{{ $t('profile.changePassword') }}</span>
+                  <span class="mb-caja-chica__s">{{ $t('profile.passwordKicks') }}</span>
+                </span>
+                <button
+                  type="button" class="mb-chico"
+                  @click="cambiandoClave = !cambiandoClave"
+                >{{ cambiandoClave ? $t('common.cancel') : $t('profile.change') }}</button>
+              </div>
+
+              <!-- La forma, abierta. Tres campos y nada mas: lo que
+                   hace falta es la vieja, la nueva y no equivocarse. -->
+              <div v-if="cambiandoClave" class="mb-clave">
+                <label class="mb-campo-g">
+                  {{ $t('profile.currentPassword') }}
+                  <input v-model="clave.actual" type="password" autocomplete="current-password">
+                </label>
+                <label class="mb-campo-g">
+                  {{ $t('profile.newPassword') }}
+                  <input v-model="clave.nueva" type="password" autocomplete="new-password">
+                </label>
+                <label class="mb-campo-g">
+                  {{ $t('profile.repeatPassword') }}
+                  <input v-model="clave.repetir" type="password" autocomplete="new-password">
+                </label>
+
+                <button type="button" class="mb-guardar" :disabled="guardandoClave" @click="guardarClave">
+                  {{ guardandoClave ? $t('common.loading') : $t('action.save') }}
+                </button>
+              </div>
             </section>
           </div>
         </section>
@@ -568,7 +618,7 @@
 
 <script>
 import { mapGetters, mapState } from "vuex";
-import api from "@/api";
+import api, { guardarToken } from "@/api";
 import MbVentana from "@/components/MbVentana.vue";
 import MbElegir from "@/components/MbElegir.vue";
 
@@ -640,6 +690,10 @@ export default {
       tipo: "",
       cobrando: false,
       copiado: "",
+      cambiandoClave: false,
+      subiendoFoto: false,
+      guardandoClave: false,
+      clave: { actual: "", nueva: "", repetir: "" },
       forma: { username: "", email: "" },
       formaDir: null,
       formaKyc: {},
@@ -664,6 +718,14 @@ export default {
   },
 
   computed: {
+    /* Lo jugado para el Club VIP: incluye el piso del rango que le
+       hayan puesto a mano. */
+    jugadoVip() {
+      const u = this.usuario;
+      if (!u) return 0;
+      return Number(u.jugadoVipSc != null ? u.jugadoVipSc : u.jugadoSc) || 0;
+    },
+
     /* El filtro del extracto: todos, y cada tipo de movimiento. */
     tiposDeMovimiento() {
       return [{ valor: "", texto: this.$t("boxes.allCategories") }]
@@ -686,7 +748,7 @@ export default {
 
     /** En qué rango está y cuánto le falta para el próximo. */
     rango() {
-      const jugado = (this.usuario && this.usuario.jugadoSc) || 0;
+      const jugado = this.jugadoVip;
       let i = 0;
       for (let k = 0; k < RANGOS.length; k += 1) if (jugado >= RANGOS[k][1]) i = k;
       const siguiente = RANGOS[Math.min(i + 1, RANGOS.length - 1)];
@@ -769,6 +831,96 @@ export default {
     },
 
     pendiente() { this.$store.dispatch("avisar", { texto: this.$t("auth.soon") }); },
+
+    /**
+     * LA FOTO DE PERFIL.
+     *
+     * Se achica a 256px ACA, en el navegador, antes de mandarla. Una
+     * foto de telefono son 4 MB y el cuerpo de los pedidos del perfil
+     * esta limitado a 200 KB a proposito; achicarla del lado del
+     * servidor significaria subirla entera primero.
+     */
+    async elegirFoto(evento) {
+      const archivo = evento.target.files && evento.target.files[0];
+      evento.target.value = "";
+      if (!archivo) return;
+
+      this.subiendoFoto = true;
+      try {
+        const foto = await this.achicar(archivo, 256);
+        const { data } = await api.put("/profile/avatar", { foto });
+        this.$store.commit("parcheUsuario", { avatarUrl: data.data.avatarUrl });
+        this.$store.dispatch("avisar", { texto: this.$t("profile.photoSaved") });
+      } catch (err) {
+        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
+      } finally {
+        this.subiendoFoto = false;
+      }
+    },
+
+    /** Devuelve la imagen cuadrada, de `lado` px, como data-URI. */
+    achicar(archivo, lado) {
+      return new Promise((listo, falla) => {
+        const lector = new FileReader();
+        lector.onerror = () => falla(new Error("no se pudo leer la imagen"));
+        lector.onload = () => {
+          const img = new Image();
+          img.onerror = () => falla(new Error("no es una imagen"));
+          img.onload = () => {
+            /* Recorte cuadrado desde el centro: una foto apaisada
+               estirada a un circulo se ve mal siempre. */
+            const corte = Math.min(img.width, img.height);
+            const x = (img.width - corte) / 2;
+            const y = (img.height - corte) / 2;
+
+            const lienzo = document.createElement("canvas");
+            lienzo.width = lado;
+            lienzo.height = lado;
+            lienzo.getContext("2d").drawImage(img, x, y, corte, corte, 0, 0, lado, lado);
+
+            listo(lienzo.toDataURL("image/jpeg", 0.86));
+          };
+          img.src = lector.result;
+        };
+        lector.readAsDataURL(archivo);
+      });
+    },
+
+    cerrarClave() {
+      this.cambiandoClave = false;
+      this.clave = { actual: "", nueva: "", repetir: "" };
+    },
+
+    /**
+     * CAMBIA LA CONTRASEÑA.
+     *
+     * El servidor devuelve un token nuevo porque al cambiarla se caen
+     * TODAS las sesiones, incluida esta. Sin guardarlo, el que la
+     * cambia se queda afuera de su propia cuenta.
+     */
+    async guardarClave() {
+      if (this.clave.nueva !== this.clave.repetir) {
+        this.$store.dispatch("avisar", { texto: this.$t("profile.passwordMismatch"), tono: "error" });
+        return;
+      }
+
+      this.guardandoClave = true;
+      try {
+        const { data } = await api.put("/auth/password", {
+          actual: this.clave.actual,
+          nueva: this.clave.nueva,
+        });
+
+        if (data.token) guardarToken(data.token);
+
+        this.cerrarClave();
+        this.$store.dispatch("avisar", { texto: this.$t("profile.passwordSaved") });
+      } catch (err) {
+        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
+      } finally {
+        this.guardandoClave = false;
+      }
+    },
 
     /* El boton dice "contactar a soporte": abre el chat de soporte. */
     abrirSoporte() { this.$store.dispatch("pedirSoporte", ""); },
@@ -1101,6 +1253,34 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.mb-clave { display: grid; gap: 10px; }
+
+/* La foto de perfil, con su botoncito de camara. */
+.mb-avatar--foto { object-fit: cover; }
+
+.mb-tarjeta-user__avatar { position: relative; }
+
+.mb-avatar__cambiar {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid #0e1a2e;
+  background: linear-gradient(180deg, #3f7cf0, #1c4fc4);
+  cursor: pointer;
+
+  &:hover { filter: brightness(1.1); }
+  &:disabled { opacity: .6; cursor: default; }
+}
+
+.mb-avatar__input { display: none; }
+.mb-clave__nota { margin: 0; font-size: 12.5px; color: #8ea3c7; line-height: 1.4; }
+.mb-clave__botones { display: flex; gap: 8px; flex-wrap: wrap; }
+
 @import "@/styles/tokens";
 
 .mb-perfil__cols { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }

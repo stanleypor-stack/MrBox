@@ -78,6 +78,9 @@ export default new Vuex.Store({
     canjeable: (s) => (s.usuario ? s.usuario.canjeableSc : 0),
     aperturasGratis: (s) => (s.usuario ? s.usuario.freeOpens : 0),
     esAdmin: (s) => !!s.usuario && ["admin", "owner"].includes(s.usuario.rank),
+    /* Cuando se abrio la cuenta. La usa la cuenta regresiva del bono de
+       bienvenida, que corre desde ahi y no desde que se dibuja. */
+    cuentaDesde: (s) => (s.usuario ? s.usuario.createdAt : null),
   },
 
   mutations: {
@@ -91,6 +94,13 @@ export default new Vuex.Store({
      * jugador entero: si se asignara la respuesta completa, se perderían
      * el nombre y el rango.
      */
+    /* Un cambio suelto del jugador --la foto, por ejemplo-- sin tener
+       que volver a pedir la cuenta entera. */
+    parcheUsuario(s, datos) {
+      if (!s.usuario || !datos) return;
+      s.usuario = { ...s.usuario, ...datos };
+    },
+
     saldo(s, datos) {
       if (!s.usuario || !datos) return;
       const campos = ["balanceSc", "bonoPendienteSc", "canjeableSc", "freeOpens", "jugadoSc"];

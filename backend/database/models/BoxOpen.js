@@ -89,4 +89,20 @@ const boxOpenSchema = new mongoose.Schema(
 boxOpenSchema.index({ user: 1, createdAt: -1 });
 boxOpenSchema.index({ box: 1, createdAt: -1 });
 
+/*
+  LA CINTA DE LA PORTADA.
+
+  `GET /boxes/feed/latest` no filtra por jugador ni por caja: pide las
+  ultimas de verdad, ordenadas por fecha. Ninguno de los dos indices de
+  arriba le sirve, asi que ordenaba EN MEMORIA barriendo la coleccion
+  entera para devolver 24 filas.
+
+  Eso con 171 aperturas tarda 3ms y no se nota. Pero la portada lo pide
+  cada segundo y medio POR VISITANTE, y esta coleccion crece una fila
+  por cada apertura que se haga en la vida del sitio. Con un millon de
+  filas son un millon de documentos examinados, varias veces por
+  segundo, hasta que el ordenamiento pasa los 100 MB y MongoDB corta.
+*/
+boxOpenSchema.index({ demo: 1, createdAt: -1 });
+
 module.exports = mongoose.model("BoxOpen", boxOpenSchema);

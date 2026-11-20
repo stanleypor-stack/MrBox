@@ -31,7 +31,7 @@ process.env.OXAPAY_MERCHANT_KEY = "clave-de-prueba";
 
 const mongoose = require("mongoose");
 const { app } = require("../index");
-const { conectar } = require("../database");
+const { conectar, asegurarIndices } = require("../database");
 
 const User = require("../database/models/User");
 const AffiliateCode = require("../database/models/AffiliateCode");
@@ -50,6 +50,10 @@ test.before(async () => {
   try {
     await conectar();
     await mongoose.connection.db.dropDatabase();
+    /* El `dropDatabase` se lleva puestos los indices, y los unicos
+       son los que hacen cumplir media docena de reglas de esta
+       suite. Hay que volver a crearlos a mano. */
+    await asegurarIndices();
     servidor = app.listen(0);
     await new Promise((r) => servidor.once("listening", r));
     base = `http://127.0.0.1:${servidor.address().port}/api`;
@@ -99,6 +103,18 @@ async function jugadorDe(code) {
     }),
   });
   const datos = await r.json();
+
+  /*
+    ESTAS PRUEBAS SON DEL BONO DEL SOCIO, QUE EMPIEZA EN EL SEGUNDO
+    DEPOSITO.
+
+    El primero se lo lleva el bono de bienvenida, que es del 50% y pisa
+    al del codigo. Marcarlo como ya usado deja al descubierto el camino
+    del socio, que es lo que se quiere medir aca. El de bienvenida
+    tiene su propia prueba.
+  */
+  await User.updateOne({ _id: datos.user._id }, { $set: { bonoDeBienvenidaEl: new Date() } });
+
   return { id: datos.user._id, token: datos.token, affiliate: datos.affiliate };
 }
 
@@ -236,7 +252,15 @@ test("sin código no hay bono, y nunca se rompe", async (t) => {
 async function avisoDePago({ userId, monto, trackId }) {
   const cuerpo = JSON.stringify({
     status: "paid",
+    type: "static_address",
+    /*
+      `amount` son unidades de la moneda y `value` son dolares. El
+      servidor acredita `value`, que es lo unico que vale un dolar.
+      Mandar los dos, como hace OxaPay de verdad.
+    */
+    currency: "USDT",
     amount: monto,
+    value: monto,
     track_id: trackId,
     order_id: String(userId),
   });
@@ -251,8 +275,41 @@ async function avisoDePago({ userId, monto, trackId }) {
     headers: { "Content-Type": "application/json", hmac: firma },
     body: cuerpo,
   });
-  return { estado: r.status, datos: await r.json() };
+  /* OxaPay exige que la respuesta sea el texto "ok", no un JSON: con
+     cualquier otra cosa reintenta cinco veces y la da por fallida. */
+  return { estado: r.status, texto: await r.text() };
 }
+
+test("EL PRIMER DEPOSITO SE LLEVA EL 50% DE BIENVENIDA, Y UNO SOLO", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  const { codigo } = await socioCon({}, 6);
+
+  /* Sin marcar: este arranca limpio y le toca el de bienvenida. */
+  const r = await fetch(`${base}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: "bienve1x",
+      email: "bienve1x@test.local",
+      password: "unaclavelarga",
+      affiliateCode: codigo.code,
+    }),
+  });
+  const { user } = await r.json();
+
+  await avisoDePago({ userId: user._id, monto: 100, trackId: "T-bienve-" + Date.now() });
+
+  const uno = await wallet.saldoDe(user._id);
+  assert.equal(uno.balanceSc, 150, "SC 100 + 50% de bienvenida");
+  assert.equal(uno.bonoPendienteSc, 500, "el bono se juega 10 veces");
+
+  /* El segundo ya no: ese es del socio, 5%. */
+  await avisoDePago({ userId: user._id, monto: 100, trackId: "T-bienve2-" + Date.now() });
+
+  const dos = await wallet.saldoDe(user._id);
+  assert.equal(dos.balanceSc, 260, "SC 150 + 100 + el 10% del socio, que ya no es el de bienvenida");
+});
 
 test("EL DEPOSITO ACREDITA LA COMPRA MAS EL BONO, Y EL BONO QUEDA ATADO", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
@@ -267,10 +324,13 @@ test("EL DEPOSITO ACREDITA LA COMPRA MAS EL BONO, Y EL BONO QUEDA ATADO", async 
   assert.equal(saldo.balanceSc, 330, "SC 300 comprados + SC 30 de bono");
 
   /*
-    Y el bono no se puede sacar hasta jugarlo: `vecesAJugarElBono` es 1
-    de fábrica, asi que quedan SC 30 atados.
+    Y el bono no se puede sacar hasta jugarlo. Lo que queda ATADO es el
+    bono --SC 30-- y no lo que falta jugar, que con 10x son SC 300.
+    Atar los 300 trababa tambien los 300 que el jugador deposito.
   */
-  assert.equal(saldo.canjeableSc, 300);
+  assert.equal(saldo.bonoPendienteSc, 300, "hay que jugar 10 veces el bono");
+  assert.equal(saldo.bonoAtadoSc, 30, "pero atado esta el bono, no lo que falta jugar");
+  assert.equal(saldo.canjeableSc, 300, "lo suyo lo puede sacar desde el primer dia");
 
   /* En el libro queda UNA compra, por el total que entró a la cuenta. */
   const compras = await BalanceTransaction.find({ user: jug.id, type: "purchase" }).lean();
@@ -288,7 +348,7 @@ test("el mismo aviso dos veces no acredita dos veces", async (t) => {
   await avisoDePago({ userId: jug.id, monto: 100, trackId: track });
   const segundo = await avisoDePago({ userId: jug.id, monto: 100, trackId: track });
 
-  assert.equal(segundo.datos.repetido, true);
+  assert.equal(segundo.texto, "ok", "el repetido tambien contesta ok");
 
   const saldo = await wallet.saldoDe(jug.id);
   assert.equal(saldo.balanceSc, 105, "SC 100 + 5% una sola vez");

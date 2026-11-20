@@ -111,6 +111,26 @@ async function loDeHoy(userId) {
  *
  * Tira el error que corresponde si no. Se llama ANTES de cobrar.
  */
+/** La fecha de hoy en UTC, que es con la que corta el día. */
+function claveDeHoy() { return new Date().toISOString().slice(0, 10); }
+
+/**
+ * ¿ESTA EN PAUSA?
+ *
+ * Aparte, porque la pausa no es solo para jugar: tampoco se le
+ * acreditan compras, ni promos, ni rakeback. Una autoexclusión que te
+ * sigue entrando plata no es una autoexclusión.
+ */
+async function revisarPausa(userId) {
+  const usuario = await User.findById(userId).select("limites").lean();
+  if (!usuario) return;
+
+  const l = usuario.limites || {};
+  if (l.pausaHasta && new Date(l.pausaHasta) > new Date()) {
+    throw errorDe("ON_A_BREAK", { hasta: l.pausaHasta }, 403);
+  }
+}
+
 async function revisarAntesDeJugar({ userId, montoSc }) {
   const usuario = await User.findById(userId).select("limites").lean();
   if (!usuario) return;
@@ -127,12 +147,44 @@ async function revisarAntesDeJugar({ userId, montoSc }) {
   const hoy = await loDeHoy(userId);
   const monto = sc(montoSc);
 
-  if (topes.juegoDiarioSc != null && hoy.jugadoSc + monto > topes.juegoDiarioSc + 1e-9) {
-    throw errorDe("DAILY_PLAY_LIMIT", {
-      tope: sc(topes.juegoDiarioSc),
-      jugado: hoy.jugadoSc,
-      queda: sc(Math.max(0, topes.juegoDiarioSc - hoy.jugadoSc)),
-    }, 403);
+  if (topes.juegoDiarioSc != null) {
+    /*
+      EL TOPE LO DECIDE LA BASE, NO ESTE `if`.
+
+      Primero se asegura que el contador sea de hoy --si dos pedidos
+      hacen esto a la vez, escriben lo mismo y no pasa nada-- y despues
+      se suma SOLO si lo que queda alcanza. La condicion va adentro del
+      filtro, que es lo unico que no tiene ventana.
+
+      Si despues de esto el cobro falla, el contador queda un poco
+      adelantado. Para un tope que el jugador se puso a si mismo, errar
+      para el lado de protegerlo es el lado correcto.
+    */
+    const hoyClave = claveDeHoy();
+
+    await User.updateOne(
+      { _id: userId, "contadorDiario.dia": { $ne: hoyClave } },
+      { $set: { contadorDiario: { dia: hoyClave, jugadoSc: 0 } } }
+    );
+
+    const paso = await User.findOneAndUpdate(
+      {
+        _id: userId,
+        "contadorDiario.dia": hoyClave,
+        "contadorDiario.jugadoSc": { $lte: sc(topes.juegoDiarioSc - monto) },
+      },
+      { $inc: { "contadorDiario.jugadoSc": monto } }
+    ).lean();
+
+    if (!paso) {
+      const fresco = await User.findById(userId).select("contadorDiario").lean();
+      const jugadoHoy = sc((fresco && fresco.contadorDiario && fresco.contadorDiario.jugadoSc) || 0);
+      throw errorDe("DAILY_PLAY_LIMIT", {
+        tope: sc(topes.juegoDiarioSc),
+        jugado: jugadoHoy,
+        queda: sc(Math.max(0, topes.juegoDiarioSc - jugadoHoy)),
+      }, 403);
+    }
   }
 
   if (topes.perdidaDiariaSc != null && hoy.perdidaSc >= topes.perdidaDiariaSc - 1e-9) {
@@ -260,6 +312,7 @@ module.exports = {
   esAflojar,
   loDeHoy,
   revisarAntesDeJugar,
+  revisarPausa,
   leer,
   guardar,
   tomarseUnDescanso,

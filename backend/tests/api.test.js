@@ -34,7 +34,7 @@ process.env.AUTH_RATE_LIMIT = "500";
 
 const mongoose = require("mongoose");
 const { app } = require("../index");
-const { conectar } = require("../database");
+const { conectar, asegurarIndices } = require("../database");
 
 const User = require("../database/models/User");
 const Box = require("../database/models/Box");
@@ -53,6 +53,10 @@ test.before(async () => {
   try {
     await conectar();
     await mongoose.connection.db.dropDatabase();
+    /* El `dropDatabase` se lleva puestos los indices, y los unicos
+       son los que hacen cumplir media docena de reglas de esta
+       suite. Hay que volver a crearlos a mano. */
+    await asegurarIndices();
     servidor = app.listen(0);
     await new Promise((r) => servidor.once("listening", r));
     base = `http://127.0.0.1:${servidor.address().port}/api`;
@@ -115,8 +119,14 @@ function cuentaNueva(extra = {}) {
 
 /* ── Registro ─────────────────────────────────────────────────────── */
 
-test("alguien se registra y queda con sus aperturas de regalo", async (t) => {
+test("alguien se registra y queda con sus tres cajas de regalo", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
+  /*
+    LAS CAJAS SON DEL REGISTRO.
+
+    El que deposita se lleva el bono, que es otra cosa: dos promesas
+    separadas para que cada una se entienda sola.
+  */
   const { estado, datos } = await pedir("POST", "/auth/register", { cuerpo: cuentaNueva() });
 
   assert.equal(estado, 201, JSON.stringify(datos));

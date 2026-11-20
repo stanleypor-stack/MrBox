@@ -1,0 +1,15 @@
+# MR BOX
+#
+# El panel y las pantallas de cuenta no tienen nada que hacer en un
+# buscador: no se pueden abrir sin sesion y lo unico que logran es
+# gastar presupuesto de rastreo en paginas que devuelven lo mismo.
+User-agent: *
+Disallow: /admin
+Disallow: /profile
+Disallow: /inventory
+Disallow: /dashboard
+Disallow: /signup
+Disallow: /login
+Allow: /
+
+Sitemap: https://mrbox.gg/sitemap.xml

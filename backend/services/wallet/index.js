@@ -79,6 +79,7 @@ async function mover({
   type,
   reference = {},
   bonoSc = 0,
+  vecesAJugarElBono = 1,
   juegaSc = 0,
   byAdmin = null,
   reason = "",
@@ -89,8 +90,17 @@ async function mover({
   /*
     Un movimiento de cero no es un movimiento: ensucia el libro, no cambia
     nada y suele ser el síntoma de una cuenta que dio mal más arriba.
+
+    LA UNICA EXCEPCION: UNA JUGADA QUE NO CUESTA.
+
+    Una apertura gratis es eso. Tiene que quedar en el libro --de ahi
+    salen lo jugado del Club VIP, las carreras y el margen del panel--
+    pero no mueve el saldo. Antes se resolvia acreditando el precio y
+    cobrandolo acto seguido, y esos dos pasos en paralelo creaban
+    plata. Un solo asiento de cero con `juegaSc` dice lo mismo sin
+    ventana entre medio.
   */
-  if (!Number.isFinite(monto) || monto === 0) {
+  if (!Number.isFinite(monto) || (monto === 0 && !(juegaSc > 0))) {
     throw errorDe("INVALID_AMOUNT", { amountSc });
   }
 
@@ -117,14 +127,24 @@ async function mover({
   if (monto < 0 && soloCanjeable) {
     filtro.$expr = {
       $gte: [
-        { $subtract: ["$balanceSc", { $max: [{ $ifNull: ["$bonoPendienteSc", 0] }, 0] }] },
+        { $subtract: ["$balanceSc", { $max: [{ $ifNull: ["$bonoAtadoSc", 0] }, 0] }] },
         -monto,
       ],
     };
   }
 
-  /* El bono que se acredita queda pendiente de jugar. */
-  if (bonoSc > 0) cambios.$inc.bonoPendienteSc = sc(bonoSc);
+  /*
+    EL BONO QUE ENTRA: DOS NUMEROS.
+
+    Lo que falta JUGAR es el bono por el multiplicador. Lo que queda
+    ATADO es el bono y nada mas. Usar el primero para trabar el saldo
+    ataba tambien la plata del jugador.
+  */
+  if (bonoSc > 0) {
+    const veces = Number(vecesAJugarElBono);
+    cambios.$inc.bonoPendienteSc = sc(bonoSc * (Number.isFinite(veces) && veces > 0 ? veces : 1));
+    cambios.$inc.bonoAtadoSc = sc(bonoSc);
+  }
 
   /*
     Lo jugado baja el bono pendiente. El `$max` con 0 no existe en Mongo
@@ -219,23 +239,40 @@ async function acotarBono(userId, sesion = null) {
     { $set: { bonoPendienteSc: 0 } },
     { session: sesion || undefined }
   );
+
+  /* Cumplido lo de jugar, el bono se suelta. */
+  await User.updateOne(
+    { _id: userId, bonoPendienteSc: { $lte: 0 }, bonoAtadoSc: { $gt: 0 } },
+    { $set: { bonoAtadoSc: 0 } },
+    { session: sesion || undefined }
+  );
 }
 
 /** El saldo de alguien, y cuánto de eso puede sacar. */
 async function saldoDe(userId) {
   const u = await User.findById(userId)
-    .select("+balanceSc +bonoPendienteSc jugadoSc freeOpens")
+    .select("+balanceSc +bonoPendienteSc +bonoAtadoSc jugadoSc freeOpens")
     .lean();
   if (!u) throw errorDe("SESSION_EXPIRED", {}, 401);
 
   const balance = sc(u.balanceSc);
-  const bono = Math.max(0, sc(u.bonoPendienteSc));
+  const porJugar = Math.max(0, sc(u.bonoPendienteSc));
+  const atado = Math.max(0, sc(u.bonoAtadoSc));
 
   return {
     balanceSc: balance,
-    bonoPendienteSc: bono,
-    /* Lo que se puede pedir para canjear: todo menos el bono sin jugar. */
-    canjeableSc: sc(Math.max(0, balance - bono)),
+    /* Cuanto falta JUGAR para soltar el bono. */
+    bonoPendienteSc: porJugar,
+    /* Y cuanto del saldo esta trabado, que es el bono y nada mas. */
+    bonoAtadoSc: atado,
+    /*
+      Lo que se puede pedir para canjear: todo menos el bono trabado.
+
+      Antes restaba lo que falta jugar, que con 10x es diez veces mas
+      grande: un bono de 50 trababa 500 de un saldo de 150 y el jugador
+      no podia sacar ni lo suyo.
+    */
+    canjeableSc: sc(Math.max(0, balance - atado)),
     /*
       Y lo jugado, que viaja con el saldo a proposito.
 

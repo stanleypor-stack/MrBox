@@ -20,6 +20,7 @@ const User = require("../database/models/User");
 const BalanceTransaction = require("../database/models/BalanceTransaction");
 const wallet = require("../services/wallet");
 const { sc } = require("../utils/money");
+const { asegurarIndices } = require("../database");
 
 let hayBase = true;
 
@@ -27,6 +28,9 @@ test.before(async () => {
   try {
     await mongoose.connect(URI, { serverSelectionTimeoutMS: 3000 });
     await mongoose.connection.db.dropDatabase();
+    /* El `dropDatabase` se lleva puestos los indices. Hay que volver a
+       crearlos a mano. */
+    await asegurarIndices();
   } catch {
     hayBase = false;
   }
@@ -175,16 +179,26 @@ test("jugar baja el bono pendiente, y nunca lo deja negativo", async (t) => {
   const u = await jugadorCon(0);
   await wallet.mover({ userId: u._id, amountSc: 110, type: "purchase", bonoSc: 10 });
 
-  /* Abre una caja de SC 4: quedan 6 de bono por jugar. */
+  /*
+    Abre una caja de SC 4: quedan 6 de bono por jugar.
+
+    El bono se suelta ENTERO al cumplir, no de a poco: hasta que no
+    termine de jugarlo siguen atados los 10, asi que de los 106 que le
+    quedan puede sacar 96. Es lo que dice la letra chica del bono
+    --"jugalo N veces ANTES de poder retirarlo"-- y es lo que hace
+    cualquier casa: medio bono liberado a mitad de camino no existe.
+  */
   await wallet.mover({ userId: u._id, amountSc: -4, type: "box_open", juegaSc: 4 });
   let s = await wallet.saldoDe(u._id);
   assert.equal(s.bonoPendienteSc, 6);
-  assert.equal(s.canjeableSc, 100);
+  assert.equal(s.bonoAtadoSc, 10, "el bono sigue atado entero");
+  assert.equal(s.canjeableSc, 96);
 
   /* Abre otra de SC 50: ya jugo mas que el bono entero. */
   await wallet.mover({ userId: u._id, amountSc: -50, type: "box_open", juegaSc: 50 });
   s = await wallet.saldoDe(u._id);
   assert.equal(s.bonoPendienteSc, 0, "el bono pendiente no puede quedar negativo");
+  assert.equal(s.bonoAtadoSc, 0, "cumplido lo de jugar, el bono se solto");
   assert.equal(s.canjeableSc, 56, "ya puede canjear todo lo que le queda");
 
   const guardado = await User.findById(u._id).select("+jugadoSc").lean();

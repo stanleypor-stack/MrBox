@@ -32,6 +32,7 @@ const User = require("../../database/models/User");
 const wallet = require("../wallet");
 const Settings = require("../../database/models/Settings");
 const { sc } = require("../../utils/money");
+const controles = require("../controls");
 const { errorDe } = require("../../utils/errors");
 
 /*
@@ -139,6 +140,28 @@ function rangos() {
  * traslado desde otro sitio-- y manda sobre lo jugado: si lo jugado
  * ya le da mas, gana lo jugado. Nunca se baja a nadie de rango.
  */
+/**
+ * LO QUE CUENTA PARA EL VIP.
+ *
+ * Lo jugado de verdad mas el piso que se le dio al ponerle el rango a
+ * mano. Es una funcion y no una suma suelta para que las seis
+ * pantallas que muestran el rango usen exactamente la misma cuenta.
+ */
+function jugadoParaVip(usuario) {
+  if (!usuario) return 0;
+  return (Number(usuario.jugadoSc) || 0) + (Number(usuario.jugadoBaseSc) || 0);
+}
+
+/**
+ * EL PISO DE UN RANGO, POR NOMBRE.
+ *
+ * Lo usa el panel al mover a alguien de rango a mano.
+ */
+function pisoDelRango(nombre) {
+  const r = rangos().find((x) => x.nombre === nombre);
+  return r ? Number(r.desde) || 0 : 0;
+}
+
 function rangoDe(jugadoSc, puesto) {
   const R = rangos();
   const j = Number(jugadoSc) || 0;
@@ -220,10 +243,12 @@ async function jugadoEn(userId, desde, hasta) {
  * Cuánto hay para cobrar en cada ventana, y si ya se cobró.
  */
 async function rakebackDe(userId) {
-  const usuario = await User.findById(userId).select("jugadoSc").lean();
+  /* `rangoManual` tambien: sin el, al trasladado como Diamond la
+     pantalla le decia Diamond y el rakeback le pagaba Bronze. */
+  const usuario = await User.findById(userId).select("jugadoSc jugadoBaseSc rangoManual").lean();
   if (!usuario) throw errorDe("NOT_LOGGED_IN", {}, 401);
 
-  const rango = rangoDe(usuario.jugadoSc, usuario.rangoManual);
+  const rango = rangoDe(jugadoParaVip(usuario), usuario.rangoManual);
   const ahora = new Date();
 
   const cobrados = await RakebackClaim.find({ user: userId }).sort({ hasta: -1 }).limit(60).lean();
@@ -279,10 +304,16 @@ async function rakebackDe(userId) {
 async function cobrarRakeback({ userId, periodo }) {
   if (!PERIODOS.includes(periodo)) throw errorDe("INVALID_AMOUNT", { campo: "periodo" });
 
-  const usuario = await User.findById(userId).select("jugadoSc").lean();
+  /* Cobrar coin back es plata que entra: a un autoexcluido no le entra
+     nada hasta que se le termine la pausa. */
+  await controles.revisarPausa(userId);
+
+  /* `rangoManual` tambien: sin el, al trasladado como Diamond la
+     pantalla le decia Diamond y el rakeback le pagaba Bronze. */
+  const usuario = await User.findById(userId).select("jugadoSc jugadoBaseSc rangoManual").lean();
   if (!usuario) throw errorDe("NOT_LOGGED_IN", {}, 401);
 
-  const rango = rangoDe(usuario.jugadoSc, usuario.rangoManual);
+  const rango = rangoDe(jugadoParaVip(usuario), usuario.rangoManual);
   const pct = rango.rakeback[periodo];
   if (!pct) throw errorDe("RANK_TOO_LOW", { rango: rango.nombre }, 403);
 
@@ -315,6 +346,8 @@ async function cobrarRakeback({ userId, periodo }) {
 }
 
 module.exports = {
+  jugadoParaVip,
+  pisoDelRango,
   RANGOS,
   BENEFICIOS,
   CUANTOS_BENEFICIOS,

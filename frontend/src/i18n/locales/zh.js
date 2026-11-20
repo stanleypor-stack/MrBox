@@ -44,6 +44,8 @@ export default {
     "language": "语言",
     "worth": "价值",
     "chance": "概率",
+    "cancel": "取消",
+    "confirm": "确认",
     "previous": "上一页",
     "next": "下一页",
     "close": "关闭",
@@ -412,6 +414,25 @@ export default {
     "withdrawSoon": "提现尚未开放。",
     "redeemSoon": "兑换尚未开放。"
   },
+  "bonus": {
+    "available": "可用充值奖励",
+    "headline": "充值奖励",
+    "sub": "立即充值，领取奖励！",
+    "active": "奖励已启用",
+    "activeSub": "首次充值时自动发放。",
+    "claim": "领取",
+    "timeLeft": "剩余时间",
+    "days": "天",
+    "hours": "小时",
+    "minutes": "分钟",
+    "seconds": "秒",
+    "ruleWindow": "注册后 {n} 分钟内有效。",
+    "detailsTitle": "奖励详情",
+    "ruleWager": "奖励需投注 {n} 倍后才能提现。",
+    "ruleAmount": "获得 {pct}% 奖励，最高 {max}。",
+    "ruleOnce": "奖励只能领取一次。",
+    "ruleFirst": "仅适用于账户首次充值。"
+  },
   "cashier": {
     "state": {
       "pending": "等待中",
@@ -495,6 +516,15 @@ export default {
     "twoFactor": "两步验证",
     "twoFactorSub": "除密码外，再输入手机上的六位数字。",
     "enable": "开启",
+    "currentPassword": "当前密码",
+    "newPassword": "新密码",
+    "repeatPassword": "再次输入新密码",
+    "passwordMismatch": "两次输入的新密码不一致。",
+    "passwordSaved": "密码已更改，其他登录已退出。",
+    "passwordKicks": "更改后其他设备会退出登录。",
+    "change": "更改",
+    "changePhoto": "更换头像",
+    "photoSaved": "头像已更新。",
     "changePassword": "修改密码",
     "start": "开始",
     "verificationIntro": "三个等级，每一级解锁更多。你只需要达到所做的事要求的那一级。",
@@ -652,8 +682,12 @@ export default {
     "past": "往期竞赛"
   },
   "auth": {
+    "birthday": "出生日期",
+    "country": "国家和地区",
+    "pickCountry": "请选择",
     "username": "用户名",
     "email": "邮箱",
+    "passwordShort": "密码至少需要 {n} 位。",
     "password": "密码",
     "referralCode": "推广码（可选）",
     "back": "返回 MR BOX",
@@ -674,6 +708,8 @@ export default {
     "soon": "尚未开放。",
     "codeIgnored": "代码 {code} 不存在，未生效。",
     "signUpAndClaim": "注册<br>即领",
+    "firstBonus": "首充<br>{pct}% 奖励",
+    "plusBonus": "首充再送 {pct}% 奖励",
     "freeOpens": "{n} 次<br>免费开启",
     "terms": "我接受<a href=\"/legal/terms\">服务条款</a>和<a href=\"/legal/privacy\">隐私政策</a>，并确认我年满18周岁。*",
     "captchaNote": "本站由 Cloudflare Turnstile 保护。"
@@ -1122,6 +1158,17 @@ export default {
     "legal3": "无需购买。Sweeps Coins 可按官方规则兑换奖品。法律禁止地区无效。",
     "copy": "© {anio} MR BOX"
   },
+  "legal": {
+    "index": "法律条款",
+    "pending": "此文本正在完善，将在网站对外开放前发布。",
+    "askUs": "现在需要了解？",
+    "contactSupport": "联系客服",
+    "termsSub": "MR BOX 使用规则。",
+    "rulesSub": "抽奖规则。",
+    "responsibleSub": "限额、暂停与求助。",
+    "privacySub": "我们收集哪些数据及原因。",
+    "acceptanceSub": "客户受理标准。"
+  },
   "admin": {
     "back": "Back",
     "save": "Save",
@@ -1505,6 +1552,12 @@ export default {
       "theirDeposits": "What they bought",
       "theirRakeback": "Paid back to them",
       "each": "Played each",
+      "byHand": "VIP rank by hand",
+      "byHandHelp": "For someone moved over from another site, so they start in the rank they already had. The bar starts at the floor of that rank and counts their play from there. It never demotes anyone: if what they have played gives them more, that wins.",
+      "whoFor": "Who for",
+      "whoForPh": "Name, email or ID",
+      "find": "Find",
+      "noone": "No one matches that.",
       "benefits": "What each rank unlocks",
       "benefitsHelp": "How many benefits a rank has is fixed by its position: the first rank gets the first benefit, the last one gets them all."
     },

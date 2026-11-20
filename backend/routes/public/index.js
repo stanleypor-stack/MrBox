@@ -32,7 +32,9 @@ router.get("/settings", async (req, res) => {
         cajasALaVez: cfg.cajasALaVez,
         canjeMinimoSc: cfg.canjeMinimoSc,
         tasaDeRecompra: cfg.tasaDeRecompra,
-        bonoPorDeposito: cfg.bonoPorDeposito,
+        /* El de bienvenida, para el cartel del registro y la tira de la
+           billetera. Son numeros publicos: estan en la oferta. */
+        bonoDeBienvenida: cfg.bonoDeBienvenida,
         envioQuePideNivel3Sc: cfg.envioQuePideNivel3Sc,
         /*
           De soporte sale el horario y nada mas.

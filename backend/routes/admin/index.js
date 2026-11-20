@@ -1,5 +1,6 @@
 const express = require("express");
 
+const vip = require("../../services/vip");
 const User = require("../../database/models/User");
 const Box = require("../../database/models/Box");
 const Item = require("../../database/models/Item");
@@ -201,6 +202,10 @@ router.get("/players", async (req, res) => {
           balanceSc: sc(u.balanceSc),
           jugadoSc: sc(u.jugadoSc),
           freeOpens: u.freeOpens,
+          /* El rango puesto a mano y el que le toca hoy: la pagina de
+             rangos los muestra al mover a alguien. */
+          rangoManual: u.rangoManual || "",
+          rango: vip.rangoDe(vip.jugadoParaVip(u), u.rangoManual).nombre,
           createdAt: u.createdAt,
           lastSeenAt: u.lastSeenAt,
         })),
@@ -1082,6 +1087,11 @@ router.put("/settings", soloAdmin(["owner"]), async (req, res) => {
       /* Regalos y bono */
       "aperturasDeRegalo", "aperturasDeDemo",
       "bonoPorDeposito.normal", "bonoPorDeposito.destacado", "vecesAJugarElBono",
+      "bonoDeBienvenida.activo", "bonoDeBienvenida.pct", "bonoDeBienvenida.topeSc",
+      "bonoDeBienvenida.vecesAJugar",
+      "bonoDeBienvenida.minutos", "canjePideDosFirmas",
+      "pisoDeCarreraSc.daily", "pisoDeCarreraSc.weekly", "pisoDeCarreraSc.monthly",
+      "minimoDeCorredores",
       /* Canjes y envios */
       "canjeMinimoSc", "canjeNivelMinimo", "envioQuePideNivel3Sc", "envioNivelMinimo",
       /* Deals */

@@ -61,6 +61,8 @@ const CODIGOS = {
 
   /* Panel */
   REASON_REQUIRED: "A reason is required.",
+  /* El que aprobo un canje no puede ser el que lo paga. */
+  NEEDS_SECOND_PAIR_OF_EYES: "Someone else has to pay this one: you approved it.",
   NOT_ON_YOURSELF: "You cannot do that to your own account.",
   TRACKING_REQUIRED: "A carrier and a tracking number are required.",
 

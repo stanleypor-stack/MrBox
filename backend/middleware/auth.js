@@ -37,12 +37,27 @@ function autorizar(obligatorio = true) {
     }
 
     try {
-      const { id } = jwt.verify(token, process.env.JWT_SECRET);
+      const { id, iat } = jwt.verify(token, process.env.JWT_SECRET);
       const usuario = await User.findById(id)
         .select("+balanceSc +bonoPendienteSc")
         .lean();
 
       if (!usuario) throw new Error("no existe");
+
+      /*
+        UN TOKEN DE ANTES DEL CAMBIO DE CLAVE NO VALE.
+
+        `iat` viene en segundos. Se descuenta uno para el borde: el
+        token que se firma en el mismo segundo del cambio --el que se
+        devuelve al cambiarla-- tiene que seguir sirviendo.
+      */
+      if (usuario.clavesDesde && iat) {
+        const cambioEn = Math.floor(new Date(usuario.clavesDesde).getTime() / 1000);
+        if (iat < cambioEn - 1) {
+          const e = errorDe("SESSION_EXPIRED", {}, 401);
+          return res.status(401).json(e.aRespuesta());
+        }
+      }
 
       /* Una cuenta cerrada no pasa, tenga el token que tenga. */
       if (usuario.banned) {

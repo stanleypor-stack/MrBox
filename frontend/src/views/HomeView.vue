@@ -694,7 +694,20 @@ export default {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 200px));
   gap: 12px;
-  @include en-celular { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+
+  /*
+    EN EL TELEFONO, LAS TRES EN UNA FILA.
+
+    Con `minmax(130px, 1fr)` entraban dos por fila, asi que las tres
+    ocupaban dos filas de tickets altos y se comian la pantalla entera
+    antes de llegar a los banners. Tres en una fila entran bien en
+    390px y el regalo sigue siendo lo primero que se ve, sin tapar el
+    resto de la portada.
+  */
+  @include en-celular {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+  }
 }
 
 /*
@@ -790,6 +803,22 @@ export default {
   text-shadow: 0 2px 0 #06143a;
 }
 
+/*
+  TRES TICKETS EN 390px PIDEN TODO UN POCO MAS CHICO.
+
+  Lo que se achica es el texto y el aire, no la foto: la foto del
+  producto es lo que hace que el regalo se entienda de un vistazo.
+*/
+@include en-celular {
+  .mb-tix__abajo { padding: 7px 4px 9px; gap: 1px; }
+  .mb-tix__nombre { font-size: 12px; }
+  .mb-tix__cat { font-size: 9.5px; }
+  .mb-tix__cta { font-size: 11px; padding: 5px 10px; }
+  .mb-tix__cinta { font-size: 9.5px; padding: 2px 7px; }
+  .mb-gratis__cabeza h2 { font-size: 17px; }
+  .mb-gratis__cabeza span { font-size: 11.5px; }
+}
+
 .mb-tix__cat {
   max-width: 100%;
   overflow: hidden;
@@ -817,9 +846,15 @@ export default {
 .mb-banners {
   position: relative;
   margin-top: 18px;
-  /* La proporcion del arte, para que entre entero y sin recortes. */
-  aspect-ratio: 1326 / 281;
-  max-height: 300px;
+  /*
+    La proporcion del arte, para que entre entero y sin recortes.
+
+    El arte nuevo es mas alto que el anterior --3:1 contra 4,7:1-- asi
+    que la caja lo sigue. Con la proporcion vieja, `cover` recortaba
+    arriba y abajo y se comia el titulo y el boton del banner.
+  */
+  aspect-ratio: 2000 / 650;
+  max-height: 380px;
   border-radius: 24px;
   overflow: hidden;
   border: 1px solid #2a4a85;

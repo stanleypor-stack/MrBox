@@ -33,7 +33,19 @@ const app = express();
   contando a todo el mundo junto, y el primero que se equivoca de
   contrasena dejaria afuera a todos los demas.
 */
-app.set("trust proxy", 1);
+/*
+  CUANTOS SALTOS HAY ANTES DE NOSOTROS.
+
+  Con el numero mal puesto el freno de intentos no sirve, para un lado
+  o para el otro: de menos, el cliente elige su propia `req.ip`
+  mandando `X-Forwarded-For` y nunca lo frena nada; de mas, todos
+  cuentan como la misma IP y el primero que se equivoca de contraseña
+  deja afuera a todos los demas.
+
+  En Render es 1. Si manana entra Cloudflare adelante son 2, y eso se
+  cambia acá sin tocar el codigo.
+*/
+app.set("trust proxy", Number(process.env.PROXIES_DELANTE ?? 1));
 
 /*
   DE DONDE SE PUEDE LLAMAR A LA API.
@@ -51,6 +63,26 @@ const ORIGENES = String(process.env.SITIO_URL || "")
   .split(",")
   .map((o) => o.trim())
   .filter(Boolean);
+
+/*
+  SIN `SITIO_URL` NO SE ARRANCA EN PRODUCCION.
+
+  `cors({})` es `origin: "*"`. Olvidarse la variable al desplegar
+  dejaba la API abierta a cualquier pagina, que es fallar ABIERTO en la
+  variable mas facil de olvidar. Ahora falla fuerte y a la vista.
+
+  En desarrollo el sitio corre en otro puerto y el comodin hace falta,
+  asi que se permite con `PERMITIR_CUALQUIER_ORIGEN=1` a mano.
+*/
+if (!ORIGENES.length && process.env.PERMITIR_CUALQUIER_ORIGEN !== "1") {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "Falta SITIO_URL. Sin ella el CORS queda abierto a cualquier origen. " +
+      "Si de verdad lo querés así, poné PERMITIR_CUALQUIER_ORIGEN=1."
+    );
+  }
+  logger.warn("[cors] sin SITIO_URL: abierto a cualquier origen (está bien en desarrollo)");
+}
 
 app.use(cors(ORIGENES.length ? { origin: ORIGENES } : {}));
 
@@ -94,7 +126,18 @@ const SUBEN_ARCHIVOS = [/^\/api\/profile\/verification(\/|$)/, /^\/api\/communit
 const cuerpoChico = express.json({ limit: "200kb" });
 const cuerpoGrande = express.json({ limit: "12mb" });
 
+/*
+  EL AVISO DE LA PASARELA NO PASA POR ACA.
+
+  Se firma sobre los BYTES. Si este parser se come el cuerpo, la ruta
+  solo puede reconstruirlo con `JSON.stringify`, que no devuelve los
+  mismos bytes, y la firma deja de significar nada. Lo lee el
+  `express.raw` de su propia ruta.
+*/
+const CRUDO = /^\/api\/hooks(\/|$)/;
+
 app.use((req, res, next) => {
+  if (CRUDO.test(req.path)) return next();
   const grande = SUBEN_ARCHIVOS.some((r) => r.test(req.path));
   return (grande ? cuerpoGrande : cuerpoChico)(req, res, next);
 });
@@ -147,6 +190,24 @@ app.use((req, res) => res.status(404).json(errorDe("SOMETHING_WENT_WRONG", { rut
   veces datos de alguien.
 */
 app.use((err, req, res, _next) => {
+  /*
+    UN CUERPO QUE NO ENTRA NO ES UN ERROR DEL SERVIDOR.
+
+    body-parser tira con `status` propio --413 si se paso del limite,
+    400 si el JSON esta roto-- y contestarlos como 500 confunde al
+    cliente y escribe un stack entero cada vez, que es una forma comoda
+    de empujar fuera del registro las lineas que importan.
+  */
+  const suyo = err && Number(err.status || err.statusCode);
+
+  if (suyo === 413) {
+    return res.status(413).json(errorDe("FILE_TOO_BIG", {}, 413).aRespuesta());
+  }
+
+  if (suyo === 400 && err.type === "entity.parse.failed") {
+    return res.status(400).json(errorDe("INVALID_AMOUNT", { campo: "body" }, 400).aRespuesta());
+  }
+
   logger.error("[sin atrapar]", err && err.stack ? err.stack : err);
   res.status(500).json(errorDe("SOMETHING_WENT_WRONG", {}, 500).aRespuesta());
 });

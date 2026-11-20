@@ -17,7 +17,7 @@ process.env.LOG_LEVEL = "error";
 
 const mongoose = require("mongoose");
 const { app } = require("../index");
-const { conectar } = require("../database");
+const { conectar, asegurarIndices } = require("../database");
 
 const User = require("../database/models/User");
 const BalanceTransaction = require("../database/models/BalanceTransaction");
@@ -46,6 +46,10 @@ test.before(async () => {
   try {
     await conectar();
     await mongoose.connection.db.dropDatabase();
+    /* El `dropDatabase` se lleva puestos los indices, y los unicos
+       son los que hacen cumplir media docena de reglas de esta
+       suite. Hay que volver a crearlos a mano. */
+    await asegurarIndices();
     servidor = app.listen(0);
     await new Promise((r) => servidor.once("listening", r));
     base = `http://127.0.0.1:${servidor.address().port}/api`;
@@ -189,7 +193,7 @@ test("LAS GRATIS SE GASTAN ANTES QUE EL SALDO", async (t) => {
   assert.equal(tercera.datos.data.freeOpens, 0);
 });
 
-test("una apertura gratis SI suma a lo jugado, y deja sus dos filas", async (t) => {
+test("una apertura gratis suma a lo jugado y deja UNA fila de cero", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
   /*
     ANTES NO CONTABA, Y ESTABA MAL.
@@ -200,12 +204,17 @@ test("una apertura gratis SI suma a lo jugado, y deja sus dos filas", async (t) 
     --parecia roto-- y el premio que salio de esas cajas no aparecia
     como costo en ningun lado.
 
-    Ahora el regalo entra y la apertura se cobra: el saldo queda igual y
-    las dos filas dicen la verdad.
+    POR QUE UNA FILA Y NO DOS.
 
-    El miedo era escalar rangos de arriba: no da. Las gratis son tres al
-    registrarse y Silver pide SC 25.000. Y si un dia se regalan muchas,
-    estan todas en el libro como `promo_code` para poder mirarlas.
+    La primera version acreditaba el precio y lo cobraba acto seguido.
+    El neto era cero leido en orden, pero dos aperturas a la vez
+    intercalan los pasos: una acredita, la otra gasta ese saldo
+    prestado, y el cobro de la primera falla con el credito ya hecho.
+    Eso creaba SC canjeables de la nada en cualquier cuenta nueva.
+
+    Ahora es UN asiento de monto cero con `juegaSc`. Dice lo mismo --la
+    casa regalo una apertura y el jugador jugo ese monto-- sin ningun
+    instante con el saldo inflado.
   */
   const j = await jugador({ saldo: 100, gratis: 1 });
   const { datos } = await pedir("POST", "/boxes/prueba/open", { token: j.token });
@@ -218,12 +227,30 @@ test("una apertura gratis SI suma a lo jugado, y deja sus dos filas", async (t) 
   assert.equal(u.jugadoSc, PRECIO, "la gratis tiene que contar como jugada");
 
   const filas = await BalanceTransaction.find({ user: j.id }).sort({ createdAt: 1 }).lean();
-  assert.equal(filas.length, 2, "el regalo y la apertura");
-  assert.equal(filas[0].type, "promo_code");
-  assert.equal(filas[0].amountSc, PRECIO);
-  assert.equal(filas[1].type, "box_open");
-  assert.equal(filas[1].amountSc, -PRECIO);
-  assert.equal(filas[1].balanceAfter, 100, "neto cero: el saldo no se movio");
+  assert.equal(filas.length, 1, "una sola fila: la jugada");
+  assert.equal(filas[0].type, "box_open");
+  assert.equal(filas[0].amountSc, 0, "no mueve el saldo");
+  assert.equal(filas[0].balanceAfter, 100, "el saldo queda donde estaba");
+  assert.equal(filas[0].reference.kind, "freeOpen");
+});
+
+test("varias gratis a la vez NO crean saldo", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+  /*
+    LA PRUEBA DEL AGUJERO QUE HUBO.
+
+    Con el credito y el cobro en dos pasos, tres aperturas gratis
+    simultaneas desde saldo cero dejaban SC canjeables que nadie
+    deposito. Con un solo asiento de cero no hay forma.
+  */
+  const j = await jugador({ saldo: 0, gratis: 3 });
+
+  await Promise.allSettled([0, 1, 2].map(() =>
+    pedir("POST", "/boxes/prueba/open", { token: j.token })
+  ));
+
+  const u = await User.findById(j.id).select("+balanceSc").lean();
+  assert.equal(u.balanceSc, 0, "no se puede crear saldo abriendo gratis en paralelo");
 });
 
 /* ── Varias de una ────────────────────────────────────────────────── */

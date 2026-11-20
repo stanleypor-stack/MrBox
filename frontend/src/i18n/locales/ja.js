@@ -44,6 +44,8 @@ export default {
     "language": "言語",
     "worth": "価値",
     "chance": "確率",
+    "cancel": "キャンセル",
+    "confirm": "確認",
     "previous": "前へ",
     "next": "次へ",
     "close": "閉じる",
@@ -412,6 +414,25 @@ export default {
     "withdrawSoon": "出金はまだ有効ではありません。",
     "redeemSoon": "交換はまだ有効ではありません。"
   },
+  "bonus": {
+    "available": "入金ボーナス",
+    "headline": "入金ボーナス",
+    "sub": "今すぐ入金してボーナスを！",
+    "active": "ボーナス有効",
+    "activeSub": "初回入金時に自動で加算されます。",
+    "claim": "受け取る",
+    "timeLeft": "残り時間",
+    "days": "日",
+    "hours": "時間",
+    "minutes": "分",
+    "seconds": "秒",
+    "ruleWindow": "登録後 {n} 分間有効です。",
+    "detailsTitle": "ボーナスの詳細",
+    "ruleWager": "ボーナスは {n} 回プレイが必要です。",
+    "ruleAmount": "{pct}% のボーナス。上限 {max}。",
+    "ruleOnce": "ボーナスの受け取りは1回だけです。",
+    "ruleFirst": "アカウント初回の入金のみが対象です。"
+  },
   "cashier": {
     "state": {
       "pending": "確認待ち",
@@ -495,6 +516,15 @@ export default {
     "twoFactor": "二段階認証",
     "twoFactorSub": "パスワードに加えて、スマホの6桁コードを使います。",
     "enable": "有効にする",
+    "currentPassword": "現在のパスワード",
+    "newPassword": "新しいパスワード",
+    "repeatPassword": "新しいパスワード（確認）",
+    "passwordMismatch": "新しいパスワードが一致しません。",
+    "passwordSaved": "パスワードを変更しました。他のセッションはログアウトされました。",
+    "passwordKicks": "変更すると他の端末はログアウトされます。",
+    "change": "変更",
+    "changePhoto": "写真を変更",
+    "photoSaved": "写真を更新しました。",
     "changePassword": "パスワードを変更",
     "start": "はじめる",
     "verificationIntro": "レベルは3つ。上に行くほどできることが増えますが、必要なレベルだけで構いません。",
@@ -652,8 +682,12 @@ export default {
     "past": "過去のレース"
   },
   "auth": {
+    "birthday": "生年月日",
+    "country": "国",
+    "pickCountry": "選択",
     "username": "ユーザー名",
     "email": "メールアドレス",
+    "passwordShort": "パスワードは {n} 文字以上必要です。",
     "password": "パスワード",
     "referralCode": "紹介コード（任意）",
     "back": "MR BOX に戻る",
@@ -674,6 +708,8 @@ export default {
     "soon": "まだ有効ではありません。",
     "codeIgnored": "コード {code} は存在せず、適用されませんでした。",
     "signUpAndClaim": "登録して<br>受け取ろう",
+    "firstBonus": "初回入金<br>{pct}% ボーナス",
+    "plusBonus": "初回入金 {pct}% ボーナス",
     "freeOpens": "無料で<br>{n} 回開封",
     "terms": "<a href=\"/legal/terms\">利用規約</a>と<a href=\"/legal/privacy\">プライバシーポリシー</a>に同意し、18歳以上であることを確認します。*",
     "captchaNote": "このサイトは Cloudflare Turnstile で保護されています。"
@@ -1122,6 +1158,17 @@ export default {
     "legal3": "購入は必要ありません。Sweeps Coins は公式規約に基づき賞品と交換できます。禁止地域では無効です。",
     "copy": "© {anio} MR BOX"
   },
+  "legal": {
+    "index": "規約",
+    "pending": "この文書は準備中で、公開前に掲載されます。",
+    "askUs": "今必要ですか？",
+    "contactSupport": "サポートに聞く",
+    "termsSub": "MR BOX の利用規約。",
+    "rulesSub": "スイープステークの仕組み。",
+    "responsibleSub": "制限、休止、相談先。",
+    "privacySub": "取得する情報とその理由。",
+    "acceptanceSub": "お客様受入の基準。"
+  },
   "admin": {
     "back": "Back",
     "save": "Save",
@@ -1505,6 +1552,12 @@ export default {
       "theirDeposits": "What they bought",
       "theirRakeback": "Paid back to them",
       "each": "Played each",
+      "byHand": "VIP rank by hand",
+      "byHandHelp": "For someone moved over from another site, so they start in the rank they already had. The bar starts at the floor of that rank and counts their play from there. It never demotes anyone: if what they have played gives them more, that wins.",
+      "whoFor": "Who for",
+      "whoForPh": "Name, email or ID",
+      "find": "Find",
+      "noone": "No one matches that.",
       "benefits": "What each rank unlocks",
       "benefitsHelp": "How many benefits a rank has is fixed by its position: the first rank gets the first benefit, the last one gets them all."
     },

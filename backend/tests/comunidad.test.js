@@ -17,7 +17,7 @@ process.env.LOG_LEVEL = "error";
 
 const mongoose = require("mongoose");
 const { app } = require("../index");
-const { conectar } = require("../database");
+const { conectar, asegurarIndices } = require("../database");
 
 const User = require("../database/models/User");
 const Item = require("../database/models/Item");
@@ -37,6 +37,10 @@ test.before(async () => {
   try {
     await conectar();
     await mongoose.connection.db.dropDatabase();
+    /* El `dropDatabase` se lleva puestos los indices, y los unicos
+       son los que hacen cumplir media docena de reglas de esta
+       suite. Hay que volver a crearlos a mano. */
+    await asegurarIndices();
     servidor = app.listen(0);
     await new Promise((r) => servidor.once("listening", r));
     base = `http://127.0.0.1:${servidor.address().port}/api`;

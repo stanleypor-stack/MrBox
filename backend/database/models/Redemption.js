@@ -44,6 +44,20 @@ const redemptionSchema = new mongoose.Schema(
     revisadoEl: { type: Date, default: null },
     motivo: { type: String, default: "", maxlength: 300 },
 
+    /*
+      A CUANTO SE PAGO.
+
+      `montoSc` son dolares. Lo que sale de verdad son unidades de la
+      moneda, y eso depende de la cotizacion del momento. Las dos cosas
+      se guardan al pagar: sin ellas, revisar un canje viejo es
+      adivinar cuantos BTC fueron.
+    */
+    montoMoneda: { type: Number, default: 0 },
+    cotizacion: { type: Number, default: 0 },
+
+    /* Quien aprobo, aparte de quien pago: no pueden ser el mismo. */
+    aprobadoPor: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+
     /* Lo que devuelve la pasarela cuando se paga de verdad. */
     pasarela: { type: String, default: "oxapay" },
     pasarelaId: { type: String, default: "" },

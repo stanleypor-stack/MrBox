@@ -194,6 +194,46 @@ function camposDeDireccion(cuerpo) {
   return campos;
 }
 
+/**
+ * LA FOTO DE PERFIL.
+ *
+ * Llega como data-URI, ya achicada por la pantalla. Se valida igual:
+ * el que manda el pedido puede ser cualquiera, no solo nuestra
+ * pantalla.
+ *
+ * NADA DE SVG
+ *
+ * Un SVG puede llevar javascript adentro, y esto se dibuja como foto
+ * de perfil en el chat de soporte y en el panel. Tres formatos de
+ * imagen de verdad y nada mas.
+ */
+const FOTO_OK = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/;
+const FOTO_MAXIMA = 300 * 1024;
+
+router.put("/avatar", autorizar(true), async (req, res) => {
+  try {
+    const foto = String(req.body.foto || "").trim();
+
+    /* Vacia quiere decir "sacala": vuelve a la inicial. */
+    if (!foto) {
+      await User.updateOne({ _id: req.user._id }, { $set: { avatarUrl: "" } });
+      return res.json({ success: true, data: { avatarUrl: "" } });
+    }
+
+    if (!FOTO_OK.test(foto)) throw errorDe("BAD_FILE_TYPE", {}, 400);
+
+    /* El largo del base64, no el de la cadena: 4 caracteres son 3 bytes. */
+    const bytes = Math.floor((foto.length - foto.indexOf(",") - 1) * 0.75);
+    if (bytes > FOTO_MAXIMA) throw errorDe("FILE_TOO_BIG", { maximo: FOTO_MAXIMA }, 400);
+
+    await User.updateOne({ _id: req.user._id }, { $set: { avatarUrl: foto } });
+
+    return res.json({ success: true, data: { avatarUrl: foto } });
+  } catch (err) {
+    return responderError(res, err, "avatar");
+  }
+});
+
 router.get("/addresses", autorizar(true), async (req, res) => {
   try {
     const filas = await Address.find({ user: req.user._id })

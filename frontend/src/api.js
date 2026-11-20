@@ -65,6 +65,10 @@ api.interceptors.response.use(
       ? textoDeError(respuesta)
       : textoDeError({ code: "SOMETHING_WENT_WRONG" });
     error.code = code || "SOMETHING_WENT_WRONG";
+    /* Y lo que el servidor haya mandado con el error: a veces trae el
+       dato que la pantalla necesita para corregirse sola, como cuantas
+       pruebas gratis quedan de verdad. */
+    error.datos = (respuesta && respuesta.data) || null;
 
     return Promise.reject(error);
   }

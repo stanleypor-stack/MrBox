@@ -43,6 +43,16 @@ const raceSchema = new mongoose.Schema(
       user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
       username: String,
       puesto: Number,
+
+      /*
+        CUANDO SE LE PAGO.
+
+        `null` quiere decir que todavia no. Es lo que impide pagar dos
+        veces, y va adentro del filtro del update --no en un `if`--
+        porque el panel tiene un boton de Pagar y un boton se puede
+        apretar dos veces antes de que conteste el primero.
+      */
+      pagadoEl: { type: Date, default: null },
       jugadoSc: Number,
       premioSc: Number,
     }],

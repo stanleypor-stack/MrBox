@@ -1,5 +1,8 @@
 <template>
-  <section class="mb-reel" :aria-label="$t('box.reelAria', { name: nombreDeLaCaja })">
+  <section
+    class="mb-reel" :class="`mb-reel--n${cuantas}`"
+    :aria-label="$t('box.reelAria', { name: nombreDeLaCaja })"
+  >
     <!-- Las marcas de arriba y abajo, que señalan el centro. -->
     <svg class="mb-reel__flecha mb-reel__flecha--arriba" width="18" height="14" viewBox="0 0 24 18"
          fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -16,10 +19,7 @@
     <span class="mb-reel__raya mb-reel__raya--bd" aria-hidden="true"></span>
 
     <div class="mb-reel__cintas">
-      <div
-        v-for="(cinta, i) in cintas" :key="i"
-        class="mb-reel__pista" :style="{ height: altoDeLaPista }"
-      >
+      <div v-for="(cinta, i) in cintas" :key="i" class="mb-reel__pista">
         <div
           ref="tiras" class="mb-reel__tira"
           :style="{ transform: `translateX(${cinta.x}px)`, transition: transicion }"
@@ -29,10 +29,7 @@
             class="mb-reel__item"
             :style="{ opacity: opacidadDe(cinta, n) }"
           >
-            <div
-              class="mb-reel__caja"
-              :style="{ width: ladoDeLaFoto, transform: `scale(${escalaDe(cinta, n)})` }"
-            >
+            <div class="mb-reel__caja" :style="{ transform: `scale(${escalaDe(cinta, n)})` }">
               <span class="mb-reel__marco mb-reel__marco--izq" aria-hidden="true"></span>
               <span class="mb-reel__marco mb-reel__marco--der" aria-hidden="true"></span>
               <span
@@ -138,15 +135,13 @@ export default {
       return this.animando ? `transform ${this.duracion}ms cubic-bezier(.08,.82,.17,1)` : "none";
     },
 
-    /* Con más cintas, cada una es más baja: cuatro de 230 no entran en
-       una pantalla de teléfono. Son los números del diseño. */
-    altoDeLaPista() {
-      if (this.cuantas > 2) return "170px";
-      if (this.cuantas > 1) return "195px";
-      return "230px";
-    },
-
-    ladoDeLaFoto() { return this.cuantas > 1 ? "96px" : "120px"; },
+    /*
+      El alto de cada cinta y el tamaño de la foto salen del CSS, por la
+      clase `mb-reel--nX`. Antes venían de acá como estilo en línea, y
+      un estilo en línea no lo puede achicar una media query: en el
+      teléfono cuatro cintas tapaban la pantalla entera y el botón de
+      abrir quedaba abajo del pliegue.
+    */
   },
 
   watch: {
@@ -175,23 +170,51 @@ export default {
     escalaDe(cinta, n) { return this.ganador(cinta, n) ? 1.22 : 1; },
     brilloDe(cinta, n) { return this.ganador(cinta, n) ? 0.9 : 0.35; },
 
-    /** Un premio al azar de la caja, con su chance como peso. */
-    alAzar() {
+    /**
+     * EL RELLENO DE LA CINTA: TODO EL CATALOGO, BARAJADO.
+     *
+     * Antes se sorteaba ponderado por la chance, y eso hacia que en una
+     * caja donde lo bueno sale 0,31% y la basura 30%, los 64 casilleros
+     * fueran basura: el jugador nunca veia pasar lo caro y la caja
+     * parecia no tenerlo.
+     *
+     * La cinta es DECORACION. Lo que sale lo decide el servidor y llega
+     * ya sorteado; lo unico que hace esto es mostrarlo girando. Asi que
+     * muestra de que esta hecha la caja, no que te va a tocar.
+     *
+     * Las chances de verdad son las que estan escritas abajo, en "Qué
+     * puede salir", y esas no las toca nadie.
+     */
+    relleno(cuantos) {
       const lista = this.premios;
-      if (!lista.length) return { name: "", valueSc: 0, rarity: "blue", imageUrl: "" };
-      const n = Math.random();
-      let suma = 0;
-      for (const p of lista) {
-        suma += Number(p.chance) || 0;
-        if (n < suma) return p;
+      if (!lista.length) {
+        return Array.from({ length: cuantos }, () => ({ name: "", valueSc: 0, rarity: "blue", imageUrl: "" }));
       }
-      return lista[lista.length - 1];
+
+      const items = [];
+
+      /* Se recorre el catalogo barajado una y otra vez hasta llenar.
+         Barajar cada vuelta, y no una sola, evita que se vea el mismo
+         orden repetido cuando la caja tiene pocos objetos. */
+      while (items.length < cuantos) {
+        const vuelta = lista.slice();
+        for (let i = vuelta.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const t = vuelta[i]; vuelta[i] = vuelta[j]; vuelta[j] = t;
+        }
+        for (const p of vuelta) {
+          if (items.length >= cuantos) break;
+          items.push(p);
+        }
+      }
+
+      return items;
     },
 
     /** Una tira de 64 con el premio que salió en el lugar 54. */
     tiraCon(premio) {
-      const items = [];
-      for (let i = 0; i < LARGO; i += 1) items.push(i === GANADOR && premio ? premio : this.alAzar());
+      const items = this.relleno(LARGO);
+      if (premio) items[GANADOR] = premio;
       return items;
     },
 
@@ -325,8 +348,45 @@ export default {
   }
 }
 
-.mb-reel__cintas { display: flex; flex-direction: column; gap: 6px; }
+.mb-reel__cintas {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .mb-reel__pista { position: relative; overflow: hidden; }
+
+/*
+  CUANTAS CINTAS, QUE TAN ALTAS.
+
+  Cuatro de 230 son 920px: no entran ni en una notebook. Y el numero
+  tiene que estar en el CSS y no en un estilo en linea, para que la
+  media query de abajo pueda achicarlo.
+*/
+.mb-reel--n1 .mb-reel__pista { height: 230px; }
+.mb-reel--n2 .mb-reel__pista { height: 150px; }
+.mb-reel--n3 .mb-reel__pista { height: 124px; }
+.mb-reel--n4 .mb-reel__pista { height: 108px; }
+
+.mb-reel--n1 .mb-reel__caja { width: 120px; }
+.mb-reel--n2 .mb-reel__caja { width: 92px; }
+.mb-reel--n3 .mb-reel__caja { width: 76px; }
+.mb-reel--n4 .mb-reel__caja { width: 66px; }
+
+/* Con varias cintas el renglon del nombre se achica: con cuatro, 34px
+   por cinta son 136px gastados en texto que casi no se lee. */
+.mb-reel--n3 .mb-reel__rotulo,
+.mb-reel--n4 .mb-reel__rotulo { height: 26px; }
+
+.mb-reel--n3 .mb-reel__nombre,
+.mb-reel--n4 .mb-reel__nombre { font-size: 12px; }
+
+.mb-reel--n3 .mb-reel__valor,
+.mb-reel--n4 .mb-reel__valor { font-size: 11.5px; }
+
+/* Con varias, el relleno de arriba y abajo tambien sobra. */
+.mb-reel--n2, .mb-reel--n3, .mb-reel--n4 { padding: 20px 0; }
 
 .mb-reel__tira {
   position: absolute;
@@ -412,5 +472,34 @@ export default {
   font-weight: 800;
   font-size: 13px;
   color: $texto-2;
+}
+
+/*
+  EN EL TELEFONO TODO ENTRA EN UNA PANTALLA.
+
+  Lo que importa de abrir una caja es ver el premio Y poder tocar
+  "Abrir" de nuevo. Si la cinta se come los 844px de alto, el boton
+  queda abajo del pliegue y hay que scrollear despues de cada tirada.
+*/
+@media (max-width: 760px) {
+  .mb-reel--n1 .mb-reel__pista { height: 186px; }
+  .mb-reel--n2 .mb-reel__pista { height: 124px; }
+  .mb-reel--n3 .mb-reel__pista { height: 100px; }
+  .mb-reel--n4 .mb-reel__pista { height: 88px; }
+
+  .mb-reel--n1 .mb-reel__caja { width: 104px; }
+  .mb-reel--n2 .mb-reel__caja { width: 76px; }
+  .mb-reel--n3 .mb-reel__caja { width: 62px; }
+  .mb-reel--n4 .mb-reel__caja { width: 54px; }
+
+  .mb-reel--n2, .mb-reel--n3, .mb-reel--n4 { padding: 14px 0; }
+
+  .mb-reel--n2 .mb-reel__rotulo { height: 28px; }
+  .mb-reel--n3 .mb-reel__rotulo,
+  .mb-reel--n4 .mb-reel__rotulo { height: 22px; }
+
+  .mb-reel--n2 .mb-reel__nombre { font-size: 12px; }
+  .mb-reel--n3 .mb-reel__nombre,
+  .mb-reel--n4 .mb-reel__nombre { font-size: 11px; }
 }
 </style>

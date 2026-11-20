@@ -27,7 +27,7 @@ process.env.OXAPAY_PAYOUT_KEY = "";
 
 const mongoose = require("mongoose");
 const { app } = require("../index");
-const { conectar } = require("../database");
+const { conectar, asegurarIndices } = require("../database");
 
 const User = require("../database/models/User");
 const Redemption = require("../database/models/Redemption");
@@ -43,6 +43,10 @@ test.before(async () => {
   try {
     await conectar();
     await mongoose.connection.db.dropDatabase();
+    /* El `dropDatabase` se lleva puestos los indices, y los unicos
+       son los que hacen cumplir media docena de reglas de esta
+       suite. Hay que volver a crearlos a mano. */
+    await asegurarIndices();
     servidor = app.listen(0);
     await new Promise((r) => servidor.once("listening", r));
     base = `http://127.0.0.1:${servidor.address().port}/api`;
@@ -338,7 +342,12 @@ test("dos canjes al mismo tiempo no se llevan el bono sin jugar", async (t) => {
     que la base exigia al descontar era que alcanzara el SALDO.
   */
   const j = await jugador({ saldo: 200, nivel: 3 });
-  await User.updateOne({ _id: j.id }, { $set: { bonoPendienteSc: 120 } });
+  /* `bonoAtadoSc` es lo que no se puede sacar; `bonoPendienteSc` es lo
+     que falta jugar. Con 1x coinciden. */
+  await User.updateOne(
+    { _id: j.id },
+    { $set: { bonoPendienteSc: 120, bonoAtadoSc: 120 } }
+  );
 
   const pedir1 = pedir("POST", "/wallet/withdraw", {
     token: j.token,

@@ -102,7 +102,9 @@ router.get("/payments", async (req, res) => {
     const datos = await delLibro("purchase", {
       desde,
       page: Number(req.query.page) || 1,
-      perPage: Number(req.query.perPage) || 25,
+      /* Con tope, como el resto: sin el, `?perPage=9999999` se lleva
+         la coleccion entera de una. */
+      perPage: Math.min(200, Math.max(1, Number(req.query.perPage) || 25)),
     });
 
     return res.json({
@@ -135,7 +137,9 @@ router.get("/redemptions", async (req, res) => {
     const datos = await caja.cola({
       estado: req.query.estado || "",
       page: Number(req.query.page) || 1,
-      perPage: Number(req.query.perPage) || 25,
+      /* Con tope, como el resto: sin el, `?perPage=9999999` se lleva
+         la coleccion entera de una. */
+      perPage: Math.min(200, Math.max(1, Number(req.query.perPage) || 25)),
     });
 
     return res.json({
@@ -391,7 +395,7 @@ router.get("/ranks", async (req, res) => {
     const deQuien = new Map(); // userId -> rango
     const porRango = new Map(); // rango -> { jugadores, jugadoSc }
     for (const u of gente) {
-      const r = vip.rangoDe(u.jugadoSc || 0, u.rangoManual);
+      const r = vip.rangoDe(vip.jugadoParaVip(u), u.rangoManual);
       deQuien.set(String(u._id), r.nombre);
       const a = porRango.get(r.nombre) || { jugadores: 0, jugadoSc: 0 };
       a.jugadores += 1;

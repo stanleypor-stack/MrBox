@@ -45,7 +45,8 @@ router.get("/", autorizar(true), async (req, res) => {
     const nivelEnvio = Number(cfg.envioNivelMinimo) || 3;
 
     const ORDENES = { nuevo: { createdAt: -1 }, caro: { valueSc: -1 }, barato: { valueSc: 1 } };
-    const orden = ORDENES[req.query.sort] || ORDENES.nuevo;
+    const pedido = String(req.query.sort || "");
+    const orden = Object.hasOwn(ORDENES, pedido) ? ORDENES[pedido] : ORDENES.nuevo;
 
     const pagina = Math.max(1, Number(req.query.page) || 1);
     const porPagina = Math.min(100, Math.max(1, Number(req.query.perPage) || 36));

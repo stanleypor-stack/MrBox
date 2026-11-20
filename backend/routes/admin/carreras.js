@@ -157,19 +157,36 @@ router.post("/races/:id/pay/:userId", async (req, res) => {
     const premioSc = sc(carreras.premioDe(c.reparto, c.premioTotalSc, g.puesto));
     if (premioSc <= 0) throw errorDe("INVALID_AMOUNT", { premioSc });
 
-    const yaCobro = await BalanceTransaction.findOne({
-      type: "race_prize",
-      user: g.user,
-      "reference.id": c._id,
-    }).lean();
-    if (yaCobro) throw errorDe("ALREADY_CLAIMED");
+    /*
+      SE TOMA EL PREMIO, Y RECIEN AHI SE PAGA.
 
-    await wallet.mover({
-      userId: g.user,
-      amountSc: premioSc,
-      type: "race_prize",
-      reference: { kind: "race", id: c._id, label: `${c.tipo} #${g.puesto}` },
-    });
+      Antes esto era buscar la fila en el libro y, si no estaba, mover
+      la plata. Entre lo uno y lo otro hay una ventana: veinte clics
+      simultaneos pasaban los veinte y pagaban veinte veces. Con la
+      condicion `pagadoEl: null` adentro del filtro, la decide la base
+      en el mismo momento en que marca.
+    */
+    const tomado = await Race.findOneAndUpdate(
+      { _id: c._id, ganadores: { $elemMatch: { user: g.user, pagadoEl: null } } },
+      { $set: { "ganadores.$.pagadoEl": new Date() } }
+    ).lean();
+
+    if (!tomado) throw errorDe("ALREADY_CLAIMED");
+
+    try {
+      await wallet.mover({
+        userId: g.user,
+        amountSc: premioSc,
+        type: "race_prize",
+        reference: { kind: "race", id: c._id, label: `${c.tipo} #${g.puesto}` },
+      });
+    } catch (err) {
+      await Race.updateOne(
+        { _id: c._id, "ganadores.user": g.user },
+        { $set: { "ganadores.$.pagadoEl": null } }
+      );
+      throw err;
+    }
 
     await admin.anotar({
       admin: req.user,

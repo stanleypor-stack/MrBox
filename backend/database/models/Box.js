@@ -24,6 +24,16 @@ const premioSchema = new mongoose.Schema(
     item: { type: mongoose.Schema.Types.ObjectId, ref: "Item", required: true },
 
     /*
+      SI SE PUEDE MANDAR A UNA CASA.
+
+      Copiado del catalogo al armar la caja, como el nombre y el valor.
+      Sin esto el inventario lo daba por `true` siempre, y los vales de
+      credito --que no se mandan a ningun lado-- entraban al flujo de
+      envio igual.
+    */
+    shippable: { type: Boolean, default: true },
+
+    /*
       COPIA DE LO QUE DICE EL OBJETO, AL MOMENTO DE GUARDAR LA CAJA.
 
       Es lo que hace que el precio sea estable y que el sorteo sea

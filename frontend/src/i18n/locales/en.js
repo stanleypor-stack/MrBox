@@ -44,6 +44,8 @@ export default {
     "language": "Language",
     "worth": "Worth",
     "chance": "Chance",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
     "previous": "Previous",
     "next": "Next",
     "close": "Close",
@@ -412,6 +414,25 @@ export default {
     "withdrawSoon": "Withdrawals are not switched on yet.",
     "redeemSoon": "Redemptions are not switched on yet."
   },
+  "bonus": {
+    "available": "Available deposit bonus",
+    "headline": "DEPOSIT BONUS",
+    "sub": "Deposit now and get your bonus!",
+    "active": "Bonus on",
+    "activeSub": "It will be added to your first deposit, on its own.",
+    "claim": "Claim",
+    "timeLeft": "Time left",
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Min",
+    "seconds": "Sec",
+    "ruleWindow": "The offer is open for {n} minutes after you sign up.",
+    "detailsTitle": "Bonus details",
+    "ruleWager": "Please note that a {n}x play requirement applies to the bonus amount.",
+    "ruleAmount": "You will receive a {pct}% bonus. Limited to {max}.",
+    "ruleOnce": "The bonus can be claimed once.",
+    "ruleFirst": "It applies only to the first deposit on the account."
+  },
   "cashier": {
     "state": {
       "pending": "WAITING",
@@ -495,6 +516,15 @@ export default {
     "twoFactor": "Two-factor authentication",
     "twoFactorSub": "A six-digit code from your phone, on top of your password.",
     "enable": "Enable",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "repeatPassword": "Repeat the new one",
+    "passwordMismatch": "The two new ones do not match.",
+    "passwordSaved": "Password changed. Other sessions were signed out.",
+    "passwordKicks": "Changing it signs out every other device.",
+    "change": "Change",
+    "changePhoto": "Change your photo",
+    "photoSaved": "Photo updated.",
     "changePassword": "Change password",
     "start": "Start",
     "verificationIntro": "Three levels. Each one unlocks a little more, and you only need the level the thing you want asks for.",
@@ -652,8 +682,12 @@ export default {
     "past": "Past races"
   },
   "auth": {
+    "birthday": "Date of birth",
+    "country": "Country",
+    "pickCountry": "Pick one",
     "username": "Username",
     "email": "Email",
+    "passwordShort": "The password has to be at least {n} characters.",
     "password": "Password",
     "referralCode": "Referral code (optional)",
     "back": "Back to MR BOX",
@@ -674,6 +708,8 @@ export default {
     "soon": "That is not switched on yet.",
     "codeIgnored": "The code {code} does not exist, so it was not applied.",
     "signUpAndClaim": "SIGN UP<br>& CLAIM",
+    "firstBonus": "{pct}% FIRST<br>DEPOSIT BONUS",
+    "plusBonus": "+ {pct}% bonus on your first deposit",
     "freeOpens": "{n} FREE<br>OPENS",
     "terms": "I accept the <a href=\"/legal/terms\">Terms of Service</a> and the <a href=\"/legal/privacy\">Privacy Policy</a> and confirm I am 18 or older.*",
     "captchaNote": "This site is protected by Cloudflare Turnstile."
@@ -1122,6 +1158,17 @@ export default {
     "legal3": "No purchase necessary. Sweeps Coins can be redeemed for prizes under the official rules. Void where prohibited.",
     "copy": "© {anio} MR BOX"
   },
+  "legal": {
+    "index": "Legal pages",
+    "pending": "We are finishing this text. It will be published before the site opens to the public.",
+    "askUs": "Need something from it now?",
+    "contactSupport": "Ask support",
+    "termsSub": "The rules for using MR BOX: what you can do, what we can do, and what happens if something goes wrong.",
+    "rulesSub": "How the sweepstakes works: who can enter, how to enter without buying, the odds and how prizes are awarded.",
+    "responsibleSub": "Limits, taking a break, self-exclusion, and where to get help.",
+    "privacySub": "What we collect, why, who sees it, and how to ask us to delete it.",
+    "acceptanceSub": "Who we can accept as a customer, the checks we run, and when we have to say no."
+  },
   "admin": {
     "back": "Back",
     "save": "Save",
@@ -1505,6 +1552,12 @@ export default {
       "theirDeposits": "What they bought",
       "theirRakeback": "Paid back to them",
       "each": "Played each",
+      "byHand": "VIP rank by hand",
+      "byHandHelp": "For someone moved over from another site, so they start in the rank they already had. The bar starts at the floor of that rank and counts their play from there. It never demotes anyone: if what they have played gives them more, that wins.",
+      "whoFor": "Who for",
+      "whoForPh": "Name, email or ID",
+      "find": "Find",
+      "noone": "No one matches that.",
       "benefits": "What each rank unlocks",
       "benefitsHelp": "How many benefits a rank has is fixed by its position: the first rank gets the first benefit, the last one gets them all."
     },

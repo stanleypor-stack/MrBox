@@ -189,7 +189,9 @@ async function jugar({ user, itemId, chance, veces = 1, demo = false }) {
 
   const tope = Math.min(MAXIMO_DE_TIROS, cfg.cajasALaVez || MAXIMO_DE_TIROS);
   if (Number(veces) > tope) throw errorDe("TOO_MANY_AT_ONCE", { maximo: tope });
-  const cuantos = Math.max(1, Math.min(Number(veces) || 1, tope));
+  /* Para abajo y entero: con 2,5 tiraba tres veces, informaba el
+     precio de dos y medio y cobraba el de tres. */
+  const cuantos = Math.max(1, Math.min(Math.floor(Number(veces) || 1), tope));
 
   const valorSc = sc(objeto.valueSc);
   const apuestaSc = apuestaDe(valorSc, laChance);
@@ -351,8 +353,10 @@ async function jugar({ user, itemId, chance, veces = 1, demo = false }) {
  * activa, la semilla del servidor es secreta. Es la misma regla que en
  * las cajas.
  */
-async function verificar({ dealId }) {
-  const recibo = await Deal.findById(dealId).lean();
+async function verificar({ dealId, userId }) {
+  /* Por dueño, no solo por id: el recibo trae la apuesta. */
+  const filtro = userId ? { _id: dealId, user: userId } : { _id: dealId };
+  const recibo = await Deal.findOne(filtro).lean();
   if (!recibo) throw errorDe("ITEM_NOT_FOUND", {}, 404);
 
   const tanda = await UserSeed.findOne({

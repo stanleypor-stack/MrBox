@@ -24,7 +24,7 @@ process.env.AUTH_RATE_LIMIT = "500";
 process.env.LOG_LEVEL = "error";
 
 const mongoose = require("mongoose");
-const { conectar } = require("../database");
+const { conectar, asegurarIndices } = require("../database");
 
 const User = require("../database/models/User");
 const AffiliateCode = require("../database/models/AffiliateCode");
@@ -40,6 +40,10 @@ test.before(async () => {
   try {
     await conectar();
     await mongoose.connection.db.dropDatabase();
+    /* El `dropDatabase` se lleva puestos los indices, y los unicos
+       son los que hacen cumplir media docena de reglas de esta
+       suite. Hay que volver a crearlos a mano. */
+    await asegurarIndices();
     /* La escalera de fábrica, por si otro test la dejó tocada. */
     await Settings.updateOne({}, { $set: { rangosAfiliado: [], afiliados: {} } }, { upsert: true });
     await afiliados.recargar();

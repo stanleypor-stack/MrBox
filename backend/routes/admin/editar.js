@@ -77,6 +77,27 @@ const LIMPIAR = {
     const texto = String(v == null ? "" : v).trim().slice(0, 300);
     return { en: texto };
   },
+  /*
+    A DONDE LLEVA UN BANNER O UNA PROMOCION.
+
+    Nadie lo validaba, asi que se podia guardar `//evil.example/fish` y
+    `GET /api/public/banners` lo devolvia tal cual, sin sesion: un
+    enlace con la marca de MR BOX en la portada que lleva afuera. El
+    router de Vue atrapa el click normal, pero ctrl+click y "abrir en
+    pestaña nueva" siguen el href crudo.
+
+    Solo rutas de adentro: tienen que empezar con una barra, y no con
+    dos (que el navegador lee como "otro dominio, mismo protocolo").
+  */
+  destino: (v) => {
+    const texto = String(v == null ? "" : v).trim().slice(0, 300);
+    if (!texto) return "";
+    if (!texto.startsWith("/") || texto.startsWith("//")) {
+      throw errorDe("INVALID_AMOUNT", { campo: "destino", motivo: "solo rutas del sitio" });
+    }
+    return texto;
+  },
+
   lista: (v) => {
     if (Array.isArray(v)) return v.map((x) => Number(x) || 0);
     return String(v || "")
@@ -101,7 +122,7 @@ const COSAS = {
       titulo: "idiomas",
       texto: "idiomas",
       boton: "idiomas",
-      destino: "texto",
+      destino: "destino",
       orden: "entero",
       activa: "siNo",
       desde: "fecha",
@@ -179,7 +200,7 @@ const COSAS = {
       titulo: "texto",
       sub: "texto",
       cta: "texto",
-      destino: "texto",
+      destino: "destino",
       orden: "entero",
       visible: "siNo",
     },
@@ -231,7 +252,7 @@ async function armar(cosa, cuerpo, esNuevo) {
 
 router.post("/:cosa", async (req, res) => {
   try {
-    const cosa = COSAS[req.params.cosa];
+    const cosa = Object.hasOwn(COSAS, req.params.cosa) ? COSAS[req.params.cosa] : null;
     if (!cosa) throw errorDe("NOT_FOUND");
 
     const datos = await armar(cosa, req.body, true);
@@ -254,7 +275,7 @@ router.post("/:cosa", async (req, res) => {
 
 router.put("/:cosa/:id", async (req, res) => {
   try {
-    const cosa = COSAS[req.params.cosa];
+    const cosa = Object.hasOwn(COSAS, req.params.cosa) ? COSAS[req.params.cosa] : null;
     if (!cosa) throw errorDe("NOT_FOUND");
 
     const actual = await cosa.modelo.findById(req.params.id).lean();
@@ -292,7 +313,7 @@ router.put("/:cosa/:id", async (req, res) => {
  */
 router.delete("/:cosa/:id", async (req, res) => {
   try {
-    const cosa = COSAS[req.params.cosa];
+    const cosa = Object.hasOwn(COSAS, req.params.cosa) ? COSAS[req.params.cosa] : null;
     if (!cosa) throw errorDe("NOT_FOUND");
 
     const actual = await cosa.modelo.findById(req.params.id).lean();

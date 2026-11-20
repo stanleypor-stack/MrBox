@@ -192,9 +192,20 @@ router.get("/mine", autorizar(true), async (req, res) => {
   }
 });
 
-router.get("/verify/:id", async (req, res) => {
+/*
+  EL VERIFICADOR ES DEL DUEÑO, COMO EL DE LAS CAJAS.
+
+  Era publico y sin filtrar por dueño: mostraba objeto, valor, chance,
+  apuesta y resultado de cualquier jugador al que se le adivinara el
+  id. El equivalente de cajas (`/inventory/fair/verify/:boxOpenId`) si
+  filtra, y no habia motivo para que este no.
+*/
+router.get("/verify/:id", autorizar(true), async (req, res) => {
   try {
-    return res.json({ success: true, data: await deals.verificar({ dealId: req.params.id }) });
+    return res.json({
+      success: true,
+      data: await deals.verificar({ dealId: req.params.id, userId: req.user._id }),
+    });
   } catch (err) {
     return responderError(res, err, "verify");
   }

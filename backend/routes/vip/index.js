@@ -26,7 +26,10 @@ router.get("/", autorizar(false), async (req, res) => {
       data: {
         rangos: vip.tabla(),
         beneficios: vip.BENEFICIOS,
-        miRango: req.user ? vip.rangoDe(req.user.jugadoSc, req.user.rangoManual) : null,
+        miRango: req.user ? vip.rangoDe(vip.jugadoParaVip(req.user), req.user.rangoManual) : null,
+        /* Lo que muestra la barra: lo jugado mas el piso del rango que
+           se le haya puesto a mano. */
+        jugadoVipSc: req.user ? vip.jugadoParaVip(req.user) : 0,
       },
     });
   } catch (err) {

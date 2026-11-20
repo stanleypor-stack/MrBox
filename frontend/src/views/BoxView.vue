@@ -295,6 +295,9 @@ export default {
       cargando: true,
       /* Las que gasto en esta pantalla sin sesion (ver demosRestantes). */
       demosUsadasAqui: 0,
+      /* Lo que contesto el servidor la ultima vez. `null` = todavia no
+         hablo, y ahi manda la cuenta del navegador. */
+      demosSegunElServidor: null,
       /* Las aperturas de regalo que le quedan, para seguir de largo. */
       regalos: [],
       veces: 1,
@@ -321,8 +324,18 @@ export default {
       return this.regalos.filter((g) => !g.usada && g.slug !== aca);
     },
 
-    /** Cuantas pruebas gratis le quedan, de las que dice el panel. */
+    /**
+     * CUANTAS PRUEBAS GRATIS LE QUEDAN.
+     *
+     * Si el servidor ya contesto alguna vez, manda lo que dijo el: es
+     * el unico que sabe. El numero de la cuenta llega al entrar y no
+     * se vuelve a tocar, asi que despues de girar una demo el cartel
+     * seguia diciendo el numero viejo --"te quedan 2"-- mientras el
+     * servidor ya contaba 3 de 3 y rechazaba con "ya las usaste".
+     */
     demosRestantes() {
+      if (this.demosSegunElServidor !== null) return this.demosSegunElServidor;
+
       const tope = Number(this.caja && this.caja.aperturasDeDemo) || 0;
       const usadas = this.entro
         ? Number(this.$store.state.usuario && this.$store.state.usuario.demosUsadas) || 0
@@ -519,17 +532,52 @@ export default {
     },
 
     async probar() {
+      /* Lo que queda, no lo que dice el selector: con 2 demos y el
+         selector en 4, el servidor rechazaba la tanda entera. */
+      const cuantas = Math.max(1, Math.min(this.veces, this.demosRestantes));
+
       this.girando = true;
       this.resultado = null;
       try {
-        const { data } = await api.post(`/boxes/${this.caja.slug}/demo`, { veces: this.veces });
+        const { data } = await api.post(`/boxes/${this.caja.slug}/demo`, { veces: cuantas });
+
         this.pendiente = data.data;
-        this.anotarDemo(this.veces);
+        this.anotarDemo(cuantas);
+        this.guardarCuantasQuedan(data.data);
+
         await this.$refs.ruleta.girar(data.data.resultados.map((r) => r.premio));
       } catch (err) {
         this.girando = false;
+
+        /*
+          Si rebota por quedarse sin demos, el servidor dice cuantas
+          quedan de verdad. Sin esto el cartel seguia diciendo el
+          numero viejo hasta recargar la pagina.
+        */
+        const datos = err && err.datos;
+        if (datos && datos.quedan !== undefined) {
+          this.demosSegunElServidor = Math.max(0, Number(datos.quedan) || 0);
+          this.sincronizarDemos();
+        }
+
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
       }
+    },
+
+    /** Guarda lo que el servidor dice que queda, y lo deja en la cuenta. */
+    guardarCuantasQuedan(datos) {
+      if (!datos || datos.demosRestantes === undefined) return;
+      this.demosSegunElServidor = Math.max(0, Number(datos.demosRestantes) || 0);
+      this.sincronizarDemos();
+    },
+
+    /* Y que el resto de la aplicacion vea el mismo numero. */
+    sincronizarDemos() {
+      if (!this.entro) return;
+      const tope = Number(this.caja && this.caja.aperturasDeDemo) || 0;
+      this.$store.commit("parcheUsuario", {
+        demosUsadas: Math.max(0, tope - this.demosSegunElServidor),
+      });
     },
 
     /* La cinta frenó: recién ahora se le muestra qué salió. */

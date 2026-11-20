@@ -295,7 +295,14 @@ export default {
     inicial() {
       return String((this.usuario && this.usuario.username) || "?").charAt(0).toUpperCase();
     },
-    jugado() { return (this.usuario && this.usuario.jugadoSc) || 0; },
+    /* El del VIP, que incluye el piso del rango puesto a mano. Con
+       `jugadoSc` a secas, al que se traslada de otro sitio le quedaba
+       la barra en cero al lado del nombre de un rango alto. */
+    jugado() {
+      const u = this.usuario;
+      if (!u) return 0;
+      return Number(u.jugadoVipSc != null ? u.jugadoVipSc : u.jugadoSc) || 0;
+    },
 
     preguntas() {
       const g = this.GRUPOS.find((x) => x.id === this.grupo);

@@ -44,6 +44,8 @@ export default {
     "language": "Idioma",
     "worth": "Valor",
     "chance": "Probabilidad",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
     "previous": "Anterior",
     "next": "Siguiente",
     "close": "Cerrar",
@@ -412,6 +414,25 @@ export default {
     "withdrawSoon": "Los retiros todavía no están activos.",
     "redeemSoon": "Los canjes todavía no están activos."
   },
+  "bonus": {
+    "available": "Bono de depósito disponible",
+    "headline": "DE BONO EN TU DEPÓSITO",
+    "sub": "Depositá ahora y llevate tu bono.",
+    "active": "Bono activo",
+    "activeSub": "Se suma solo a tu primer depósito.",
+    "claim": "Reclamar",
+    "timeLeft": "Tiempo que queda",
+    "days": "Días",
+    "hours": "Horas",
+    "minutes": "Min",
+    "seconds": "Seg",
+    "ruleWindow": "La oferta dura {n} minutos desde que abrís la cuenta.",
+    "detailsTitle": "Detalles del bono",
+    "ruleWager": "Tené en cuenta que el bono pide jugarlo {n} veces antes de poder retirarlo.",
+    "ruleAmount": "Vas a recibir un {pct}% de bono. Hasta {max}.",
+    "ruleOnce": "El bono se puede reclamar una sola vez.",
+    "ruleFirst": "Se aplica únicamente al primer depósito de la cuenta."
+  },
   "cashier": {
     "state": {
       "pending": "EN ESPERA",
@@ -495,6 +516,15 @@ export default {
     "twoFactor": "Autenticación en dos pasos",
     "twoFactorSub": "Un código de seis dígitos desde tu teléfono, además de la contraseña.",
     "enable": "Activar",
+    "currentPassword": "Contraseña actual",
+    "newPassword": "Contraseña nueva",
+    "repeatPassword": "Repetí la nueva",
+    "passwordMismatch": "Las dos nuevas no coinciden.",
+    "passwordSaved": "Contraseña cambiada. Las otras sesiones se cerraron.",
+    "passwordKicks": "Cambiarla cierra la sesión en todos los otros dispositivos.",
+    "change": "Cambiar",
+    "changePhoto": "Cambiar la foto",
+    "photoSaved": "Foto actualizada.",
     "changePassword": "Cambiar contraseña",
     "start": "Empezar",
     "verificationIntro": "Tres niveles. Cada uno desbloquea un poco más, y solo necesitás el nivel que te pida lo que querés hacer.",
@@ -652,8 +682,12 @@ export default {
     "past": "Carreras anteriores"
   },
   "auth": {
+    "birthday": "Fecha de nacimiento",
+    "country": "País",
+    "pickCountry": "Elegí uno",
     "username": "Nombre de usuario",
     "email": "Email",
+    "passwordShort": "La contraseña debe tener al menos {n} caracteres.",
     "password": "Contraseña",
     "referralCode": "Código de referido (opcional)",
     "back": "Volver a MR BOX",
@@ -674,6 +708,8 @@ export default {
     "soon": "Eso todavía no está activo.",
     "codeIgnored": "El código {code} no existe, así que no se aplicó.",
     "signUpAndClaim": "REGISTRATE<br>Y LLEVATE",
+    "firstBonus": "{pct}% DE BONO<br>EN TU 1er DEPÓSITO",
+    "plusBonus": "+ {pct}% de bono en tu primer depósito",
     "freeOpens": "{n} APERTURAS<br>GRATIS",
     "terms": "Acepto los <a href=\"/legal/terms\">Términos del Servicio</a> y la <a href=\"/legal/privacy\">Política de Privacidad</a> y confirmo que tengo 18 años o más.*",
     "captchaNote": "Este sitio está protegido por Cloudflare Turnstile."
@@ -1122,6 +1158,17 @@ export default {
     "legal3": "No hace falta comprar nada. Los Sweeps Coins se canjean por premios según las reglas oficiales. Sin validez donde esté prohibido.",
     "copy": "© {anio} MR BOX"
   },
+  "legal": {
+    "index": "Páginas legales",
+    "pending": "Estamos terminando este texto. Se publica antes de que el sitio abra al público.",
+    "askUs": "¿Necesitás algo de esto ahora?",
+    "contactSupport": "Preguntale a soporte",
+    "termsSub": "Las reglas para usar MR BOX: qué podés hacer, qué podemos hacer nosotros y qué pasa si algo sale mal.",
+    "rulesSub": "Cómo funciona el sorteo: quién puede participar, cómo entrar sin comprar, las chances y cómo se entregan los premios.",
+    "responsibleSub": "Límites, tomarte un descanso, autoexclusión y dónde pedir ayuda.",
+    "privacySub": "Qué datos guardamos, para qué, quién los ve y cómo pedirnos que los borremos.",
+    "acceptanceSub": "A quién podemos aceptar como cliente, qué controles hacemos y cuándo tenemos que decir que no."
+  },
   "admin": {
     "back": "Back",
     "save": "Save",
@@ -1505,6 +1552,12 @@ export default {
       "theirDeposits": "What they bought",
       "theirRakeback": "Paid back to them",
       "each": "Played each",
+      "byHand": "VIP rank by hand",
+      "byHandHelp": "For someone moved over from another site, so they start in the rank they already had. The bar starts at the floor of that rank and counts their play from there. It never demotes anyone: if what they have played gives them more, that wins.",
+      "whoFor": "Who for",
+      "whoForPh": "Name, email or ID",
+      "find": "Find",
+      "noone": "No one matches that.",
       "benefits": "What each rank unlocks",
       "benefitsHelp": "How many benefits a rank has is fixed by its position: the first rank gets the first benefit, the last one gets them all."
     },

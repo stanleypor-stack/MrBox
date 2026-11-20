@@ -107,12 +107,57 @@
         </div>
       </div>
     </section>
+
+    <!-- ── El rango puesto a mano ──────────────────────────────── -->
+    <section class="ad-caja">
+      <h2>{{ $t('admin.rank.byHand') }}</h2>
+      <p>{{ $t('admin.rank.byHandHelp') }}</p>
+
+      <div class="adr__mano">
+        <label class="ad-campo adr__buscar">
+          {{ $t('admin.rank.whoFor') }}
+          <input
+            v-model="busca" class="ad-in" :placeholder="$t('admin.rank.whoForPh')"
+            @keyup.enter="buscar"
+          >
+        </label>
+        <button type="button" class="ad-b" :disabled="buscando" @click="buscar">
+          {{ buscando ? $t('admin.loading') : $t('admin.rank.find') }}
+        </button>
+      </div>
+
+      <p v-if="sinResultado" class="ad-tenue">{{ $t('admin.rank.noone') }}</p>
+
+      <div v-if="elegido" class="adr__elegido">
+        <div class="adr__quien">
+          <b>{{ elegido.username }}</b>
+          <span class="ad-tenue">{{ elegido.email }}</span>
+          <span class="ad-tenue">{{ $t('admin.player.tierNow', { rango: elegido.rango }) }}</span>
+        </div>
+
+        <MbElegir
+          v-model="rango" chico class="ad-elegir"
+          :opciones="opcionesDeRango"
+        />
+
+        <label class="ad-campo">
+          {{ $t('admin.reason') }}
+          <input v-model="motivo" class="ad-in" :placeholder="$t('admin.player.reasonExample')">
+        </label>
+
+        <button
+          type="button" class="ad-b"
+          :disabled="moviendo || (!!rango && motivo.trim().length < 3)" @click="moverRango"
+        >{{ $t('admin.save') }}</button>
+      </div>
+    </section>
   </div>
 </template>
 
 <script>
 import api from "@/api";
 import MbGema from "@/components/MbGema.vue";
+import MbElegir from "@/components/MbElegir.vue";
 
 /**
  * LOS NUEVE RANGOS.
@@ -130,11 +175,34 @@ import MbGema from "@/components/MbGema.vue";
 export default {
   name: "AdminRangos",
 
-  components: { MbGema },
+  components: { MbGema, MbElegir },
 
-  data() { return { d: null, filas: [], original: "", guardando: false }; },
+  data() {
+    return {
+      d: null,
+      filas: [],
+      original: "",
+      guardando: false,
+
+      /* El rango a mano, al final de la pagina. */
+      busca: "",
+      buscando: false,
+      sinResultado: false,
+      elegido: null,
+      rango: "",
+      motivo: "",
+      moviendo: false,
+    };
+  },
 
   computed: {
+    /* Los nueve rangos mas "automatico", que es sacarle el manual. */
+    opcionesDeRango() {
+      const nombres = this.filas.map((f) => f.rango);
+      return [{ valor: "", texto: this.$t("admin.player.tierAuto") }]
+        .concat(nombres.map((r) => ({ valor: r, texto: r })));
+    },
+
     hayCambios() { return JSON.stringify(this.filas) !== this.original; },
 
     totales() {
@@ -152,6 +220,51 @@ export default {
   },
 
   methods: {
+    /** Busca al jugador por nombre, correo o id. */
+    async buscar() {
+      const texto = this.busca.trim();
+      if (!texto) return;
+
+      this.buscando = true;
+      this.sinResultado = false;
+      try {
+        const { data } = await api.get("/admin/players", { params: { q: texto, perPage: 1 } });
+        const uno = (data.data.items || [])[0];
+
+        if (!uno) {
+          this.elegido = null;
+          this.sinResultado = true;
+          return;
+        }
+
+        this.elegido = uno;
+        this.rango = uno.rangoManual || "";
+        this.motivo = "";
+      } catch (err) {
+        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
+      } finally {
+        this.buscando = false;
+      }
+    },
+
+    /* El mismo endpoint que usa la ficha del jugador: una sola manera
+       de mover un rango, no dos que se puedan desincronizar. */
+    async moverRango() {
+      this.moviendo = true;
+      try {
+        await api.post(`/admin/players/${this.elegido._id}/tier`, {
+          rango: this.rango,
+          motivo: this.motivo.trim(),
+        });
+        this.$store.dispatch("avisar", { texto: this.$t("admin.done") });
+        await this.buscar();
+      } catch (err) {
+        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
+      } finally {
+        this.moviendo = false;
+      }
+    },
+
     num(n) { return Number(n || 0).toLocaleString("en-US"); },
     plata(n) {
       return Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -197,6 +310,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.adr__mano { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-top: 12px; }
+.adr__buscar { flex: 1 1 240px; min-width: 0; }
+.adr__elegido { display: grid; gap: 10px; margin-top: 14px; max-width: 420px; }
+.adr__quien { display: grid; gap: 2px; font-size: 13.5px; }
+
 @import "@/styles/tokens";
 
 .adr { display: flex; flex-direction: column; gap: 20px; }

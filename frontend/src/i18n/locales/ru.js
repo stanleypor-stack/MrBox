@@ -44,6 +44,8 @@ export default {
     "language": "Язык",
     "worth": "Стоимость",
     "chance": "Шанс",
+    "cancel": "Отмена",
+    "confirm": "Подтвердить",
     "previous": "Назад",
     "next": "Вперёд",
     "close": "Закрыть",
@@ -412,6 +414,25 @@ export default {
     "withdrawSoon": "Вывод пока недоступен.",
     "redeemSoon": "Обмен пока недоступен."
   },
+  "bonus": {
+    "available": "Доступный бонус",
+    "headline": "БОНУС НА ПОПОЛНЕНИЕ",
+    "sub": "Пополните и получите бонус!",
+    "active": "Бонус включён",
+    "activeSub": "Начислится автоматически при первом пополнении.",
+    "claim": "Получить",
+    "timeLeft": "Осталось",
+    "days": "Дни",
+    "hours": "Часы",
+    "minutes": "Мин",
+    "seconds": "Сек",
+    "ruleWindow": "Предложение действует {n} минут после регистрации.",
+    "detailsTitle": "Детали бонуса",
+    "ruleWager": "Бонус нужно отыграть {n} раз.",
+    "ruleAmount": "Бонус {pct}%. Максимум {max}.",
+    "ruleOnce": "Бонус можно получить один раз.",
+    "ruleFirst": "Действует только для первого пополнения."
+  },
   "cashier": {
     "state": {
       "pending": "В ОЖИДАНИИ",
@@ -495,6 +516,15 @@ export default {
     "twoFactor": "Двухфакторная аутентификация",
     "twoFactorSub": "Шестизначный код с телефона в дополнение к паролю.",
     "enable": "Включить",
+    "currentPassword": "Текущий пароль",
+    "newPassword": "Новый пароль",
+    "repeatPassword": "Повторите",
+    "passwordMismatch": "Новые пароли не совпадают.",
+    "passwordSaved": "Пароль изменён. Другие сеансы завершены.",
+    "passwordKicks": "Смена завершит сеансы на других устройствах.",
+    "change": "Изменить",
+    "changePhoto": "Сменить фото",
+    "photoSaved": "Фото обновлено.",
     "changePassword": "Сменить пароль",
     "start": "Начать",
     "verificationIntro": "Три уровня. Каждый открывает чуть больше, и нужен только тот, который требуется.",
@@ -652,8 +682,12 @@ export default {
     "past": "Прошедшие гонки"
   },
   "auth": {
+    "birthday": "Дата рождения",
+    "country": "Страна",
+    "pickCountry": "Выберите",
     "username": "Имя пользователя",
     "email": "Почта",
+    "passwordShort": "Пароль должен содержать не менее {n} символов.",
     "password": "Пароль",
     "referralCode": "Реферальный код (необяз.)",
     "back": "Назад в MR BOX",
@@ -674,6 +708,8 @@ export default {
     "soon": "Это пока недоступно.",
     "codeIgnored": "Код {code} не существует и не применён.",
     "signUpAndClaim": "РЕГИСТРАЦИЯ<br>И ПОДАРОК",
+    "firstBonus": "БОНУС {pct}%<br>НА 1-Е ПОПОЛНЕНИЕ",
+    "plusBonus": "+ {pct}% бонус к первому пополнению",
     "freeOpens": "{n} БЕСПЛАТНЫХ<br>ОТКРЫТИЯ",
     "terms": "Я принимаю <a href=\"/legal/terms\">Условия</a> и <a href=\"/legal/privacy\">Политику конфиденциальности</a> и подтверждаю, что мне 18 лет или больше.*",
     "captchaNote": "Сайт защищён Cloudflare Turnstile."
@@ -1122,6 +1158,17 @@ export default {
     "legal3": "Покупка не требуется. Sweeps Coins обмениваются на призы по официальным правилам. Недействительно там, где запрещено.",
     "copy": "© {anio} MR BOX"
   },
+  "legal": {
+    "index": "Правовые страницы",
+    "pending": "Текст готовится и будет опубликован до открытия.",
+    "askUs": "Нужно что-то сейчас?",
+    "contactSupport": "Спросить поддержку",
+    "termsSub": "Правила использования MR BOX.",
+    "rulesSub": "Как работает розыгрыш.",
+    "responsibleSub": "Лимиты, перерыв и помощь.",
+    "privacySub": "Какие данные мы собираем.",
+    "acceptanceSub": "Кого мы можем принять."
+  },
   "admin": {
     "back": "Back",
     "save": "Save",
@@ -1505,6 +1552,12 @@ export default {
       "theirDeposits": "What they bought",
       "theirRakeback": "Paid back to them",
       "each": "Played each",
+      "byHand": "VIP rank by hand",
+      "byHandHelp": "For someone moved over from another site, so they start in the rank they already had. The bar starts at the floor of that rank and counts their play from there. It never demotes anyone: if what they have played gives them more, that wins.",
+      "whoFor": "Who for",
+      "whoForPh": "Name, email or ID",
+      "find": "Find",
+      "noone": "No one matches that.",
       "benefits": "What each rank unlocks",
       "benefitsHelp": "How many benefits a rank has is fixed by its position: the first rank gets the first benefit, the last one gets them all."
     },

@@ -24,7 +24,7 @@ process.env.LOG_LEVEL = "error";
 
 const mongoose = require("mongoose");
 const { app } = require("../index");
-const { conectar } = require("../database");
+const { conectar, asegurarIndices } = require("../database");
 
 const User = require("../database/models/User");
 const Race = require("../database/models/Race");
@@ -43,6 +43,10 @@ test.before(async () => {
   try {
     await conectar();
     await mongoose.connection.db.dropDatabase();
+    /* El `dropDatabase` se lleva puestos los indices, y los unicos
+       son los que hacen cumplir media docena de reglas de esta
+       suite. Hay que volver a crearlos a mano. */
+    await asegurarIndices();
     servidor = app.listen(0);
     await new Promise((r) => servidor.once("listening", r));
     base = `http://127.0.0.1:${servidor.address().port}/api`;
@@ -359,8 +363,11 @@ test("cerrarla a mano paga una sola vez", async (t) => {
     estado: "live",
   });
 
+  /* Por encima del piso de la semanal (`pisoDeCarreraSc.weekly`): sin
+     eso no entra a la tabla y la carrera cierra sin ganadores, que es
+     justamente lo que el piso tiene que hacer. */
   await wallet.mover({ userId: uno.id, amountSc: 500, type: "purchase" });
-  await wallet.mover({ userId: uno.id, amountSc: -50, type: "box_open", juegaSc: 50 });
+  await wallet.mover({ userId: uno.id, amountSc: -300, type: "box_open", juegaSc: 300 });
 
   const sinMotivo = await pedir("POST", `/admin/races/${carrera._id}/settle`, { token: jefe.token, cuerpo: {} });
   assert.equal(sinMotivo.estado, 400, "se cerró sin motivo");

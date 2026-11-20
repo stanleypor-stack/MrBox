@@ -148,6 +148,32 @@ const userSchema = new mongoose.Schema(
       empieza aca en su rango sin haber jugado. Vacio quiere decir "el
       que le corresponde por lo jugado".
     */
+    /*
+      EL PISO DEL VIP CUANDO EL RANGO SE PONE A MANO.
+
+      Al traer a alguien de otro sitio se le pone el rango que ya tenia
+      y la barra arranca en el piso de ese rango; de ahi en mas cuenta
+      lo que juegue acá. Esto guarda ese arranque.
+
+      Va aparte de `jugadoSc` a proposito: `jugadoSc` es lo que de
+      verdad jugo, y de ahi salen las carreras, el rakeback y el margen
+      del panel. Sumarle el piso meteria a un recien llegado en la
+      tabla de la carrera sin haber jugado nada.
+    */
+    jugadoBaseSc: { type: Number, default: 0, min: 0 },
+
+    /*
+      CUANTO DEL SALDO NO SE PUEDE SACAR TODAVIA.
+
+      Es el BONO, no lo que falta jugar. `bonoPendienteSc` dice cuanto
+      falta JUGAR --con 10x, diez veces el bono-- y usar ese numero
+      para trabar el saldo ataba tambien la plata del jugador: con un
+      bono de 50 a 10x quedaban trabados 500 de un saldo de 150.
+
+      Se suelta solo cuando `bonoPendienteSc` llega a cero.
+    */
+    bonoAtadoSc: { type: Number, default: 0, min: 0, select: false },
+
     rangoManual: { type: String, default: "" },
 
     /*
@@ -197,6 +223,54 @@ const userSchema = new mongoose.Schema(
 
       actualizadoEl: { type: Date, default: null },
     },
+
+    /*
+      CUANDO SE LLEVO EL BONO DE BIENVENIDA.
+
+      `null` quiere decir que todavia no. Es la marca que lo limita a
+      una sola vez, y se pone con una condicion en el filtro --no con
+      un `if`-- para que dos avisos de pago al mismo tiempo no puedan
+      reclamarlo los dos.
+    */
+    bonoDeBienvenidaEl: { type: Date, default: null },
+
+    /*
+      LO JUGADO HOY, PARA EL TOPE DIARIO.
+
+      Sumar el libro y despues decidir deja una ventana: veinte
+      aperturas a la vez leen el mismo total y pasan todas. Con un
+      contador propio, el tope se puede poner adentro del filtro del
+      `$inc` y lo decide la base.
+
+      `dia` es la fecha UTC en texto. Cuando cambia, el contador
+      arranca de cero.
+    */
+    /*
+      CUANTOS CANJES TIENE EN EL AIRE.
+
+      Contarlos y despues decidir deja pasar veinte pedidos
+      simultaneos. Con un contador propio, el tope va adentro del
+      filtro del `$inc` y lo decide la base. Baja cuando el canje se
+      paga, se rechaza o se cancela.
+    */
+    canjesPendientes: { type: Number, default: 0, min: 0 },
+
+    /*
+      DESDE CUANDO VALEN LAS SESIONES.
+
+      Al cambiar la contraseña esto se pone en ahora, y el middleware
+      rechaza cualquier token firmado antes. Es lo que hace que cambiar
+      la clave de verdad eche al que te la robo: sin esto, el token que
+      ya tenia le servia 30 dias mas.
+    */
+    clavesDesde: { type: Date, default: null },
+
+
+    contadorDiario: {
+      dia: { type: String, default: "" },
+      jugadoSc: { type: Number, default: 0 },
+    },
+
 
     rank: { type: String, enum: ["user", "support", "admin", "owner"], default: "user", index: true },
 

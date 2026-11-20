@@ -235,6 +235,18 @@ const routes = [
     ],
   },
 
+  /*
+    LAS PAGINAS LEGALES.
+
+    Las cinco del pie. Sin esta ruta caian en el comodin de abajo y el
+    que tocaba "Reglas del sorteo" terminaba mirando cajas.
+  */
+  {
+    path: "/legal/:pagina?",
+    name: "legal",
+    component: () => import(/* webpackChunkName: "extras" */ "@/views/LegalView.vue"),
+  },
+
   /* Lo que no existe vuelve al catalogo, que es de donde arranca todo. */
   { path: "*", redirect: "/boxes" },
 ];

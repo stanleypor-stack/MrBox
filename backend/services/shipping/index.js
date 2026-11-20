@@ -30,6 +30,8 @@
  * única operación del inventario que no deja una línea en el libro.
  */
 
+const mongoose = require("mongoose");
+
 const InventoryItem = require("../../database/models/InventoryItem");
 const Address = require("../../database/models/Address");
 const Settings = require("../../database/models/Settings");
@@ -99,28 +101,40 @@ async function pedir({ user, ids, addressId }) {
   }
 
   /*
-    SE MARCAN ANTES DE ARMAR EL PEDIDO.
+    SE TOMAN Y SE FIRMAN EN EL MISMO MOVIMIENTO.
 
-    Con la condición `state: "held"` adentro del filtro: si entre la
-    lectura de arriba y esto alguien vendió uno, este update no lo toca
-    y la cuenta no cierra, así que el pedido no se arma.
+    El numero del pedido se decide ACA, antes de crearlo, y se escribe
+    junto con el estado. Asi cada objeto queda tomado y con el nombre
+    de su dueño a la vez.
+
+    Antes eran dos pasos --marcar, y mucho despues escribir `order`-- y
+    en el medio otro pedido solapado hacia rollback de "todo lo que
+    este `requested` sin `order`", que incluia lo que este pedido
+    acababa de tomar. El objeto terminaba `held` (vendible) adentro de
+    un pedido que el deposito iba a despachar igual.
   */
+  const numeroDelPedido = new mongoose.Types.ObjectId();
+
   const marcados = await InventoryItem.updateMany(
-    { _id: { $in: objetos.map((o) => o._id) }, user: user._id, state: "held" },
-    { $set: { state: "requested" } }
+    { _id: { $in: objetos.map((o) => o._id) }, user: user._id, state: "held", order: null },
+    { $set: { state: "requested", order: numeroDelPedido } }
   );
 
   if (marcados.modifiedCount !== objetos.length) {
-    /* Se devuelve lo que se haya marcado: dejar objetos trabados por un
-       pedido que no existe es peor que el error. */
+    /*
+      Se devuelve SOLO lo que lleva este numero. Dejar objetos trabados
+      por un pedido que no existe es peor que el error, pero tocar los
+      de otro pedido es mucho peor que las dos cosas.
+    */
     await InventoryItem.updateMany(
-      { _id: { $in: objetos.map((o) => o._id) }, user: user._id, state: "requested", order: null },
-      { $set: { state: "held" } }
+      { order: numeroDelPedido },
+      { $set: { state: "held", order: null } }
     );
     throw errorDe("ITEM_ALREADY_GONE");
   }
 
   const pedido = await Order.create({
+    _id: numeroDelPedido,
     user: user._id,
     items: objetos.map((o) => ({
       inventoryItem: o._id,
@@ -143,10 +157,8 @@ async function pedir({ user, ids, addressId }) {
     estado: "pending",
   });
 
-  await InventoryItem.updateMany(
-    { _id: { $in: objetos.map((o) => o._id) } },
-    { $set: { order: pedido._id } }
-  );
+  /* El `order` ya quedó escrito arriba, en el mismo update que tomó
+     los objetos. No hay segundo paso que pueda pisar nada. */
 
   return {
     _id: pedido._id,
@@ -164,18 +176,30 @@ async function pedir({ user, ids, addressId }) {
  * Una vez despachado no se cancela: el paquete ya está en la calle.
  */
 async function cancelar({ user, orderId, motivo = "" }) {
-  const pedido = await Order.findOne({ _id: orderId, user: user._id });
-  if (!pedido) throw errorDe("ITEM_NOT_FOUND", {}, 404);
-  if (!["pending", "packing"].includes(pedido.estado)) throw errorDe("ITEM_ALREADY_GONE");
+  /*
+    EL CAMBIO DE ESTADO VA EN EL FILTRO.
+
+    Antes se leia el pedido, se miraba el estado y despues se
+    guardaba: dos cancelaciones a la vez contestaban 200 las dos y
+    devolvian los objetos dos veces. Asi, la segunda no encuentra
+    pedido que cumpla y dice lo que corresponde.
+  */
+  const pedido = await Order.findOneAndUpdate(
+    { _id: orderId, user: user._id, estado: { $in: ["pending", "packing"] } },
+    { $set: { estado: "cancelled", motivo: String(motivo || "").slice(0, 200) } },
+    { new: true }
+  ).lean();
+
+  if (!pedido) {
+    /* O no es suyo, o no existe, o ya no se puede cancelar. */
+    const existe = await Order.exists({ _id: orderId, user: user._id });
+    throw existe ? errorDe("ITEM_ALREADY_GONE") : errorDe("ITEM_NOT_FOUND", {}, 404);
+  }
 
   await InventoryItem.updateMany(
     { order: pedido._id, user: user._id, state: "requested" },
     { $set: { state: "held", order: null } }
   );
-
-  pedido.estado = "cancelled";
-  pedido.motivo = String(motivo || "").slice(0, 200);
-  await pedido.save();
 
   return { _id: pedido._id, estado: pedido.estado };
 }

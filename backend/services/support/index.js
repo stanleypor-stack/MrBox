@@ -294,7 +294,7 @@ async function fichaDelJugador(userId) {
     return f ? sc(Math.abs(f.total)) : 0;
   };
 
-  const rango = vip.rangoDe(u.jugadoSc, u.rangoManual);
+  const rango = vip.rangoDe(vip.jugadoParaVip(u), u.rangoManual);
 
   return {
     _id: u._id,

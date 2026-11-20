@@ -44,6 +44,8 @@ export default {
     "language": "Lingua",
     "worth": "Valore",
     "chance": "Probabilità",
+    "cancel": "Annulla",
+    "confirm": "Conferma",
     "previous": "Precedente",
     "next": "Successivo",
     "close": "Chiudi",
@@ -412,6 +414,25 @@ export default {
     "withdrawSoon": "I prelievi non sono ancora attivi.",
     "redeemSoon": "I riscatti non sono ancora attivi."
   },
+  "bonus": {
+    "available": "Bonus di deposito disponibile",
+    "headline": "DI BONUS SUL DEPOSITO",
+    "sub": "Deposita ora e prenditi il bonus!",
+    "active": "Bonus attivo",
+    "activeSub": "Si aggiunge da solo al tuo primo deposito.",
+    "claim": "Riscuoti",
+    "timeLeft": "Tempo rimasto",
+    "days": "Giorni",
+    "hours": "Ore",
+    "minutes": "Min",
+    "seconds": "Sec",
+    "ruleWindow": "L’offerta dura {n} minuti dalla registrazione.",
+    "detailsTitle": "Dettagli del bonus",
+    "ruleWager": "Il bonus va giocato {n} volte prima di poterlo ritirare.",
+    "ruleAmount": "Ricevi il {pct}% di bonus. Fino a {max}.",
+    "ruleOnce": "Il bonus si riscuote una sola volta.",
+    "ruleFirst": "Vale solo per il primo deposito del conto."
+  },
   "cashier": {
     "state": {
       "pending": "IN ATTESA",
@@ -495,6 +516,15 @@ export default {
     "twoFactor": "Autenticazione a due fattori",
     "twoFactorSub": "Un codice a sei cifre dal telefono, oltre alla password.",
     "enable": "Attiva",
+    "currentPassword": "Password attuale",
+    "newPassword": "Nuova password",
+    "repeatPassword": "Ripeti la nuova",
+    "passwordMismatch": "Le due nuove non coincidono.",
+    "passwordSaved": "Password cambiata. Le altre sessioni sono state chiuse.",
+    "passwordKicks": "Cambiarla disconnette tutti gli altri dispositivi.",
+    "change": "Cambia",
+    "changePhoto": "Cambia la foto",
+    "photoSaved": "Foto aggiornata.",
     "changePassword": "Cambia password",
     "start": "Inizia",
     "verificationIntro": "Tre livelli. Ognuno sblocca qualcosa in più, e ti serve solo il livello richiesto.",
@@ -652,8 +682,12 @@ export default {
     "past": "Gare passate"
   },
   "auth": {
+    "birthday": "Data di nascita",
+    "country": "Paese",
+    "pickCountry": "Scegli",
     "username": "Nome utente",
     "email": "E-mail",
+    "passwordShort": "La password deve avere almeno {n} caratteri.",
     "password": "Password",
     "referralCode": "Codice referral (facoltativo)",
     "back": "Torna a MR BOX",
@@ -674,6 +708,8 @@ export default {
     "soon": "Non è ancora attivo.",
     "codeIgnored": "Il codice {code} non esiste, quindi non è stato applicato.",
     "signUpAndClaim": "REGISTRATI<br>E RITIRA",
+    "firstBonus": "{pct}% DI BONUS<br>SUL 1° DEPOSITO",
+    "plusBonus": "+ {pct}% di bonus sul primo deposito",
     "freeOpens": "{n} APERTURE<br>GRATIS",
     "terms": "Accetto i <a href=\"/legal/terms\">Termini di servizio</a> e l’<a href=\"/legal/privacy\">Informativa sulla privacy</a> e confermo di avere 18 anni o più.*",
     "captchaNote": "Questo sito è protetto da Cloudflare Turnstile."
@@ -1122,6 +1158,17 @@ export default {
     "legal3": "Nessun acquisto necessario. Gli Sweeps Coins si riscattano in premi secondo il regolamento ufficiale. Nullo dove vietato.",
     "copy": "© {anio} MR BOX"
   },
+  "legal": {
+    "index": "Pagine legali",
+    "pending": "Stiamo completando questo testo. Sara pubblicato prima dell apertura al pubblico.",
+    "askUs": "Ti serve qualcosa adesso?",
+    "contactSupport": "Chiedi al supporto",
+    "termsSub": "Le regole per usare MR BOX.",
+    "rulesSub": "Come funziona il concorso.",
+    "responsibleSub": "Limiti, pausa, autoesclusione e aiuto.",
+    "privacySub": "Quali dati raccogliamo e perche.",
+    "acceptanceSub": "Chi possiamo accettare come cliente."
+  },
   "admin": {
     "back": "Back",
     "save": "Save",
@@ -1505,6 +1552,12 @@ export default {
       "theirDeposits": "What they bought",
       "theirRakeback": "Paid back to them",
       "each": "Played each",
+      "byHand": "VIP rank by hand",
+      "byHandHelp": "For someone moved over from another site, so they start in the rank they already had. The bar starts at the floor of that rank and counts their play from there. It never demotes anyone: if what they have played gives them more, that wins.",
+      "whoFor": "Who for",
+      "whoForPh": "Name, email or ID",
+      "find": "Find",
+      "noone": "No one matches that.",
       "benefits": "What each rank unlocks",
       "benefitsHelp": "How many benefits a rank has is fixed by its position: the first rank gets the first benefit, the last one gets them all."
     },

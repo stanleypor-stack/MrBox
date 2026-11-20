@@ -85,9 +85,19 @@ async function abrir({ user, slug, veces = 1, demo = false }) {
   const cfg = await Settings.leer();
   const caja = await cajaPorSlug(slug);
 
-  if (!demo && !caja.live) throw errorDe("BOX_NOT_LIVE");
+  /*
+    LA DE DEMOSTRACION TAMBIEN PIDE QUE ESTE AL AIRE.
 
-  const cuantas = Math.max(1, Math.min(Number(veces) || 1, cfg.cajasALaVez || 4));
+    Antes la demo se salteaba el chequeo, asi que `POST /:slug/demo`
+    --sin sesion-- devolvia la tabla de premios entera de una caja
+    apagada, o de una de comunidad todavia sin aprobar. Probar una caja
+    que no se puede abrir no sirve para nada, y mostrarla antes de
+    tiempo si.
+  */
+  if (!caja.live) throw errorDe("BOX_NOT_LIVE");
+
+  /* Entero y para abajo: `veces: 2.7` dejaba `Box.opens` en 59,7. */
+  const cuantas = Math.max(1, Math.min(Math.floor(Number(veces) || 1), cfg.cajasALaVez || 4));
   if (Number(veces) > (cfg.cajasALaVez || 4)) {
     throw errorDe("TOO_MANY_AT_ONCE", { maximo: cfg.cajasALaVez || 4 });
   }
@@ -144,31 +154,38 @@ async function abrir({ user, slug, veces = 1, demo = false }) {
     const gratis = await gastarAperturaGratis(user._id, caja._id);
 
     /*
-      UNA APERTURA GRATIS TAMBIEN ES JUGAR.
+      UNA APERTURA GRATIS TAMBIEN ES JUGAR, PERO NO MUEVE EL SALDO.
 
-      Antes no dejaba rastro: el saldo no se movía, así que no había
-      fila en el libro. Y como TODO sale del libro --lo jugado del Club
-      VIP, las carreras, el rakeback, el margen del panel-- abrir tres
-      cajas gratis dejaba el "amount wagered" en cero y el premio que
-      salió de esas cajas no aparecía como costo en ningún lado.
+      Tiene que quedar en el libro: de ahi salen lo jugado del Club
+      VIP, las carreras, el rakeback y el margen del panel. Si no
+      dejara rastro, abrir tres cajas de regalo daria "jugado cero" y
+      el premio que salio de ellas no figuraria como costo en ningun
+      lado.
 
-      Ahora entra y sale: se acredita el regalo y se cobra la apertura.
-      El saldo queda igual --neto cero-- y las dos filas dicen la
-      verdad: la casa regaló SC 5 y el jugador jugó SC 5.
+      POR QUE UN SOLO ASIENTO Y NO DOS.
+
+      Antes se acreditaba el precio y se cobraba acto seguido. El neto
+      era cero leido en orden, pero dos aperturas a la vez intercalan
+      los pasos: una acredita, la otra cobra con ese saldo prestado, y
+      el cobro de la primera falla por falta de saldo con el credito ya
+      hecho. Eso creaba SC canjeables de la nada en cualquier cuenta
+      recien registrada.
+
+      Un asiento de monto cero con `juegaSc` dice exactamente lo mismo
+      --la casa regalo una apertura de SC 5 y el jugador jugo SC 5--
+      sin ningun instante en el que el saldo este inflado.
     */
+    const precio = gratis ? 0 : precioUnitario;
+
     if (gratis && precioUnitario > 0) {
       await wallet.mover({
         userId: user._id,
-        amountSc: precioUnitario,
-        type: "promo_code",
+        amountSc: 0,
+        type: "box_open",
+        juegaSc: precioUnitario,
         reference: { kind: "freeOpen", id: caja._id, label: caja.name },
       });
-    }
-
-    /* Gratis o no, la apertura se cobra: el regalo ya entró. */
-    const precio = precioUnitario;
-
-    if (precio > 0) {
+    } else if (precio > 0) {
       await wallet.mover({
         userId: user._id,
         amountSc: -precio,
@@ -208,6 +225,14 @@ async function abrir({ user, slug, veces = 1, demo = false }) {
       imageUrl: premio.imageUrl,
       rarity: premio.rarity,
       valueSc: sc(premio.valueSc),
+      /*
+        SI SE PUEDE MANDAR POR CORREO, LO DICE EL CATALOGO.
+
+        Sin esto quedaba en `true` por defecto, y los vales de credito
+        --que son objetos con `shippable: false`-- entraban al flujo de
+        envio. El deposito recibia una orden de despachar un vale.
+      */
+      shippable: premio.shippable !== false,
       state: "held",
       source: { kind: "box", box: caja._id },
     });
@@ -375,12 +400,22 @@ async function gastarAperturaGratis(userId, boxId) {
 }
 
 /**
- * LAS TRES CAJAS DE REGALO, AL REGISTRARSE.
+ * LAS TRES CAJAS DE REGALO.
  *
  * Las que digan las perillas. Si alguna no existe o no está al aire, se
- * reparten las que sí: mejor dos regalos que un error en el registro.
+ * reparten las que sí: mejor dos regalos que un error.
+ *
+ * SUMAN, NO PISAN
+ *
+ * Antes hacía `$set` del arreglo entero. Eso revivía las cajas ya
+ * usadas, así que un código promocional de "una apertura" devolvía las
+ * tres de bienvenida completas. Ahora se agregan al final y el
+ * contador se incrementa.
+ *
+ * @param {number} [cuantas]  cuántas dar. Por defecto, las que diga la
+ *   perilla `aperturasDeRegalo`.
  */
-async function regalarCajasDeBienvenida(userId) {
+async function regalarCajasDeBienvenida(userId, cuantas = 0) {
   const cfg = await Settings.leer();
   /* Vacia quiere decir "nadie las eligio todavia", no "ninguna": el
      documento de perillas es mas viejo que el campo. */
@@ -388,7 +423,8 @@ async function regalarCajasDeBienvenida(userId) {
     ? cfg.cajasDeRegalo
     : Settings.CAJAS_DE_REGALO;
 
-  const slugs = configuradas.slice(0, cfg.aperturasDeRegalo || 3);
+  const cuantasDar = Math.max(1, Number(cuantas) || cfg.aperturasDeRegalo || 3);
+  const slugs = configuradas.slice(0, cuantasDar);
   if (!slugs.length) return [];
 
   const cajas = await Box.find({ slug: { $in: slugs }, live: true })
@@ -406,7 +442,7 @@ async function regalarCajasDeBienvenida(userId) {
 
   await User.updateOne(
     { _id: userId },
-    { $set: { cajasGratis: regalo, freeOpens: regalo.length } }
+    { $push: { cajasGratis: { $each: regalo } }, $inc: { freeOpens: regalo.length } }
   );
 
   return regalo;
@@ -601,7 +637,36 @@ async function verificar({ user, boxOpenId }) {
  * se puede verificar.
  */
 async function rotarSemilla({ user, semillaCliente }) {
-  const vieja = await UserSeed.findOne({ user: user._id, activa: true });
+  /*
+    SE APAGA LA VIEJA PRIMERO, Y CON LA CONDICION ADENTRO DEL FILTRO.
+
+    Antes se creaba la nueva, se apagaba la vieja y se encendia la
+    nueva, en tres pasos. Dos rotaciones al mismo tiempo chocaban
+    contra el indice unico de (user, activa) --E11000, HTTP 500-- y
+    dejaban tandas huerfanas apagadas y sin revelar.
+
+    Asi, el que gana el apagado es el unico que crea; el otro se
+    encuentra sin vieja que apagar y devuelve la que ya quedo activa.
+    El doble clic deja de ser un error del servidor.
+  */
+  const vieja = await UserSeed.findOneAndUpdate(
+    { user: user._id, activa: true },
+    { $set: { activa: false, reveladaEn: new Date() } }
+  ).lean();
+
+  if (!vieja) {
+    const yaEsta = await UserSeed.findOne({ user: user._id, activa: true }).lean();
+    if (yaEsta) {
+      return {
+        nueva: {
+          semillaServidorHash: yaEsta.semillaServidorHash,
+          semillaCliente: yaEsta.semillaCliente,
+          nonce: yaEsta.nonce,
+        },
+        revelada: null,
+      };
+    }
+  }
 
   const nueva = fair.semillaNueva();
   const creada = await UserSeed.create({
@@ -610,16 +675,8 @@ async function rotarSemilla({ user, semillaCliente }) {
     semillaServidorHash: fair.hashDeSemilla(nueva),
     semillaCliente: String(semillaCliente || "").trim().slice(0, 64) || fair.semillaNueva().slice(0, 16),
     nonce: 0,
-    activa: false, // se enciende recién cuando la vieja se apagó
+    activa: true,
   });
-
-  if (vieja) {
-    await UserSeed.updateOne(
-      { _id: vieja._id },
-      { $set: { activa: false, reveladaEn: new Date() } }
-    );
-  }
-  await UserSeed.updateOne({ _id: creada._id }, { $set: { activa: true } });
 
   const activa = await UserSeed.findById(creada._id).lean();
 

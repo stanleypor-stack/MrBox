@@ -83,6 +83,11 @@
           </button>
         </div>
 
+        <!-- La oferta de bienvenida, mientras se pueda reclamar. Va
+             antes del cartel de conexion: abajo empieza la cadena de
+             v-if y meterse en el medio la corta. -->
+        <MbTiraDeBono :bono="bonoDeBienvenida" :desde="desdeCuando" @depositar="alDepositar" />
+
         <p v-if="deposito && !deposito.conectada" class="mb-caja__aviso">
           {{ $t('wallet.notConnected') }}
         </p>
@@ -237,7 +242,9 @@
         </template>
 
         <template v-else-if="deposito">
-          <span class="mb-caja__solo" v-html="$t('wallet.sendOnly', { coin: tickerLargo, net: red.nombre })"></span>
+          <!-- De `deposito` y no de lo elegido en pantalla: el cartel y
+               la direccion tienen que salir de la misma respuesta. -->
+          <span class="mb-caja__solo" v-html="$t('wallet.sendOnly', { coin: tickerDelDeposito, net: redDelDeposito })"></span>
 
           <div class="mb-caja__qr">
             <img v-if="qr" :src="qr" :alt="$t('wallet.qrAlt')">
@@ -472,6 +479,7 @@ import MbMoneda from "@/components/MbMoneda.vue";
 import MbMarcaDeBilletera from "@/components/MbMarcaDeBilletera.vue";
 import { parDeBilletera, enlaceDePago, SOLANA } from "@/utils/cadenas";
 import { billeterasDisponibles, enlaceDeTx, pagar } from "@/utils/billeteras";
+import MbTiraDeBono from "@/components/MbTiraDeBono.vue";
 
 /**
  * LA CAJA: COMPRAR SC Y CANJEARLOS.
@@ -495,7 +503,7 @@ import { billeterasDisponibles, enlaceDeTx, pagar } from "@/utils/billeteras";
 export default {
   name: "MbBilletera",
 
-  components: { MbElegir, MbMoneda, MbMarcaDeBilletera },
+  components: { MbElegir, MbMoneda, MbMarcaDeBilletera, MbTiraDeBono },
 
   props: {
     /* "in" deposita, "out" canjea. */
@@ -509,6 +517,11 @@ export default {
       tickerElegido: "USDT",
       redElegida: "TRC20",
       deposito: null,
+      /* El numero del ultimo pedido de direccion: ver
+         `traerDeposito`. Una respuesta vieja no pinta nada. */
+      pedidoDeDeposito: 0,
+      /* Lo que dice `/wallet/coins` del bono de bienvenida. */
+      bonoDeBienvenida: null,
       canje: null,
       pedidos: [],
       qr: "",
@@ -544,7 +557,11 @@ export default {
   },
 
   computed: {
-    ...mapGetters(["entro"]),
+    ...mapGetters(["entro", "cuentaDesde"]),
+
+    /* La oferta corre desde que se abrio la cuenta. Sin sesion, desde
+       ahora: el visitante ve la semana entera, que es lo que tendria. */
+    desdeCuando() { return this.cuentaDesde || null; },
 
     moneda() {
       return this.monedas.find((m) => m.ticker === this.tickerElegido) || { redes: [], color: "#3f7cf0", letra: "?" };
@@ -581,6 +598,32 @@ export default {
     },
 
     /* "USDT (TRC20)" cuando hay varias redes; "BTC" cuando hay una. */
+    /*
+      LO QUE DICE EL CARTEL, SACADO DE LA DIRECCION QUE SE MUESTRA.
+
+      `tickerElegido` y `redElegida` son lo que hay marcado en el
+      selector ahora; `deposito` es la respuesta que trajo la direccion
+      que se esta mostrando. Entre una cosa y la otra hay un viaje a la
+      red, y en ese viaje el jugador puede haber cambiado de moneda.
+
+      El cartel manda plata a una cadena. Tiene que hablar de la
+      direccion que tiene debajo, no de lo que diga el selector.
+    */
+    tickerDelDeposito() {
+      const t = (this.deposito && this.deposito.moneda) || this.tickerElegido;
+      const m = this.monedas.find((x) => x.ticker === t) || this.moneda;
+      const r = (this.deposito && this.deposito.red) || this.redElegida;
+      return ((m && m.redes) || []).length > 1 ? `${t} (${r})` : t;
+    },
+
+    redDelDeposito() {
+      const t = (this.deposito && this.deposito.moneda) || this.tickerElegido;
+      const r = (this.deposito && this.deposito.red) || this.redElegida;
+      const m = this.monedas.find((x) => x.ticker === t) || this.moneda;
+      const red = ((m && m.redes) || []).find((x) => x.clave === r);
+      return (red && red.nombre) || r;
+    },
+
     tickerLargo() {
       return (this.moneda.redes || []).length > 1
         ? `${this.tickerElegido} (${this.redElegida})`
@@ -787,11 +830,17 @@ export default {
       if (this.lado === "in") this.traerDeposito();
     },
 
+    /* Confirmaron en la ventana del bono: no hay nada que reclamar a
+       mano --entra solo con el primer deposito-- asi que se cierra y se
+       asegura que esten mirando el lado de depositar. */
+    alDepositar() { this.lado = "in"; },
+
     async traerMonedas() {
       try {
         const { data } = await api.get("/wallet/coins");
         this.monedas = data.data.monedas;
         this.minimo = data.data.minimoDepositoSc;
+        this.bonoDeBienvenida = data.data.bonoDeBienvenida || null;
         if (!this.monedas.find((m) => m.ticker === this.tickerElegido)) {
           this.tickerElegido = this.monedas[0].ticker;
           this.redElegida = this.monedas[0].redes[0].clave;
@@ -866,14 +915,29 @@ export default {
         direccion. Sin billetera, ni se ofrece de entrada.
       */
       /*
-        Sin billetera instalada, la manera util es el QR del telefono:
-        arrancar en "pagar desde este navegador" seria ofrecerle lo
-        unico que no puede hacer.
+        SIEMPRE ARRANCA EN "DESDE ESTE NAVEGADOR".
+
+        Antes, sin billetera instalada, arrancaba en el QR. La idea era
+        no ofrecerle lo que no puede hacer, pero el resultado era que
+        la mayoria abria la pantalla directo en el QR y ni se enteraba
+        de que existe la otra manera, que es la que menos pasos tiene
+        y la unica que no deja copiar mal una direccion.
+
+        El que no tiene billetera igual ve el boton de instalar y
+        cambia al QR con un toque.
       */
-      this.comoPago = this.billeteras.length ? "aqui" : "qr";
+      this.comoPago = "aqui";
 
       if (this.lado === "in") {
-        this.metodo = "billetera";
+        /*
+          ABRE EN "CRIPTOMONEDAS", NO EN "CONECTAR BILLETERA".
+
+          Conectar la billetera del navegador es la via con menos pasos
+          para el que ya tiene una, pero son los menos: abrir ahi deja
+          a la mayoria mirando un cartel de "instala una extension"
+          cuando lo que queria era una direccion para mandar.
+        */
+        this.metodo = "direccion";
         if (this.billeteras.length) this.aUnParDeBilletera();
         else this.alCambiarMonedaQr();
       }
@@ -939,6 +1003,17 @@ export default {
       this.traerDeposito();
     },
 
+    /**
+     * LA DIRECCION PARA DEPOSITAR, CON LOS PEDIDOS EN ORDEN.
+     *
+     * Dos pedidos encimados --el de arranque y el del selector, o dos
+     * toques seguidos-- no vuelven necesariamente en el orden en que
+     * salieron. Sin numerarlos, se pintaba el que contestara ultimo:
+     * una direccion de una red y, arriba, el nombre de otra.
+     *
+     * Cada pedido se lleva su numero. Si cuando vuelve ya salio otro,
+     * esta respuesta es vieja y se tira.
+     */
     async traerDeposito() {
       if (!this.entro) return;
       this.deposito = null;
@@ -946,13 +1021,18 @@ export default {
       this.copiado = false;
       this.txHash = "";
 
+      this.pedidoDeDeposito += 1;
+      const mio = this.pedidoDeDeposito;
+
       try {
         const { data } = await api.get("/wallet/deposit", {
           params: { coin: this.tickerElegido, network: this.redElegida },
         });
+        if (mio !== this.pedidoDeDeposito) return;
         this.deposito = data.data;
         if (this.deposito.direccion) this.dibujarQr(this.deposito.direccion);
       } catch (err) {
+        if (mio !== this.pedidoDeDeposito) return;
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
       }
     },

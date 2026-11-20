@@ -50,6 +50,35 @@ async function direccionDeDeposito({ userId, ticker, red }) {
   const par = buscar(ticker, red);
   if (!par) throw errorDe("NOT_FOUND", { ticker, red });
 
+  /*
+    EL MINIMO DE LA CADENA, QUE NO ES EL NUESTRO.
+
+    `canjeMinimoSc` son nuestros 50 dolares. `retiroMinimo` es lo que la
+    red exige para mover esa moneda, en unidades de la moneda. Estaba
+    en la lista y no lo miraba nadie: la pantalla lo mostraba y el
+    servidor lo ignoraba, asi que un canje por debajo del minimo salia
+    de acá y lo rebotaba la pasarela, con el saldo ya descontado.
+  */
+  const piso = Number(par.red.retiroMinimo) || 0;
+  if (piso > 0) {
+    try {
+      const { cuanto } = await oxapay.aMoneda(monto, par.moneda.ticker);
+      if (cuanto < piso) {
+        throw errorDe("BELOW_MINIMUM", {
+          minimoSc: sc(cfg.canjeMinimoSc),
+          minimoDeLaRed: piso,
+          ticker: par.moneda.ticker,
+        });
+      }
+    } catch (err) {
+      /* Si lo que fallo es la cotizacion, se deja pasar: el canje nace
+         pendiente y la conversion se vuelve a hacer al pagar, que es
+         donde de verdad importa. Lo que no se hace es inventar. */
+      if (err && err.code) throw err;
+      logger.warn(`[cashier] sin cotizacion para el minimo de ${par.moneda.ticker}: ${err.message}`);
+    }
+  }
+
   if (!oxapay.configurada()) {
     return {
       conectada: false,
@@ -162,11 +191,27 @@ async function pedirCanje({ user, montoSc, ticker, red, direccion }) {
     throw errorDe("INVALID_AMOUNT", { campo: "direccion" });
   }
 
-  const pendientes = await Redemption.countDocuments({
-    user: user._id,
-    estado: { $in: ["pending", "approved"] },
-  });
-  if (pendientes >= PEDIDOS_A_LA_VEZ) throw errorDe("TOO_MANY_THREADS", { pendientes });
+  /*
+    EL TOPE LO DECIDE LA BASE.
+
+    Contar y despues decidir dejaba pasar veinte pedidos simultaneos
+    contra un tope de tres. No creaba plata --cada uno descuenta
+    bien-- pero el freno antifraude dejaba de frenar.
+
+    El contador baja al pagar, al rechazar y al cancelar.
+  */
+  const lugar = await User.findOneAndUpdate(
+    { _id: user._id, canjesPendientes: { $lt: PEDIDOS_A_LA_VEZ } },
+    { $inc: { canjesPendientes: 1 } }
+  ).lean();
+
+  if (!lugar) {
+    const cuantos = await Redemption.countDocuments({
+      user: user._id,
+      estado: { $in: ["pending", "approved"] },
+    });
+    throw errorDe("TOO_MANY_THREADS", { pendientes: cuantos });
+  }
 
   /*
     EL SALDO SE DESCUENTA ACA.
@@ -246,6 +291,11 @@ async function cancelar(userId, id) {
     { $set: { estado: "rejected", motivo: "cancelled by the player", revisadoEl: new Date() } },
     { new: true }
   );
+    /* Se libera el lugar: este canje ya no esta en el aire. */
+    await User.updateOne(
+      { _id: userId, canjesPendientes: { $gt: 0 } },
+      { $inc: { canjesPendientes: -1 } }
+    );
   if (!pedido) throw errorDe("NOT_FOUND");
 
   await wallet.mover({
@@ -339,6 +389,11 @@ async function resolver({ admin, id, accion, motivo = "" }) {
     );
 
     if (!rechazado) throw errorDe("ALREADY_CLAIMED");
+    /* Se libera el lugar: este canje ya no esta en el aire. */
+    await User.updateOne(
+      { _id: rechazado.user, canjesPendientes: { $gt: 0 } },
+      { $inc: { canjesPendientes: -1 } }
+    );
 
     await wallet.mover({
       userId: rechazado.user,
@@ -355,7 +410,17 @@ async function resolver({ admin, id, accion, motivo = "" }) {
   if (accion === "approve") {
     const aprobado = await Redemption.findOneAndUpdate(
       { _id: pedido._id, estado: "pending" },
-      { $set: { estado: "approved", revisadoPor: admin._id, revisadoEl: new Date() } },
+      {
+        $set: {
+          estado: "approved",
+          /* Quien aprobo queda aparte de quien paga: `revisadoPor` se
+             pisa en el pago y si no, no quedaria rastro de que fueron
+             dos personas distintas. */
+          aprobadoPor: admin._id,
+          revisadoPor: admin._id,
+          revisadoEl: new Date(),
+        },
+      },
       { new: true }
     );
     if (!aprobado) throw errorDe("ALREADY_CLAIMED");
@@ -380,12 +445,48 @@ async function resolver({ admin, id, accion, motivo = "" }) {
       condicion adentro del filtro. Si dos personas tocan Pagar a la
       vez, una sola llega a mandar la plata.
     */
+    /*
+      DOS COSAS ANTES DE SACAR LA PLATA.
+
+      La primera, que no sea el mismo que aprobo. La segunda, que el
+      nivel de verificacion SIGA estando: se miro al pedir, y entre el
+      pedido y el pago pueden haber pasado horas en las que soporte le
+      bajo el nivel o encontro algo.
+    */
+    const cfgPago = await Settings.leer();
+
+    if (cfgPago.canjePideDosFirmas !== false
+        && pedido.aprobadoPor
+        && String(pedido.aprobadoPor) === String(admin._id)) {
+      throw errorDe("NEEDS_SECOND_PAIR_OF_EYES");
+    }
+
+    const duenio = await User.findById(pedido.user)
+      .select("verificationLevel banned redemptionLock trabas")
+      .lean();
+
+    if (!duenio) throw errorDe("NOT_FOUND");
+
+    if (duenio.banned || duenio.redemptionLock || (duenio.trabas && duenio.trabas.canje)) {
+      throw errorDe("REDEMPTION_LOCKED");
+    }
+
+    const pide = nivelQuePide(cfgPago);
+    if ((duenio.verificationLevel || 0) < pide) {
+      throw errorDe("VERIFICATION_LEVEL_TOO_LOW", { nivel: pide });
+    }
+
     const tomado = await Redemption.findOneAndUpdate(
       { _id: pedido._id, estado: "approved" },
       { $set: { estado: "paid", revisadoPor: admin._id, revisadoEl: new Date() } },
       { new: true }
     );
     if (!tomado) throw errorDe("ALREADY_CLAIMED");
+    /* Se libera el lugar: este canje ya no esta en el aire. */
+    await User.updateOne(
+      { _id: tomado.user, canjesPendientes: { $gt: 0 } },
+      { $inc: { canjesPendientes: -1 } }
+    );
 
     let salida;
     try {
@@ -403,10 +504,15 @@ async function resolver({ admin, id, accion, motivo = "" }) {
     }
 
     tomado.pasarelaId = salida.id || "";
+    tomado.montoMoneda = Number(salida.montoMoneda) || 0;
+    tomado.cotizacion = Number(salida.cotizacion) || 0;
     tomado.pagadoEl = new Date();
     await tomado.save();
 
-    logger.info(`[cashier] canje pagado ${tomado._id} · ${tomado.moneda} ${tomado.montoSc}`);
+    logger.info(
+      `[cashier] canje pagado ${tomado._id} · SC ${tomado.montoSc} = ` +
+      `${tomado.montoMoneda} ${tomado.moneda} a ${tomado.cotizacion}`
+    );
     return resumir(tomado);
   }
 

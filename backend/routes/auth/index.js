@@ -1,6 +1,6 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
-const rateLimit = require("express-rate-limit");
+const { rateLimit, ipKeyGenerator } = require("express-rate-limit");
 
 const User = require("../../database/models/User");
 const SessionEvent = require("../../database/models/SessionEvent");
@@ -12,6 +12,7 @@ const turnstile = require("../../services/turnstile");
 const afiliados = require("../../services/affiliates");
 const cajas = require("../../services/boxes");
 const fair = require("../../services/boxes/fair");
+const vip = require("../../services/vip");
 const wallet = require("../../services/wallet");
 const { errorDe, esDeJugador } = require("../../utils/errors");
 const { logger } = require("../../utils/logger");
@@ -45,6 +46,29 @@ const limite = rateLimit({
   max: Number(process.env.AUTH_RATE_LIMIT) || 10,
   standardHeaders: true,
   legacyHeaders: false,
+
+  /*
+    LA LLAVE NO ES SOLO LA IP.
+
+    `req.ip` sale de `X-Forwarded-For` cuando hay proxy, y si el numero
+    de saltos quedo mal puesto, el que prueba contraseñas se inventa una
+    IP distinta en cada intento y no lo frena nadie. Medido: 20 de 20
+    pasaron rotando la cabecera.
+
+    Sumando a quien apunta --el mail o el usuario del cuerpo-- esa parte
+    de la llave ya no la elige el atacante: puede cambiar de IP todo lo
+    que quiera, pero si sigue probando contra la misma cuenta, cuenta.
+
+    Y al reves, el de la oficina con NAT compartido no queda afuera
+    porque el de al lado se equivoco: son cuentas distintas.
+  */
+  keyGenerator: (req) => {
+    const ip = ipKeyGenerator(req);
+    const cuerpo = req.body || {};
+    const apunta = String(cuerpo.email || cuerpo.username || "").trim().toLowerCase().slice(0, 80);
+    return apunta ? `${ip}|${apunta}` : ip;
+  },
+
   handler: (req, res) => res.status(429).json(errorDe("RATE_LIMITED", {}, 429).aRespuesta()),
 });
 
@@ -74,6 +98,10 @@ async function retrato(userId) {
     freeOpens: u.freeOpens,
     demosUsadas: u.demosUsadas || 0,
     jugadoSc: u.jugadoSc,
+    /* Lo jugado MAS el piso del rango puesto a mano: es lo que muestra
+       la barra del Club VIP y la del perfil. `jugadoSc` sigue siendo lo
+       que de verdad jugo, que es lo que usan las carreras. */
+    jugadoVipSc: vip.jugadoParaVip(u),
     affiliateCode: u.affiliateCode,
     createdAt: u.createdAt,
     ...saldo,
@@ -173,6 +201,13 @@ router.post("/register", limite, async (req, res) => {
       cajas, como en el prototipo. Con fichas, alguien abria tres veces
       la mas cara de las tres (ver services/boxes).
     */
+    /*
+      LAS TRES CAJAS DE REGALO, AL REGISTRARSE.
+
+      Son del registro y de nadie mas: el que deposita se lleva el
+      bono, que es otra cosa. Separar las dos promesas hace que cada
+      una se entienda sola.
+    */
     await cajas.regalarCajasDeBienvenida(usuario._id);
 
     const socio = codigo ? await afiliados.atarAlSocio(usuario, codigo) : null;
@@ -262,6 +297,49 @@ router.post("/login", limite, async (req, res) => {
     });
   } catch (err) {
     return responderError(res, err, "login");
+  }
+});
+
+/* ── Cambiar la contraseña ────────────────────────────────────────── */
+
+/**
+ * CAMBIARLA ECHA A TODAS LAS DEMAS SESIONES.
+ *
+ * Es el punto de cambiarla. Si el que te la robo sigue adentro con su
+ * token de hace una semana, cambiarla no sirvio de nada.
+ *
+ * Pide la vieja: sin eso, cualquiera que te agarre el teléfono
+ * desbloqueado se queda con la cuenta para siempre.
+ */
+router.put("/password", autorizar(true), limite, async (req, res) => {
+  try {
+    const actual = String(req.body.actual || "");
+    const nueva = String(req.body.nueva || "");
+
+    if (nueva.length < CLAVE_MINIMA) {
+      throw errorDe("INVALID_AMOUNT", { campo: "nueva", minimo: CLAVE_MINIMA });
+    }
+
+    if (nueva === actual) throw errorDe("INVALID_AMOUNT", { campo: "nueva" });
+
+    const usuario = await User.findById(req.user._id).select("+passwordHash");
+    if (!usuario) throw errorDe("NOT_LOGGED_IN", {}, 401);
+
+    const cierra = await bcrypt.compare(actual, usuario.passwordHash);
+    if (!cierra) throw errorDe("BAD_CREDENTIALS", {}, 401);
+
+    usuario.passwordHash = await bcrypt.hash(nueva, 12);
+    /* Todo token firmado antes de esto deja de valer. */
+    usuario.clavesDesde = new Date();
+    await usuario.save();
+
+    await anotarSesion(usuario._id, req, "password");
+
+    /* Y se devuelve uno nuevo, para que el que la cambió no se quede
+       afuera de su propia sesión. */
+    return res.json({ success: true, token: firmar(usuario._id) });
+  } catch (err) {
+    return responderError(res, err, "password");
   }
 });
 

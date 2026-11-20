@@ -94,7 +94,7 @@ function ventanaDe(tipo, momento = new Date()) {
  *
  * Sale del libro: la suma de lo que salió en aperturas y deals.
  */
-async function tablaDe({ desde, hasta, cuantos = 50 }) {
+async function tablaDe({ desde, hasta, cuantos = 50, piso = 0 }) {
   /*
     SE PIDEN DE MAS A PROPOSITO.
 
@@ -102,10 +102,29 @@ async function tablaDe({ desde, hasta, cuantos = 50 }) {
     hubieran pedido justos, cada uno que sale deja un puesto vacio al
     final de la tabla en vez de correr al que sigue.
   */
+  /*
+    LAS APERTURAS DE REGALO NO CUENTAN.
+
+    Quedan en el libro como `box_open` de monto cero con su `juegaSc`,
+    porque para el Club VIP y el margen SI cuentan. Para la carrera no:
+    son el combustible gratis que hacia que diez cuentas nuevas se
+    llevaran los tres pozos sin gastar un peso.
+
+    El filtro es el monto: una apertura pagada mueve el saldo, una de
+    regalo no.
+  */
   const filas = await BalanceTransaction.aggregate([
-    { $match: { type: { $in: JUGAR }, createdAt: { $gte: desde, $lt: hasta } } },
+    {
+      $match: {
+        type: { $in: JUGAR },
+        createdAt: { $gte: desde, $lt: hasta },
+        amountSc: { $ne: 0 },
+      },
+    },
     { $group: { _id: "$user", jugadoSc: { $sum: { $abs: "$amountSc" } } } },
-    { $match: { jugadoSc: { $gt: 0 } } },
+    /* Con piso 0 sigue haciendo falta haber jugado algo: una fila de
+       cero no es un corredor. */
+    { $match: { jugadoSc: { $gte: Math.max(Number(piso) || 0, 0.01) } } },
     { $sort: { jugadoSc: -1, _id: 1 } },
     { $limit: cuantos + 10 },
   ]);
@@ -194,11 +213,33 @@ async function cerrar(carrera) {
 
   if (!tomada) return null; // otro la cerró primero
 
+  const cfg = await Settings.leer();
+  const pisos = cfg.pisoDeCarreraSc || {};
+  const piso = Number(pisos[tomada.tipo]) || 0;
+
   const tabla = await tablaDe({
     desde: tomada.desde,
     hasta: tomada.hasta,
     cuantos: tomada.reparto.length,
+    piso,
   });
+
+  /*
+    SI NO CORRIO NADIE, NO SE REPARTE.
+
+    El pozo queda para la siguiente. Repartir SC 2.000 entre dos cuentas
+    que jugaron SC 5 cada una no es una carrera.
+  */
+  const minimo = Number(cfg.minimoDeCorredores) || 0;
+
+  if (tabla.length < minimo) {
+    await Race.updateOne({ _id: tomada._id }, { $set: { ganadores: [] } });
+    logger.info(
+      `[races] la ${tomada.tipo} se cerro sin repartir: ${tabla.length} corredores, ` +
+      `hacen falta ${minimo}`
+    );
+    return tomada;
+  }
 
   const ganadores = tabla.map((f) => ({
     ...f,
@@ -214,6 +255,23 @@ async function cerrar(carrera) {
   */
   for (const g of ganadores) {
     if (g.premioSc <= 0) continue;
+
+    /*
+      SE TOMA EL PREMIO ANTES DE PAGARLO.
+
+      La condicion `pagadoEl: null` va en el filtro, asi que si el panel
+      esta pagando este mismo premio a mano al mismo tiempo, uno de los
+      dos no encuentra documento y no paga. Sin esto, la unica defensa
+      era buscar la fila en el libro y despues mover, que es justo el
+      patron que deja la ventana abierta.
+    */
+    const tomado = await Race.findOneAndUpdate(
+      { _id: tomada._id, ganadores: { $elemMatch: { user: g.user, pagadoEl: null } } },
+      { $set: { "ganadores.$.pagadoEl": new Date() } }
+    ).lean();
+
+    if (!tomado) continue;
+
     try {
       await wallet.mover({
         userId: g.user,
@@ -222,6 +280,11 @@ async function cerrar(carrera) {
         reference: { kind: "race", id: tomada._id, label: `${tomada.tipo} #${g.puesto}` },
       });
     } catch (err) {
+      /* No salio: se devuelve la marca para poder reintentarlo. */
+      await Race.updateOne(
+        { _id: tomada._id, "ganadores.user": g.user },
+        { $set: { "ganadores.$.pagadoEl": null } }
+      );
       logger.error(`[races] premio sin pagar a ${g.username} (${g.premioSc}): ${err.message}`);
     }
   }
@@ -265,7 +328,18 @@ async function ver({ tipo, userId }) {
   const carrera = await Race.findOne({ tipo, estado: "live" }).sort({ desde: -1 }).lean();
   if (!carrera) throw errorDe("RACE_NOT_FOUND", {}, 404);
 
-  const tabla = await tablaDe({ desde: carrera.desde, hasta: carrera.hasta, cuantos: 50 });
+  /* El mismo piso que usa el reparto: la tabla que se mira en vivo
+     tiene que ser la misma que la que paga, o el que esta decimo
+     primero se entera el dia del cierre. */
+  const cfgTabla = await Settings.leer();
+  const pisoTabla = Number((cfgTabla.pisoDeCarreraSc || {})[carrera.tipo]) || 0;
+
+  const tabla = await tablaDe({
+    desde: carrera.desde,
+    hasta: carrera.hasta,
+    cuantos: 50,
+    piso: pisoTabla,
+  });
 
   const filas = tabla.map((f) => ({
     puesto: f.puesto,

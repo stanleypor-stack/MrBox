@@ -235,7 +235,7 @@ router.get("/players/:id/full", async (req, res) => {
       return f ? sc(f.total) : 0;
     };
 
-    const rango = vip.rangoDe(u.jugadoSc, u.rangoManual);
+    const rango = vip.rangoDe(vip.jugadoParaVip(u), u.rangoManual);
 
     return res.json({
       success: true,
@@ -322,7 +322,7 @@ router.get("/players/:id/full", async (req, res) => {
 /** Una solapa de la ficha. */
 router.get("/players/:id/:solapa", async (req, res) => {
   try {
-    const traer = SOLAPAS[req.params.solapa];
+    const traer = Object.hasOwn(SOLAPAS, req.params.solapa) ? SOLAPAS[req.params.solapa] : null;
     if (!traer) throw errorDe("NOT_FOUND");
 
     const datos = await traer(req.params.id, Math.max(1, Number(req.query.page) || 1));
@@ -415,10 +415,30 @@ router.post("/players/:id/tier", async (req, res) => {
     const motivo = String(req.body.motivo || "").trim();
     if (rango && motivo.length < 3) throw errorDe("REASON_REQUIRED");
 
-    const antes = await User.findById(req.params.id).select("username rangoManual").lean();
+    const antes = await User.findById(req.params.id)
+      .select("username rangoManual jugadoSc jugadoBaseSc")
+      .lean();
     if (!antes) throw errorDe("NOT_FOUND");
 
-    await User.updateOne({ _id: antes._id }, { $set: { rangoManual: rango } });
+    /*
+      LA BARRA ARRANCA EN EL PISO DEL RANGO.
+
+      Al que se trae de otro sitio se le pone el rango que ya tenia, y
+      lo que vio hasta ahora es una barra en cero con el nombre de un
+      rango alto al lado. El piso lo arregla: la barra arranca donde
+      arranca ese rango y de ahi cuenta lo que juegue acá.
+
+      Nunca baja: si ya jugo mas que el piso, se queda con lo suyo.
+    */
+    const piso = rango ? vip.pisoDelRango(rango) : 0;
+    const jugadoHoy = Number(antes.jugadoSc) || 0;
+    const baseAhora = Number(antes.jugadoBaseSc) || 0;
+    const base = rango ? Math.max(baseAhora, Math.max(0, piso - jugadoHoy)) : baseAhora;
+
+    await User.updateOne(
+      { _id: antes._id },
+      { $set: { rangoManual: rango, jugadoBaseSc: base } }
+    );
 
     await admin.anotar({
       admin: req.user,

@@ -81,7 +81,11 @@ router.get("/", autorizar(false), async (req, res) => {
       /* Lo que devuelve cada caja, de mayor a menor. */
       retorno: { retorno: -1 },
     };
-    const orden = ORDENES[req.query.sort] || ORDENES.popular;
+    /* `Object.hasOwn` y no `ORDENES[x]`: lo segundo hereda de
+       `Object.prototype`, asi que `?sort=constructor` devolvia una
+       funcion y reventaba la consulta con un 500 publico. */
+    const pedido = String(req.query.sort || "");
+    const orden = Object.hasOwn(ORDENES, pedido) ? ORDENES[pedido] : ORDENES.popular;
 
     const pagina = Math.max(1, Number(req.query.page) || 1);
     const porPagina = Math.min(60, Math.max(1, Number(req.query.perPage) || 24));
@@ -365,7 +369,16 @@ router.post("/:slug/open", autorizar(true), limiteAbrir, async (req, res) => {
 router.get("/feed/latest", autorizar(false), async (req, res) => {
   try {
     const cuantas = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
-    const filas = await BoxOpen.find({ demo: { $ne: true } })
+    /*
+      `demo: false` Y NO `$ne: true`.
+
+      Con `$ne` el indice {demo, createdAt} se parte en dos rangos y
+      Mongo termina ordenando en memoria igual. Con la igualdad lo
+      recorre derecho: de 171 documentos examinados para devolver 24 a
+      exactamente 24. Todas las filas tienen el campo (`default: false`),
+      asi que no se pierde ninguna.
+    */
+    const filas = await BoxOpen.find({ demo: false })
       .sort({ createdAt: -1 })
       .limit(cuantas)
       .populate("user", "username avatarUrl")

@@ -44,6 +44,8 @@ export default {
     "language": "Sprache",
     "worth": "Wert",
     "chance": "Chance",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
     "previous": "Zurück",
     "next": "Weiter",
     "close": "Schließen",
@@ -412,6 +414,25 @@ export default {
     "withdrawSoon": "Auszahlungen sind noch nicht aktiv.",
     "redeemSoon": "Einlösungen sind noch nicht aktiv."
   },
+  "bonus": {
+    "available": "Verfügbarer Einzahlungsbonus",
+    "headline": "EINZAHLUNGSBONUS",
+    "sub": "Jetzt einzahlen und Bonus sichern!",
+    "active": "Bonus aktiv",
+    "activeSub": "Wird deiner ersten Einzahlung automatisch gutgeschrieben.",
+    "claim": "Sichern",
+    "timeLeft": "Verbleibende Zeit",
+    "days": "Tage",
+    "hours": "Std.",
+    "minutes": "Min.",
+    "seconds": "Sek.",
+    "ruleWindow": "Das Angebot gilt {n} Minuten nach der Anmeldung.",
+    "detailsTitle": "Bonus-Details",
+    "ruleWager": "Beachte: Der Bonus muss {n}x gespielt werden.",
+    "ruleAmount": "Du bekommst {pct}% Bonus. Bis {max}.",
+    "ruleOnce": "Der Bonus kann einmal eingelöst werden.",
+    "ruleFirst": "Gilt nur für die erste Einzahlung des Kontos."
+  },
   "cashier": {
     "state": {
       "pending": "WARTET",
@@ -495,6 +516,15 @@ export default {
     "twoFactor": "Zwei-Faktor-Authentifizierung",
     "twoFactorSub": "Ein sechsstelliger Code von deinem Handy, zusätzlich zum Passwort.",
     "enable": "Aktivieren",
+    "currentPassword": "Aktuelles Passwort",
+    "newPassword": "Neues Passwort",
+    "repeatPassword": "Neues wiederholen",
+    "passwordMismatch": "Die neuen stimmen nicht überein.",
+    "passwordSaved": "Passwort geändert. Andere Sitzungen wurden abgemeldet.",
+    "passwordKicks": "Beim Ändern werden alle anderen Geräte abgemeldet.",
+    "change": "Andern",
+    "changePhoto": "Foto andern",
+    "photoSaved": "Foto aktualisiert.",
     "changePassword": "Passwort ändern",
     "start": "Starten",
     "verificationIntro": "Drei Stufen. Jede schaltet ein bisschen mehr frei, und du brauchst nur die Stufe, die dein Vorhaben verlangt.",
@@ -652,8 +682,12 @@ export default {
     "past": "Frühere Rennen"
   },
   "auth": {
+    "birthday": "Geburtsdatum",
+    "country": "Land",
+    "pickCountry": "Auswählen",
     "username": "Benutzername",
     "email": "E-Mail",
+    "passwordShort": "Das Passwort braucht mindestens {n} Zeichen.",
     "password": "Passwort",
     "referralCode": "Empfehlungscode (optional)",
     "back": "Zurück zu MR BOX",
@@ -674,6 +708,8 @@ export default {
     "soon": "Das ist noch nicht aktiv.",
     "codeIgnored": "Der Code {code} existiert nicht und wurde nicht angewendet.",
     "signUpAndClaim": "JETZT<br>SICHERN",
+    "firstBonus": "{pct}% BONUS AUF<br>DIE 1. EINZAHLUNG",
+    "plusBonus": "+ {pct}% Bonus auf die 1. Einzahlung",
     "freeOpens": "{n} GRATIS<br>ÖFFNUNGEN",
     "terms": "Ich akzeptiere die <a href=\"/legal/terms\">Nutzungsbedingungen</a> und die <a href=\"/legal/privacy\">Datenschutzerklärung</a> und bestätige, dass ich 18 Jahre oder älter bin.*",
     "captchaNote": "Diese Seite wird durch Cloudflare Turnstile geschützt."
@@ -1122,6 +1158,17 @@ export default {
     "legal3": "Kein Kauf erforderlich. Sweeps Coins können nach den offiziellen Regeln gegen Preise eingelöst werden. Ungültig, wo gesetzlich untersagt.",
     "copy": "© {anio} MR BOX"
   },
+  "legal": {
+    "index": "Rechtliches",
+    "pending": "Dieser Text wird gerade fertiggestellt und vor dem Start veroffentlicht.",
+    "askUs": "Brauchst du jetzt etwas daraus?",
+    "contactSupport": "Support fragen",
+    "termsSub": "Die Regeln fur die Nutzung von MR BOX.",
+    "rulesSub": "Wie das Gewinnspiel funktioniert.",
+    "responsibleSub": "Limits, Pause, Selbstausschluss und Hilfe.",
+    "privacySub": "Welche Daten wir erheben und warum.",
+    "acceptanceSub": "Wen wir als Kunden akzeptieren konnen."
+  },
   "admin": {
     "back": "Back",
     "save": "Save",
@@ -1505,6 +1552,12 @@ export default {
       "theirDeposits": "What they bought",
       "theirRakeback": "Paid back to them",
       "each": "Played each",
+      "byHand": "VIP rank by hand",
+      "byHandHelp": "For someone moved over from another site, so they start in the rank they already had. The bar starts at the floor of that rank and counts their play from there. It never demotes anyone: if what they have played gives them more, that wins.",
+      "whoFor": "Who for",
+      "whoForPh": "Name, email or ID",
+      "find": "Find",
+      "noone": "No one matches that.",
       "benefits": "What each rank unlocks",
       "benefitsHelp": "How many benefits a rank has is fixed by its position: the first rank gets the first benefit, the last one gets them all."
     },

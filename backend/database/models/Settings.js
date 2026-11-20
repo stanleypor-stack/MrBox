@@ -196,6 +196,33 @@ const settingsSchema = new mongoose.Schema(
     },
 
     /**
+     * EL BONO DE BIENVENIDA.
+     *
+     * El 50% del PRIMER deposito, una sola vez por cuenta, con tope.
+     * Es otra cosa que `bonoPorDeposito`, que es el que trae el codigo
+     * de un socio y aplica a cada compra.
+     *
+     * EL TOPE NO ES DECORACION
+     *
+     * Un 50% sin techo sobre un deposito de diez mil son cinco mil
+     * regalados. El tope es lo que hace que la promesa sea acotada.
+     *
+     */
+    bonoDeBienvenida: {
+      activo: { type: Boolean, default: true },
+      pct: { type: Number, default: 0.5, min: 0, max: 5 },
+      topeSc: { type: Number, default: 300, min: 0 },
+      vecesAJugar: { type: Number, default: 10, min: 0 },
+      /*
+        CUANTO DURA LA OFERTA, EN MINUTOS.
+        Desde que se abrio la cuenta. El contador de la pantalla cuenta
+        esto mismo, y el servidor no acredita el bono pasada la hora:
+        si hay reloj, el reloj manda.
+      */
+      minutos: { type: Number, default: 30, min: 1 },
+    },
+
+    /**
      * CUANTAS VECES HAY QUE JUGAR EL BONO ANTES DE PODER SACARLO.
      *
      * Esto NO es el rollover de BetSweeps, que ata TODA la compra. Acá
@@ -213,7 +240,7 @@ const settingsSchema = new mongoose.Schema(
      * Se puede poner en 0 desde el panel. Es una decisión comercial, pero
      * conviene tomarla sabiendo la cuenta.
      */
-    vecesAJugarElBono: { type: Number, default: 1, min: 0 },
+    vecesAJugarElBono: { type: Number, default: 10, min: 0 },
 
 
     /*
@@ -241,6 +268,39 @@ const settingsSchema = new mongoose.Schema(
       monthly: { type: Number, default: 30000, min: 0 },
     },
 
+    /*
+      EL PISO PARA ENTRAR A UNA CARRERA.
+
+      Sin piso, el premio no premia jugar: premia aparecer. Con el sitio
+      tranquilo, SC 2,37 de volumen se llevaban los SC 600 del primer
+      puesto diario, y las aperturas de regalo alcanzaban para eso.
+    */
+    pisoDeCarreraSc: {
+      daily: { type: Number, default: 50, min: 0 },
+      weekly: { type: Number, default: 250, min: 0 },
+      monthly: { type: Number, default: 1000, min: 0 },
+    },
+
+    /*
+      CUANTOS TIENEN QUE CORRER PARA QUE SE REPARTA.
+
+      Si no llegan, la carrera se cierra sin pagar y el pozo pasa a la
+      siguiente. Repartir SC 2.000 entre dos cuentas que jugaron SC 5
+      cada una no es una carrera, es un regalo con tabla.
+
+      ARRANCA EN 0, O SEA APAGADO, Y ES A PROPOSITO.
+
+      El que de verdad cierra el agujero es `pisoDeCarreraSc`: con el
+      piso puesto hay que JUGAR para entrar, y las aperturas de regalo
+      ya no cuentan. Este de acá es el segundo cerrojo, y prenderlo en
+      un sitio recién abierto haría que ninguna carrera pague nunca,
+      que se ve igual de roto que pagarle a dos.
+
+      Se prende cuando hay gente.
+    */
+    minimoDeCorredores: { type: Number, default: 0, min: 0 },
+
+
     /* ── Canjes ──────────────────────────────────────────────────────── */
 
     canjeMinimoSc: { type: Number, default: 50 },
@@ -256,6 +316,15 @@ const settingsSchema = new mongoose.Schema(
       Abajo de 1 no baja a proposito: pagarle a alguien de quien no se
       sabe el nombre no es una opcion que convenga dejar a mano.
     */
+    /*
+      DOS FIRMAS PARA PAGAR UN CANJE.
+
+      El que aprueba no puede ser el que paga. En un equipo de una sola
+      persona esto traba, y por eso se puede apagar; pero apagarlo
+      tiene que ser una decision, no un olvido.
+    */
+    canjePideDosFirmas: { type: Boolean, default: true },
+
     canjeNivelMinimo: { type: Number, default: 2, min: 1, max: 3 },
 
     /** Arriba de esto, un envío pide verificación de domicilio (nivel 3). */
@@ -397,9 +466,39 @@ const settingsSchema = new mongoose.Schema(
  * Nunca devuelve `null`: medio sitio depende de esto y una pantalla que
  * explota porque todavía nadie entró al panel sería un papelón evitable.
  */
+/*
+  EL BONO DE BIENVENIDA, DE FABRICA.
+
+  Mismo motivo que la escalera de afiliados de mas abajo: `default:`
+  solo corre cuando se CREA el documento, y el de MR BOX ya existe. Sin
+  esto, un sitio que ya estaba andando leeria el bono en cero y la
+  oferta no aparece en ningun lado.
+*/
+const BONO_DE_BIENVENIDA = {
+  activo: true,
+  pct: 0.5,
+  topeSc: 300,
+  vecesAJugar: 10,
+  minutos: 30,
+};
+
 settingsSchema.statics.leer = async function leer() {
   const existente = await this.findOne({ key: "main" }).lean();
-  if (existente) return existente;
+
+  if (existente) {
+    /* Lo que falte se completa con lo de fabrica, campo por campo: un
+       documento viejo no tiene por que quedarse sin la oferta. */
+    const b = existente.bonoDeBienvenida || {};
+    existente.bonoDeBienvenida = {
+      activo: typeof b.activo === "boolean" ? b.activo : BONO_DE_BIENVENIDA.activo,
+      pct: Number.isFinite(b.pct) ? b.pct : BONO_DE_BIENVENIDA.pct,
+      topeSc: Number.isFinite(b.topeSc) ? b.topeSc : BONO_DE_BIENVENIDA.topeSc,
+      vecesAJugar: Number.isFinite(b.vecesAJugar) ? b.vecesAJugar : BONO_DE_BIENVENIDA.vecesAJugar,
+      minutos: Number.isFinite(b.minutos) ? b.minutos : BONO_DE_BIENVENIDA.minutos,
+    };
+    return existente;
+  }
+
   const creado = await this.create({ key: "main" });
   return creado.toObject();
 };
