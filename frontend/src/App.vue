@@ -254,7 +254,13 @@ export default {
   flex: 999 1 560px;
   min-width: 0;
   box-sizing: border-box;
-  padding: 20px 24px 64px;
+  /*
+    62 y no 24: mrloot deja unos 53 px de aire a cada lado de la
+    columna y nosotros llegabamos casi al borde de la pantalla. Como
+    la aplicacion se dibuja a ~0,84, 62 de maquetado son esos 53 que
+    se ven.
+  */
+  padding: 20px 62px 64px;
   /* En celular el relleno de abajo deja lugar a la barra de cinco
      botones, que flota sobre el final de la página. */
   @include en-celular { padding: 14px 14px 110px; }

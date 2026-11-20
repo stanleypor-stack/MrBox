@@ -873,14 +873,23 @@ export default {
   position: relative;
   margin-top: 18px;
   /*
-    La proporcion del arte, para que entre entero y sin recortes.
+    LA PROPORCION DE MRLOOT, MEDIDA SOBRE SU PANTALLA.
 
-    El arte nuevo es mas alto que el anterior --3:1 contra 4,7:1-- asi
-    que la caja lo sigue. Con la proporcion vieja, `cover` recortaba
-    arriba y abajo y se comia el titulo y el boton del banner.
+    A 1365 px de ancho el de ellos mide 1059 x 298: 3,55. El nuestro
+    daba 3,49 --mas bajo y mas gordo-- porque la caja llevaba la
+    proporcion del arte (3,08) con un tope de 380 px que terminaba
+    siendo el que decidia.
+
+    Sin tope, a proposito: asi la caja guarda la misma forma en
+    cualquier ancho, que es lo que hace la de ellos. Un tope la
+    achataba cada vez mas a medida que la pantalla crecia.
+
+    El arte mide 1600x534 (3,0), asi que pierde un 15% de alto. Se
+    recorta por el centro y se reviso banner por banner: el titulo, el
+    texto y el boton viven en la franja del medio; lo que se va es
+    cielo arriba y piso abajo.
   */
-  aspect-ratio: 2000 / 650;
-  max-height: 380px;
+  aspect-ratio: 355 / 100;
   border-radius: 24px;
   overflow: hidden;
   border: 1px solid #2a4a85;
@@ -919,9 +928,10 @@ export default {
   width: 100%;
   height: 100%;
   /*
-    En la pc la caja tiene la proporcion del arte, asi que `cover` no
-    recorta nada; solo entra a jugar arriba de 1.416px de ancho, donde
-    el alto queda clavado en 300.
+    La caja es mas ancha que el arte (3,55 contra 3,0), asi que `cover`
+    recorta un 15% del alto. POR EL CENTRO: en los cuatro banners el
+    titulo, el texto y el boton estan en la franja del medio, y lo que
+    se pierde es cielo arriba y piso abajo.
   */
   object-fit: cover;
   object-position: center;
