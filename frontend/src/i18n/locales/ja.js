@@ -739,7 +739,7 @@ export default {
     "luxTitle": "夢のアイテムを開けよう",
     "luxSub": "ミステリーボックスを開けて、夢を本物に変えよう。",
     "luxCta": "ボックスを開ける",
-    "raceTitle": "6,000ドルレース",
+    "raceTitle": "10,000ドルレース",
     "raceSub": "競い合って勝ち続けよう。ボックスを開けるほど順位が上がる。",
     "raceCta": "レースを見る",
     "gtaTitle": "GTA VI イベント",

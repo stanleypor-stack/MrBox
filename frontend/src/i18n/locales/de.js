@@ -739,7 +739,7 @@ export default {
     "luxTitle": "Pack deinen Traum aus",
     "luxSub": "Öffne eine Mystery-Box und mach daraus etwas Echtes. Hör auf zu träumen, fang an auszupacken.",
     "luxCta": "Box öffnen",
-    "raceTitle": "6K-RENNEN",
+    "raceTitle": "10K-RENNEN",
     "raceSub": "Tritt an und bleib dran. Jede geöffnete Box bringt dich in der Rangliste nach oben.",
     "raceCta": "Rennen ansehen",
     "gtaTitle": "GTA-VI-EVENT",

@@ -739,7 +739,7 @@ export default {
     "luxTitle": "Unbox your dream",
     "luxSub": "Open a mystery box and turn it into something real. Stop dreaming and start unboxing.",
     "luxCta": "Open a box",
-    "raceTitle": "6K RACE",
+    "raceTitle": "10K RACE",
     "raceSub": "Compete and keep the wins rolling. Every box you open pushes you up the leaderboard.",
     "raceCta": "See the race",
     "gtaTitle": "GTA VI EVENT",

@@ -32,12 +32,25 @@
       </svg>{{ $t('nav.inventory') }}
     </button>
 
-    <!-- En su lugar, lo que el visitante vino a hacer. -->
+    <!--
+      LOS DOS QUE REEMPLAZAN A BILLETERA E INVENTARIO.
+
+      Las dos pantallas que puede mirar sin cuenta: las cajas y las
+      promociones. Asi la barra sigue teniendo cinco botones --como la
+      de mrloot-- en vez de cuatro y un hueco.
+    -->
     <button v-if="!entro" type="button" :class="{ 'is-activo': $route.path === '/boxes' }" @click="ir('/boxes')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M3 9h18v11H3zM2 5l5-2 5 2-5 2zM22 5l-5-2-5 2 5 2zM12 9v11" />
       </svg>{{ $t('nav.boxes') }}
+    </button>
+
+    <button v-if="!entro" type="button" :class="{ 'is-activo': $route.path === '/promotions' }" @click="ir('/promotions')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 12v9H4v-9M2 7h20v5H2zM12 21V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7M12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7" />
+      </svg>{{ $t('nav.promotions') }}
     </button>
 
     <button
@@ -134,7 +147,15 @@ export default {
   background: $panel;
   border-top: 1px solid #1a2a45;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  /*
+    LAS COLUMNAS QUE HAYA, NO CINCO SIEMPRE.
+
+    Era `repeat(5, 1fr)`. Con sesion hay cinco botones y cerraba; sin
+    sesion hay cuatro y la quinta columna quedaba vacia: todo corrido
+    a la izquierda y 71px de nada contra el borde.
+  */
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   gap: 2px;
 
   @include en-escritorio { display: none; }
@@ -152,6 +173,17 @@ export default {
     font-weight: 800;
     font-size: 11px;
     cursor: pointer;
+    /*
+      EL ROTULO NO PUEDE ROMPER LA FILA.
+
+      "Promociones" mide 70px en una celda de 71: en castellano entra
+      por un pelo y en otro idioma no tiene por que. Cortado con
+      puntos suspensivos, la barra queda igual en los nueve.
+    */
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     @include foco;
 
     &.is-activo { color: #fff; }
@@ -161,9 +193,9 @@ export default {
 /*
   El unico boton de la barra que no es navegacion.
 
-  Al visitante le quedan cuatro: tres lo mueven por el sitio y este lo
-  convierte en jugador. Pintado igual que los otros no se distingue de
-  una pestana mas.
+  Al visitante le quedan cinco: cuatro lo mueven por el sitio y este
+  lo convierte en jugador. Pintado igual que los otros no se distingue
+  de una pestana mas.
 */
 .mb-abajo__alta {
   color: #7fc2ff !important;

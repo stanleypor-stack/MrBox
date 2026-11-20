@@ -739,7 +739,7 @@ export default {
     "luxTitle": "开出你的梦想",
     "luxSub": "打开盲盒，把梦想变成真实的奖品。",
     "luxCta": "开启盲盒",
-    "raceTitle": "6000 美元竞赛",
+    "raceTitle": "10000 美元竞赛",
     "raceSub": "开盒竞赛，每一次开启都让你在榜单上更进一步。",
     "raceCta": "查看竞赛",
     "gtaTitle": "GTA VI 活动",

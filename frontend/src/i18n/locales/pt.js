@@ -739,7 +739,7 @@ export default {
     "luxTitle": "Abra o luxo que você sonha",
     "luxSub": "Abra uma caixa misteriosa e transforme em algo real. Pare de sonhar e comece a abrir.",
     "luxCta": "Abrir uma caixa",
-    "raceTitle": "CORRIDA DE 6K",
+    "raceTitle": "CORRIDA DE 10K",
     "raceSub": "Compita e continue ganhando. Cada caixa aberta te sobe na tabela.",
     "raceCta": "Ver a corrida",
     "gtaTitle": "EVENTO GTA VI",

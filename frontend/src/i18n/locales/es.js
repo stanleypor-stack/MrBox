@@ -739,7 +739,7 @@ export default {
     "luxTitle": "Abrí el lujo que soñás",
     "luxSub": "Abrí una caja misteriosa y convertila en algo real. Dejá de soñar y empezá a abrir.",
     "luxCta": "Abrir una caja",
-    "raceTitle": "CARRERA DE 6K",
+    "raceTitle": "CARRERA DE 10K",
     "raceSub": "Competí y seguí ganando. Cada caja que abrís te sube en la tabla.",
     "raceCta": "Ver la carrera",
     "gtaTitle": "EVENTO GTA VI",

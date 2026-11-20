@@ -739,7 +739,7 @@ export default {
     "luxTitle": "Déballez votre rêve",
     "luxSub": "Ouvrez un coffret mystère et transformez-le en objet réel. Arrêtez de rêver, ouvrez.",
     "luxCta": "Ouvrir un coffret",
-    "raceTitle": "COURSE 6K",
+    "raceTitle": "COURSE 10K",
     "raceSub": "Participez et enchaînez les gains. Chaque coffret ouvert vous fait monter au classement.",
     "raceCta": "Voir la course",
     "gtaTitle": "ÉVÉNEMENT GTA VI",
