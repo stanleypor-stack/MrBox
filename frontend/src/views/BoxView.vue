@@ -332,7 +332,16 @@ export default {
     cuantasSePuede() {
       const n = Number(this.caja && this.caja.maximoALaVez);
       const tope = Number.isFinite(n) && n > 0 ? Math.min(n, 6) : 4;
-      return Array.from({ length: tope }, (uno, i) => i + 1);
+
+      /*
+        El 5 NO esta, a proposito.
+
+        En el telefono las columnas van de a tres por renglon: cinco
+        quedan 3+2, con el segundo renglon a medio llenar. Las otras
+        se parten parejo (4 es 2+2, 6 es 3+3), y por eso los demas
+        sitios tambien saltan de 4 a 6.
+      */
+      return [1, 2, 3, 4, 6].filter((x) => x <= tope);
     },
 
     /* Las de regalo que todavia no abrio, menos la de esta pantalla. */

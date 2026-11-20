@@ -939,6 +939,10 @@ router.get("/challenges", async (req, res) => {
         items: filas.map((d) => ({
           _id: d._id,
           caja: d.box ? d.box.name : d.boxName,
+          /* Para que la lista pueda mostrar "Datejust Wimbeldon" en
+             vez de "nullx" en los desafios por objeto. */
+          objeto: d.itemName || "",
+          itemName: d.itemName || "",
           multiplicador: d.multiplicador,
           premioSc: sc(d.premioSc),
           cupos: d.cupos,

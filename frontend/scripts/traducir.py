@@ -343,6 +343,8 @@ T = {
  "cashier.state.rejected": {"en":"REJECTED","de":"ABGELEHNT","fr":"REFUSÉ","es":"RECHAZADO","pt":"RECUSADO","it":"RIFIUTATO","ru":"ОТКЛОНЕНО","ja":"却下","zh":"已拒绝"},
  "boxes.title":             {"en":"Boxes","de":"Boxen","fr":"Coffrets","es":"Cajas","pt":"Caixas","it":"Box","ru":"Коробки","ja":"ボックス","zh":"盲盒"},
  "boxes.searchPlaceholder": {"en":"Search boxes…","de":"Boxen suchen…","fr":"Rechercher un coffret…","es":"Buscar cajas…","pt":"Buscar caixas…","it":"Cerca box…","ru":"Поиск коробок…","ja":"ボックスを検索…","zh":"搜索盲盒…"},
+ "boxes.withItem": {"en":"Boxes with {name}","de":"Boxen mit {name}","fr":"Coffrets avec {name}","es":"Cajas con {name}","pt":"Caixas com {name}","it":"Box con {name}","ru":"Коробки с {name}","ja":"{name} 入りのボックス","zh":"含 {name} 的盲盒"},
+ "boxes.seeAll":   {"en":"See all","de":"Alle ansehen","fr":"Voir tout","es":"Ver todas","pt":"Ver todas","it":"Vedi tutte","ru":"Смотреть все","ja":"すべて見る","zh":"查看全部"},
  "boxes.sort":              {"en":"Sort by","de":"Sortieren","fr":"Trier par","es":"Ordenar por","pt":"Ordenar por","it":"Ordina per","ru":"Сортировка","ja":"並び替え","zh":"排序"},
  "boxes.sortPopular":       {"en":"Popular","de":"Beliebt","fr":"Populaires","es":"Populares","pt":"Populares","it":"Popolari","ru":"Популярные","ja":"人気","zh":"热门"},
  "boxes.sortNew":           {"en":"Newest","de":"Neueste","fr":"Nouveautés","es":"Más nuevas","pt":"Mais novas","it":"Più recenti","ru":"Новые","ja":"新着","zh":"最新"},

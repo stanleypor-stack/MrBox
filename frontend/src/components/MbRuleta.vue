@@ -697,6 +697,9 @@ export default {
   .mb-reel--columnas .mb-reel__caja { max-width: 86px; }
 
   .mb-reel--n4 .mb-reel__col { flex: 0 0 calc(50% - 3px); }
+  /* El 5 ya no se ofrece --queda 3+2, con el segundo renglon a medio
+     llenar-- pero la regla se deja: si alguien abre cinco por API, la
+     pantalla tiene que saber dibujarlo. */
   .mb-reel--n5 .mb-reel__col,
   .mb-reel--n6 .mb-reel__col { flex: 0 0 calc(33.333% - 4px); }
 

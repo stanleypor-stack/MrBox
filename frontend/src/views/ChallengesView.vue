@@ -66,10 +66,14 @@
             </div>
           </div>
 
-          <!-- Sin caja, a la lista: el desafio vale en todas. -->
+          <!--
+            Con caja, a esa caja. Sin caja y con objeto, a las que
+            TIENEN ese objeto: la pregunta de "los primeros 3 que
+            saquen un Rolex" es en cuales esta el Rolex, no mostrame
+            las ciento sesenta y tres.
+          -->
           <router-link
-            v-if="!d.yaLoGane && d.cuposLibres > 0"
-            :to="d.caja.slug ? `/boxes/${d.caja.slug}` : '/boxes'" class="mb-reto__b"
+            v-if="!d.yaLoGane && d.cuposLibres > 0" :to="aDonde(d)" class="mb-reto__b"
           >{{ d.caja.name
             ? $t('challenges.play', { name: d.caja.name })
             : $t('challenges.playAny') }}</router-link>
@@ -140,6 +144,13 @@ export default {
       puestas ganaba la de la lamina y el objeto salia reventado.
     */
     arte(d) { return sprite(d.itemImage || d.caja.imageUrl); },
+
+    /** A donde lleva el boton de la tarjeta. */
+    aDonde(d) {
+      if (d.caja.slug) return `/boxes/${d.caja.slug}`;
+      if (d.itemId) return { path: "/boxes", query: { item: d.itemId } };
+      return "/boxes";
+    },
 
     fondoDe(d) {
       const c = TINTES[d.caja.category] || TINTES.Mix;
@@ -227,6 +238,9 @@ export default {
   border: 1px solid $borde;
   display: flex;
   flex-direction: column;
+  /* La celda de la grilla ya mide lo mismo para todas; esto hace que
+     la tarjeta la ocupe en vez de quedarse del alto de su texto. */
+  height: 100%;
 }
 
 .mb-reto__arte {
@@ -265,19 +279,61 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  /* Lo que estira la tarjeta hasta el fondo de la celda. */
+  flex: 1;
 
-  h2 { margin: 0; font-weight: 800; font-size: 20px; }
+  h2 {
+    margin: 0;
+    font-weight: 800;
+    font-size: 20px;
+    line-height: 1.25;
+    /*
+      Dos renglones reservados, use uno o dos.
+
+      "Pegá 50x o más" entra en uno y "Los primeros 3 que saquen un
+      Datejust Wimbeldon" en dos: sin reservarlos, las dos tarjetas
+      quedaban a distinta altura y la de al lado tambien.
+    */
+    min-height: 2.5em;
+  }
 }
 
 .mb-reto__chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  /*
+    DOS RENGLONES DE CHAPITAS, SIEMPRE.
 
-  span { padding: 6px 10px; border-radius: 9px; background: #1d3354; font-weight: 800; font-size: 13px; }
+    En los de objeto son dos chapitas y entran en uno; en los de
+    multiplicador son tres y se parten en dos. En escritorio la grilla
+    empareja las tarjetas igual, pero en el telefono van una debajo de
+    otra y ahi la diferencia se ve: una tarjeta 39px mas alta que la
+    de arriba.
+
+    Reservando los dos renglones, todas miden lo mismo en los dos
+    anchos. 29 de chapita x 2 + 8 de hueco.
+  */
+  min-height: 66px;
+  align-content: flex-start;
+
+  span {
+    padding: 6px 10px;
+    border-radius: 9px;
+    background: #1d3354;
+    font-weight: 800;
+    font-size: 13px;
+    /* Un nombre largo no puede ensanchar la tarjeta. */
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
-.mb-reto__cupos { display: flex; flex-direction: column; gap: 6px; }
+/* Empujado al fondo: asi la barra de cupos y el boton quedan a la
+   misma altura en todas las tarjetas, tenga el texto que tenga. */
+.mb-reto__cupos { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
 
 .mb-reto__cupos-rot {
   display: flex;

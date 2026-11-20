@@ -443,6 +443,8 @@ export default {
   "boxes": {
     "title": "Boxes",
     "searchPlaceholder": "Search boxes…",
+    "withItem": "Boxes with {name}",
+    "seeAll": "See all",
     "sort": "Sort by",
     "sortPopular": "Popular",
     "sortNew": "Newest",
@@ -1370,6 +1372,7 @@ export default {
       "montoSc": "Amount",
       "moneda": "Coin",
       "direccion": "Address",
+      "objeto": "Item",
       "sub": "Small line",
       "cta": "Button",
       "boton": "Button text",
@@ -1484,12 +1487,16 @@ export default {
       "reparto": "How the pool is split, in percent, from first place down. It has to add up to 100.",
       "idiomas": "Written in English. Every other language falls back to it until it is translated.",
       "caja": "The box slug, as it appears in its address: /boxes/black-card",
+      "cajaDesafio": "The box slug (/boxes/black-card). Leave it empty for an item challenge and it counts in every box that has the item.",
+      "objetoDesafio": "ITEM CHALLENGE: the exact catalogue name, e.g. Datejust Wimbeldon. Leave Target empty. Winners is how many get paid, first come first served.",
+      "multiDesafio": "TARGET CHALLENGE: how many times the box price has to come out, e.g. 100 for 100x. Leave Item empty, and name the box: 100x is not the same in a SC 2 box as in a SC 300 one.",
       "claveDeIdioma": "A translation key, not a sentence: the site shows it in each player's language.",
       "sinTope": "0 means no limit.",
       "ranks": "Nine tiers. Each one has to ask for more play than the one above it, and the weekly coin back is a percentage of what the player plays. Leave it as it is and the site uses the tiers it ships with.",
       "home": "The order and what shows on the home page. The rule behind each row stays in the code: \"the 14 most opened\" is a query, not a list.",
       "valor": "Changing this reprices every box that contains the item."
     },
+    "anyBox": "Any box",
     "field": {
       "code": "Code",
       "kind": "Gives",

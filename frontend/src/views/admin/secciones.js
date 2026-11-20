@@ -492,8 +492,9 @@ const SECCIONES = {
       cosa: "challenges",
       borrar: true,
       campos: [
-        { campo: "caja", campoReal: "box", ejemplo: "black-card", ayuda: "admin.help.caja" },
-        { campo: "multiplicador", tipo: "numero", ejemplo: "100" },
+        { campo: "caja", campoReal: "box", ejemplo: "black-card", ayuda: "admin.help.cajaDesafio" },
+        { campo: "objeto", campoReal: "item", ejemplo: "Datejust Wimbeldon", ayuda: "admin.help.objetoDesafio" },
+        { campo: "multiplicador", tipo: "numero", ejemplo: "100", ayuda: "admin.help.multiDesafio" },
         { campo: "premioSc", tipo: "sc", ejemplo: "300" },
         { campo: "cupos", tipo: "numero", ejemplo: "3" },
         { campo: "desde", tipo: "fecha" },
@@ -503,10 +504,16 @@ const SECCIONES = {
     },
     ruta: "/admin/challenges",
     ancho: "900px",
-    w: "2fr .8fr 1fr 1fr 1.2fr .9fr",
+    w: "1.4fr 1.6fr 1fr 1fr 1.2fr .9fr",
     columnas: [
-      { campo: "caja" },
-      { campo: "multiplicador", der: true, valor: (f) => f.multiplicador + "x" },
+      /* Vacia cuando vale en todas: es informacion, no un hueco. */
+      { campo: "caja", valor: (f, vm) => f.caja || vm.$t("admin.anyBox") },
+      /*
+        La misma columna dice las dos cosas: el objeto que hay que
+        sacar, o el multiplicador que hay que pegar. Son excluyentes,
+        asi que nunca compiten por el lugar.
+      */
+      { campo: "multiplicador", valor: (f) => (f.itemName ? f.itemName : f.multiplicador + "x") },
       { campo: "premioSc", der: true, tipo: "sc" },
       { campo: "cupos", der: true, valor: (f) => `${f.cuposUsados} / ${f.cupos}` },
       { campo: "hasta", tipo: "fechaHora", tenue: true },

@@ -295,7 +295,10 @@ export default {
     spr(url) { return sprite(url); },
 
     valor(c, f) {
-      const v = c.valor ? c.valor(f) : f[c.campo];
+      /* La fila y la pantalla: hay columnas que necesitan traducir
+         --"Cualquiera" cuando un desafio no tiene caja-- y sin el
+         segundo argumento no tienen con que. */
+      const v = c.valor ? c.valor(f, this) : f[c.campo];
       return v === undefined || v === null ? "" : v;
     },
 

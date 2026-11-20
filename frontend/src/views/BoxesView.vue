@@ -1,5 +1,19 @@
 <template>
   <div class="mb-cajas">
+    <!--
+      EL FILTRO POR OBJETO, DICHO.
+
+      Se llega aca desde un desafio: "los primeros 3 que saquen un
+      Rolex" -> "ver las cajas". Sin este cartel, el jugador ve once
+      cajas en vez de ciento sesenta y tres y no sabe por que.
+    -->
+    <div v-if="objetoFiltrado" class="mb-conobjeto">
+      <span v-if="arteDelObjeto" class="mb-conobjeto__foto" :class="arteDelObjeto.clase"
+            :style="arteDelObjeto.estilo" aria-hidden="true"></span>
+      <span class="mb-conobjeto__texto">{{ $t('boxes.withItem', { name: objetoFiltrado.name }) }}</span>
+      <router-link to="/boxes" class="mb-conobjeto__quitar">{{ $t('boxes.seeAll') }}</router-link>
+    </div>
+
     <div class="mb-cajas__barra">
       <div class="mb-buscador">
         <label for="mb-buscar" class="mb-oculto">{{ $t('action.search') }}</label>
@@ -55,6 +69,7 @@
 
 <script>
 import MbElegir from "@/components/MbElegir.vue";
+import { sprite } from "@/utils/sprite";
 import { mapState } from "vuex";
 import MbCajaEnGrilla from "@/components/MbCajaEnGrilla.vue";
 
@@ -97,6 +112,22 @@ export default {
     },
 
     ...mapState({ cajas: "cajas", cargando: "cargandoCajas", categorias: "categorias" }),
+
+    /*
+      EL OBJETO POR EL QUE SE ESTA FILTRANDO.
+
+      Lo dice el servidor, no la direccion: asi el cartel muestra el
+      nombre de verdad y no un id, y si el objeto no existe no aparece
+      ningun cartel.
+    */
+    objetoFiltrado() {
+      return (this.$route.query.item && this.cajas && this.cajas.objeto) || null;
+    },
+
+    arteDelObjeto() {
+      const o = this.objetoFiltrado;
+      return o && o.imageUrl ? sprite(o.imageUrl) : null;
+    },
 
     /*
       LA DIRECCION MANDA.
@@ -185,6 +216,8 @@ export default {
         await this.$store.dispatch("traerCajas", {
           search: this.busqueda || undefined,
           category: this.categoria || undefined,
+          /* Viene del enlace de un desafio por objeto. */
+          item: this.$route.query.item || undefined,
           sort: this.orden,
           page: this.pagina,
         });
@@ -256,6 +289,49 @@ export default {
 
   &::placeholder { color: $placeholder; }
   &:focus { outline: none; border-color: $azul; }
+}
+
+/* ── El cartel del filtro por objeto ─────────────────────────────── */
+
+.mb-conobjeto {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid $borde;
+  background: $panel-alto;
+}
+
+.mb-conobjeto__foto {
+  flex: none;
+  width: 38px;
+  height: 38px;
+}
+
+.mb-conobjeto__texto {
+  font-weight: 800;
+  font-size: 15px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mb-conobjeto__quitar {
+  margin-left: auto;
+  flex: none;
+  padding: 7px 13px;
+  border-radius: 10px;
+  background: #1d3354;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 13px;
+  @include foco;
+
+  &:hover { background: #22406f; color: #fff; }
 }
 
 .mb-cajas__filtros {

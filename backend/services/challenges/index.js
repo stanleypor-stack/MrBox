@@ -163,6 +163,8 @@ async function alAire(userId) {
        tiene que seguir diciendo lo que decía cuando se publicó. */
     itemName: d.item ? (d.itemName || d.item.name || "") : "",
     itemImage: d.item ? (d.item.imageUrl || "") : "",
+    /* Para que "ver las cajas" lleve a las que tienen ESE objeto. */
+    itemId: d.item ? String(d.item._id || d.item) : "",
     premioSc: sc(d.premioSc),
     cupos: d.cupos,
     cuposLibres: Math.max(0, d.cupos - d.cuposUsados),

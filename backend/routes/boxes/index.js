@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const rateLimit = require("express-rate-limit");
 
 const Box = require("../../database/models/Box");
@@ -58,6 +59,22 @@ router.get("/", autorizar(false), async (req, res) => {
     }
 
     if (req.query.category) filtro.category = String(req.query.category);
+
+    /*
+      LAS CAJAS QUE TIENEN UN OBJETO ADENTRO.
+
+      Es lo que pide "ver las cajas" de un desafio por objeto: la
+      pregunta no es "mostrame todas", es "en cuales esta el Rolex".
+
+      Se valida que parezca un id antes de pasarselo a mongoose: con
+      cualquier otra cosa revienta al convertir, y seria un 500
+      publico que lo dispara cualquiera con la barra de direcciones.
+    */
+    let objetoPedido = null;
+    if (req.query.item && /^[0-9a-f]{24}$/i.test(String(req.query.item))) {
+      filtro["prizes.item"] = new mongoose.Types.ObjectId(String(req.query.item));
+      objetoPedido = await Item.findById(req.query.item).select("name imageUrl").lean();
+    }
     if (req.query.search) {
       const texto = String(req.query.search).trim();
       if (texto) filtro.name = { $regex: texto.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" };
@@ -98,6 +115,11 @@ router.get("/", autorizar(false), async (req, res) => {
     return res.json({
       success: true,
       data: {
+        /* Para el titulo: "Cajas con <objeto>". Null cuando no se
+           filtro por objeto. */
+        objeto: objetoPedido
+          ? { _id: objetoPedido._id, name: objetoPedido.name, imageUrl: objetoPedido.imageUrl || "" }
+          : null,
         items: lista.map((c) => {
           const resumen = cajas.resumenDeCaja(c);
           /*

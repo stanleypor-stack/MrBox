@@ -157,6 +157,11 @@ const COSAS = {
     antesDeGuardar: async (datos) => {
       const salida = { ...datos };
 
+      /* "Desde" vacio quiere decir AHORA, que es lo que espera quien
+         carga un desafio para que empiece ya. Sin esto, el modelo lo
+         exige y el panel contesta "algo salio mal". */
+      if (!salida.desde) salida.desde = new Date();
+
       /*
         La caja viaja por slug, que es lo que una persona puede
         escribir. Si lo que llega parece un id de Mongo se busca por
@@ -288,6 +293,33 @@ async function armar(cosa, cuerpo, esNuevo) {
   return cosa.antesDeGuardar ? cosa.antesDeGuardar(datos) : datos;
 }
 
+/**
+ * UN ERROR DE CARGA NO ES UN ERROR DEL SERVIDOR.
+ *
+ * Mongoose tira `ValidationError` --o lo que tire un gancho del
+ * modelo-- cuando el formulario esta mal lleno. Dejandolo pasar, sale
+ * como 500 "algo salio mal": le dice a quien esta cargando que la
+ * culpa es nuestra, y le esconde lo unico que necesita saber, que es
+ * QUE campo esta mal.
+ *
+ * Los errores que ya tienen codigo propio pasan de largo.
+ */
+function deFormulario(err) {
+  if (!err || err.code) return err;
+
+  const esDeCarga = err.name === "ValidationError"
+    || err.name === "CastError"
+    || err.name === "ValidatorError";
+
+  if (!esDeCarga && !(err instanceof Error && err.message && !err.status)) return err;
+
+  const mensaje = err.errors
+    ? Object.values(err.errors).map((e) => e.message).join(" ")
+    : err.message;
+
+  return errorDe("INVALID_FORM", { detalle: String(mensaje).slice(0, 300) }, 400);
+}
+
 router.post("/:cosa", async (req, res) => {
   try {
     const cosa = Object.hasOwn(COSAS, req.params.cosa) ? COSAS[req.params.cosa] : null;
@@ -307,7 +339,7 @@ router.post("/:cosa", async (req, res) => {
     return res.json({ success: true, data: creado });
   } catch (err) {
     if (err && err.code === 11000) return responderError(res, errorDe("CODE_ALREADY_USED"), "crear");
-    return responderError(res, err, "crear");
+    return responderError(res, deFormulario(err), "crear");
   }
 });
 
