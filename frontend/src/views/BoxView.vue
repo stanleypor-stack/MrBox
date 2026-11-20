@@ -149,7 +149,17 @@
             <button type="button" class="mb-salio__b" :disabled="vendiendo" @click="venderTodo">
               {{ $t('box.sellFor', { amount: 'SC ' + plata(valorGanado) }) }}
             </button>
-            <router-link to="/inventory" class="mb-salio__b">{{ $t('box.keep') }}</router-link>
+            <!--
+              NO LLEVA AL INVENTARIO: EL PREMIO YA ESTA AHI.
+
+              Era un enlace a /inventory. Pero el premio entra al
+              inventario cuando sale, no cuando se toca el boton: lo
+              unico que hacia era sacarte de la caja que estabas
+              abriendo, con las otras dos de regalo sin usar.
+            -->
+            <button type="button" class="mb-salio__b" @click="quedarmelo">
+              {{ $t('box.keep') }}
+            </button>
           </template>
         </div>
 
@@ -617,6 +627,12 @@ export default {
       const mejor = (this.resultado.resultados || [])
         .reduce((a, r) => (!a || r.premio.valueSc > a.premio.valueSc ? r : a), null);
       sonarPremio(mejor && mejor.premio.rarity);
+    },
+
+    /** Avisa que quedo guardado y cierra la linea. No navega. */
+    quedarmelo() {
+      this.$store.dispatch("avisar", { texto: this.$t("box.kept") });
+      this.resultado = null;
     },
 
     async venderTodo() {

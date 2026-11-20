@@ -358,8 +358,8 @@ export default {
 .mb-cajon {
   position: fixed;
   /* Donde termina la cabecera que se ve. La mide `medirLaTapa` al
-     abrir; el 75 de respaldo es el alto de la cabecera arriba de
-     todo. */
+     abrir; el respaldo es el alto de la cabecera de celular, por si
+     se abre antes de la primera medicion. */
   top: var(--tapa-cajon, 75px);
   /* La franja del sistema, en los telefonos que la tienen: la barra de
      abajo se la suma a su relleno y el cajon se le metia por debajo. */

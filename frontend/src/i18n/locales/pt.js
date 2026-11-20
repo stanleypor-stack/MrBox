@@ -93,6 +93,7 @@ export default {
     "youWon": "Você ganhou",
     "sellFor": "Vender por {amount}",
     "keep": "Ficar com ele",
+    "kept": "Adicionado ao seu inventário",
     "openAgain": "Abrir outra",
     "demoNote": "Apenas demonstração. Nada é cobrado nem guardado.",
     "freeOpenUsed": "Usou uma abertura grátis",

@@ -115,14 +115,40 @@ async function laPantalla(usuario) {
     .limit(100)
     .lean();
 
-  const compras = traidos.length
+  /*
+    LO QUE COMPRO Y LO QUE JUGO, DE LA MISMA FUENTE QUE EL RECUADRO.
+
+    El `jugadoSc` del usuario es el de toda su vida y cuenta las
+    aperturas de REGALO; el recuadro de arriba, no, porque una caja
+    regalada no deja margen que repartir y tampoco suma para
+    calificar.
+
+    Mostrar el de toda la vida hacia parecer que un jugador va camino
+    a los SC 200 que pide calificar cuando va por cero. Asi que la
+    columna se cuenta igual que el recuadro: de los movimientos, donde
+    una apertura de regalo vale 0.
+  */
+  const movidas = traidos.length
     ? await BalanceTransaction.aggregate([
-      { $match: { user: { $in: traidos.map((u) => u._id) }, type: "purchase" } },
-      { $group: { _id: "$user", total: { $sum: "$amountSc" } } },
+      {
+        $match: {
+          user: { $in: traidos.map((u) => u._id) },
+          type: { $in: ["purchase", "box_open", "deal"] },
+        },
+      },
+      { $group: { _id: { user: "$user", tipo: "$type" }, total: { $sum: "$amountSc" } } },
     ])
     : [];
 
-  const deposito = new Map(compras.map((c) => [String(c._id), sc(c.total)]));
+  const deposito = new Map();
+  const jugado = new Map();
+
+  for (const m of movidas) {
+    const quien = String(m._id.user);
+    const cuanto = Math.abs(sc(m.total));
+    const donde = m._id.tipo === "purchase" ? deposito : jugado;
+    donde.set(quien, sc((donde.get(quien) || 0) + cuanto));
+  }
 
   /* El estado de cada referido, para que el socio vea a quién le falta qué. */
   const fichas = traidos.length
@@ -139,7 +165,7 @@ async function laPantalla(usuario) {
       _id: u._id,
       username: enmascarar(u.username),
       desde: u.createdAt,
-      jugadoSc: sc(u.jugadoSc),
+      jugadoSc: jugado.get(String(u._id)) || 0,
       depositadoSc: deposito.get(String(u._id)) || 0,
       codigo: u.affiliateCode || "",
       estado: f ? f.estado : "nuevo",

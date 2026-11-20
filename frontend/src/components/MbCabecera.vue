@@ -621,6 +621,26 @@ export default {
 
 .mb-head__fila {
   padding: 10px 20px;
+  box-sizing: border-box;
+
+  /*
+    66px DE PANTALLA: LA CABECERA DE MRLOOT, MEDIDA.
+
+    La nuestra daba 69, que es lo que salia de sumar el logo --62-- y
+    10 de relleno arriba y abajo. Ahora el alto se pide derecho y el
+    relleno baja a 8, asi el logo entra sin empujar y no hay que
+    achicarlo.
+
+    Dividido por la escala porque el sitio vive adentro de un
+    `zoom: .84`, donde un pixel mide menos. Y en el telefono no va:
+    ahi la cabecera es otra y 66 la apretaria.
+  */
+  @include en-escritorio {
+    min-height: calc(66px / var(--escala, 1));
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;

@@ -291,7 +291,9 @@
             <span>{{ $t('affil.campaign') }}</span>
             <span>{{ $t('affil.status') }}</span>
             <span class="mb-der">{{ $t('affil.deposits') }}</span>
-            <span class="mb-der">{{ $t('profile.wagered') }}</span>
+            <!-- La misma clave que el recuadro de arriba: es el mismo
+                 numero, repartido por jugador. -->
+            <span class="mb-der">{{ $t('affil.volume') }}</span>
             <span class="mb-der">{{ $t('affil.earnedYou') }}</span>
           </div>
 
