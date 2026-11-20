@@ -359,13 +359,12 @@
             </span>
 
             <b class="mb-caja__verificar-t">{{ $t('wallet.verifyTitle') }}</b>
-            <p class="mb-caja__verificar-p">{{ $t('wallet.verifyBody') }}</p>
             <p class="mb-caja__verificar-n">
               {{ $t('wallet.verifyLevel', { tiene: canje.nivel, pide: canje.nivelQuePide }) }}
             </p>
 
             <router-link
-              to="/profile?tab=verification" class="mb-caja__enviar mb-caja__verificar-b"
+              to="/profile?tab=verificacion" class="mb-caja__enviar mb-caja__verificar-b"
               @click.native="cerrar"
             >{{ $t('wallet.verifyCta') }}</router-link>
           </div>
@@ -522,6 +521,9 @@ export default {
       pedidoDeDeposito: 0,
       /* Lo que dice `/wallet/coins` del bono de bienvenida. */
       bonoDeBienvenida: null,
+      /* Desde cuando corre la oferta. Lo pone el servidor al abrirse
+         el cajon: ver `avisarQueVioElBono`. */
+      bonoDesde: null,
       canje: null,
       pedidos: [],
       qr: "",
@@ -559,9 +561,15 @@ export default {
   computed: {
     ...mapGetters(["entro", "cuentaDesde"]),
 
-    /* La oferta corre desde que se abrio la cuenta. Sin sesion, desde
-       ahora: el visitante ve la semana entera, que es lo que tendria. */
-    desdeCuando() { return this.cuentaDesde || null; },
+    /*
+      DESDE CUANDO CORRE LA OFERTA.
+
+      Del sello que puso el servidor al abrirse este cajon. Si no hay
+      --sin sesion, o el aviso no llego-- cae en la fecha de la cuenta,
+      que es contra lo que mide el servidor en ese caso: las dos
+      cuentas tienen que dar lo mismo.
+    */
+    desdeCuando() { return this.bonoDesde || this.cuentaDesde || null; },
 
     moneda() {
       return this.monedas.find((m) => m.ticker === this.tickerElegido) || { redes: [], color: "#3f7cf0", letra: "?" };
@@ -834,6 +842,27 @@ export default {
        mano --entra solo con el primer deposito-- asi que se cierra y se
        asegura que esten mirando el lado de depositar. */
     alDepositar() { this.lado = "in"; },
+
+    /**
+     * AVISA QUE SE ABRIO EL CAJON, Y SE QUEDA CON LA FECHA.
+     *
+     * El reloj de la oferta arranca acá, no cuando se abrió la cuenta,
+     * y vuelve a arrancar en cada apertura. La fecha la pone el
+     * servidor: si la pusiera el navegador, adelantar el reloj de la
+     * máquina alargaría la oferta.
+     *
+     * Si falla no se rompe nada: la tira cae en `cuentaDesde`, que es
+     * lo que hacía antes.
+     */
+    async avisarQueVioElBono() {
+      if (!this.entro) return;
+      try {
+        const { data } = await api.post("/wallet/bonus/seen");
+        this.bonoDesde = data.data.desde || null;
+      } catch {
+        this.bonoDesde = null;
+      }
+    },
 
     async traerMonedas() {
       try {
@@ -1166,6 +1195,15 @@ export default {
   },
 
   async created() {
+    /*
+      PRIMERO EL SELLO, DESPUES LAS MONEDAS.
+
+      El sello es lo que hace arrancar el reloj de la oferta, y
+      `/coins` decide si la oferta sigue viva midiendo contra el.
+      Pedirlo despues daria una respuesta calculada con el sello de la
+      visita anterior.
+    */
+    await this.avisarQueVioElBono();
     await this.traerMonedas();
     if (this.lado === "in") {
       this.traerDeposito();

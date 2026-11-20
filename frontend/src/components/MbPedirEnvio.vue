@@ -38,7 +38,7 @@
             {{ $t('wallet.verifyLevel', { tiene: nivel, pide: nivelQuePide }) }}
           </p>
           <router-link
-            to="/profile?tab=verification" class="mb-env__b mb-env__b--enlace"
+            to="/profile?tab=verificacion" class="mb-env__b mb-env__b--enlace"
             @click.native="cerrar"
           >{{ $t('wallet.verifyCta') }}</router-link>
         </div>

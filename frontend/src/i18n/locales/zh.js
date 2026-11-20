@@ -381,7 +381,6 @@ export default {
     "available": "可提现金额",
     "lockedBonus": "待流水奖金",
     "verifyTitle": "提现前请先完成验证",
-    "verifyBody": "资金只会发往已验证的账户。只需几分钟，而且只做一次。",
     "verifyCta": "立即验证",
     "verifyLevel": "你目前是等级 {tiene}，需要 {pide}。",
     "minCashOut": "最低提现：SC {n}",
@@ -613,6 +612,7 @@ export default {
     "sideMenu": "侧边栏",
     "collapse": "收起菜单",
     "expand": "展开菜单",
+    "freeOpens": "{n} 次免费",
     "mainNav": "主导航",
     "closeMenu": "关闭菜单"
   },

@@ -381,7 +381,6 @@ export default {
     "available": "換金可能額",
     "lockedBonus": "未消化ボーナス",
     "verifyTitle": "換金の前に本人確認をしてください",
-    "verifyBody": "出金は本人確認済みのアカウントにのみ行われます。数分で終わり、一度だけです。",
     "verifyCta": "今すぐ本人確認",
     "verifyLevel": "現在レベル {tiene} / {pide} です。",
     "minCashOut": "最低換金額: SC {n}",
@@ -613,6 +612,7 @@ export default {
     "sideMenu": "サイドメニュー",
     "collapse": "メニューを閉じる",
     "expand": "メニューを開く",
+    "freeOpens": "無料 {n} 回",
     "mainNav": "メインナビ",
     "closeMenu": "メニューを閉じる"
   },

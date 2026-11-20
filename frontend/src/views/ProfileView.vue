@@ -925,8 +925,32 @@ export default {
     /* El boton dice "contactar a soporte": abre el chat de soporte. */
     abrirSoporte() { this.$store.dispatch("pedirSoporte", ""); },
 
+    /**
+     * EL `?tab=` DE LA DIRECCION, CONVERTIDO EN UNA SECCION.
+     *
+     * Las secciones se llaman en castellano. Un enlace que pedia
+     * `?tab=verification` --en ingles-- no coincidia con ninguna y
+     * caia en el perfil sin decir nada: tocabas "Verify now" y
+     * terminabas mirando tu nombre de usuario.
+     *
+     * Las traducciones estan para que un enlace viejo, o uno escrito
+     * de memoria en ingles, lleve igual a donde dice que lleva.
+     */
     valida(id) {
-      return this.pestanas.some((p) => p.id === id) ? id : "perfil";
+      const clave = String(id || "").toLowerCase();
+      const comoSeDice = {
+        verification: "verificacion",
+        stats: "numeros",
+        addresses: "direcciones",
+        transactions: "movimientos",
+        history: "historial",
+        activity: "actividad",
+        orders: "pedidos",
+        controls: "controles",
+        profile: "perfil",
+      };
+      const traducido = Object.hasOwn(comoSeDice, clave) ? comoSeDice[clave] : clave;
+      return this.pestanas.some((p) => p.id === traducido) ? traducido : "perfil";
     },
 
     /**

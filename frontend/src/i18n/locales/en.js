@@ -381,7 +381,6 @@ export default {
     "available": "Available to cash out",
     "lockedBonus": "Bonus still to play",
     "verifyTitle": "Verify yourself before cashing out",
-    "verifyBody": "Money only leaves the site to a verified account. It takes a few minutes and you only do it once.",
     "verifyCta": "Verify now",
     "verifyLevel": "You are on level {tiene} of {pide}.",
     "minCashOut": "Minimum cash out: SC {n}",
@@ -613,6 +612,7 @@ export default {
     "sideMenu": "Side menu",
     "collapse": "Collapse menu",
     "expand": "Expand menu",
+    "freeOpens": "{n} Free Opens",
     "mainNav": "Main navigation",
     "closeMenu": "Close the menu"
   },

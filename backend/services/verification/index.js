@@ -155,18 +155,37 @@ async function estadoDe(userId) {
 
   const porNivel = new Map(filas.map((f) => [f.nivel, f]));
 
+  const nivelDelUsuario = usuario ? usuario.verificationLevel : 0;
+
+  /*
+    UN NIVEL ESTA "MANDADO" SI YA LO VIO EL EQUIPO O LO ESTA VIENDO.
+
+    Rechazado NO cuenta: volvio con un motivo y hay que arreglarlo.
+  */
+  const mandado = (m) => {
+    if (nivelDelUsuario >= m) return true;
+    const f = porNivel.get(m);
+    return !!f && (f.estado === "pending" || f.estado === "approved");
+  };
+
   const niveles = [1, 2, 3].map((n) => {
     const fila = porNivel.get(n);
-    const aprobado = (usuario ? usuario.verificationLevel : 0) >= n;
+    const aprobado = nivelDelUsuario >= n;
 
     return {
       nivel: n,
       /* `approved` manda sobre lo que diga la fila: el nivel del
          usuario es el que usan el canje y los envíos. */
       estado: aprobado ? "approved" : (fila ? fila.estado : "none"),
-      /* Solo se puede mandar el que sigue al último aprobado. */
+      /*
+        Alcanza con que los anteriores esten MANDADOS, no aprobados.
+
+        Aprobar lo hace una persona y puede tardar. Hacer esperar al
+        jugador entre nivel y nivel es perderlo en el medio: manda el
+        1, lee "En revision" y no tiene nada mas que hacer.
+      */
       sePuedeMandar: !aprobado
-        && (usuario ? usuario.verificationLevel : 0) === n - 1
+        && [1, 2, 3].filter((m) => m < n).every(mandado)
         && (!fila || fila.estado === "rejected"),
       motivo: fila && fila.estado === "rejected" ? fila.motivo : "",
       adjuntos: fila ? fila.adjuntos : [],
@@ -203,8 +222,22 @@ async function mandar({ userId, nivel, cuerpo }) {
   if (!usuario) throw errorDe("NOT_LOGGED_IN", {}, 401);
 
   if (usuario.verificationLevel >= n) throw errorDe("ALREADY_VERIFIED", { nivel: n });
-  if (usuario.verificationLevel !== n - 1) {
-    throw errorDe("FINISH_PREVIOUS_LEVEL", { falta: usuario.verificationLevel + 1 });
+
+  /*
+    La misma regla que muestra la pantalla, acá adentro: los
+    anteriores tienen que estar mandados --en revisión o aprobados--,
+    no necesariamente aprobados. Si la pantalla habilita el botón y el
+    servidor lo rebota, el botón miente.
+  */
+  const anteriores = await Verification.find({ user: userId, nivel: { $lt: n } })
+    .select("nivel estado")
+    .lean();
+  const estadoDeNivel = new Map(anteriores.map((f) => [f.nivel, f.estado]));
+
+  for (let m = 1; m < n; m += 1) {
+    const listo = usuario.verificationLevel >= m
+      || ["pending", "approved"].includes(estadoDeNivel.get(m));
+    if (!listo) throw errorDe("FINISH_PREVIOUS_LEVEL", { falta: m });
   }
 
   const yaHay = await Verification.findOne({ user: userId, nivel: n }).lean();
@@ -256,12 +289,24 @@ async function resolver({ adminId, userId, nivel, aprobar, motivo = "" }) {
   fila.archivos = [];
   await fila.save();
 
-  if (aprobar) {
-    await User.updateOne(
-      { _id: userId, verificationLevel: n - 1 },
-      { $set: { verificationLevel: n } }
-    );
-  }
+  /*
+    EL NIVEL ES LA CORRIDA DE APROBADOS DESDE EL UNO.
+
+    Antes era "subilo a `n` si venía de `n - 1`". Con los tres niveles
+    pudiendo llegar juntos, el panel los mira en el orden que quiere:
+    aprobar el 3 antes que el 1 dejaba al jugador en cero con una fila
+    que decía aprobada, y rechazar el 1 después de haber aprobado el 2
+    le dejaba el nivel 2 puesto.
+
+    Calculado así no depende del orden ni de quién revisa primero.
+  */
+  const filas = await Verification.find({ user: userId }).select("nivel estado").lean();
+  const aprobados = new Set(filas.filter((f) => f.estado === "approved").map((f) => f.nivel));
+
+  let alcanzado = 0;
+  while (aprobados.has(alcanzado + 1)) alcanzado += 1;
+
+  await User.updateOne({ _id: userId }, { $set: { verificationLevel: alcanzado } });
 
   return estadoDe(userId);
 }

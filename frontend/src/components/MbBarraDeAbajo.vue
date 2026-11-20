@@ -17,25 +17,41 @@
       </svg>{{ $t('nav.home') }}
     </button>
 
-    <button type="button" :class="{ 'is-activo': abierto.wallet }" @click="alternar('wallet')">
+    <!-- Billetera e inventario, solo con sesion. -->
+    <button v-if="entro" type="button" :class="{ 'is-activo': abierto.wallet }" @click="alternar('wallet')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M3 7a2 2 0 0 1 2-2h12v4M3 7v10a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2zM16 14h.01" />
       </svg>{{ $t('nav.wallet') }}
     </button>
 
-    <button type="button" :class="{ 'is-activo': $route.path === '/inventory' }" @click="ir('/inventory')">
+    <button v-if="entro" type="button" :class="{ 'is-activo': $route.path === '/inventory' }" @click="ir('/inventory')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M3 9h18v11H3zM2 5l5-2 5 2-5 2zM22 5l-5-2-5 2 5 2zM10 13h4" />
       </svg>{{ $t('nav.inventory') }}
     </button>
 
+    <!-- En su lugar, lo que el visitante vino a hacer. -->
+    <button v-if="!entro" type="button" :class="{ 'is-activo': $route.path === '/boxes' }" @click="ir('/boxes')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 9h18v11H3zM2 5l5-2 5 2-5 2zM22 5l-5-2-5 2 5 2zM12 9v11" />
+      </svg>{{ $t('nav.boxes') }}
+    </button>
+
     <button
-      type="button" :class="{ 'is-activo': abierto.cuenta }"
+      v-if="entro" type="button" :class="{ 'is-activo': abierto.cuenta }"
       :aria-expanded="abierto.cuenta ? 'true' : 'false'" @click="alternar('cuenta')"
     >
       <span class="mb-abajo__yo">{{ inicial }}</span>{{ $t('header.account') }}
+    </button>
+
+    <button v-else type="button" class="mb-abajo__alta" @click="ir('/signup')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M19 8v6M22 11h-6" />
+      </svg>{{ $t('action.signUp') }}
     </button>
   </nav>
 </template>
@@ -140,6 +156,18 @@ export default {
 
     &.is-activo { color: #fff; }
   }
+}
+
+/*
+  El unico boton de la barra que no es navegacion.
+
+  Al visitante le quedan cuatro: tres lo mueven por el sitio y este lo
+  convierte en jugador. Pintado igual que los otros no se distingue de
+  una pestana mas.
+*/
+.mb-abajo__alta {
+  color: #7fc2ff !important;
+  font-weight: 900;
 }
 
 .mb-abajo__yo {

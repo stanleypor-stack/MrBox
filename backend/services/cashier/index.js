@@ -1,6 +1,7 @@
 const Redemption = require("../../database/models/Redemption");
 const Settings = require("../../database/models/Settings");
 const User = require("../../database/models/User");
+const DireccionDeDeposito = require("../../database/models/DireccionDeDeposito");
 const wallet = require("../wallet");
 const { MONEDAS, buscar } = require("./monedas");
 const oxapay = require("./oxapay");
@@ -89,11 +90,7 @@ async function direccionDeDeposito({ userId, ticker, red }) {
     };
   }
 
-  const direccion = await oxapay.direccionDeDeposito({
-    userId,
-    ticker: par.moneda.ticker,
-    red: par.red.clave,
-  });
+  const direccion = await direccionGuardadaONueva(userId, par.moneda.ticker, par.red.clave);
 
   return {
     conectada: true,
@@ -105,6 +102,53 @@ async function direccionDeDeposito({ userId, ticker, red }) {
     confirmaciones: par.red.confirmaciones,
     demora: par.red.demora,
   };
+}
+
+/**
+ * LA DIRECCION DEL JUGADOR: LA GUARDADA, O UNA NUEVA UNA SOLA VEZ.
+ *
+ * `/payment/static-address` NO devuelve la que ya tenia: crea otra en
+ * cada llamada. Sin esto, cada apertura del cajon de deposito --y cada
+ * cambio de moneda dentro-- estrenaba una direccion.
+ *
+ * El `findOneAndUpdate` con `upsert` y el indice unico son los que
+ * resuelven la carrera: si dos pedidos llegan juntos, los dos pueden
+ * pedirle una direccion a la pasarela, pero solo una entra. La otra
+ * rebota con 11000 y se lee la que quedo, que es la que el jugador va
+ * a ver siempre.
+ */
+async function direccionGuardadaONueva(userId, ticker, red) {
+  const guardada = await DireccionDeDeposito.findOne({ user: userId, ticker, red }).lean();
+  if (guardada) {
+    return { address: guardada.direccion, memo: guardada.memo || "", expiresAt: null };
+  }
+
+  const nueva = await oxapay.direccionDeDeposito({ userId, ticker, red });
+  if (!nueva || !nueva.address) throw errorDe("NOT_FOUND", { ticker, red });
+
+  try {
+    await DireccionDeDeposito.create({
+      user: userId,
+      ticker,
+      red,
+      direccion: nueva.address,
+      memo: nueva.memo || "",
+      trackId: nueva.trackId || "",
+    });
+  } catch (err) {
+    /* Otro pedido la guardo primero. La suya es tan valida como esta,
+       y es la que va a seguir viendo: se devuelve esa. */
+    if (err && err.code === 11000) {
+      const suya = await DireccionDeDeposito.findOne({ user: userId, ticker, red }).lean();
+      if (suya) return { address: suya.direccion, memo: suya.memo || "", expiresAt: null };
+    }
+    /* Guardar fallo por otra cosa. La direccion es buena --la pasarela
+       la esta vigilando-- asi que se usa igual: no mostrarsela seria
+       perder un deposito por un problema nuestro. */
+    logger.warn(`[cashier] no pude guardar la direccion de ${ticker}/${red}: ${err.message}`);
+  }
+
+  return { address: nueva.address, memo: nueva.memo || "", expiresAt: nueva.expiresAt || null };
 }
 
 /* ── Canjear ───────────────────────────────────────────────────────── */

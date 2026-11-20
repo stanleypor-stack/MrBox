@@ -381,7 +381,6 @@ export default {
     "available": "Disponible para retirar",
     "lockedBonus": "Bono que falta jugar",
     "verifyTitle": "Verificate antes de retirar",
-    "verifyBody": "La plata sale del sitio solo a una cuenta verificada. Lleva unos minutos y se hace una sola vez.",
     "verifyCta": "Verificarme ahora",
     "verifyLevel": "Estás en el nivel {tiene} de {pide}.",
     "minCashOut": "Retiro mínimo: SC {n}",
@@ -613,6 +612,7 @@ export default {
     "sideMenu": "Menú lateral",
     "collapse": "Achicar el menú",
     "expand": "Agrandar el menú",
+    "freeOpens": "{n} aperturas gratis",
     "mainNav": "Navegación principal",
     "closeMenu": "Cerrar el menú"
   },

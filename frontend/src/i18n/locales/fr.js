@@ -381,7 +381,6 @@ export default {
     "available": "Disponible au retrait",
     "lockedBonus": "Bonus encore à jouer",
     "verifyTitle": "Vérifiez votre identité avant de retirer",
-    "verifyBody": "L’argent ne quitte le site que vers un compte vérifié. Cela prend quelques minutes, une seule fois.",
     "verifyCta": "Vérifier maintenant",
     "verifyLevel": "Vous êtes au niveau {tiene} sur {pide}.",
     "minCashOut": "Retrait minimum : SC {n}",
@@ -613,6 +612,7 @@ export default {
     "sideMenu": "Menu latéral",
     "collapse": "Réduire le menu",
     "expand": "Agrandir le menu",
+    "freeOpens": "{n} ouvertures offertes",
     "mainNav": "Navigation principale",
     "closeMenu": "Fermer le menu"
   },

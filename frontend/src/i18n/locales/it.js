@@ -381,7 +381,6 @@ export default {
     "available": "Disponibile per il prelievo",
     "lockedBonus": "Bonus ancora da giocare",
     "verifyTitle": "Verificati prima di prelevare",
-    "verifyBody": "Il denaro esce dal sito solo verso un account verificato. Bastano pochi minuti, una volta sola.",
     "verifyCta": "Verifica ora",
     "verifyLevel": "Sei al livello {tiene} di {pide}.",
     "minCashOut": "Prelievo minimo: SC {n}",
@@ -613,6 +612,7 @@ export default {
     "sideMenu": "Menu laterale",
     "collapse": "Riduci il menu",
     "expand": "Espandi il menu",
+    "freeOpens": "{n} aperture gratis",
     "mainNav": "Navigazione principale",
     "closeMenu": "Chiudi il menu"
   },

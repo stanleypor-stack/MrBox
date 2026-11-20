@@ -638,6 +638,16 @@ export default {
   @include foco;
 
   &:hover { color: $azul-tinta; filter: brightness(1.04); }
+
+  /*
+    En escritorio, fuera: la misma oferta esta arriba, en la pastilla
+    azul del encabezado. Dos veces en la misma pantalla es una de mas.
+
+    Va al FINAL del bloque a proposito: Sass escribe el `@media` donde
+    esta escrito, asi que puesto arriba lo pisaba el `display: flex`
+    de abajo.
+  */
+  @include en-escritorio { display: none; }
 }
 
 .mb-claim__arte { position: relative; width: 70px; height: 60px; flex: none; }
@@ -665,6 +675,22 @@ export default {
 .mb-claim__texto { display: flex; flex-direction: column; min-width: 0; }
 .mb-claim__titulo { font-family: $fuente-cartel; font-size: 22px; line-height: 1.1; }
 .mb-claim__sub { font-weight: 700; font-size: 14px; }
+
+/*
+  EN EL TELEFONO, UNA CINTA Y NO UN CARTEL.
+
+  Con la letra de escritorio, "LLEVATE 3 APERTURAS GRATIS" se partia
+  en tres renglones y la cinta se comia un tercio de la primera
+  pantalla, antes de los banners. Mas chica dice lo mismo y deja ver
+  lo que hay abajo, que es a lo que vino.
+*/
+@include en-celular {
+  .mb-claim { gap: 10px; padding: 11px 13px; border-radius: 15px; }
+  .mb-claim__arte { width: 54px; height: 46px; }
+  .mb-claim__titulo { font-size: 16px; }
+  .mb-claim__sub { font-size: 12px; line-height: 1.25; }
+  .mb-claim__cta { padding: 9px 13px; font-size: 13px; border-radius: 10px; }
+}
 
 .mb-claim__cta {
   margin-left: auto;

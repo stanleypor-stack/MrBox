@@ -76,8 +76,31 @@
         </svg>
       </router-link>
 
+      <!--
+        ══ EL MEDIO ═══════════════════════════════════════════════
+
+        Con sesion, la billetera. Sin sesion, la oferta: es el mismo
+        lugar y la misma importancia, y el hueco no queda vacio.
+      -->
+      <router-link v-if="!entro" to="/signup" class="mb-regalo">
+        <span class="mb-regalo__estrella" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffd34d">
+            <path d="m12 2 2.6 6.3 6.8.5-5.2 4.4 1.6 6.6L12 16.6 6.2 19.8l1.6-6.6L2.6 8.8l6.8-.5z" />
+          </svg>
+        </span>
+
+        <span class="mb-regalo__texto">
+          <span class="mb-regalo__t">{{ $t('home.claim') }}</span>
+          <span class="mb-regalo__s">{{ $t('header.freeOpens', { n: regalo }) }}</span>
+        </span>
+
+        <span class="mb-regalo__arte" aria-hidden="true"></span>
+      </router-link>
+
       <!-- ── La billetera ─────────────────────────────────────────── -->
-      <div class="mb-head__centro">
+      <!-- Solo con sesion: a un visitante, "SC 0,00" no le dice nada
+           y el boton de depositar lo manda a iniciar sesion. -->
+      <div v-if="entro" class="mb-head__centro">
         <div class="mb-wallet" v-click-fuera="cerrarWallet">
           <button
             type="button" class="mb-wallet__saldo"
@@ -188,7 +211,9 @@
           </svg>
         </router-link>
 
-        <div class="mb-iconos" v-click-fuera="cerrarAvisos">
+        <!-- Avisos, premios e inventario son de una cuenta. Sin
+             cuenta, las tres llevan a una pantalla vacia. -->
+        <div v-if="entro" class="mb-iconos" v-click-fuera="cerrarAvisos">
           <div class="mb-iconos__caja">
             <button
               type="button" :aria-label="$t('header.notifications')"
@@ -235,7 +260,7 @@
         </div>
 
         <!-- ── La cuenta ──────────────────────────────────────────── -->
-        <div class="mb-cuenta" v-click-fuera="cerrarCuenta">
+        <div class="mb-cuenta" :class="{ 'es-visita': !entro }" v-click-fuera="cerrarCuenta">
           <button
             v-if="entro" type="button" class="mb-cuenta__b"
             :aria-expanded="cuentaAbierta ? 'true' : 'false'" :aria-label="$t('header.account')"
@@ -253,8 +278,11 @@
             </svg>
           </button>
 
+          <!-- Lo unico que puede hacer el que no entro. En el
+               telefono queda solo REGISTRARSE: "iniciar sesion" lo
+               tiene igual adentro de esa pantalla. -->
           <div v-else class="mb-cuenta__entrar">
-            <router-link to="/login" class="mb-entrar">{{ $t('action.signIn') }}</router-link>
+            <router-link to="/login" class="mb-entrar mb-entrar--enPc">{{ $t('action.signIn') }}</router-link>
             <router-link to="/signup" class="mb-entrar mb-entrar--fuerte">{{ $t('action.signUp') }}</router-link>
           </div>
 
@@ -307,6 +335,22 @@ import api from "@/api";
  * porque el editor de diseño los edita ahí; acá no hace falta y leerlos
  * agrupados es mucho más fácil.
  */
+/*
+  LOS AJUSTES PUBLICOS, UNA SOLA VEZ POR CARGA.
+
+  La cabecera esta en todas las pantallas, asi que un pedido por
+  montaje serian varios por visita. Guardada la promesa, el segundo
+  montaje se cuelga del primer pedido en vez de hacer otro.
+*/
+let ajustesPublicos = null;
+
+function traerAjustesPublicos() {
+  if (!ajustesPublicos) {
+    ajustesPublicos = api.get("/public/settings").then((r) => r.data.data).catch(() => null);
+  }
+  return ajustesPublicos;
+}
+
 export default {
   name: "MbCabecera",
 
@@ -335,6 +379,10 @@ export default {
       cuentaAbierta: false,
       inventario: { cuantos: 0, valorSc: 0 },
       menuCuenta: ATAJOS,
+      /* Cuantas aperturas regala el registro. El 3 es el mismo valor
+         que trae el servidor de fabrica: si el panel lo cambia, lo
+         corrige `traerRegalo` sin que la pastilla parpadee. */
+      regalo: 3,
     };
   },
 
@@ -467,7 +515,17 @@ export default {
     },
   },
 
-  created() { this.traerInventario(); },
+  async created() {
+    this.traerInventario();
+
+    /* Solo si no entro: la pastilla del regalo es lo unico que usa
+       este numero, y solo se dibuja sin sesion. */
+    if (!this.entro) {
+      const ajustes = await traerAjustesPublicos();
+      const n = ajustes && Number(ajustes.aperturasDeRegalo);
+      if (Number.isFinite(n) && n > 0) this.regalo = n;
+    }
+  },
 
   mounted() {
     /*
@@ -550,6 +608,7 @@ export default {
 }
 
 .mb-head__centro {
+  grid-column: 2;
   margin: 0 auto;
   /* En celular la billetera se estira y ocupa el hueco del medio. */
   @include en-celular { flex: 1; min-width: 0; margin: 0; }
@@ -559,8 +618,27 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
+  /*
+    LA TERCERA COLUMNA, DICHA A PROPOSITO.
+
+    La fila es una grilla de tres: marca, medio y derecha. Cuando el
+    medio no se dibuja --sin sesion y en el telefono, donde la
+    pastilla de la oferta no entra-- la grilla no deja el hueco: corre
+    todo una columna a la izquierda, y el boton de registrarse
+    terminaba pegado al logo en vez de contra el borde.
+  */
+  grid-column: 3;
   justify-self: end;
-  @include en-celular { gap: 8px; }
+
+  @include en-celular {
+    gap: 8px;
+    /*
+      En el telefono la fila es `flex`, no grilla, y lo que empujaba
+      esto contra el borde era la billetera con su `flex: 1`. Sin
+      sesion no hay billetera, y el boton quedaba pegado al logo.
+    */
+    margin-left: auto;
+  }
 }
 
 /*
@@ -573,7 +651,14 @@ export default {
 */
 @include en-celular {
   .mb-head__der > .mb-redondo,
+  /*
+    En el telefono la cuenta vive en la barra de abajo, asi que arriba
+    no se repite... salvo que no haya cuenta: el que todavia no se
+    registro tiene que ver REGISTRARSE arriba, que es lo unico que
+    puede hacer y es lo que hace mrloot.
+  */
   .mb-cuenta { display: none; }
+  .mb-cuenta.es-visita { display: flex; }
 
   /*
     LOS ICONOS, SUELTOS Y CUADRADOS.
@@ -888,30 +973,107 @@ export default {
 
 .mb-cuenta__entrar { display: flex; gap: 8px; }
 
+/* ── La oferta del encabezado, sin sesion ────────────────────────── */
+
+.mb-regalo {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* Mas alta que los botones de la derecha a proposito: en mrloot la
+     oferta del medio es la pieza grande del encabezado, y los dos
+     botones son los que la acompanan. */
+  height: 60px;
+  padding: 0 6px 0 16px;
+  border-radius: 30px;
+  border: 2px solid rgba(255, 255, 255, .85);
+  /* El mismo azul del boton de registrarse: las dos cosas que puede
+     hacer el visitante son del mismo color, y se ven de lejos. */
+  background: linear-gradient(180deg, #4d93ff, #1f62d8);
+  box-shadow: 0 4px 0 rgba(8, 28, 72, .55), inset 0 2px 0 rgba(255, 255, 255, .35);
+  text-decoration: none;
+  color: #fff;
+  white-space: nowrap;
+  @include foco;
+
+  &:hover { color: #fff; filter: brightness(1.07); }
+
+  /* En el telefono no entra, y no hace falta: la portada tiene la
+     cinta amarilla, que dice lo mismo con todo el ancho. */
+  @include en-celular { display: none; }
+}
+
+.mb-regalo__estrella { display: flex; flex: none; }
+
+.mb-regalo__texto { display: flex; flex-direction: column; gap: 2px; line-height: 1.05; }
+.mb-regalo__t { font-weight: 800; font-size: 13px; opacity: .92; }
+.mb-regalo__s { font-family: $fuente-cartel; font-size: 19px; }
+
+/* Los tickets dorados, sobresaliendo de la pastilla como en el
+   diseno: es lo que la convierte en un premio y no en un aviso. */
+.mb-regalo__arte {
+  flex: none;
+  width: 76px;
+  height: 54px;
+  background: url("/img/bono-tickets.webp") center/contain no-repeat;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .4));
+}
+
 .mb-entrar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 46px;
-  padding: 0 16px;
+  /* Anchos como los de mrloot: con 16px de aire a los costados los
+     dos quedaban mas cerca de un enlace que de un boton. */
+  padding: 0 22px;
   text-decoration: none;
   border-radius: 23px;
   border: 2px solid #fff;
-  background: transparent;
+  /* Relleno oscuro, no transparente: la cabecera tiene un degrade azul
+     claro detras y un boton calado se perdia encima. */
+  background: rgba(9, 26, 60, .55);
   color: #fff;
   font-family: inherit;
   font-weight: 900;
   font-size: 14px;
+  letter-spacing: .02em;
   cursor: pointer;
   white-space: nowrap;
   @include foco;
 
-  &:hover { background: rgba(255, 255, 255, .12); }
+  &:hover { background: rgba(9, 26, 60, .78); }
 
+  /*
+    El de registrarse es el que queremos que toquen.
+
+    Azul lleno con el brillo arriba, que es lo que lo levanta de la
+    pantalla; el de iniciar sesion se queda oscuro. Dos botones del
+    mismo peso no eligen por nadie.
+  */
   &--fuerte {
-    background: #fff;
-    color: $azul-tinta;
-    &:hover { background: #e3eeff; }
+    background: linear-gradient(180deg, #4d93ff, #1f62d8);
+    color: #fff;
+    /* El resplandor azul de alrededor, que es lo que lo despega del
+       fondo: sin el, con la cabecera tambien azul, el boton se apoya
+       sobre su propio color y no se nota. */
+    box-shadow:
+      0 4px 0 rgba(8, 28, 72, .55),
+      0 0 18px rgba(77, 147, 255, .75),
+      inset 0 2px 0 rgba(255, 255, 255, .35);
+    &:hover { background: linear-gradient(180deg, #5fa0ff, #2a6ee6); }
+  }
+
+  /*
+    En el telefono, uno solo.
+
+    Con la billetera y los tres iconos fuera queda sitio, pero dos
+    botones del mismo tamano no eligen por el visitante. El que ya
+    tiene cuenta entra desde la misma pantalla de registro, que tiene
+    el "ya tengo cuenta" arriba de todo.
+  */
+  &--enPc {
+    @include en-celular { display: none; }
   }
 }
 

@@ -381,7 +381,6 @@ export default {
     "available": "Verfügbar zur Auszahlung",
     "lockedBonus": "Bonus noch zu spielen",
     "verifyTitle": "Verifiziere dich vor der Auszahlung",
-    "verifyBody": "Geld verlässt die Seite nur zu einem verifizierten Konto. Das dauert ein paar Minuten und ist einmalig.",
     "verifyCta": "Jetzt verifizieren",
     "verifyLevel": "Du bist auf Stufe {tiene} von {pide}.",
     "minCashOut": "Mindestauszahlung: SC {n}",
@@ -613,6 +612,7 @@ export default {
     "sideMenu": "Seitenmenü",
     "collapse": "Menü einklappen",
     "expand": "Menü ausklappen",
+    "freeOpens": "{n} Gratis-Öffnungen",
     "mainNav": "Hauptnavigation",
     "closeMenu": "Menü schließen"
   },

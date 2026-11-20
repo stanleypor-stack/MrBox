@@ -235,6 +235,19 @@ const userSchema = new mongoose.Schema(
     bonoDeBienvenidaEl: { type: Date, default: null },
 
     /*
+      CUANDO VIO LA OFERTA POR ULTIMA VEZ.
+
+      La ventana del bono no corre desde que se abrio la cuenta: corre
+      desde que el jugador abre el cajon de deposito y ve el cartel.
+      Se vuelve a sellar en cada apertura, asi que los minutos son el
+      tiempo que tiene para decidir desde que lo esta mirando.
+
+      Es la MISMA fecha que usa el contador de la pantalla. Que el
+      servidor mida contra otra cosa seria un cartel que miente.
+    */
+    bonoVisibleDesde: { type: Date, default: null },
+
+    /*
       LO JUGADO HOY, PARA EL TOPE DIARIO.
 
       Sumar el libro y despues decidir deja una ventana: veinte

@@ -87,6 +87,10 @@ router.get("/coins", autorizar(false), async (req, res) => {
           topeSc: Number(deBienvenida.topeSc) || 0,
           vecesAJugar: Number(deBienvenida.vecesAJugar) || 0,
           minutos: Number(deBienvenida.minutos) || 30,
+          /* Desde cuando corre el reloj, para que el contador de la
+             pantalla y la ventana del servidor sean la misma cuenta.
+             Sin sesion no hay sello: la tira arranca de ahora. */
+          desde: req.user ? arranqueDelBono(req.user) : null,
         },
         conectada: oxapay.configurada(),
       },
@@ -98,6 +102,48 @@ router.get("/coins", autorizar(false), async (req, res) => {
 
 /* Todo lo de abajo pide sesión. */
 router.use(autorizar(true));
+
+/**
+ * EL JUGADOR ABRIO EL CAJON Y VIO LA OFERTA: ARRANCA EL RELOJ.
+ *
+ * Se sella cada vez que se abre, asi que los minutos son el tiempo que
+ * tiene para decidir DESDE QUE LA VE, y no desde que abrio la cuenta.
+ * El que entraba al rato de registrarse se encontraba un contador casi
+ * en cero por una oferta que nunca le habian mostrado.
+ *
+ * Lo que devuelve es lo que pinta el contador. Que la fecha salga de
+ * acá y no del reloj del navegador es lo que hace que la pantalla y el
+ * servidor no se puedan separar: los dos miden contra este sello.
+ *
+ * Al que ya lo uso no se le vuelve a sellar: no hay oferta que contar,
+ * y reescribir la fecha solo ensucia la cuenta.
+ */
+router.post("/bonus/seen", async (req, res) => {
+  try {
+    const cfg = await Settings.leer();
+    const deBienvenida = cfg.bonoDeBienvenida || {};
+    const minutos = Number(deBienvenida.minutos) || 30;
+
+    if (req.user.bonoDeBienvenidaEl) {
+      return res.json({ success: true, data: { desde: null, minutos, disponible: false } });
+    }
+
+    const desde = new Date();
+    await User.updateOne({ _id: req.user._id }, { $set: { bonoVisibleDesde: desde } });
+    req.user.bonoVisibleDesde = desde;
+
+    return res.json({
+      success: true,
+      data: {
+        desde,
+        minutos,
+        disponible: deBienvenida.activo !== false && Number(deBienvenida.pct) > 0,
+      },
+    });
+  } catch (err) {
+    return responderError(res, err, "wallet/bonus/seen");
+  }
+});
 
 /**
  * UNA DIRECCION PARA DEPOSITAR.
@@ -397,17 +443,31 @@ const TOPE_POR_AVISO = 100000;
 /**
  * ¿Le queda tiempo de la oferta de bienvenida?
  *
- * La ventana arranca cuando se abrió la cuenta. Es la misma cuenta que
- * hace el contador de la pantalla, hecha en un solo lugar para que las
- * dos no se puedan separar.
+ * La ventana arranca cuando el jugador ABRIO EL CAJON DE DEPOSITO y
+ * vio el cartel (`bonoVisibleDesde`), y vuelve a arrancar cada vez que
+ * lo abre. Antes contaba desde que se había abierto la cuenta, y el
+ * que entraba al rato veía un contador casi en cero sin haber visto
+ * nunca la oferta.
+ *
+ * El que nunca abrió el cajón cae en `createdAt`: es el único momento
+ * que conocemos, y es el más estricto de los dos.
+ *
+ * Es la misma cuenta que hace el contador de la pantalla, hecha en un
+ * solo lugar para que las dos no se puedan separar.
  */
+function arranqueDelBono(usuario) {
+  if (!usuario) return null;
+  return usuario.bonoVisibleDesde || usuario.createdAt || null;
+}
+
 function enVentanaDelBono(usuario, cfgBono) {
-  if (!usuario || !usuario.createdAt) return true;
+  const arranque = arranqueDelBono(usuario);
+  if (!arranque) return true;
 
   const minutos = Number(cfgBono && cfgBono.minutos);
   if (!Number.isFinite(minutos) || minutos <= 0) return true;
 
-  const vence = new Date(usuario.createdAt).getTime() + minutos * 60 * 1000;
+  const vence = new Date(arranque).getTime() + minutos * 60 * 1000;
   return Date.now() < vence;
 }
 
