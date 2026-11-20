@@ -700,6 +700,7 @@ export default {
     "createAccount": "Создать аккаунт",
     "orContinue": "Или продолжить с",
     "emailOrUser": "Почта или имя",
+    "googleFailed": "Не удалось войти через Google. Попробуйте ещё раз.",
     "forgot": "Забыли пароль?",
     "showPassword": "Показать пароль",
     "hidePassword": "Скрыть пароль",

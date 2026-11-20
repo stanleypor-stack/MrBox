@@ -700,6 +700,7 @@ export default {
     "createAccount": "アカウントを作る",
     "orContinue": "または",
     "emailOrUser": "メールまたはユーザー名",
+    "googleFailed": "Google でのログインを完了できませんでした。もう一度お試しください。",
     "forgot": "パスワードをお忘れですか？",
     "showPassword": "パスワードを表示",
     "hidePassword": "パスワードを隠す",

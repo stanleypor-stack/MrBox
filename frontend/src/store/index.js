@@ -174,6 +174,20 @@ export default new Vuex.Store({
       return data;
     },
 
+    /*
+      ENTRAR CON GOOGLE.
+
+      Igual que `registrarse` y `entrar`: el token y el usuario se
+      guardan ACA y no en la pantalla, asi hay un solo lugar donde
+      empieza una sesion.
+    */
+    async conGoogle({ commit }, datos) {
+      const { data } = await api.post("/auth/google", datos);
+      guardarToken(data.token);
+      commit("usuario", data.user);
+      return data;
+    },
+
     salir({ commit }) {
       guardarToken(null);
       commit("usuario", null);

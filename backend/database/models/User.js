@@ -34,7 +34,28 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, trim: true, lowercase: true, index: true },
 
     /* Hash de bcrypt. La contraseña en claro no entra nunca a este objeto. */
-    passwordHash: { type: String, required: true, select: false },
+    /*
+      NO ES OBLIGATORIA.
+
+      Una cuenta que entra con Google no tiene contrasena. Ponerle una
+      al azar seria peor que no tener: quedaria una contrasena que
+      nadie sabe pero que existe, y que alguien podria intentar
+      adivinar.
+
+      Entrar con contrasena ya sabe que hacer sin hash: compara contra
+      uno de mentira, para tardar lo mismo, y falla.
+    */
+    passwordHash: { type: String, default: "", select: false },
+
+    /*
+      LA CUENTA DE GOOGLE, SI ENTRA CON GOOGLE.
+
+      Es el `sub` del token, no el mail: el mail se puede cambiar y
+      este no. Unico y disperso, porque la mayoria de las cuentas no
+      lo tienen y un indice unico normal se quejaria de todos los
+      nulos a la vez.
+    */
+    googleId: { type: String, default: null },
 
     avatarUrl: { type: String, default: "" },
 
@@ -340,6 +361,23 @@ userSchema.methods.puedeEnviar = function puedeEnviar(valorSc, nivelBase = 3, to
 
   return Number(valorSc) <= Number(topeSc) || this.verificationLevel >= 3;
 };
+
+/*
+  UNICO, PERO SOLO PARA LAS QUE LO TIENEN.
+
+  `sparse` NO alcanza: solo saltea los documentos donde el campo NO
+  EXISTE, y acá existe en todos con valor `null` --es el `default`--.
+  Con `sparse` el indice tomaba los mil nulos como mil repetidos y no
+  se podia guardar ni un usuario mas.
+
+  `partialFilterExpression` sobre el tipo sí: entran al indice las que
+  tienen una cadena, o sea las que entraron con Google, y las demas
+  ni se miran.
+*/
+userSchema.index(
+  { googleId: 1 },
+  { unique: true, partialFilterExpression: { googleId: { $type: "string" } } }
+);
 
 module.exports = mongoose.model("User", userSchema);
 module.exports.NIVEL_MAXIMO = NIVEL_MAXIMO;

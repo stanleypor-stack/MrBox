@@ -81,15 +81,30 @@
           tocarlo no pasa NADA hace creer que el sitio esta roto.
         -->
         <div class="mb-auth__sociales">
-          <button type="button" class="mb-auth__social" @click="avisarPendiente">
+          <!--
+            EL DE GOOGLE VA ENCIMA, INVISIBLE.
+
+            Google no deja disparar su dialogo desde un boton nuestro.
+            Lo que deja es dibujar el suyo, asi que el suyo se apoya
+            arriba del nuestro: se ve el nuestro y el click lo recibe
+            el de ellos.
+          -->
+          <div class="mb-auth__google">
+            <div ref="gsi" class="mb-auth__gsi"></div>
+
+            <button
+              type="button" class="mb-auth__social" tabindex="-1" aria-hidden="true"
+              :disabled="entrandoConGoogle"
+            >
             <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
               <path fill="#4285f4" d="M21.6 12.2c0-.7-.1-1.3-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.4z" />
               <path fill="#34a853" d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22z" />
               <path fill="#fbbc05" d="M6.4 14c-.2-.6-.3-1.3-.3-2s.1-1.4.3-2V7.4H3.1a10 10 0 0 0 0 9.2z" />
               <path fill="#ea4335" d="M12 5.9c1.5 0 2.8.5 3.8 1.5l2.8-2.8A10 10 0 0 0 3.1 7.4L6.4 10c.8-2.3 3-4.1 5.6-4.1z" />
             </svg>
-            Google
-          </button>
+              {{ entrandoConGoogle ? $t('common.loading') : 'Google' }}
+            </button>
+          </div>
           <button type="button" class="mb-auth__social" @click="avisarPendiente">
             <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
               <path fill="#1877f2" d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12z" />
@@ -222,6 +237,38 @@ import api from "@/api";
    que deja mandar algo que va a rebotar. */
 const CLAVE_MINIMA = 8;
 
+/*
+  LA LIBRERIA DE GOOGLE, UNA SOLA VEZ.
+
+  Se guarda la promesa y no una bandera: si alguien toca el boton dos
+  veces seguidas, el segundo se cuelga de la misma carga en vez de
+  meter un segundo <script>.
+*/
+let cargandoGoogle = null;
+
+function cargarGoogle() {
+  if (window.google && window.google.accounts) return Promise.resolve();
+
+  if (!cargandoGoogle) {
+    cargandoGoogle = new Promise((listo, falla) => {
+      const s = document.createElement("script");
+      s.src = "https://accounts.google.com/gsi/client";
+      s.async = true;
+      s.defer = true;
+      s.onload = listo;
+      s.onerror = () => {
+        /* Si no cargó, la próxima vez se vuelve a intentar: dejar la
+           promesa rechazada guardada romperia el boton para siempre. */
+        cargandoGoogle = null;
+        falla(new Error("no pude cargar google"));
+      };
+      document.head.appendChild(s);
+    });
+  }
+
+  return cargandoGoogle;
+}
+
 export default {
   name: "AuthView",
 
@@ -235,6 +282,9 @@ export default {
         affiliateCode: "",
       },
       verClave: false,
+      /* Mientras Google contesta: el boton se apaga para que no se
+         abran dos dialogos. */
+      entrandoConGoogle: false,
       /* Si ya salio del campo o intento mandar: ver `claveCorta`. */
       miroLaClave: false,
       CLAVE_MINIMA,
@@ -287,6 +337,82 @@ export default {
     /* La de premios: 4x4. */
     premio(i) {
       return `${((i % 4) / 3 * 100)}% ${(Math.floor(i / 4) / 3 * 100)}%`;
+    },
+
+    /**
+     * ENTRAR CON GOOGLE.
+     *
+     * Abre el diálogo de Google, recibe el token firmado y se lo manda
+     * al servidor, que decide si la persona entra o se registra. Acá
+     * no se decide nada: lo único que se hace es llevar el token.
+     *
+     * Se carga la librería de Google RECIÉN AL TOCAR EL BOTÓN, no al
+     * abrir la página: la mayoría entra con su contraseña y no tiene
+     * por qué bajar un script de Google ni avisarle que estuvo acá.
+     */
+    /**
+     * DIBUJA EL BOTON DE GOOGLE ENCIMA DEL NUESTRO.
+     *
+     * Google no deja disparar su diálogo desde un botón propio: la
+     * única manera soportada es que dibuje el suyo. Así que el suyo
+     * va arriba del nuestro, invisible y del mismo tamaño.
+     *
+     * Si falla, no se avisa nada: el botón simplemente no está. Un
+     * cartel de error al entrar a la pantalla, por algo que la
+     * persona no hizo, no ayuda a nadie.
+     */
+    async prepararGoogle() {
+      const clientId = process.env.VUE_APP_GOOGLE_CLIENT_ID;
+      if (!clientId || !this.$refs.gsi) return;
+
+      try {
+        await cargarGoogle();
+
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: (r) => this.recibirDeGoogle(r),
+          /* Sin "seguís siendo vos": entrar es una decisión, no algo
+             que pase solo al abrir la pantalla. */
+          auto_select: false,
+        });
+
+        window.google.accounts.id.renderButton(this.$refs.gsi, {
+          type: "standard",
+          theme: "filled_black",
+          size: "large",
+          text: this.esRegistro ? "signup_with" : "signin_with",
+          /* Del ancho del nuestro, para que el click caiga siempre
+             sobre el de ellos y nunca al costado. */
+          width: Math.round(this.$refs.gsi.parentElement.offsetWidth) || 200,
+        });
+      } catch {
+        /* Sin el script de Google no hay botón. El resto de la
+           pantalla --el formulario de siempre-- anda igual. */
+      }
+    },
+
+    /** Lo que devuelve el botón de Google: el token, y a entrar. */
+    async recibirDeGoogle(respuesta) {
+      if (!respuesta || !respuesta.credential || this.entrandoConGoogle) return;
+
+      this.entrandoConGoogle = true;
+      this.error = "";
+
+      try {
+        await this.$store.dispatch("conGoogle", {
+          credential: respuesta.credential,
+          affiliateCode: this.conCodigo ? this.form.affiliateCode : undefined,
+        });
+
+        this.$router.push("/");
+      } catch (err) {
+        this.$store.dispatch("avisar", {
+          texto: (err && err.textoParaElJugador) || this.$t("auth.googleFailed"),
+          tono: "error",
+        });
+      } finally {
+        this.entrandoConGoogle = false;
+      }
     },
 
     avisarPendiente() {
@@ -405,7 +531,10 @@ export default {
     }
   },
 
-  mounted() { this.dibujarCaptcha(); },
+  mounted() {
+    this.dibujarCaptcha();
+    this.prepararGoogle();
+  },
 };
 </script>
 
@@ -657,6 +786,34 @@ export default {
 }
 
 .mb-auth__sociales { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+
+/*
+  EL BOTON DE GOOGLE, ENCIMA DEL NUESTRO.
+
+  Se ve el nuestro --la letra y el color del sitio-- y el click lo
+  recibe el de ellos, que esta arriba con opacidad cero. Es la unica
+  manera soportada: Google no deja disparar su dialogo desde un boton
+  propio.
+
+  `opacity: 0` y no `visibility: hidden` ni `display: none`: lo que no
+  se dibuja tampoco recibe clicks.
+*/
+.mb-auth__google { position: relative; }
+
+.mb-auth__gsi {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0;
+  overflow: hidden;
+
+  /* El iframe que mete Google adentro: que ocupe todo, asi no queda
+     una esquina del boton nuestro que no haga nada. */
+  > * { width: 100% !important; height: 100% !important; }
+}
+
+/* El nuestro es decoracion: el que se toca es el de arriba. */
+.mb-auth__google .mb-auth__social { width: 100%; pointer-events: none; }
 
 .mb-auth__social {
   height: 46px;

@@ -11,6 +11,7 @@ const { firmar, autorizar } = require("../../middleware/auth");
 const turnstile = require("../../services/turnstile");
 const afiliados = require("../../services/affiliates");
 const cajas = require("../../services/boxes");
+const google = require("../../services/google");
 const fair = require("../../services/boxes/fair");
 const vip = require("../../services/vip");
 const wallet = require("../../services/wallet");
@@ -230,6 +231,172 @@ router.post("/register", limite, async (req, res) => {
   }
 });
 
+/* ── Entrar con Google ────────────────────────────────────────────── */
+
+/**
+ * UNA SOLA PUERTA PARA ENTRAR Y PARA REGISTRARSE.
+ *
+ * El botón de Google no sabe --ni tiene por qué saber-- si la persona
+ * ya tiene cuenta. Manda el token y acá se resuelve: si ya existe,
+ * entra; si no, se crea. Dos botones distintos, "entrar con Google" y
+ * "registrarse con Google", solo sirven para que alguien elija el
+ * equivocado y reciba un error que no entiende.
+ *
+ * NO LLEVA CAPTCHA, Y ESTÁ BIEN.
+ *
+ * El captcha está para frenar el alta masiva de cuentas. Para llegar
+ * acá hace falta un token que firmó Google, y para tenerlo hace falta
+ * una cuenta de Google de verdad: el trabajo de crear cuentas en masa
+ * ya lo hace Google, mejor que nosotros.
+ *
+ * LAS TRES SITUACIONES
+ *
+ *   ya entró antes con Google   se busca por `googleId` y entra
+ *   tiene cuenta con ese mail   se le ATA la cuenta de Google a la que
+ *                               ya tiene. Crear una segunda con el
+ *                               mismo mail es partir a la persona en
+ *                               dos: dos saldos, dos inventarios, y
+ *                               soporte teniendo que fusionarlas.
+ *   no tiene nada               se crea, igual que un registro normal:
+ *                               semillas, tres cajas de regalo y, si
+ *                               vino con código, su socio.
+ */
+router.post("/google", limite, async (req, res) => {
+  try {
+    if (!google.configurado()) throw errorDe("NOT_FOUND");
+
+    let quien;
+    try {
+      quien = await google.quienEs(req.body.credential);
+    } catch (err) {
+      /* El detalle va al registro nuestro, no al jugador: "el token no
+         trae kid" no le dice nada a nadie. */
+      logger.warn(`[auth] token de google rechazado: ${err.message}`);
+      throw errorDe("GOOGLE_FAILED");
+    }
+
+    /* ── 1. ¿Ya entró antes con esta cuenta de Google? ───────────── */
+    let usuario = await User.findOne({ googleId: quien.sub });
+
+    /* ── 2. ¿Tiene cuenta nuestra con ese mail? ──────────────────── */
+    if (!usuario && quien.email && quien.emailVerificado) {
+      usuario = await User.findOne({ email: quien.email });
+
+      if (usuario) {
+        /*
+          Se le ata y listo. La condición `googleId: null` va en el
+          filtro: si dos pedidos llegan juntos, uno ata y el otro no
+          pisa nada.
+        */
+        await User.updateOne(
+          { _id: usuario._id, googleId: null },
+          { $set: { googleId: quien.sub } }
+        );
+      }
+    }
+
+    /* ── 3. No existe: se crea ───────────────────────────────────── */
+    let reciénCreada = false;
+
+    if (!usuario) {
+      if (!quien.email || !quien.emailVerificado) {
+        /* Sin un mail verificado no hay con qué armar la cuenta, y
+           tampoco se podría recuperar nunca. */
+        throw errorDe("GOOGLE_NO_EMAIL");
+      }
+
+      const username = await nombreLibre(quien.nombre || quien.email.split("@")[0]);
+
+      try {
+        usuario = await User.create({
+          username,
+          email: quien.email,
+          googleId: quien.sub,
+          /* Sin contraseña: entra con Google. Puede ponerse una
+             después, desde el perfil. */
+          passwordHash: "",
+          avatarUrl: quien.foto || "",
+        });
+        reciénCreada = true;
+      } catch (err) {
+        /*
+          Dos entradas al mismo tiempo con la misma cuenta de Google.
+          La que perdió busca la que ganó en vez de devolver un error:
+          la persona hizo una sola cosa, y las semillas y las cajas ya
+          se las dio la que gano.
+        */
+        if (err && err.code === 11000) {
+          usuario = await User.findOne({ googleId: quien.sub })
+            || await User.findOne({ email: quien.email });
+          if (!usuario) throw err;
+        } else {
+          throw err;
+        }
+      }
+    }
+
+    /* ── Lo que lleva toda cuenta nueva ──────────────────────────── */
+    if (reciénCreada) {
+      const semillaServidor = fair.semillaNueva();
+      await UserSeed.create({
+        user: usuario._id,
+        semillaServidor,
+        semillaServidorHash: fair.hashDeSemilla(semillaServidor),
+        semillaCliente: fair.semillaNueva().slice(0, 16),
+        nonce: 0,
+        activa: true,
+      });
+
+      await cajas.regalarCajasDeBienvenida(usuario._id);
+    }
+
+    const codigo = String(req.body.affiliateCode || "").trim();
+    const socio = reciénCreada && codigo ? await afiliados.atarAlSocio(usuario, codigo) : null;
+
+    await anotarSesion(usuario._id, req, reciénCreada ? "register" : "login");
+
+    return res.status(reciénCreada ? 201 : 200).json({
+      success: true,
+      token: firmar(usuario._id),
+      user: await retrato(usuario._id),
+      nueva: reciénCreada,
+      affiliate: socio ? { code: socio.code, bono: await afiliados.bonoDe(socio) } : null,
+    });
+  } catch (err) {
+    return responderError(res, err, "google");
+  }
+});
+
+/**
+ * UN NOMBRE DE USUARIO LIBRE, A PARTIR DEL DE GOOGLE.
+ *
+ * Google da un nombre de persona --"Dani Pérez"-- y nosotros pedimos
+ * un nick. Se limpia a lo que el sitio admite y, si está tomado, se le
+ * agrega un número hasta encontrar uno libre.
+ *
+ * El `while` tiene techo: sin él, una base con un problema raro lo
+ * dejaría girando para siempre adentro de un pedido HTTP.
+ */
+async function nombreLibre(base) {
+  let limpio = String(base)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9_]/g, "")
+    .slice(0, 16);
+
+  if (limpio.length < 3) limpio = `jugador${Math.floor(Math.random() * 900 + 100)}`;
+
+  if (!(await User.exists({ username: limpio }))) return limpio;
+
+  for (let i = 0; i < 40; i += 1) {
+    const sufijo = String(Math.floor(Math.random() * 9000) + 1000);
+    const intento = `${limpio.slice(0, 20 - sufijo.length)}${sufijo}`;
+    if (!(await User.exists({ username: intento }))) return intento;
+  }
+
+  throw errorDe("USERNAME_TAKEN");
+}
+
 /* ── Entrada ──────────────────────────────────────────────────────── */
 
 router.post("/login", limite, async (req, res) => {
@@ -325,7 +492,19 @@ router.put("/password", autorizar(true), limite, async (req, res) => {
     const usuario = await User.findById(req.user._id).select("+passwordHash");
     if (!usuario) throw errorDe("NOT_LOGGED_IN", {}, 401);
 
-    const cierra = await bcrypt.compare(actual, usuario.passwordHash);
+    /*
+      EL QUE ENTRA CON GOOGLE TODAVIA NO TIENE CONTRASENA.
+
+      Entonces no hay "contrasena actual" que pedirle: esto no es
+      cambiarla, es ponerle una por primera vez. Pedirle la que no
+      tiene lo dejaria sin poder ponerse ninguna.
+
+      No se pierde nada: para llegar hasta aca ya tiene la sesion
+      abierta, que es mas de lo que da una contrasena.
+    */
+    const cierra = usuario.passwordHash
+      ? await bcrypt.compare(actual, usuario.passwordHash)
+      : true;
     if (!cierra) throw errorDe("BAD_CREDENTIALS", {}, 401);
 
     usuario.passwordHash = await bcrypt.hash(nueva, 12);

@@ -700,6 +700,7 @@ export default {
     "createAccount": "Criar uma conta",
     "orContinue": "Ou continue com",
     "emailOrUser": "E-mail ou nome de usuário",
+    "googleFailed": "Não conseguimos concluir a entrada com o Google. Tente de novo.",
     "forgot": "Esqueceu a senha?",
     "showPassword": "Mostrar a senha",
     "hidePassword": "Ocultar a senha",

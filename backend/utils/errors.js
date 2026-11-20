@@ -32,6 +32,8 @@ const CODIGOS = {
   USERNAME_TAKEN: "That username is taken.",
   EMAIL_TAKEN: "That email is already registered.",
   BAD_CREDENTIALS: "Wrong email or password.",
+  GOOGLE_FAILED: "We could not check that Google account. Try again.",
+  GOOGLE_NO_EMAIL: "That Google account has no verified email, so we cannot open an account with it.",
   CAPTCHA_FAILED: "The captcha check did not pass.",
 
   /* Plata */
