@@ -274,12 +274,10 @@
       <h2>{{ $t('home.howTitle') }}</h2>
       <div class="mb-como__grilla">
         <article v-for="(h, i) in comoFunciona" :key="i" class="mb-paso-c">
-          <div class="mb-paso-c__arte" :style="{ background: h.fondo }" aria-hidden="true">
-            <span class="mb-paso-c__rayos"></span>
-            <span v-if="h.arte[0]" class="mb-art mb-paso-c__a1" :style="h.arte[0]"></span>
-            <span v-if="h.arte[1]" class="mb-art mb-paso-c__a2" :style="h.arte[1]"></span>
-            <span v-if="h.arte[2]" class="mb-art mb-paso-c__a3" :style="h.arte[2]"></span>
-          </div>
+          <img
+            class="mb-paso-c__arte" :src="h.foto" alt="" aria-hidden="true"
+            width="800" height="447" loading="lazy" decoding="async"
+          >
           <div class="mb-paso-c__texto">
             <h3>{{ $t(h.titulo) }}</h3>
             <p>{{ $t(h.texto) }}</p>
@@ -455,23 +453,18 @@ export default {
     },
 
     /**
-     * Los tres pasos, con arte de cajas DE VERDAD.
+     * LOS TRES PASOS, CON EL ARTE QUE MANDO DANI.
      *
-     * Como los banners: derivado de lo que haya cargado. Con arte fijo,
-     * el dia que una caja sale del catalogo quedan tres huecos.
+     * Antes se armaban solos con cajas del catalogo --tres sprites
+     * sobre un fondo de color-- para que no quedaran huecos el dia que
+     * una caja saliera de venta. Ahora son tres fotos, en el orden en
+     * que las mando, y el orden importa: elegir, abrir, quedarselo.
      */
     comoFunciona() {
-      const todas = this.filas.flatMap((f) => f.items);
-      const pos = (c) => {
-        const s = c && sprite(c.imageUrl);
-        return s ? { backgroundPosition: s.estilo.backgroundPosition } : null;
-      };
-      const tres = (desde) => [0, 1, 2].map((k) => pos(todas[(desde + k * 5) % (todas.length || 1)]));
-
       return [
-        { titulo: "home.how1", texto: "home.how1Sub", fondo: "#2a6be8", arte: tres(0) },
-        { titulo: "home.how2", texto: "home.how2Sub", fondo: "#47b83a", arte: tres(2) },
-        { titulo: "home.how3", texto: "home.how3Sub", fondo: "#7a3be0", arte: tres(4) },
+        { titulo: "home.how1", texto: "home.how1Sub", foto: "/img/como/paso-1.webp" },
+        { titulo: "home.how2", texto: "home.how2Sub", foto: "/img/como/paso-2.webp" },
+        { titulo: "home.how3", texto: "home.how3Sub", foto: "/img/como/paso-3.webp" },
       ];
     },
 
@@ -1521,23 +1514,18 @@ export default {
 
 .mb-paso-c { border-radius: 18px; overflow: hidden; background: $panel-alto; }
 
+/*
+  La foto llena la tarjeta. `cover` y no `contain`: la tarjeta es
+  350x200 --1,75-- y el arte viene en 1,79, asi que se recorta un pelo
+  de los costados y no queda ninguna franja.
+*/
 .mb-paso-c__arte {
-  position: relative;
+  display: block;
+  width: 100%;
   height: 200px;
+  object-fit: cover;
   border-radius: 18px;
-  overflow: hidden;
 }
-
-.mb-paso-c__rayos {
-  position: absolute;
-  inset: 0;
-  background: repeating-conic-gradient(from 0deg at 50% 60%, rgba(255, 255, 255, .12) 0deg 6deg, rgba(255, 255, 255, 0) 6deg 20deg);
-}
-
-.mb-paso-c__a1, .mb-paso-c__a2, .mb-paso-c__a3 { position: absolute; }
-.mb-paso-c__a1 { left: 4%; top: 46px; width: 132px; height: 132px; transform: rotate(-8deg); }
-.mb-paso-c__a2 { left: 50%; top: 18px; width: 164px; height: 164px; margin-left: -82px; }
-.mb-paso-c__a3 { right: 4%; top: 46px; width: 132px; height: 132px; transform: rotate(8deg); }
 
 .mb-paso-c__texto {
   padding: 26px 28px 30px;

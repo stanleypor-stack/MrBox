@@ -8,6 +8,7 @@
         <span class="mb-cartel__halo" aria-hidden="true"></span>
         <span class="mb-cartel__rayos" aria-hidden="true"></span>
         <span class="mb-cartel__lineas" aria-hidden="true"></span>
+        <span class="mb-cartel__foto" aria-hidden="true"></span>
 
         <h1>
           <span class="mb-cartel__pozo">{{ pozoCorto }}</span>
@@ -301,6 +302,33 @@ export default {
   text-align: center;
 
   > * { position: relative; }
+
+  /*
+    EN LA COMPUTADORA, EL TEXTO A LA IZQUIERDA.
+
+    El arte que mando Dani trae las banderas a la derecha y el hueco a
+    la izquierda: el texto va en ese hueco, que es para lo que el hueco
+    esta. Centrado como estaba, el titulo y el reloj caian encima de
+    las banderas y no se leia ni una cosa ni la otra.
+
+    En el telefono sigue centrado: ahi la foto se recorta y no quedan
+    dos mitades que respetar.
+  */
+  @include en-escritorio {
+    align-items: flex-start;
+    text-align: left;
+    padding: 30px 44px;
+
+    h1,
+    .mb-cartel__raya,
+    .mb-cartel__rotulo,
+    .mb-reloj,
+    .mb-cartel__pie { max-width: 52%; }
+
+    h1 { justify-content: flex-start; }
+    .mb-cartel__pie { justify-content: flex-start; }
+    .mb-cartel__raya { width: min(380px, 100%); }
+  }
 }
 
 .mb-cartel__halo {
@@ -319,6 +347,38 @@ export default {
   position: absolute;
   inset: 0;
   background: repeating-linear-gradient(100deg, rgba(255, 255, 255, 0) 0 70px, rgba(255, 255, 255, .07) 70px 73px, rgba(255, 255, 255, 0) 73px 160px);
+}
+
+/*
+  EL FONDO QUE MANDO DANI.
+
+  Va arriba del halo y de los rayos y abajo del texto. Es la misma
+  imagen que mando, con una sola cosa cambiada: el tono, del violeta al
+  azul del sitio. No se le agrego ni se le saco nada.
+
+  `cover` recorta arriba y abajo --la imagen es 2,6 y el cartel 3,5--,
+  que es justo donde no hay nada.
+*/
+.mb-cartel__foto {
+  position: absolute;
+  inset: 0;
+  background: url("/img/carreras/fondo.webp") center / cover no-repeat;
+
+  /*
+    EN EL TELEFONO, A MEDIA LUZ.
+
+    Ahi el cartel es casi cuadrado: el texto lo llena entero y no queda
+    mitad libre donde poner las banderas. A luz entera, "HS", "MIN" y
+    "SEG" caian sobre el blanco de una bandera y no se leian.
+
+    A la mitad la imagen se vuelve textura: se sigue viendo el arte y
+    se lee todo. El 62% corre el encuadre para que entren las dos
+    banderas y no el palo solo.
+  */
+  @include en-celular {
+    opacity: .5;
+    background-position: 62% center;
+  }
 }
 
 .mb-cartel h1 {
