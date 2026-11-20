@@ -8,7 +8,7 @@
         <span class="mb-cartel__halo" aria-hidden="true"></span>
         <span class="mb-cartel__rayos" aria-hidden="true"></span>
         <span class="mb-cartel__lineas" aria-hidden="true"></span>
-        <span class="mb-cartel__foto" aria-hidden="true"></span>
+        <span class="mb-cartel__bandera" aria-hidden="true"></span>
 
         <h1>
           <span class="mb-cartel__pozo">{{ pozoCorto }}</span>
@@ -298,36 +298,46 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 14px;
-  padding: 28px 16px;
-  text-align: center;
+
+  /*
+    EL TEXTO A LA IZQUIERDA Y LA BANDERA AL COSTADO, COMO MRLOOT.
+
+    El texto se queda en su columna --poco mas de la mitad-- y la
+    bandera vive en el resto. Centrado, el titulo y el reloj le pasaban
+    por encima.
+  */
+  align-items: flex-start;
+  text-align: left;
+  padding: 30px 44px;
 
   > * { position: relative; }
 
+  h1, .mb-cartel__raya, .mb-cartel__rotulo, .mb-reloj { max-width: 52%; }
+  .mb-cartel__raya { width: min(380px, 100%); }
+  .mb-cartel__pie { justify-content: flex-start; }
+
   /*
-    EN LA COMPUTADORA, EL TEXTO A LA IZQUIERDA.
+    EN EL TELEFONO, MAS JUNTO.
 
-    El arte que mando Dani trae las banderas a la derecha y el hueco a
-    la izquierda: el texto va en ese hueco, que es para lo que el hueco
-    esta. Centrado como estaba, el titulo y el reloj caian encima de
-    las banderas y no se leia ni una cosa ni la otra.
-
-    En el telefono sigue centrado: ahi la foto se recorta y no quedan
-    dos mitades que respetar.
+    La columna de la izquierda tiene 64% de 345px: ahi adentro el
+    titulo de 68 y las cajas de 62 del escritorio no entran ni de
+    casualidad. Se achican, y los botones se van abajo de todo a lo
+    ancho, que es donde los pone mrloot.
   */
-  @include en-escritorio {
-    align-items: flex-start;
-    text-align: left;
-    padding: 30px 44px;
+  @include en-celular {
+    min-height: 0;
+    padding: 20px 18px 18px;
+    gap: 10px;
 
-    h1,
-    .mb-cartel__raya,
-    .mb-cartel__rotulo,
-    .mb-reloj,
-    .mb-cartel__pie { max-width: 52%; }
+    h1, .mb-cartel__raya, .mb-cartel__rotulo, .mb-reloj { max-width: 64%; }
 
-    h1 { justify-content: flex-start; }
-    .mb-cartel__pie { justify-content: flex-start; }
-    .mb-cartel__raya { width: min(380px, 100%); }
+    .mb-cartel__pozo { font-size: 34px; }
+    .mb-cartel__tipo { font-size: 22px; }
+    .mb-cartel__rotulo { font-size: 11px; }
+
+    .mb-reloj { gap: 6px; }
+    .mb-reloj__n { width: 44px; height: 44px; font-size: 19px; border-radius: 10px; }
+    .mb-reloj__l { font-size: 9px; }
   }
 }
 
@@ -350,34 +360,31 @@ export default {
 }
 
 /*
-  EL FONDO QUE MANDO DANI.
+  LA BANDERA, AL COSTADO.
 
-  Va arriba del halo y de los rayos y abajo del texto. Es la misma
-  imagen que mando, con una sola cosa cambiada: el tono, del violeta al
-  azul del sitio. No se le agrego ni se le saco nada.
+  Antes aca habia una foto a pantalla completa de fondo. Tapaba el azul
+  del sitio y en el telefono le pasaba por encima al reloj: "HS",
+  "MIN" y "SEG" caian sobre el blanco de una bandera.
 
-  `cover` recorta arriba y abajo --la imagen es 2,6 y el cartel 3,5--,
-  que es justo donde no hay nada.
+  Ahora es lo que hace mrloot: el fondo es el azul de siempre --el halo
+  y los rayos de abajo-- y la bandera es UNA, dibujada, parada al
+  costado derecho. Ver public/img/carreras/bandera.svg.
 */
-.mb-cartel__foto {
+.mb-cartel__bandera {
   position: absolute;
-  inset: 0;
-  background: url("/img/carreras/fondo.webp") center / cover no-repeat;
+  top: 50%;
+  right: 3%;
+  transform: translateY(-50%);
+  width: min(320px, 32%);
+  aspect-ratio: 320 / 300;
+  background: url("/img/carreras/bandera.svg") center / contain no-repeat;
 
-  /*
-    EN EL TELEFONO, A MEDIA LUZ.
-
-    Ahi el cartel es casi cuadrado: el texto lo llena entero y no queda
-    mitad libre donde poner las banderas. A luz entera, "HS", "MIN" y
-    "SEG" caian sobre el blanco de una bandera y no se leian.
-
-    A la mitad la imagen se vuelve textura: se sigue viendo el arte y
-    se lee todo. El 62% corre el encuadre para que entren las dos
-    banderas y no el palo solo.
-  */
+  /* Mas chica y pegada arriba: abajo van los botones, a lo ancho. */
   @include en-celular {
-    opacity: .5;
-    background-position: 62% center;
+    top: 20px;
+    right: 10px;
+    transform: none;
+    width: 112px;
   }
 }
 
@@ -386,7 +393,9 @@ export default {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  justify-content: center;
+  /* A la izquierda, como el resto del cartel: el titulo arranca donde
+     arrancan el reloj y los botones. */
+  justify-content: flex-start;
   gap: 0 14px;
   font-family: $fuente-cartel;
   font-weight: 400;
