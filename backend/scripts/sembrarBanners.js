@@ -16,12 +16,12 @@ const Banner = require("../database/models/Banner");
 
 const BANNERS = [
   {
-    clave: "reward",
-    foto: "/img/banners/banner-50k.webp",
-    titulo: "banners.rewardTitle",
-    sub: "banners.rewardSub",
-    cta: "banners.rewardCta",
-    destino: "/vip",
+    clave: "gta",
+    foto: "/img/banners/banner-gta.webp",
+    titulo: "banners.gtaTitle",
+    sub: "banners.gtaSub",
+    cta: "banners.gtaCta",
+    destino: "/promotions",
     orden: 1,
   },
   {
@@ -43,12 +43,12 @@ const BANNERS = [
     orden: 3,
   },
   {
-    clave: "gta",
-    foto: "/img/banners/banner-gta.webp",
-    titulo: "banners.gtaTitle",
-    sub: "banners.gtaSub",
-    cta: "banners.gtaCta",
-    destino: "/promotions",
+    clave: "reward",
+    foto: "/img/banners/banner-50k.webp",
+    titulo: "banners.rewardTitle",
+    sub: "banners.rewardSub",
+    cta: "banners.rewardCta",
+    destino: "/vip",
     orden: 4,
   },
 ];

@@ -416,14 +416,15 @@ export default {
         telefono, donde se recorta al arte y el titulo va encima.
       */
       banners: [
-        { foto: "/img/banners/banner-50k.webp", title: "banners.rewardTitle",
-          sub: "banners.rewardSub", cta: "banners.rewardCta", a: "/vip" },
+        /* GTA primero y 50K ultimo, como pidio Dani. */
+        { foto: "/img/banners/banner-gta.webp", title: "banners.gtaTitle",
+          sub: "banners.gtaSub", cta: "banners.gtaCta", a: "/promotions" },
         { foto: "/img/banners/banner-luxury.webp", title: "banners.luxTitle",
           sub: "banners.luxSub", cta: "banners.luxCta", a: "/boxes?sort=caras" },
         { foto: "/img/banners/banner-race.webp", title: "banners.raceTitle",
           sub: "banners.raceSub", cta: "banners.raceCta", a: "/races/weekly" },
-        { foto: "/img/banners/banner-gta.webp", title: "banners.gtaTitle",
-          sub: "banners.gtaSub", cta: "banners.gtaCta", a: "/promotions" },
+        { foto: "/img/banners/banner-50k.webp", title: "banners.rewardTitle",
+          sub: "banners.rewardSub", cta: "banners.rewardCta", a: "/vip" },
       ],
     };
   },
@@ -1002,18 +1003,43 @@ export default {
   position: absolute;
   inset: 0;
   /*
-    OPACO hasta el 46%, no translucido.
+    DESENFOCA, Y DE PASO OSCURECE.
 
-    Con .92 el texto dibujado se seguia leyendo: es letra blanca sobre
-    fondo oscuro, asi que un velo que deja pasar un 8% la deja a la
-    vista. Tapado del todo desaparece, y la mitad derecha --que es
-    donde esta el arte-- no se toca.
+    Antes era opaco: el texto dibujado --que esta en ingles-- se leia
+    por detras del nuestro, y tapandolo del todo desaparecia pero se
+    comia la mitad del arte.
+
+    Un texto DESENFOCADO no se lee aunque se vea. Con el desenfoque,
+    la mitad de oscuridad alcanza: se ve el color del arte y el ingles
+    queda convertido en manchas.
+
+    El `mask-image` hace que el desenfoque se desvanezca junto con el
+    oscuro; sin el, cortaria de golpe y se veria la linea.
   */
+  backdrop-filter: blur(16px) saturate(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(1.1);
+
+  mask-image: linear-gradient(90deg, #000 0%, #000 48%, rgba(0, 0, 0, .55) 64%, transparent 82%);
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 48%, rgba(0, 0, 0, .55) 64%, transparent 82%);
+
   background: linear-gradient(90deg,
-    #0a1222 0%,
-    #0a1222 46%,
-    rgba(10, 18, 34, .72) 60%,
-    rgba(10, 18, 34, 0) 80%);
+    rgba(8, 14, 28, .78) 0%,
+    rgba(8, 14, 28, .66) 52%,
+    rgba(8, 14, 28, .3) 72%,
+    rgba(8, 14, 28, 0) 100%);
+
+  /* Sin desenfoque no hay nada que vuelva ilegible al ingles, asi que
+     se vuelve al velo opaco: prefiero un banner mas oscuro que uno
+     con dos textos encimados. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    mask-image: none;
+    -webkit-mask-image: none;
+    background: linear-gradient(90deg,
+      #0a1222 0%,
+      #0a1222 46%,
+      rgba(10, 18, 34, .72) 60%,
+      rgba(10, 18, 34, 0) 80%);
+  }
 }
 
 .mb-banner__texto {
@@ -1031,15 +1057,17 @@ export default {
 }
 
 @include en-celular {
-  /* Opaco tambien aca: con .86 el texto dibujado se leia por detras
-     del nuestro. En el telefono el arte se recorta a la derecha, asi
-     que el velo puede llegar mas lejos sin tapar nada. */
+  /* En el telefono el arte se recorta a la derecha, asi que el velo
+     puede llegar un poco mas lejos sin tapar nada. */
   .mb-banner__velo {
+    mask-image: linear-gradient(90deg, #000 0%, #000 56%, rgba(0, 0, 0, .55) 72%, transparent 90%);
+    -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 56%, rgba(0, 0, 0, .55) 72%, transparent 90%);
+
     background: linear-gradient(90deg,
-      #0a1222 0%,
-      #0a1222 52%,
-      rgba(10, 18, 34, .7) 68%,
-      rgba(10, 18, 34, 0) 88%);
+      rgba(8, 14, 28, .8) 0%,
+      rgba(8, 14, 28, .7) 58%,
+      rgba(8, 14, 28, .32) 76%,
+      rgba(8, 14, 28, 0) 100%);
   }
 
   .mb-banner__texto {
