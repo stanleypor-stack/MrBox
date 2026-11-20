@@ -566,6 +566,7 @@ const SECCIONES = {
         { campo: "texto", tipo: "idiomas", ancho: true },
         { campo: "boton", tipo: "idiomas" },
         { campo: "destino", ejemplo: "/vip" },
+        { campo: "destacada", tipo: "siNo", ayuda: "admin.help.destacada" },
         { campo: "desde", tipo: "fecha" },
         { campo: "hasta", tipo: "fecha" },
         { campo: "activa", rotulo: "admin.field.live", tipo: "siNo", porDefecto: true },

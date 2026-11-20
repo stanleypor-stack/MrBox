@@ -143,11 +143,16 @@ export default {
   },
 
   watch: {
-    /* Cambiar de pantalla cierra todo lo que esté abierto encima. */
-    $route() { this.cerrar(); },
+    /* Cambiar de pantalla cierra todo lo que esté abierto encima, y
+       de paso mira si la direccion nueva pide abrir el cajon. */
+    $route() { this.cerrar(); this.mirarLaDireccion(); },
 
     "abierto.cajon": function (v) { this.trabarElFondo(v); },
   },
+
+  /* Al entrar por un enlace con `?cajon=in` --una promocion, un
+     enlace de soporte-- el cajon se abre solo. */
+  mounted() { this.mirarLaDireccion(); },
 
   beforeDestroy() { this.trabarElFondo(false); },
 
@@ -191,6 +196,28 @@ export default {
       this.cerrar();
       if (!this.$store.getters.entro) { this.$router.push("/login"); return; }
       this.caja = modo;
+    },
+
+    /**
+     * EL CAJON DE DEPOSITO, DESDE LA DIRECCION.
+     *
+     * `/?cajon=in` lo abre, `/?cajon=out` abre el de retiro. Hace
+     * falta para que una promocion pueda llevar a depositar --el
+     * cajon no es una pantalla, es un cajon-- y de paso soporte puede
+     * mandar un enlace que abra lo que hay que abrir.
+     *
+     * El parametro se borra despues: si quedara pegado, el boton de
+     * atras del navegador volveria a abrirlo una y otra vez.
+     */
+    mirarLaDireccion() {
+      const modo = this.$route.query.cajon;
+      if (modo !== "in" && modo !== "out") return;
+
+      const limpia = { ...this.$route.query };
+      delete limpia.cajon;
+      this.$router.replace({ query: limpia }).catch(() => {});
+
+      this.abrirCaja(modo);
     },
 
     /* Lo que todavía no está: se avisa, en vez de un botón mudo. */

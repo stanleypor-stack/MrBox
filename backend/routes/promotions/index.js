@@ -58,6 +58,8 @@ router.get("/", async (req, res) => {
             pos2: (p.arte && p.arte.pos2) || "",
           },
           destino: p.destino || "/boxes",
+          /* Para que la pantalla sepa cual va ancha arriba. */
+          destacada: !!p.destacada,
           hasta: p.hasta,
         })),
       },

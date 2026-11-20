@@ -1372,6 +1372,7 @@ export default {
       "montoSc": "Amount",
       "moneda": "Coin",
       "direccion": "Address",
+      "destacada": "Featured",
       "objeto": "Item",
       "sub": "Small line",
       "cta": "Button",
@@ -1486,6 +1487,7 @@ export default {
     "help": {
       "reparto": "How the pool is split, in percent, from first place down. It has to add up to 100.",
       "idiomas": "Written in English. Every other language falls back to it until it is translated.",
+      "destacada": "The one that goes wide at the top of the page. Only one: if more than one is marked, the lowest Order wins.",
       "caja": "The box slug, as it appears in its address: /boxes/black-card",
       "cajaDesafio": "The box slug (/boxes/black-card). Leave it empty for an item challenge and it counts in every box that has the item.",
       "objetoDesafio": "ITEM CHALLENGE: the exact catalogue name, e.g. Datejust Wimbeldon. Leave Target empty. Winners is how many get paid, first come first served.",
@@ -1496,8 +1498,8 @@ export default {
       "home": "The order and what shows on the home page. The rule behind each row stays in the code: \"the 14 most opened\" is a query, not a list.",
       "valor": "Changing this reprices every box that contains the item."
     },
-    "anyBox": "Any box",
     "field": {
+      "destacada": "Featured",
       "code": "Code",
       "kind": "Gives",
       "live": "Live",
@@ -1507,6 +1509,7 @@ export default {
       "shown": "Shown",
       "name": "Name"
     },
+    "anyBox": "Any box",
     "openPlayer": "Open the player file",
     "dash": {
       "lastSync": "updated {seg}s ago",

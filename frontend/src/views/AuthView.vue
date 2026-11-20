@@ -6,9 +6,15 @@
     <div role="dialog" aria-modal="true" :aria-label="titulo" class="mb-auth__caja">
       <!-- ── La mitad del cartel ──────────────────────────────────── -->
       <div class="mb-auth__cartel" aria-hidden="true">
-        <div class="mb-auth__arcoiris"></div>
-        <div class="mb-auth__rayos"></div>
-        <div class="mb-auth__resplandor"></div>
+        <!--
+          EL ARTE, Y UN VELO ENCIMA.
+
+          El estallido tiene mucho amarillo y la letra blanca se
+          perderia sobre el cofre. El velo baja de arriba, que es
+          donde va el texto, y deja los cofres y los premios limpios.
+        -->
+        <img class="mb-auth__arte" src="/img/registro.webp" alt="">
+        <div class="mb-auth__velo"></div>
 
         <div class="mb-auth__marca">
           <svg width="200" height="52" viewBox="0 0 1000 260" role="img" aria-label="MR BOX">
@@ -41,13 +47,6 @@
         <span class="mb-auth__ademas">{{ $t('auth.plusBonus', { pct: pctBono }) }}</span>
         </div>
 
-        <!-- El arte del diseño: tres cajas y tres premios flotando. -->
-        <div class="mb-art mb-auth__caja1" :style="{ backgroundPosition: arte(0) }"></div>
-        <div class="mb-art mb-auth__caja2" :style="{ backgroundPosition: arte(26) }"></div>
-        <div class="mb-art mb-auth__caja3" :style="{ backgroundPosition: arte(14) }"></div>
-        <div class="mb-pull mb-auth__pull1" :style="{ backgroundPosition: premio(1) }"></div>
-        <div class="mb-pull mb-auth__pull2" :style="{ backgroundPosition: premio(14) }"></div>
-        <div class="mb-pull mb-auth__pull3" :style="{ backgroundPosition: premio(7) }"></div>
       </div>
 
       <!-- ── La mitad del formulario ──────────────────────────────── -->
@@ -469,37 +468,79 @@ export default {
   @include en-celular { flex: 1 1 100%; min-height: 300px; }
 }
 
-.mb-auth__arcoiris {
+/*
+  EL ARTE.
+
+  Reemplaza al arcoiris que estaba dibujado con CSS y a los seis
+  recortes de lamina que flotaban encima. `cover` y anclado abajo: lo
+  que importa son los cofres y los premios, que estan en la mitad de
+  abajo; lo que sobra se recorta por arriba, que es donde el arte solo
+  tiene estallido.
+*/
+.mb-auth__arte {
   position: absolute;
   inset: 0;
-  background: conic-gradient(from 200deg at 50% 62%, #ff4fa3, #ffb23d, #ffe14d, #4fe08a, #3fb8ff, #7a5af5, #ff4fa3);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /*
+    25% y no `bottom`: con `bottom` se recortaban los cofres, que son
+    lo primero que mira cualquiera. A 375px de ancho el arte entra a
+    467 de alto en una caja de 320, asi que sobran 147: anclado al
+    25% se van 37 de arriba y 110 de abajo, y quedan los cofres
+    enteros con los premios asomando.
+  */
+  object-position: center 25%;
 }
 
-// Los rayos que salen del centro, como una rueda de la fortuna.
-.mb-auth__rayos {
-  position: absolute;
-  inset: 0;
-  background: repeating-conic-gradient(from 0deg at 50% 62%, rgba(255, 255, 255, .22) 0deg 5deg, rgba(255, 255, 255, 0) 5deg 15deg);
-}
+/*
+  EL VELO.
 
-.mb-auth__resplandor {
+  El estallido tiene mucho amarillo y la letra blanca se perderia
+  sobre el cofre. Baja de arriba --que es donde va el texto-- y deja
+  los cofres y los premios limpios.
+*/
+.mb-auth__velo {
   position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 62%, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, 0) 45%);
+  left: 0;
+  right: 0;
+  top: 0;
+  /*
+    Un alto fijo y no un porcentaje: el velo esta para que se lea el
+    texto, y el texto mide lo que mide. En el carton alto de la
+    computadora, un 62% eran 380px de oscuro sobre un arte que no lo
+    necesitaba.
+  */
+  height: 245px;
+  /* Casi opaco arriba: el estallido es amarillo y verde brillante, y
+     con .88 el titulo blanco se leia a medias. */
+  background: linear-gradient(180deg,
+    rgba(5, 10, 20, .96) 0%,
+    rgba(5, 10, 20, .93) 40%,
+    rgba(5, 10, 20, .68) 68%,
+    rgba(5, 10, 20, .2) 88%,
+    rgba(5, 10, 20, 0) 100%);
 }
 
 .mb-auth__marca {
   position: relative;
+  /* Por encima del velo, que es lo unico que hay entre el texto y el
+     arte. */
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding-top: 26px;
+  gap: 8px;
+  padding-top: 22px;
 }
 
+/*
+  Mas chico que antes: con el arte detras, los tamanos de cuando el
+  fondo era un degrade liso tapaban los cofres.
+*/
 .mb-auth__grito {
   font-family: $fuente-cartel;
-  font-size: 34px;
+  font-size: 27px;
   line-height: 1.02;
   text-align: center;
   color: #fff;
@@ -508,62 +549,61 @@ export default {
 }
 
 .mb-auth__regalo {
-  margin-top: 4px;
-  padding: 10px 22px;
-  border-radius: 12px;
+  margin-top: 2px;
+  padding: 8px 18px;
+  border-radius: 11px;
   background: $amarillo-v;
   border: 3px solid #c9921a;
   font-family: $fuente-cartel;
-  font-size: 26px;
+  font-size: 21px;
   line-height: 1.02;
   text-align: center;
   color: $azul-tinta;
   transform: rotate(-2deg);
 }
 
-/* El renglon de las cajas, debajo del carton amarillo. */
+/* El renglon del bono, debajo del carton amarillo. */
 .mb-auth__ademas {
-  margin-top: 9px;
+  margin-top: 7px;
   font-weight: 900;
-  font-size: 15px;
+  font-size: 13.5px;
   line-height: 1.2;
   text-align: center;
   color: #fff;
-  text-shadow: 0 2px 0 #1c4fc4, 0 4px 0 #0b2266;
-}
+  /*
+    Dos sombras duras para el relieve, y dos difusas para que se lea.
 
-.mb-auth__caja1 { position: absolute; left: 50%; bottom: 120px; width: 200px; height: 200px; margin-left: -100px; }
-.mb-auth__caja2 { position: absolute; left: -10px; bottom: 150px; width: 140px; height: 140px; transform: rotate(-10deg); }
-.mb-auth__caja3 { position: absolute; right: -10px; bottom: 150px; width: 140px; height: 140px; transform: rotate(10deg); }
-.mb-auth__pull1 { position: absolute; left: 20px; bottom: 20px; width: 120px; height: 120px; }
-.mb-auth__pull2 { position: absolute; left: 50%; bottom: 10px; width: 120px; height: 120px; margin-left: -60px; }
-.mb-auth__pull3 { position: absolute; right: 20px; bottom: 20px; width: 120px; height: 120px; }
+    Este renglon es el ultimo del carton: cae donde el velo ya se
+    esta yendo, o sea sobre el estallido de colores. El relieve azul
+    solo no alcanza; el halo oscuro lo despega de cualquier fondo.
+  */
+  text-shadow:
+    0 2px 0 #1c4fc4,
+    0 4px 0 #0b2266,
+    0 0 10px rgba(5, 10, 20, .95),
+    0 0 22px rgba(5, 10, 20, .8);
+}
 
 @include en-celular {
   /*
-    EN EL TELEFONO EL ARTE SE VA ABAJO Y EL TEXTO VA ARRIBA.
+    EN EL TELEFONO EL CARTON SE ACHICA.
 
-    El carton mide 300px y las cajas estaban flotando a 70-90px del
-    piso: con el renglon del bono, el texto bajaba lo suficiente como
-    para que la caja negra le quedara encima y no se leyera ni la
-    oferta ni el titulo.
+    Lo importante es el formulario: si el carton se come media
+    pantalla, para escribir el usuario hay que scrollear.
 
-    Ahora el arte queda pegado al piso y mas chico, y el texto tiene su
-    propio plano. Las dos cosas se ven enteras.
+    El arte se recorta solo --`cover` anclado abajo-- asi que no hay
+    nada que reposicionar: los cofres siguen abajo y el texto arriba.
   */
-  /* 356 y no 340: con 340 la caja del medio arranca en 240 y el
-     renglon del bono termina en 247, o sea 7px encimados. Medido. */
-  .mb-auth__cartel { min-height: 356px; }
+  .mb-auth__cartel { min-height: 320px; }
 
-  .mb-auth__marca { z-index: 2; padding-top: 18px; }
+  .mb-auth__marca { padding-top: 18px; gap: 7px; }
 
-  .mb-auth__caja1 { width: 96px; height: 96px; margin-left: -48px; bottom: 4px; }
-  .mb-auth__caja2, .mb-auth__caja3 { width: 70px; height: 70px; bottom: 14px; }
-  .mb-auth__pull1, .mb-auth__pull2, .mb-auth__pull3 { width: 54px; height: 54px; }
+  .mb-auth__grito { font-size: 24px; }
+  .mb-auth__regalo { font-size: 19px; padding: 7px 16px; }
+  .mb-auth__ademas { font-size: 12.5px; margin-top: 6px; }
 
-  .mb-auth__grito { font-size: 27px; }
-  .mb-auth__regalo { font-size: 21px; padding: 8px 18px; }
-  .mb-auth__ademas { font-size: 13.5px; margin-top: 7px; }
+  /* En el telefono el carton mide 320: el velo cubre dos tercios. */
+  .mb-auth__velo { height: 235px; }
 }
 
 /* ── El formulario ────────────────────────────────────────────────── */

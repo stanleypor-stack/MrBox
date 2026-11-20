@@ -53,6 +53,18 @@ const promotionSchema = new mongoose.Schema(
     hasta: { type: Date, default: null },
 
     activa: { type: Boolean, default: true, index: true },
+
+    /*
+      LA QUE VA ANCHA ARRIBA.
+
+      Una sola, y la elige el panel: la oferta del momento cambia sola
+      --un evento que arranca el viernes a la noche-- y no puede
+      necesitar un despliegue para pasar al frente.
+
+      Si hay varias marcadas, manda la de menor `orden`.
+    */
+    destacada: { type: Boolean, default: false },
+
     orden: { type: Number, default: 0 },
   },
   { timestamps: true }

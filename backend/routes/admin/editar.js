@@ -125,6 +125,7 @@ const COSAS = {
       boton: "idiomas",
       destino: "destino",
       orden: "entero",
+      destacada: "siNo",
       activa: "siNo",
       desde: "fecha",
       hasta: "fecha",
