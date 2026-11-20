@@ -27,27 +27,42 @@ const { logger } = require("../../utils/logger");
  * @param {object} o.caja
  * @param {number} o.precioSc  lo que costó la apertura
  * @param {number} o.premioSc  lo que salió
+ * @param {string} [o.premioItemId]  qué objeto del catálogo salió
  * @param {string} [o.boxOpenId]
  * @returns {Promise<Array>} los que ganó, para contárselo
  */
-async function revisar({ user, caja, precioSc, premioSc, boxOpenId }) {
+async function revisar({ user, caja, precioSc, premioSc, premioItemId, boxOpenId }) {
   /*
     Con una apertura gratis el precio es cero y el multiplicador sería
     infinito. Se usa el precio de lista: el desafío es sobre la caja, no
     sobre lo que pagó.
   */
   const base = sc(precioSc) > 0 ? sc(precioSc) : sc(caja.priceSc);
-  if (base <= 0) return [];
-
-  const logrado = sc(premioSc) / base;
+  const logrado = base > 0 ? sc(premioSc) / base : 0;
   const ahora = new Date();
 
+  /*
+    LOS DOS TIPOS, EN UNA SOLA CONSULTA.
+
+    Por caja: la de esta apertura, o ninguna --un desafío sin caja vale
+    en todas--. Por disparador: el multiplicador que acaba de pegar, o
+    el objeto que acaba de salir.
+
+    Una sola consulta y no dos porque esto corre en CADA apertura.
+  */
+  const condiciones = [];
+  if (base > 0) condiciones.push({ item: null, multiplicador: { $lte: logrado } });
+  if (premioItemId) condiciones.push({ item: premioItemId });
+  if (!condiciones.length) return [];
+
   const vivos = await Challenge.find({
-    box: caja._id,
     activo: true,
     desde: { $lte: ahora },
     hasta: { $gt: ahora },
-    multiplicador: { $lte: logrado },
+    $and: [
+      { $or: [{ box: caja._id }, { box: null }] },
+      { $or: condiciones },
+    ],
   }).lean();
 
   if (!vivos.length) return [];
@@ -94,12 +109,21 @@ async function revisar({ user, caja, precioSc, premioSc, boxOpenId }) {
         userId: user._id,
         amountSc: sc(d.premioSc),
         type: "challenge",
-        reference: { kind: "challenge", id: d._id, label: `${d.multiplicador}x ${d.boxName}` },
+        /* El rótulo es lo que va a leer el jugador en su extracto, así
+           que dice lo mismo que decía el cartel del desafío. */
+        reference: {
+          kind: "challenge",
+          id: d._id,
+          label: d.item
+            ? (d.itemName || "objeto")
+            : `${d.multiplicador}x ${d.boxName || caja.name}`,
+        },
       });
 
       ganados.push({
         _id: d._id,
-        multiplicador: d.multiplicador,
+        multiplicador: d.multiplicador || null,
+        itemName: d.itemName || "",
         premioSc: sc(d.premioSc),
         cuposLibres: Math.max(0, d.cupos - tomado.cuposUsados),
       });
@@ -122,6 +146,7 @@ async function alAire(userId) {
   })
     .sort({ premioSc: -1 })
     .populate("box", "slug name imageUrl priceSc category")
+    .populate("item", "name imageUrl")
     .lean();
 
   const ganados = userId
@@ -131,7 +156,13 @@ async function alAire(userId) {
 
   return vivos.map((d) => ({
     _id: d._id,
-    multiplicador: d.multiplicador,
+    multiplicador: d.multiplicador || null,
+    /* Vacío en los de multiplicador: la pantalla elige qué cartel
+       dibujar según venga esto o no. El nombre guardado manda sobre el
+       del catálogo: si el catálogo le cambia el nombre, el desafío
+       tiene que seguir diciendo lo que decía cuando se publicó. */
+    itemName: d.item ? (d.itemName || d.item.name || "") : "",
+    itemImage: d.item ? (d.item.imageUrl || "") : "",
     premioSc: sc(d.premioSc),
     cupos: d.cupos,
     cuposLibres: Math.max(0, d.cupos - d.cuposUsados),
@@ -146,8 +177,9 @@ async function alAire(userId) {
         category: d.box.category,
       }
       : { slug: d.boxSlug, name: d.boxName, imageUrl: "", priceSc: 0, category: "" },
-    /* Lo que hay que sacar, en SC: es lo que el jugador quiere saber. */
-    hayQueSacarSc: d.box ? sc(d.box.priceSc * d.multiplicador) : 0,
+    /* Lo que hay que sacar, en SC: es lo que el jugador quiere saber.
+       Solo tiene sentido en los de multiplicador y con caja. */
+    hayQueSacarSc: d.box && d.multiplicador ? sc(d.box.priceSc * d.multiplicador) : 0,
   }));
 }
 

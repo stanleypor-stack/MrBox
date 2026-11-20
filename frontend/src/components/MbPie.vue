@@ -29,6 +29,22 @@
 
         <p>{{ $t('foot.about') }}</p>
 
+        <!-- ── Las redes ──────────────────────────────────────── -->
+        <nav class="mb-pie__redes" :aria-label="$t('foot.follow')">
+          <a
+            v-for="r in redes" :key="r.nombre" :href="r.a"
+            class="mb-pie__red" target="_blank" rel="noopener noreferrer"
+            :aria-label="`${r.nombre} @${CUENTA}`" :title="`@${CUENTA}`"
+          >
+            <svg width="19" height="19" viewBox="0 0 24 24" :fill="r.relleno ? 'currentColor' : 'none'"
+                 :stroke="r.relleno ? 'none' : 'currentColor'" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path v-for="(d, i) in r.dibujo" :key="i" :d="d" />
+              <circle v-if="r.circulo" :cx="r.circulo[0]" :cy="r.circulo[1]" :r="r.circulo[2]" />
+            </svg>
+          </a>
+        </nav>
+
         <div class="mb-pie__edad">
           <span class="mb-pie__18">18+</span>
           <span>{{ $t('foot.age') }}</span>
@@ -108,6 +124,52 @@ const COLUMNAS = [
   },
 ];
 
+/*
+  LAS REDES.
+
+  El mismo nombre en las cuatro, asi que la cuenta va aparte y las
+  direcciones se arman con ella: cambiarla es cambiar un renglon.
+*/
+const CUENTA = "mrboxgg";
+
+const REDES = [
+  {
+    nombre: "Instagram",
+    a: `https://instagram.com/${CUENTA}`,
+    circulo: [12, 12, 4],
+    dibujo: [
+      "M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5z",
+      "M17.5 6.5h.01",
+    ],
+  },
+  {
+    /* La X de Twitter, rellena: en trazo no se lee a 19px. */
+    nombre: "Twitter",
+    a: `https://x.com/${CUENTA}`,
+    relleno: true,
+    dibujo: [
+      "M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.65l-5.22-6.82-5.97 6.82H1.66l7.73-8.84L1.25 2.25h6.82l4.71 6.23zm-1.16 17.52h1.83L7.08 4.13H5.11z",
+    ],
+  },
+  {
+    nombre: "Telegram",
+    a: `https://t.me/${CUENTA}`,
+    relleno: true,
+    dibujo: [
+      "M21.94 4.3 2.9 11.64c-1.3.52-1.29 1.25-.24 1.57l4.89 1.53 1.88 5.77c.23.63.11.88.77.88.51 0 .74-.23 1.03-.51l2.37-2.3 4.93 3.64c.91.5 1.56.24 1.79-.84l3.24-15.27c.33-1.33-.5-1.93-1.62-1.42z",
+    ],
+  },
+  {
+    /* La K de Kick, rellena: es un logotipo, no un trazo. */
+    nombre: "Kick",
+    a: `https://kick.com/${CUENTA}`,
+    relleno: true,
+    dibujo: [
+      "M3 3h5.4v5.4h2.7V5.7h2.7V3H21v7.5h-2.7v3h2.7V21h-7.2v-2.7h-2.7v-2.7H8.4V21H3z",
+    ],
+  },
+];
+
 /**
  * EL PIE.
  *
@@ -125,7 +187,14 @@ export default {
   name: "MbPie",
   components: { MbSelectorDeIdioma },
 
-  data() { return { columnas: COLUMNAS, anio: new Date().getFullYear() }; },
+  data() {
+    return {
+      columnas: COLUMNAS,
+      redes: REDES,
+      CUENTA,
+      anio: new Date().getFullYear(),
+    };
+  },
 };
 </script>
 
@@ -151,6 +220,34 @@ export default {
   gap: 14px;
 
   p { margin: 0; font-size: 14px; line-height: 1.6; color: $texto-3; }
+}
+
+/* ── Las redes ────────────────────────────────────────────────────── */
+
+.mb-pie__redes {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.mb-pie__red {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid #24365c;
+  background: #0e1a2e;
+  color: #a9bbe6;
+  text-decoration: none;
+  transition: background .15s, color .15s;
+  @include foco;
+
+  &:hover {
+    background: #16253f;
+    color: #fff;
+  }
 }
 
 .mb-pie__edad { display: flex; align-items: center; gap: 12px; font-size: 13px; line-height: 1.5; color: $texto-4; }

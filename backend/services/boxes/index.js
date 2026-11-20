@@ -319,6 +319,9 @@ async function abrir({ user, slug, veces = 1, demo = false }) {
         caja,
         precioSc: precio,
         premioSc: sc(premio.valueSc),
+        /* Para los desafíos por objeto: "los primeros 3 que saquen un
+           Rolex". Sin esto solo se pueden hacer por multiplicador. */
+        premioItemId: premio.item || null,
         boxOpenId: recibo._id,
       });
     } catch (err) {

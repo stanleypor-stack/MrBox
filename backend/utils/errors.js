@@ -49,6 +49,7 @@ const CODIGOS = {
 
   /* Cajas */
   BOX_NOT_FOUND: "That box does not exist.",
+  CATALOG_ITEM_NOT_FOUND: "That item is not in the catalogue.",
   BOX_NOT_LIVE: "That box is not available right now.",
   BOX_HAS_NO_PRIZES: "That box has no items.",
   TOO_MANY_AT_ONCE: "You cannot open that many at once.",

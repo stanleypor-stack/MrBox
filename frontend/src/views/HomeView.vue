@@ -146,6 +146,33 @@
       fila, que es la que arma el panel en el primer lugar.
     -->
     <template v-for="(fila, n) in filas">
+      <!--
+        LAS MARCAS, JUSTO ARRIBA DE LAS BARATAS.
+
+        Adentro del `v-for` y no sueltas al final: el orden de las
+        filas lo decide el panel, asi que atandolas a `cheap` se mueven
+        con ella sin que nadie toque esto.
+      -->
+      <section v-if="fila.id === 'cheap'" :key="`marcas-${fila.id}`" class="mb-marcas">
+        <div class="mb-fila__cabeza">
+          <h2>{{ $t('home.brands') }}</h2>
+        </div>
+
+        <div class="mb-row mb-marcas__tira">
+          <router-link
+            v-for="m in MARCAS" :key="m.nombre" class="mb-marca mb-card"
+            :to="{ path: '/boxes', query: { search: m.busca } }"
+            :aria-label="$t('home.brandAria', { name: m.nombre })"
+          >
+            <MbMarca
+              :dibujo="m.dibujo || ''" :rotulo="m.rotulo" :con-nombre="!!m.conNombre"
+              :tamano="m.tamano" :espacio="m.espacio" :caja="m.caja"
+              :class="{ 'mb-marca--italica': m.italica }"
+            />
+          </router-link>
+        </div>
+      </section>
+
       <section :key="fila.id" class="mb-fila">
         <div class="mb-fila__cabeza">
           <h2>{{ $t(fila.titulo) }}</h2>
@@ -217,8 +244,12 @@
       </div>
     </section>
 
-    <!-- ── Las marcas ───────────────────────────────────────────── -->
-    <section class="mb-marcas">
+    <!--
+      Y si el panel apago la fila de las baratas, las marcas salen
+      igual: viven adentro de esa fila y sin ella no habria nada que
+      las dibuje.
+    -->
+    <section v-if="!hayBaratas" class="mb-marcas">
       <div class="mb-fila__cabeza">
         <h2>{{ $t('home.brands') }}</h2>
       </div>
@@ -399,6 +430,12 @@ export default {
 
   computed: {
     /* Si queda alguna sin abrir. Con las tres usadas, la tira se va. */
+    /* Si el panel dejo encendida la fila de las baratas: es la que
+       lleva las marcas arriba. */
+    hayBaratas() {
+      return this.filas.some((f) => f.id === "cheap");
+    },
+
     regalosSinAbrir() {
       return this.tickets.some((t) => !t.usada);
     },

@@ -25,8 +25,8 @@
         <div class="mb-reto__arte" :style="{ background: fondoDe(d) }">
           <span class="mb-reto__rayos" aria-hidden="true"></span>
           <span
-            v-if="arte(d)" class="mb-art mb-reto__caja" :class="arte(d).clase"
-            role="img" :aria-label="d.caja.name" :style="arte(d).estilo"
+            v-if="arte(d)" class="mb-reto__caja" :class="arte(d).clase"
+            role="img" :aria-label="d.itemName || d.caja.name" :style="arte(d).estilo"
           ></span>
           <span class="mb-reto__premio">
             <span class="mb-sc mb-sc--20" aria-hidden="true">SC</span>{{ plata(d.premioSc) }}
@@ -34,12 +34,26 @@
         </div>
 
         <div class="mb-reto__cuerpo">
-          <h2>{{ $t('challenges.hit', { x: d.multiplicador }) }}</h2>
+          <!--
+            DOS CARTELES, UN SOLO MECANISMO.
+
+            Por objeto: "Los primeros 3 que saquen un Rolex". Por
+            multiplicador: "Pegá 50x". Lo de abajo --cupos, barra,
+            boton-- es igual para los dos.
+          -->
+          <h2 v-if="d.itemName">{{ $t('challenges.hitItem', { n: d.cupos, item: d.itemName }) }}</h2>
+          <h2 v-else>{{ $t('challenges.hit', { x: d.multiplicador }) }}</h2>
 
           <div class="mb-reto__chips">
-            <span>{{ $t('challenges.target', { amount: plata(d.hayQueSacarSc) }) }}</span>
-            <span>{{ d.caja.name }}</span>
-            <span>{{ $t('challenges.minPlay', { amount: plata(d.caja.priceSc) }) }}</span>
+            <template v-if="d.itemName">
+              <span>{{ d.itemName }}</span>
+              <span>{{ d.caja.name || $t('challenges.anyBox') }}</span>
+            </template>
+            <template v-else>
+              <span>{{ $t('challenges.target', { amount: plata(d.hayQueSacarSc) }) }}</span>
+              <span>{{ d.caja.name }}</span>
+              <span>{{ $t('challenges.minPlay', { amount: plata(d.caja.priceSc) }) }}</span>
+            </template>
           </div>
 
           <div class="mb-reto__cupos">
@@ -52,9 +66,13 @@
             </div>
           </div>
 
+          <!-- Sin caja, a la lista: el desafio vale en todas. -->
           <router-link
-            v-if="!d.yaLoGane && d.cuposLibres > 0" :to="`/boxes/${d.caja.slug}`" class="mb-reto__b"
-          >{{ $t('challenges.play', { name: d.caja.name }) }}</router-link>
+            v-if="!d.yaLoGane && d.cuposLibres > 0"
+            :to="d.caja.slug ? `/boxes/${d.caja.slug}` : '/boxes'" class="mb-reto__b"
+          >{{ d.caja.name
+            ? $t('challenges.play', { name: d.caja.name })
+            : $t('challenges.playAny') }}</router-link>
 
           <span v-else-if="d.yaLoGane" class="mb-reto__b mb-reto__b--hecho">
             {{ $t('challenges.won') }}
@@ -112,7 +130,16 @@ export default {
       });
     },
 
-    arte(d) { return sprite(d.caja.imageUrl); },
+    /*
+      En los de objeto, la foto del objeto: es lo que se promete. En
+      los de multiplicador, la caja.
+
+      La clase sale de `sprite()` y NO se fuerza `mb-art`: las cajas
+      viven en una lamina de 14x14 (`background-size: 1400%`) y los
+      objetos son un archivo cada uno (`contain`). Con las dos clases
+      puestas ganaba la de la lamina y el objeto salia reventado.
+    */
+    arte(d) { return sprite(d.itemImage || d.caja.imageUrl); },
 
     fondoDe(d) {
       const c = TINTES[d.caja.category] || TINTES.Mix;

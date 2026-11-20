@@ -2,6 +2,7 @@ const express = require("express");
 
 const Promotion = require("../../database/models/Promotion");
 const Challenge = require("../../database/models/Challenge");
+const Item = require("../../database/models/Item");
 const Race = require("../../database/models/Race");
 const Banner = require("../../database/models/Banner");
 const PromoCode = require("../../database/models/PromoCode");
@@ -133,9 +134,10 @@ const COSAS = {
 
   challenges: {
     modelo: Challenge,
-    nombre: (d) => `${d.boxName} ${d.multiplicador}x`,
+    nombre: (d) => (d.item ? `${d.cupos}x ${d.itemName}` : `${d.boxName} ${d.multiplicador}x`),
     campos: {
       box: "texto",
+      item: "texto",
       multiplicador: "numero",
       premioSc: "sc",
       cupos: "entero",
@@ -143,24 +145,60 @@ const COSAS = {
       hasta: "fecha",
       activo: "siNo",
     },
-    obligatorios: ["box", "multiplicador", "premioSc", "cupos", "hasta"],
-    /* La caja viaja por slug: es lo que una persona puede escribir. */
+    /*
+      Ni `box` ni `multiplicador` son obligatorios.
+
+      Un desafío por objeto no lleva multiplicador, y además suele no
+      llevar caja: "los primeros 3 que saquen un Rolex" vale en todas
+      las que tengan un Rolex adentro. Que lleve una cosa o la otra
+      --y no las dos ni ninguna-- lo exige el modelo.
+    */
+    obligatorios: ["premioSc", "cupos", "hasta"],
     antesDeGuardar: async (datos) => {
-      if (!datos.box) return datos;
+      const salida = { ...datos };
+
       /*
-        Por slug, que es lo que una persona puede escribir. Si lo que
-        llega parece un id de Mongo, se busca por id: la pantalla manda
-        el slug, pero una llamada directa puede mandar el id.
+        La caja viaja por slug, que es lo que una persona puede
+        escribir. Si lo que llega parece un id de Mongo se busca por
+        id: la pantalla manda el slug, pero una llamada directa puede
+        mandar el id.
 
         El `$or` con `_id` no sirve: mongoose intenta convertir
         "black-card" a ObjectId y revienta antes de buscar.
-        */
-      const esId = /^[0-9a-f]{24}$/i.test(String(datos.box));
-      const caja = await Box.findOne(esId ? { _id: datos.box } : { slug: datos.box })
-        .select("slug name")
-        .lean();
-      if (!caja) throw errorDe("BOX_NOT_FOUND", { box: datos.box });
-      return { ...datos, box: caja._id, boxSlug: caja.slug, boxName: caja.name };
+      */
+      if (datos.box) {
+        const esId = /^[0-9a-f]{24}$/i.test(String(datos.box));
+        const caja = await Box.findOne(esId ? { _id: datos.box } : { slug: datos.box })
+          .select("slug name")
+          .lean();
+        if (!caja) throw errorDe("BOX_NOT_FOUND", { box: datos.box });
+        salida.box = caja._id;
+        salida.boxSlug = caja.slug;
+        salida.boxName = caja.name;
+      } else if ("box" in datos) {
+        /* Vacío a propósito: vale en todas las cajas. */
+        salida.box = null;
+        salida.boxSlug = "";
+        salida.boxName = "";
+      }
+
+      /* El objeto, por nombre exacto del catálogo. */
+      if (datos.item) {
+        const esId = /^[0-9a-f]{24}$/i.test(String(datos.item));
+        const objeto = await Item.findOne(esId ? { _id: datos.item } : { name: datos.item })
+          .select("name")
+          .lean();
+        if (!objeto) throw errorDe("CATALOG_ITEM_NOT_FOUND", { item: datos.item });
+        salida.item = objeto._id;
+        salida.itemName = objeto.name;
+        /* Por objeto no hay multiplicador que valga. */
+        salida.multiplicador = null;
+      } else if ("item" in datos) {
+        salida.item = null;
+        salida.itemName = "";
+      }
+
+      return salida;
     },
   },
 
