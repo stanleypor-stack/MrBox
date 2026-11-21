@@ -1222,19 +1222,22 @@ export default {
 }
 
 /*
-  EN EL TELEFONO SON DOS ICONOS, NO TRES.
+  EN EL TELEFONO: DOS ICONOS SUELTOS, SIN LA PASTILLA BLANCA.
 
-  La pastilla con borde se queda: agrupados se leen como un control y
-  sueltos parecen tres botones cualquiera. Lo que sobra es el TERCERO.
+  En escritorio los tres viven dentro de una pastilla con borde
+  blanco y ahi funciona, porque al lado estan el buscador y la chapa
+  de la cuenta y el borde los agrupa contra todo eso.
 
-  El de inventario esta repetido: en el telefono la barra de abajo ya
-  tiene Inventario, a un pulgar de distancia. Tenerlo arriba tambien
-  no agrega nada y se come 46 px de los 335 que hay, que son justo
-  los que le faltaban al saldo para entrar.
+  En el telefono no hay nada mas al lado. Ese borde blanco termina
+  siendo lo UNICO claro de la cabecera --la billetera es azul oscuro
+  con borde azul-- asi que se lleva la vista y compite justo con el
+  saldo, que es lo que el jugador vino a mirar. mrloot los tiene
+  sueltos, cada uno en su cuadradito oscuro, y por eso se ve
+  tranquilo.
 
-  Es el mismo criterio que ya estaba aplicado mas arriba con el
-  buscador y la chapa de la cuenta: lo que vive en la barra de abajo
-  no se repite en la cabecera.
+  Y son DOS, no tres: el de inventario esta repetido en la barra de
+  abajo, a un pulgar de distancia. Mismo criterio que ya estaba
+  aplicado mas arriba con el buscador y la chapa de la cuenta.
 
   VA DESPUES DE LAS REGLAS DE ESCRITORIO, NO ANTES.
 
@@ -1243,9 +1246,25 @@ export default {
   con la misma especificidad ganaba la regla de abajo.
 */
 @include en-celular {
-  /* El tercero y la rayita que lo separa del segundo. */
-  .mb-iconos__caja > .mb-iconos__b:last-child,
-  .mb-iconos__caja > .mb-iconos__raya:last-of-type { display: none; }
+  .mb-iconos__caja {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    gap: 8px;
+    height: auto;
+  }
+
+  /* La rayita separaba iconos pegados; sueltos ya no hace falta. */
+  .mb-iconos__raya { display: none; }
+
+  .mb-iconos__b {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    background: #16253f;
+  }
+
+  .mb-iconos__caja > .mb-iconos__b:last-child { display: none; }
 }
 
 
