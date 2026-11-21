@@ -130,25 +130,6 @@
           </span>
         </div>
       </div>
-
-      <!-- ── Las que ya cerraron ──────────────────────────────────── -->
-      <section v-if="pasadas.length" class="mb-pasadas">
-        <h2>{{ $t('races.past') }}</h2>
-        <div v-for="c in pasadas" :key="c._id" class="mb-pasada">
-          <div class="mb-pasada__cabeza">
-            <span>{{ fecha(c.desde) }} – {{ fecha(c.hasta) }}</span>
-            <span class="mb-pasada__pozo">
-              <span class="mb-sc mb-sc--16" aria-hidden="true">SC</span>{{ plata(c.premioTotalSc) }}
-            </span>
-          </div>
-          <ol class="mb-pasada__lista">
-            <li v-for="g in c.ganadores.slice(0, 3)" :key="g.puesto">
-              <b>{{ g.username }}</b>
-              <span class="mb-verde">{{ plata(g.premioSc) }}</span>
-            </li>
-          </ol>
-        </div>
-      </section>
     </template>
   </div>
 </template>
@@ -185,7 +166,6 @@ export default {
     return {
       TIPOS,
       carrera: null,
-      pasadas: [],
       comoAbierto: false,
       ahora: Date.now(),
       reloj_: null,
@@ -262,18 +242,18 @@ export default {
       });
     },
 
-    fecha(d) {
-      return new Date(d).toLocaleDateString(this.$i18n.locale, { day: "2-digit", month: "short" });
-    },
+    /*
+      SOLO LA CARRERA EN CURSO.
 
+      Antes se pedia tambien `/races/past`. Esa lista no se muestra mas
+      --Dani no la quiere-- y el pedido se va con ella: esconder el
+      bloque y seguir pidiendola seria traer, dos veces por minuto y en
+      cada visita, algo que nadie mira.
+    */
     async traer() {
       try {
-        const [c, p] = await Promise.all([
-          api.get(`/races/${this.tipo}`),
-          api.get("/races/past", { params: { tipo: this.tipo } }),
-        ]);
-        this.carrera = c.data.data;
-        this.pasadas = p.data.data.items;
+        const { data } = await api.get(`/races/${this.tipo}`);
+        this.carrera = data.data;
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
       }
@@ -663,32 +643,4 @@ export default {
 .mb-der { text-align: right; font-variant-numeric: tabular-nums; }
 .mb-tenue { color: $texto-4; }
 .mb-verde { color: $verde; }
-
-/* ── Las que ya cerraron ──────────────────────────────────────────── */
-
-.mb-pasadas { display: flex; flex-direction: column; gap: 12px; h2 { margin: 0; font-weight: 900; font-size: 20px; } }
-
-.mb-pasada {
-  border-radius: 14px;
-  background: $panel-alto;
-  border: 1px solid $borde;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.mb-pasada__cabeza { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: $texto-3; }
-.mb-pasada__pozo { display: flex; align-items: center; gap: 5px; font-weight: 900; color: #fff; }
-
-.mb-pasada__lista {
-  margin: 0;
-  padding-left: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 14px;
-
-  li { display: flex; justify-content: space-between; gap: 10px; }
-}
 </style>
