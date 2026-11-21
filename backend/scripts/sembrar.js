@@ -127,6 +127,31 @@ async function sembrar({ limpiar = false } = {}) {
     throw new Error(`Esto solo corre contra una base local. DATABASE_URI apunta a otro lado.`);
   }
 
+  /*
+    Y EL NOMBRE DE LA BASE, NO SOLO EL SERVIDOR.
+
+    Este script crea `dani` (owner) y `sol` (admin) con una clave fija
+    que esta escrita unas lineas mas arriba, o sea publicada en el
+    repositorio. Exigir `localhost` no alcanza: una Mongo de produccion
+    corriendo en la misma maquina que el servidor tambien dice
+    localhost, y ahi "voy a sembrar el catalogo" deja dos cuentas de
+    administrador con la clave de todos conocida.
+
+    El nombre tiene que decir que es de desarrollo o de pruebas. Para
+    sembrar algo que se llama distinto, hay que decirlo a proposito.
+  */
+  const nombreDeLaBase = (uri.split("/").pop() || "").split("?")[0];
+  const aProposito = process.argv.includes("--igual")
+    || process.env.SEMBRAR_IGUAL === "1";
+
+  if (!/local|test|dev/i.test(nombreDeLaBase) && !aProposito) {
+    throw new Error(
+      `La base se llama "${nombreDeLaBase}" y no parece de desarrollo. `
+      + `Este script crea cuentas de administrador con una clave publicada. `
+      + `Si de verdad es lo que querés, agregá --igual.`
+    );
+  }
+
   const base = await conectar();
   console.log(`sembrando "${base}"`);
 
