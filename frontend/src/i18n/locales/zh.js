@@ -1196,6 +1196,7 @@ export default {
   "legal": {
     "index": "法律条款",
     "pending": "此文本正在完善，将在网站对外开放前发布。",
+    "updated": "最后更新：{fecha}",
     "askUs": "现在需要了解？",
     "contactSupport": "联系客服",
     "termsSub": "MR BOX 使用规则。",

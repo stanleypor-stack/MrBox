@@ -1196,6 +1196,7 @@ export default {
   "legal": {
     "index": "Páginas legales",
     "pending": "Estamos terminando este texto. Se publica antes de que el sitio abra al público.",
+    "updated": "Última actualización: {fecha}",
     "askUs": "¿Necesitás algo de esto ahora?",
     "contactSupport": "Preguntale a soporte",
     "termsSub": "Las reglas para usar MR BOX: qué podés hacer, qué podemos hacer nosotros y qué pasa si algo sale mal.",

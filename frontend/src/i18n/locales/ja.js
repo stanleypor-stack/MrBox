@@ -1196,6 +1196,7 @@ export default {
   "legal": {
     "index": "規約",
     "pending": "この文書は準備中で、公開前に掲載されます。",
+    "updated": "最終更新 {fecha}",
     "askUs": "今必要ですか？",
     "contactSupport": "サポートに聞く",
     "termsSub": "MR BOX の利用規約。",

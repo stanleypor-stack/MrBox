@@ -11,13 +11,48 @@
       <h1>{{ $t(actual.titulo) }}</h1>
       <p class="mb-legal__sub">{{ $t(actual.sub) }}</p>
 
-      <div class="mb-legal__aviso">
+      <!--
+        EL AVISO SOLO DONDE TODAVIA NO HAY TEXTO.
+
+        Cuatro de las cinco paginas siguen vacias; los terminos ya no.
+        Dejar el cartel de "esto todavia no esta" arriba de un
+        contrato escrito seria decir que no vale.
+      -->
+      <div v-if="!bloques.length" class="mb-legal__aviso">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffd35a"
              stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
         </svg>
         <span>{{ $t('legal.pending') }}</span>
       </div>
+
+      <template v-else>
+        <p class="mb-legal__fecha">{{ $t('legal.updated', { fecha: actualizado }) }}</p>
+
+        <!--
+          EL TEXTO VIENE COMO DATOS, NO COMO HTML.
+
+          Cada bloque dice que es --titulo, parrafo, lista-- y la
+          pantalla lo dibuja. Nada de `v-html`: un contrato es texto,
+          no necesita etiquetas, y abrirle la puerta al HTML en la
+          unica pagina que todo el mundo lee no vale la pena.
+        -->
+        <component
+          v-for="(b, i) in bloques" :key="i"
+          :is="b.t === 'h2' ? 'h2' : b.t === 'h3' ? 'h3' : b.t === 'ul' ? 'ul' : 'p'"
+          :class="{
+            'mb-legal__h2': b.t === 'h2',
+            'mb-legal__h3': b.t === 'h3',
+            'mb-legal__nota': b.t === 'nota',
+            'mb-legal__lista-p': b.t === 'ul',
+          }"
+        >
+          <template v-if="b.t === 'ul'">
+            <li v-for="(x, n) in b.items" :key="n">{{ x }}</li>
+          </template>
+          <template v-else>{{ b.texto }}</template>
+        </component>
+      </template>
 
       <p class="mb-legal__cierre">
         {{ $t('legal.askUs') }}
@@ -53,11 +88,22 @@ const PAGINAS = [
   { id: "acceptance", titulo: "foot.acceptance", sub: "legal.acceptanceSub" },
 ];
 
+/*
+  EL TEXTO DE CADA PAGINA, CUANDO LO HAY.
+
+  Los terminos estan escritos; las otras cuatro todavia no. Se cargan
+  aparte del resto del sitio --son muchas palabras que casi nadie
+  abre-- asi que la portada no las baja.
+*/
+const TEXTOS = {
+  terms: () => import(/* webpackChunkName: "legales" */ "@/legal/terminos.js"),
+};
+
 export default {
   name: "LegalView",
 
   data() {
-    return { paginas: PAGINAS };
+    return { paginas: PAGINAS, bloques: [], actualizado: "" };
   },
 
   computed: {
@@ -71,7 +117,24 @@ export default {
     },
   },
 
+  watch: {
+    cual: { immediate: true, handler: "traerTexto" },
+  },
+
   methods: {
+    async traerTexto() {
+      const traer = TEXTOS[this.cual];
+      if (!traer) { this.bloques = []; this.actualizado = ""; return; }
+
+      const m = await traer();
+      this.bloques = m.TERMINOS || [];
+      this.actualizado = m.ACTUALIZADO || "";
+
+      /* Arriba de todo: cambiar de pagina legal y aparecer en la
+         mitad de la anterior es desorientador. */
+      window.scrollTo({ top: 0 });
+    },
+
     abrirSoporte() { this.$store.dispatch("pedirSoporte", ""); },
   },
 
@@ -150,6 +213,71 @@ export default {
   line-height: 1.5;
 
   svg { flex: none; margin-top: 1px; }
+}
+
+/* ── El texto de un documento legal ───────────────────────────────── */
+
+/*
+  Un contrato se lee distinto que el resto del sitio: renglones mas
+  separados, una medida que no pase de unos setenta caracteres --mas
+  ancho y el ojo pierde el renglon al volver-- y titulos que se vean
+  como escalones y no como adornos.
+*/
+.mb-legal__fecha {
+  margin: 0 0 18px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: $texto-4;
+}
+
+.mb-legal__hoja {
+  p, li { max-width: 68ch; }
+
+  p {
+    margin: 0 0 12px;
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: $texto-2;
+  }
+}
+
+.mb-legal__h2 {
+  margin: 30px 0 10px;
+  padding-top: 18px;
+  border-top: 1px solid $borde;
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.mb-legal__h3 {
+  margin: 20px 0 8px;
+  font-size: 14.5px;
+  font-weight: 900;
+  color: $texto;
+}
+
+/* Lo que hay que entender aunque no se lea el resto. */
+.mb-legal__nota {
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(63, 124, 240, .4);
+  background: rgba(63, 124, 240, .09);
+  color: #fff;
+  font-weight: 700;
+}
+
+.mb-legal__lista-p {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  color: $texto-2;
+
+  li {
+    margin-bottom: 6px;
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
 }
 
 .mb-legal__cierre {

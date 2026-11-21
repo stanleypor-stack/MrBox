@@ -2,7 +2,10 @@
   <div class="mb-caja" @keydown.esc="cerrar">
     <button type="button" class="mb-caja__fondo" :aria-label="$t('action.cancel')" @click="cerrar"></button>
 
-    <div class="mb-caja__ventana" role="dialog" aria-modal="true" :aria-label="$t('wallet.refill')">
+    <div
+      class="mb-caja__ventana" :class="`is-paso-${paso}`"
+      role="dialog" aria-modal="true" :aria-label="$t('wallet.refill')"
+    >
       <!-- ── La columna de la izquierda ───────────────────────────── -->
       <div class="mb-caja__lado">
         <div class="mb-caja__marca">
@@ -14,7 +17,7 @@
           <button
             v-for="l in ['in', 'out']" :key="l" type="button" role="tab"
             :aria-selected="lado === l ? 'true' : 'false'" :class="{ 'is-activa': lado === l }"
-            @click="lado = l"
+            @click="elegirLado(l)"
           >{{ l === 'in' ? $t('action.deposit') : $t('action.redeem') }}</button>
         </div>
 
@@ -30,7 +33,7 @@
 
           <button
             type="button" class="mb-caja__metodo" :class="{ 'is-elegido': metodo === 'billetera' }"
-            :aria-pressed="String(metodo === 'billetera')" @click="metodo = 'billetera'"
+            :aria-pressed="String(metodo === 'billetera')" @click="elegirMetodo('billetera')"
           >
             <span class="mb-caja__metodo-t">{{ $t('wallet.connectWallet') }}</span>
             <span class="mb-caja__puntos">
@@ -44,7 +47,7 @@
 
           <button
             type="button" class="mb-caja__metodo" :class="{ 'is-elegido': metodo === 'direccion' }"
-            :aria-pressed="String(metodo === 'direccion')" @click="metodo = 'direccion'"
+            :aria-pressed="String(metodo === 'direccion')" @click="elegirMetodo('direccion')"
           >
             <span class="mb-caja__metodo-t">{{ $t('wallet.cryptocurrencies') }}</span>
             <span class="mb-caja__puntos">
@@ -57,7 +60,10 @@
           </button>
         </template>
 
-        <button v-else type="button" class="mb-caja__metodo is-elegido" aria-pressed="true">
+        <button
+          v-else type="button" class="mb-caja__metodo is-elegido" aria-pressed="true"
+          @click="paso = 'metodo'"
+        >
           <span class="mb-caja__metodo-t">{{ $t('wallet.crypto') }}</span>
           <span class="mb-caja__puntos">
             <span
@@ -68,6 +74,13 @@
           </span>
         </button>
 
+        <!-- La del telefono: abajo de todo, despues de las maneras de
+             pagar. En escritorio esta escondida (ver el CSS). -->
+        <MbTiraDeBono
+          v-if="lado === 'in'" class="mb-caja__bono mb-caja__bono--lista"
+          :bono="bonoDeBienvenida" :desde="desdeCuando" @depositar="alDepositar"
+        />
+
         <p class="mb-caja__nota">
           {{ lado === 'in' ? $t('wallet.depositNote') : $t('wallet.withdrawNote') }}
         </p>
@@ -76,6 +89,16 @@
       <!-- ── Depositar ────────────────────────────────────────────── -->
       <div v-if="lado === 'in'" class="mb-caja__cuerpo">
         <div class="mb-caja__cabeza">
+          <!-- Solo en el telefono, donde esto es un paso y no una
+               columna: en escritorio no hay a donde volver. -->
+          <button
+            type="button" class="mb-caja__volver" :aria-label="$t('common.back')"
+            @click="paso = 'lista'"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>
+          </button>
+
           <span>{{ metodo === 'billetera' ? $t('wallet.payFromWallet') : $t('wallet.payWithCrypto') }}</span>
           <button type="button" class="mb-caja__x" :aria-label="$t('action.cancel')" @click="cerrar">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"
@@ -83,10 +106,21 @@
           </button>
         </div>
 
-        <!-- La oferta de bienvenida, mientras se pueda reclamar. Va
-             antes del cartel de conexion: abajo empieza la cadena de
-             v-if y meterse en el medio la corta. -->
-        <MbTiraDeBono :bono="bonoDeBienvenida" :desde="desdeCuando" @depositar="alDepositar" />
+        <!--
+          La oferta de bienvenida, mientras se pueda reclamar. Va
+          antes del cartel de conexion: abajo empieza la cadena de
+          v-if y meterse en el medio la corta.
+
+          En el telefono NO va aca sino abajo de la lista de maneras
+          de pagar, que es el primer paso: ahi es donde el jugador
+          esta decidiendo cuanto poner. Es la misma tira dibujada dos
+          veces y el CSS esconde la que no toca, porque moverla con
+          JavaScript pedia saber el ancho de la pantalla.
+        -->
+        <MbTiraDeBono
+          class="mb-caja__bono mb-caja__bono--panel"
+          :bono="bonoDeBienvenida" :desde="desdeCuando" @depositar="alDepositar"
+        />
 
         <p v-if="deposito && !deposito.conectada" class="mb-caja__aviso">
           {{ $t('wallet.notConnected') }}
@@ -551,6 +585,23 @@ export default {
          la direccion. Arranca en la direccion y pasa sola a la
          billetera si el navegador tiene una. */
       metodo: "direccion",
+
+      /*
+        EN EL TELEFONO SON DOS PASOS, NO DOS COLUMNAS.
+
+        En escritorio la lista de maneras de pagar esta a la izquierda
+        y lo elegido a la derecha, las dos cosas a la vista. En un
+        telefono eso se apila y queda un chorizo larguisimo: hay que
+        bajar media pantalla de opciones para llegar al QR, y arriba
+        del todo queda un hueco que parece un error.
+
+        Asi que en el telefono es como lo hace mrloot: primero elegis,
+        despues se abre lo que elegiste, con una flecha para volver.
+        En escritorio esto no cambia nada --las dos columnas siguen
+        igual-- porque el que decide es el CSS, no esta variable.
+      */
+      paso: "lista",
+
       billeteras: [],
       montoCripto: "",
       pagando: false,
@@ -832,6 +883,26 @@ export default {
     },
 
     cerrar() { this.$emit("cerrar"); },
+
+    /*
+      ELEGIR UNA MANERA DE PAGAR ABRE SU PANTALLA.
+
+      En escritorio `paso` no lo mira nadie: las dos columnas estan
+      siempre. En el telefono el CSS esconde la que no toca, asi que
+      esto es lo que pasa de la lista a lo elegido.
+    */
+    elegirMetodo(cual) {
+      this.metodo = cual;
+      this.paso = "metodo";
+    },
+
+    /* Cambiar entre depositar y canjear vuelve a la lista: son dos
+       listas distintas y quedarse en el panel de la otra muestra
+       una pantalla que no corresponde. */
+    elegirLado(l) {
+      this.lado = l;
+      this.paso = "lista";
+    },
 
     alCambiarMoneda() {
       this.redElegida = (this.moneda.redes[0] || {}).clave || "";
@@ -1930,4 +2001,67 @@ export default {
 }
 
 .mb-tenue { color: $texto-4; }
+
+/* ── Lo que solo existe en el telefono ────────────────────────────── */
+
+/*
+  La flecha de volver y la tira del bono de la lista no se dibujan en
+  escritorio: ahi las dos columnas estan a la vista y no hay ningun
+  paso del que volver. Se prenden abajo, en la media query.
+*/
+.mb-caja__volver {
+  display: none;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  border: 0;
+  background: $panel-alto;
+  cursor: pointer;
+  @include foco;
+
+  &:hover { background: $panel-hover; }
+}
+
+.mb-caja__bono--lista { display: none; }
+
+/*
+  ══ EN EL TELEFONO, DOS PASOS ══════════════════════════════════════
+
+  Todo esto vive adentro de la media query a proposito: en escritorio
+  no cambia una coma, siguen siendo las dos columnas de siempre.
+
+  Y va DESPUES de las reglas de escritorio, no antes. Sass escribe el
+  `@media` donde esta escrito, no al final, asi que un bloque de
+  telefono puesto arriba pierde contra la regla de escritorio de abajo
+  cuando tienen la misma especificidad. Ya paso una vez con los
+  iconos de la cabecera y el diseno de celular nunca se aplico.
+*/
+@include en-celular {
+  /* La ventana ocupa la pantalla: un paso por vez, sin marco que
+     sobre ni esquinas redondeadas contra el borde. */
+  .mb-caja__ventana {
+    width: 100%;
+    max-height: calc(100vh - 16px);
+    border-radius: 18px;
+  }
+
+  /* El que no toca no se dibuja. */
+  .mb-caja__ventana.is-paso-lista .mb-caja__cuerpo { display: none; }
+  .mb-caja__ventana.is-paso-metodo .mb-caja__lado { display: none; }
+
+  .mb-caja__lado,
+  .mb-caja__cuerpo { flex: 1 1 100%; max-width: none; }
+
+  /* La flecha de volver solo existe aca. */
+  .mb-caja__volver { display: flex; }
+
+  /* El cartel del bono va en la lista, abajo de las maneras de
+     pagar, y no en el panel de lo elegido. */
+  .mb-caja__bono--panel { display: none; }
+  .mb-caja__bono--lista { display: block; }
+}
+
 </style>
