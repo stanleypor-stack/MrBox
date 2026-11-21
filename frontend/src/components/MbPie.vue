@@ -96,10 +96,13 @@ const COLUMNAS = [
     titulo: "foot.legal",
     enlaces: [
       { texto: "foot.terms", a: "/legal/terms" },
-      { texto: "foot.rules", a: "/legal/rules" },
+      { texto: "foot.fair", a: "/legal/fair" },
+      { texto: "foot.shipping", a: "/legal/shipping" },
+      { texto: "foot.refunds", a: "/legal/refunds" },
       { texto: "foot.responsible", a: "/legal/responsible" },
       { texto: "foot.privacy", a: "/legal/privacy" },
-      { texto: "foot.acceptance", a: "/legal/acceptance" },
+      { texto: "foot.cookies", a: "/legal/cookies" },
+      { texto: "foot.aml", a: "/legal/aml" },
     ],
   },
   {

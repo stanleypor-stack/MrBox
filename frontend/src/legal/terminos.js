@@ -48,15 +48,11 @@ export const NUMEROS_QUE_SE_NOMBRAN = {
   "vecesAJugarElBono": "1x",
 };
 
+import { h, s, p, li, nota } from "./bloques";
+
 export const ACTUALIZADO = "2026-11-21";
 
-const h = (texto) => ({ t: "h2", texto });
-const s = (texto) => ({ t: "h3", texto });
-const p = (texto) => ({ t: "p", texto });
-const li = (items) => ({ t: "ul", items });
-const nota = (texto) => ({ t: "nota", texto });
-
-export const TERMINOS = [
+export const TEXTO = [
   p("Please read these Terms before you use MR BOX. By creating an account, buying SC, or opening a box, you agree to them."),
 
   nota("MR BOX is a shop, not a casino. Every box you open gives you an item. The chance of each item is published on the box page before you pay, and you can check afterwards that the draw was not tampered with."),
@@ -74,7 +70,7 @@ export const TERMINOS = [
   p("It is your responsibility to check that using MR BOX is lawful where you live. We make no promise that it is."),
 
   s("C. These Terms, and changes to them"),
-  p("These Terms, together with our Privacy Policy, Cookie Policy, Shipping Policy and any rules shown on a specific feature, are the whole agreement between you and us."),
+  p("These Terms, together with our Privacy Policy, Cookie Policy, Shipping Policy, Refund Policy, AML Policy, the Provably Fair page and any rules shown on a specific feature, are the whole agreement between you and us. All of them are linked in the footer."),
   p("We may change these Terms. If a change materially affects your rights, we will post a notice on the site and email you, and it takes effect 14 days later. Other changes take effect when posted. Changes are not retroactive: they do not affect SC you have already bought or items you have already won. The date at the top of this page tells you when it last changed."),
   p("If you do not accept a change, stop using the site and close your account as described in section 2.D."),
 
@@ -160,7 +156,7 @@ export const TERMINOS = [
   h("6. Shipping"),
 
   s("A. Asking for delivery"),
-  p("To have an item shipped, give us a complete and correct delivery address. If the address is wrong or incomplete we may cancel the order or charge the cost of sorting it out. Orders over SC 1,000 require level 3 verification before they are dispatched."),
+  p("To have an item shipped, give us a complete and correct delivery address. If the address is wrong or incomplete we may cancel the order or charge the cost of sorting it out. Shipping requires level 2 verification, and an order worth more than SC 1,000 requires level 3."),
 
   s("B. Duties, taxes and import charges"),
   p("Items may be shipped from outside your country. Unless an import charge is shown and paid at checkout, you are the importer of record: import VAT, duties, customs brokerage and carrier handling fees in the destination country are yours to pay. Those charges are set by your country's authorities and by the carrier, not by us, and the parcel may be held until they are paid."),
@@ -328,4 +324,4 @@ export const TERMINOS = [
   p("Using MR BOX, including as an affiliate or as a community-box creator, does not make you our employee, partner or agent."),
 ];
 
-export default { ACTUALIZADO, TERMINOS, NUMEROS_QUE_SE_NOMBRAN };
+export default { ACTUALIZADO, TEXTO, NUMEROS_QUE_SE_NOMBRAN };

@@ -539,15 +539,20 @@ export default {
       const n = Number(this.saldo) || 0;
 
       /*
-        EL CORTE ESTA EN MIL, Y EL DECIMAL ES UNO SOLO.
+        EL CORTE ESTA EN CIEN MIL, Y NO ES UN NUMERO ELEGIDO DE LINDO.
 
-        No es un numero elegido de lindo: es el que entra. Medido en
-        375 px, en la pildora caben seis caracteres antes de que la
-        cifra se monte encima del boton de depositar. "999.99" entra;
-        "9,999.99" se pasa once pixeles. Y con dos decimales,
-        "497.52K" se pasa seis, asi que va uno: "497.5K".
+        Es el que entra. Sacando el icono de inventario de la cabecera
+        --esta repetido en la barra de abajo-- la pildora paso de 101
+        a 162 px, y con eso la cifra exacta entra hasta "99,999.99".
+        De ahi para arriba se corta y se muestra "497.5K"; el numero
+        completo esta a un toque, adentro de la billetera.
+
+        Antes de sacar ese icono el corte tenia que estar en mil, o
+        sea que un saldo de SC 1.250 se veia "1.3K". Redondear la
+        plata de alguien porque no entra un boton era la solucion
+        equivocada al problema equivocado.
       */
-      if (Math.abs(n) < 1000) return this.plata(n);
+      if (Math.abs(n) < 100000) return this.plata(n);
       return new Intl.NumberFormat("en-US", {
         notation: "compact", maximumFractionDigits: 1,
       }).format(n);
@@ -1021,19 +1026,10 @@ export default {
   .mb-wallet__monto--corto { display: inline; }
 
   /*
-    Y SE VA EL GALON, QUE ES LO QUE SOBRA.
-
-    A 375 px la cifra tenia que terminar antes del boton de depositar
-    y no llegaba: "9,999.99" se le montaba doce pixeles encima. El
-    galon son catorce de dibujo mas seis de aire, y es lo unico de la
-    pildora que no dice nada: la pildora ENTERA abre la billetera, no
-    hace falta una flechita que lo anuncie.
-
-    Con eso y un poco menos de aire adentro, el saldo exacto entra
-    hasta SC 99.999,99, que es mas de lo que va a tener nadie mirando
-    esto en un telefono.
+    El galon se queda --mrloot lo tiene y dice que la pildora se
+    abre-- y el aire de adentro se achica un poco, que con un icono
+    menos ya alcanza.
   */
-  .mb-wallet__galon { display: none; }
   .mb-wallet { padding-left: 10px; gap: 6px; }
   .mb-wallet__saldo { gap: 6px; }
 }
@@ -1226,40 +1222,32 @@ export default {
 }
 
 /*
-  LOS ICONOS, SUELTOS Y CUADRADOS EN EL TELEFONO.
+  EN EL TELEFONO SON DOS ICONOS, NO TRES.
 
-  En escritorio los tres viven dentro de una pastilla con borde
-  blanco. A 375 px esa pastilla no entra al lado de la billetera, asi
-  que se desarma en botones de 38, como en el diseno de celular.
+  La pastilla con borde se queda: agrupados se leen como un control y
+  sueltos parecen tres botones cualquiera. Lo que sobra es el TERCERO.
 
-  ESTE BLOQUE ESTABA DOSCIENTAS LINEAS MAS ARRIBA Y NO HACIA NADA.
+  El de inventario esta repetido: en el telefono la barra de abajo ya
+  tiene Inventario, a un pulgar de distancia. Tenerlo arriba tambien
+  no agrega nada y se come 46 px de los 335 que hay, que son justo
+  los que le faltaban al saldo para entrar.
 
-  Sass escribe el `@media` donde esta escrito, no al final. Estando
-  antes que `.mb-iconos__caja` y `.mb-iconos__b`, las dos reglas
-  tenian la misma especificidad y ganaba la de abajo: la de
-  escritorio. O sea que en el telefono los tres botones seguian
-  midiendo 46 adentro de su pastilla, los tres se comian 164 px de
-  ancho, y a la billetera le quedaban 101 de los 169 que necesita.
-  Por eso el saldo se salia por debajo de la campanita.
+  Es el mismo criterio que ya estaba aplicado mas arriba con el
+  buscador y la chapa de la cuenta: lo que vive en la barra de abajo
+  no se repite en la cabecera.
+
+  VA DESPUES DE LAS REGLAS DE ESCRITORIO, NO ANTES.
+
+  Sass escribe el `@media` donde esta escrito, no al final. Este
+  bloque estuvo doscientas lineas mas arriba y no hacia nada, porque
+  con la misma especificidad ganaba la regla de abajo.
 */
 @include en-celular {
-  .mb-iconos__caja {
-    border: 0;
-    background: transparent;
-    padding: 0;
-    gap: 8px;
-    height: auto;
-  }
-
-  .mb-iconos__raya { display: none; }
-
-  .mb-iconos__b {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    background: #16253f;
-  }
+  /* El tercero y la rayita que lo separa del segundo. */
+  .mb-iconos__caja > .mb-iconos__b:last-child,
+  .mb-iconos__caja > .mb-iconos__raya:last-of-type { display: none; }
 }
+
 
 .mb-iconos__raya { width: 1px; height: 20px; background: #3a5687; }
 

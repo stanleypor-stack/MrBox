@@ -37,21 +37,38 @@
           no necesita etiquetas, y abrirle la puerta al HTML en la
           unica pagina que todo el mundo lee no vale la pena.
         -->
-        <component
-          v-for="(b, i) in bloques" :key="i"
-          :is="b.t === 'h2' ? 'h2' : b.t === 'h3' ? 'h3' : b.t === 'ul' ? 'ul' : 'p'"
-          :class="{
-            'mb-legal__h2': b.t === 'h2',
-            'mb-legal__h3': b.t === 'h3',
-            'mb-legal__nota': b.t === 'nota',
-            'mb-legal__lista-p': b.t === 'ul',
-          }"
-        >
-          <template v-if="b.t === 'ul'">
-            <li v-for="(x, n) in b.items" :key="n">{{ x }}</li>
-          </template>
-          <template v-else>{{ b.texto }}</template>
-        </component>
+        <!--
+          UN SOLO RECORRIDO, QUE RESPETA EL ORDEN.
+
+          La tabla sale en un `dl` y no en un `component` dinamico
+          porque hay que armar filas, pero va DENTRO del mismo
+          `v-for`: dibujarla en un recorrido aparte ponia todas las
+          tablas juntas arriba y el resto del documento abajo.
+        -->
+        <template v-for="(b, i) in bloques">
+          <dl v-if="b.t === 'tabla'" :key="i" class="mb-legal__tabla">
+            <template v-for="(f, n) in b.filas">
+              <dt :key="`d${n}`">{{ f[0] }}</dt>
+              <dd :key="`e${n}`">{{ f[1] }}</dd>
+            </template>
+          </dl>
+
+          <component
+            v-else :key="i"
+            :is="b.t === 'h2' ? 'h2' : b.t === 'h3' ? 'h3' : b.t === 'ul' ? 'ul' : 'p'"
+            :class="{
+              'mb-legal__h2': b.t === 'h2',
+              'mb-legal__h3': b.t === 'h3',
+              'mb-legal__nota': b.t === 'nota',
+              'mb-legal__lista-p': b.t === 'ul',
+            }"
+          >
+            <template v-if="b.t === 'ul'">
+              <li v-for="(x, n) in b.items" :key="n">{{ x }}</li>
+            </template>
+            <template v-else>{{ b.texto }}</template>
+          </component>
+        </template>
       </template>
 
       <p class="mb-legal__cierre">
@@ -80,12 +97,32 @@
  * que dice la verdad es mejor que un enlace que no lleva a ningun
  * lado.
  */
+/*
+  LAS OCHO PAGINAS.
+
+  "Reglas del sorteo" ya no existe: MR BOX no es un sorteo. No hay
+  una via de entrada gratuita, no hay un ganador entre participantes
+  y no hay un periodo que cierra. Es una tienda donde cada compra
+  entrega un objeto, y llamarla sorteo la describia mal y encima la
+  acercaba a una figura legal que no es la nuestra. En su lugar esta
+  Provably Fair, que es lo que tienen mrloot y luxdrop.
+
+  "Aceptacion de clientes" pasa a llamarse AML, que es el nombre con
+  el que la busca un banco, un procesador de pagos y un abogado.
+
+  Y estan las tres que los Terminos nombran --envios, reembolsos y
+  cookies--: un contrato que remite a una pagina que no existe es
+  peor que uno que no remite a nada.
+*/
 const PAGINAS = [
   { id: "terms", titulo: "foot.terms", sub: "legal.termsSub" },
-  { id: "rules", titulo: "foot.rules", sub: "legal.rulesSub" },
+  { id: "fair", titulo: "foot.fair", sub: "legal.fairSub" },
+  { id: "shipping", titulo: "foot.shipping", sub: "legal.shippingSub" },
+  { id: "refunds", titulo: "foot.refunds", sub: "legal.refundsSub" },
   { id: "responsible", titulo: "foot.responsible", sub: "legal.responsibleSub" },
   { id: "privacy", titulo: "foot.privacy", sub: "legal.privacySub" },
-  { id: "acceptance", titulo: "foot.acceptance", sub: "legal.acceptanceSub" },
+  { id: "cookies", titulo: "foot.cookies", sub: "legal.cookiesSub" },
+  { id: "aml", titulo: "foot.aml", sub: "legal.amlSub" },
 ];
 
 /*
@@ -97,6 +134,13 @@ const PAGINAS = [
 */
 const TEXTOS = {
   terms: () => import(/* webpackChunkName: "legales" */ "@/legal/terminos.js"),
+  fair: () => import(/* webpackChunkName: "legales" */ "@/legal/justo.js"),
+  shipping: () => import(/* webpackChunkName: "legales" */ "@/legal/envios.js"),
+  refunds: () => import(/* webpackChunkName: "legales" */ "@/legal/reembolsos.js"),
+  responsible: () => import(/* webpackChunkName: "legales" */ "@/legal/responsable.js"),
+  privacy: () => import(/* webpackChunkName: "legales" */ "@/legal/privacidad.js"),
+  cookies: () => import(/* webpackChunkName: "legales" */ "@/legal/cookies.js"),
+  aml: () => import(/* webpackChunkName: "legales" */ "@/legal/aml.js"),
 };
 
 export default {
@@ -127,7 +171,7 @@ export default {
       if (!traer) { this.bloques = []; this.actualizado = ""; return; }
 
       const m = await traer();
-      this.bloques = m.TERMINOS || [];
+      this.bloques = m.TEXTO || [];
       this.actualizado = m.ACTUALIZADO || "";
 
       /* Arriba de todo: cambiar de pagina legal y aparecer en la
@@ -266,6 +310,38 @@ export default {
   background: rgba(63, 124, 240, .09);
   color: #fff;
   font-weight: 700;
+}
+
+/* Las tablitas de niveles y plazos: dos columnas, clave y valor. */
+.mb-legal__tabla {
+  display: grid;
+  grid-template-columns: minmax(120px, 34%) 1fr;
+  gap: 1px;
+  margin: 0 0 16px;
+  max-width: 68ch;
+  border: 1px solid $borde;
+  border-radius: 10px;
+  overflow: hidden;
+  background: $borde;
+
+  dt, dd {
+    margin: 0;
+    padding: 9px 12px;
+    background: $panel;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+  dt { font-weight: 800; color: #fff; }
+  dd { color: $texto-2; }
+
+  /* En el telefono no entran dos columnas: la etiqueta arriba y el
+     valor abajo, que es como se lee una ficha. */
+  @include en-celular {
+    grid-template-columns: 1fr;
+    dt { padding-bottom: 2px; }
+    dd { padding-top: 2px; }
+  }
 }
 
 .mb-legal__lista-p {

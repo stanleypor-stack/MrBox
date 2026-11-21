@@ -31,7 +31,7 @@ It is your responsibility to check that using MR BOX is lawful where you live. W
 
 ### C. These Terms, and changes to them
 
-These Terms, together with our Privacy Policy, Cookie Policy, Shipping Policy and any rules shown on a specific feature, are the whole agreement between you and us.
+These Terms, together with our Privacy Policy, Cookie Policy, Shipping Policy, Refund Policy, AML Policy, the Provably Fair page and any rules shown on a specific feature, are the whole agreement between you and us. All of them are linked in the footer.
 
 We may change these Terms. If a change materially affects your rights, we will post a notice on the site and email you, and it takes effect 14 days later. Other changes take effect when posted. Changes are not retroactive: they do not affect SC you have already bought or items you have already won. The date at the top of this page tells you when it last changed.
 
@@ -149,7 +149,7 @@ We may update stated values. The value that applies to a sell-back is the one sh
 
 ### A. Asking for delivery
 
-To have an item shipped, give us a complete and correct delivery address. If the address is wrong or incomplete we may cancel the order or charge the cost of sorting it out. Orders over SC 1,000 require level 3 verification before they are dispatched.
+To have an item shipped, give us a complete and correct delivery address. If the address is wrong or incomplete we may cancel the order or charge the cost of sorting it out. Shipping requires level 2 verification, and an order worth more than SC 1,000 requires level 3.
 
 ### B. Duties, taxes and import charges
 
