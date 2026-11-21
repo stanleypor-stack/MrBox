@@ -115,6 +115,7 @@ export default {
       "extreme": "极高"
     },
     "demosLeft": "没有试开了 | 还剩 1 次试开 | 还剩 {n} 次试开",
+    "demoFewer": "试开只剩 {n} 次，所以 {pedidas} 次中开了 {n} 次。",
     "reelAria": "正在开 {name}",
     "contents": "盒内物品",
     "rarity": "稀有度",

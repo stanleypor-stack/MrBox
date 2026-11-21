@@ -115,6 +115,7 @@ export default {
       "extreme": "Estremo"
     },
     "demosLeft": "niente prove | 1 prova rimasta | {n} prove rimaste",
+    "demoFewer": "Restano {n} prove, quindi sono state aperte {n} su {pedidas}.",
     "reelAria": "Apertura di {name}",
     "contents": "Cosa c’è dentro",
     "rarity": "Rarità",

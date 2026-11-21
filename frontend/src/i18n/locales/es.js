@@ -115,6 +115,7 @@ export default {
       "extreme": "Extremo"
     },
     "demosLeft": "sin pruebas | queda 1 prueba | quedan {n} pruebas",
+    "demoFewer": "Te quedan {n} pruebas, así que se abrieron {n} de las {pedidas}.",
     "reelAria": "Abriendo {name}",
     "contents": "Qué puede salir",
     "rarity": "Rareza",

@@ -115,6 +115,7 @@ export default {
       "extreme": "Extrême"
     },
     "demosLeft": "plus de démos | 1 démo restante | {n} démos restantes",
+    "demoFewer": "Il ne reste que {n} démos : {n} sur {pedidas} ont été ouvertes.",
     "reelAria": "Ouverture de {name}",
     "contents": "Contenu du coffret",
     "rarity": "Rareté",

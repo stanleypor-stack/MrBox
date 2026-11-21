@@ -1,6 +1,6 @@
 <template>
   <section
-    class="mb-reel" :class="[`mb-reel--n${cuantas}`, enColumnas ? 'mb-reel--columnas' : 'mb-reel--fila']"
+    class="mb-reel" :class="[`mb-reel--n${cuantasHay}`, enColumnas ? 'mb-reel--columnas' : 'mb-reel--fila']"
     :aria-label="$t('box.reelAria', { name: nombreDeLaCaja })"
   >
     <!--
@@ -195,7 +195,21 @@ export default {
       cosas moviendose igual, una debajo de otra, y no se sabe donde
       mirar.
     */
-    enColumnas() { return this.cuantas > 1; },
+    /*
+      CUANTAS CINTAS HAY DE VERDAD, QUE NO SIEMPRE ES LA PROP.
+
+      `cuantas` es lo que pidio la pantalla. Las cintas son las que
+      contesto el servidor, y pueden ser menos: el demo abre lo que
+      queda de pruebas, no lo que diga el selector.
+
+      El dibujo tiene que seguir a las cintas. Cuando seguia a la prop,
+      elegir 3 con dos pruebas en el bolsillo dejaba la caja armada
+      para tres columnas con dos adentro: una fila con un hueco, o dos
+      columnas estiradas a lo ancho de tres.
+    */
+    cuantasHay() { return Math.max(1, this.cintas.length); },
+
+    enColumnas() { return this.cuantasHay > 1; },
 
     duracion() { return this.rapido ? DURACION_RAPIDA : DURACION; },
 

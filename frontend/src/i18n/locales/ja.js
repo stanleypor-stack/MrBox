@@ -115,6 +115,7 @@ export default {
       "extreme": "極端"
     },
     "demosLeft": "デモ残りなし | デモ残り 1 回 | デモ残り {n} 回",
+    "demoFewer": "デモの残りは {n} 回なので、{pedidas} 回中 {n} 回を開封しました。",
     "reelAria": "{name} を開封中",
     "contents": "中身",
     "rarity": "レア度",

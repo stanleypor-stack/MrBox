@@ -584,6 +584,20 @@ export default {
          selector en 4, el servidor rechazaba la tanda entera. */
       const cuantas = Math.max(1, Math.min(this.veces, this.demosRestantes));
 
+      /*
+        Y SI ABRE MENOS DE LAS QUE PIDIO, SE LO DICE.
+
+        Recortar la tanda esta bien --mejor dos que un error-- pero
+        hacerlo en silencio no: el selector seguia marcando 3, salian
+        dos cintas, y desde afuera eso no es "te quedaban dos", es
+        "se rompio".
+      */
+      if (cuantas < this.veces) {
+        this.$store.dispatch("avisar", {
+          texto: this.$t("box.demoFewer", { n: cuantas, pedidas: this.veces }),
+        });
+      }
+
       this.girando = true;
       this.resultado = null;
       try {

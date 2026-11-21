@@ -355,7 +355,16 @@ router.post("/:slug/demo", autorizar(false), limiteAbrir, async (req, res) => {
   try {
     const cfg = await Settings.leer();
     const tope = Number(cfg.aperturasDeDemo) || 0;
-    const veces = Math.max(1, Math.min(4, Number(req.body.veces) || 1));
+    /*
+      EL MISMO TECHO QUE LAS DE VERDAD.
+
+      Aca habia un 4 escrito a mano, y el de las aperturas pagas sale
+      del ajuste `cajasALaVez`. Con el ajuste en 6 el selector ofrecia
+      6, la apertura paga abria 6 y la de prueba abria 4 sin decir
+      nada: la misma pantalla, el mismo boton, distinto resultado.
+    */
+    const topeALaVez = Number(cfg.cajasALaVez) || 4;
+    const veces = Math.max(1, Math.min(topeALaVez, Number(req.body.veces) || 1));
 
     if (req.user) {
       const usadas = Number(req.user.demosUsadas) || 0;
