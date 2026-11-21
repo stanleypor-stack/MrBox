@@ -1,0 +1,79 @@
+# =====================================================================
+#  MR BOX en Netlify — SOLO EL FRONTEND.
+#
+#  Netlify sirve archivos estaticos y funciones cortas. El backend de
+#  MR BOX no es ninguna de las dos cosas: es un servidor Express con
+#  una conexion viva a Mongo, un reloj que cierra carreras cada hora y
+#  un webhook que necesita el cuerpo crudo para verificar la firma.
+#  Eso vive en Render; esto solo sirve el sitio.
+#
+#  COMO SE HABLAN
+#
+#  El sitio pide siempre `/api/...` (ver `src/api.js`: `baseURL: "/api"`).
+#  La regla de abajo hace que Netlify reenvie eso al backend. El
+#  navegador nunca ve la direccion de Render, asi que:
+#
+#    - no hay CORS: para el navegador todo sale del mismo dominio
+#    - cambiar de backend es cambiar una linea de este archivo
+#
+#  LO QUE HAY QUE CAMBIAR A MANO
+#
+#  La direccion de Render, abajo, en `[[redirects]]`. Hasta que exista
+#  el servicio no se sabe cual es.
+# =====================================================================
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # La misma con la que se compila en la maquina de Dani.
+  NODE_VERSION = "22"
+
+# ── La API, al backend ───────────────────────────────────────────────
+#  Va PRIMERO: las reglas se leen en orden y la de abajo se queda con
+#  todo lo que llegue. Si estuviera al reves, `/api/...` devolveria el
+#  index.html del sitio y nada funcionaria.
+[[redirects]]
+  from = "/api/*"
+  to = "https://CAMBIAR-POR-EL-SERVICIO.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+# ── Todo lo demas, al sitio ──────────────────────────────────────────
+#  El sitio es una sola pagina con rutas del lado del navegador. Sin
+#  esto, entrar derecho a `/boxes/mac` --o recargar ahi-- da 404,
+#  porque en el disco ese archivo no existe.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# ── Cabeceras ────────────────────────────────────────────────────────
+#  Las que el backend ya pone con helmet, pero para los archivos que
+#  sirve Netlify, que no pasan por el backend.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+#  El javascript y el css llevan el hash del contenido en el nombre, asi
+#  que una version nunca cambia: se pueden guardar para siempre. El
+#  index.html NO, o nadie veria un despliegue nuevo.
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"

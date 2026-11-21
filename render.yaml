@@ -1,0 +1,98 @@
+# =====================================================================
+#  MR BOX en Render — SOLO EL BACKEND.
+#
+#  El sitio lo sirve Netlify (ver `netlify.toml`); esto es el servidor
+#  Express con la base. El codigo ya estaba escrito para Render:
+#  `trust proxy` en 1 y los registros a stdout, que es de donde Render
+#  los lee.
+#
+#  COMO SE USA
+#
+#  En Render: New > Blueprint, y apuntarlo a este repositorio. Lee este
+#  archivo y crea el servicio.
+#
+#  LAS CLAVES NO ESTAN ACA
+#
+#  Todas las variables de abajo van con `sync: false`: eso le dice a
+#  Render que las pida en su panel y que NO las busque en el
+#  repositorio. Las escribe Dani una sola vez, en el panel, y no quedan
+#  escritas en ningun archivo ni en el historial de git.
+# =====================================================================
+
+services:
+  - type: web
+    name: mrbox-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: backend
+
+    #  `npm ci` y no `npm install`: instala exactamente lo que dice el
+    #  package-lock, sin resolver versiones de nuevo. Un despliegue no
+    #  es el momento de estrenar la version nueva de una dependencia.
+    buildCommand: npm ci --omit=dev
+    startCommand: node index.js
+
+    #  Render pega aca cada tanto para saber si el servicio esta vivo.
+    #  Es una ruta publica y barata: no toca la base.
+    healthCheckPath: /api/health
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      #  Render le dice al proceso en que puerto escuchar.
+      - key: PORT
+        value: 10000
+
+      #  Cuantos proxies hay entre el navegador y esto. Con Netlify
+      #  adelante reenviando `/api`, son dos: el de Netlify y el de
+      #  Render. Sin esto el limite de intentos de login cuenta todo
+      #  como si viniera de una sola IP.
+      - key: PROXIES_DELANTE
+        value: 2
+
+      #  ── Las que escribe Dani en el panel ──────────────────────────
+      #
+      #  La direccion del sitio en Netlify, para el CORS. Sin ella el
+      #  servidor NO arranca en produccion, a proposito: olvidarla
+      #  dejaria la API abierta a cualquier pagina.
+      - key: SITIO_URL
+        sync: false
+
+      #  La cadena de conexion de MongoDB Atlas, con usuario y clave.
+      - key: DATABASE_URI
+        sync: false
+
+      #  Con que se firman las sesiones. Un texto largo y al azar.
+      #  Si cambia, se cierran todas las sesiones abiertas.
+      - key: JWT_SECRET
+        sync: false
+
+      #  ── Las que se pueden dejar vacias para una prueba ────────────
+      #
+      #  Sin el secret de Turnstile el captcha no valida y no se puede
+      #  entrar ni registrarse. Para una prueba hace falta igual.
+      - key: TURNSTILE_SECRET_KEY
+        sync: false
+
+      #  Sin estas no andan los depositos ni los canjes, que para una
+      #  prueba esta bien: es plata de verdad.
+      - key: OXAPAY_MERCHANT_KEY
+        sync: false
+      - key: OXAPAY_PAYOUT_KEY
+        sync: false
+      - key: OXAPAY_CALLBACK_SECRET
+        sync: false
+      - key: OXAPAY_CALLBACK_URL
+        sync: false
+
+      #  Sin esto el boton de "Entrar con Google" no funciona; el resto
+      #  del sitio si.
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+
+      #  El borrador de soporte con IA. Vacia = el panel no muestra el
+      #  boton, que es lo que Dani eligio por ahora.
+      - key: ANTHROPIC_API_KEY
+        sync: false
