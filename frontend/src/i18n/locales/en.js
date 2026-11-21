@@ -619,6 +619,24 @@ export default {
     "mainNav": "Main navigation",
     "closeMenu": "Close the menu"
   },
+  "notif": {
+    "markAll": "Mark all read",
+    "t_deposito": "Deposit credited",
+    "t_retiro": "Withdrawal",
+    "t_carrera": "Race prize",
+    "t_desafio": "Challenge won",
+    "t_envio": "On its way",
+    "t_rango": "New rank",
+    "t_aviso": "Heads up",
+    "depositOk": "SC {monto} landed in your wallet.",
+    "depositBonus": "SC {monto} landed, plus SC {bono} of bonus.",
+    "withdrawPaid": "We sent your SC {monto} in {moneda}.",
+    "withdrawNo": "Your SC {monto} withdrawal did not go through. The balance is back in your wallet.",
+    "racePrize": "You came in #{puesto} and took SC {monto}.",
+    "challengeWin": "You won a challenge: SC {monto}.",
+    "shipped": "{transportista} has it. Tracking {seguimiento}.",
+    "rankUp": "You are now {rango}."
+  },
   "ship": {
     "title": "Ship your items",
     "step": {

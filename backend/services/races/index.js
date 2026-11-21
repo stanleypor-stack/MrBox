@@ -35,6 +35,7 @@ const Settings = require("../../database/models/Settings");
 
 const wallet = require("../wallet");
 const { sc } = require("../../utils/money");
+const avisos = require("../notificaciones");
 const { errorDe } = require("../../utils/errors");
 const { logger } = require("../../utils/logger");
 
@@ -278,6 +279,14 @@ async function cerrar(carrera) {
         amountSc: g.premioSc,
         type: "race_prize",
         reference: { kind: "race", id: tomada._id, label: `${tomada.tipo} #${g.puesto}` },
+      });
+
+      await avisos.avisar({
+        userId: g.user,
+        tipo: "carrera",
+        clave: "notif.racePrize",
+        datos: { puesto: g.puesto, monto: g.premioSc },
+        destino: `/races/${tomada.tipo}`,
       });
     } catch (err) {
       /* No salio: se devuelve la marca para poder reintentarlo. */

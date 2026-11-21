@@ -619,6 +619,24 @@ export default {
     "mainNav": "Navegación principal",
     "closeMenu": "Cerrar el menú"
   },
+  "notif": {
+    "markAll": "Marcar todo como leído",
+    "t_deposito": "Depósito acreditado",
+    "t_retiro": "Retiro",
+    "t_carrera": "Premio de carrera",
+    "t_desafio": "Desafío ganado",
+    "t_envio": "Tu pedido salió",
+    "t_rango": "Subiste de rango",
+    "t_aviso": "Aviso",
+    "depositOk": "Entraron SC {monto} a tu billetera.",
+    "depositBonus": "Entraron SC {monto}, más SC {bono} de bono.",
+    "withdrawPaid": "Te mandamos tus SC {monto} en {moneda}.",
+    "withdrawNo": "No salió tu retiro de SC {monto}. El saldo volvió a tu billetera.",
+    "racePrize": "Saliste #{puesto} y cobraste SC {monto}.",
+    "challengeWin": "Ganaste un desafío: SC {monto}.",
+    "shipped": "Lo tiene {transportista}. Seguimiento {seguimiento}.",
+    "rankUp": "Ahora sos {rango}."
+  },
   "ship": {
     "title": "Pedir un envío",
     "step": {

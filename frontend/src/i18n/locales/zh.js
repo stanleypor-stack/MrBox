@@ -619,6 +619,24 @@ export default {
     "mainNav": "主导航",
     "closeMenu": "关闭菜单"
   },
+  "notif": {
+    "markAll": "全部标为已读",
+    "t_deposito": "充值已到账",
+    "t_retiro": "提现",
+    "t_carrera": "竞赛奖励",
+    "t_desafio": "挑战达成",
+    "t_envio": "已发货",
+    "t_rango": "等级提升",
+    "t_aviso": "通知",
+    "depositOk": "SC {monto} 已存入你的钱包。",
+    "depositBonus": "SC {monto} 已到账，另有 SC {bono} 奖金。",
+    "withdrawPaid": "你的 SC {monto} 已用 {moneda} 发出。",
+    "withdrawNo": "你的 SC {monto} 提现未成功，余额已退回钱包。",
+    "racePrize": "你排名第 {puesto}，赢得 SC {monto}。",
+    "challengeWin": "你完成了挑战：SC {monto}。",
+    "shipped": "由 {transportista} 配送，运单号 {seguimiento}。",
+    "rankUp": "你现在是 {rango}。"
+  },
   "ship": {
     "title": "申请发货",
     "step": {

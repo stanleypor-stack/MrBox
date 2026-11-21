@@ -15,6 +15,7 @@ const controles = require("../../services/controls");
 const PromoCode = require("../../database/models/PromoCode");
 const WalletTx = require("../../database/models/WalletTx");
 const { sc } = require("../../utils/money");
+const avisos = require("../../services/notificaciones");
 const { errorDe, esDeJugador } = require("../../utils/errors");
 const { logger } = require("../../utils/logger");
 
@@ -635,6 +636,19 @@ aviso.post("/oxapay", express.raw({ type: "*/*" }), async (req, res) => {
       `[oxapay] acreditado SC ${monto} (+${bono}) a ${userId} ` +
       `(${datos.amount} ${datos.currency})`
     );
+
+    /*
+      Y el aviso en la campanita. Va al final y sin `await` que pueda
+      tumbar nada: la plata ya entro, y quedarse sin avisar es molesto
+      pero no es perder un deposito.
+    */
+    await avisos.avisar({
+      userId,
+      tipo: "deposito",
+      clave: bono > 0 ? "notif.depositBonus" : "notif.depositOk",
+      datos: { monto: sc(monto), bono: sc(bono) },
+      destino: "/profile?tab=movimientos",
+    });
 
     /*
       ELLOS ESPERAN EL TEXTO "ok", NO UN JSON.

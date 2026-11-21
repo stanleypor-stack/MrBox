@@ -619,6 +619,24 @@ export default {
     "mainNav": "Hauptnavigation",
     "closeMenu": "Menü schließen"
   },
+  "notif": {
+    "markAll": "Alle als gelesen",
+    "t_deposito": "Einzahlung gutgeschrieben",
+    "t_retiro": "Auszahlung",
+    "t_carrera": "Rennpreis",
+    "t_desafio": "Challenge geschafft",
+    "t_envio": "Unterwegs",
+    "t_rango": "Neuer Rang",
+    "t_aviso": "Hinweis",
+    "depositOk": "SC {monto} sind in deinem Guthaben.",
+    "depositBonus": "SC {monto} sind da, dazu SC {bono} Bonus.",
+    "withdrawPaid": "Wir haben deine SC {monto} in {moneda} geschickt.",
+    "withdrawNo": "Deine Auszahlung über SC {monto} hat nicht geklappt. Das Guthaben ist zurück.",
+    "racePrize": "Du wurdest #{puesto} und hast SC {monto} geholt.",
+    "challengeWin": "Challenge geschafft: SC {monto}.",
+    "shipped": "{transportista} hat es. Sendung {seguimiento}.",
+    "rankUp": "Du bist jetzt {rango}."
+  },
   "ship": {
     "title": "Artikel verschicken",
     "step": {

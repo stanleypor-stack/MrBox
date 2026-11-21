@@ -619,6 +619,24 @@ export default {
     "mainNav": "Основное меню",
     "closeMenu": "Закрыть меню"
   },
+  "notif": {
+    "markAll": "Отметить всё",
+    "t_deposito": "Депозит зачислен",
+    "t_retiro": "Вывод",
+    "t_carrera": "Приз гонки",
+    "t_desafio": "Испытание пройдено",
+    "t_envio": "Посылка в пути",
+    "t_rango": "Новый ранг",
+    "t_aviso": "Сообщение",
+    "depositOk": "SC {monto} зачислены на баланс.",
+    "depositBonus": "Зачислены SC {monto} и ещё SC {bono} бонуса.",
+    "withdrawPaid": "Мы отправили ваши SC {monto} в {moneda}.",
+    "withdrawNo": "Вывод SC {monto} не прошёл. Баланс вернулся на счёт.",
+    "racePrize": "Вы заняли #{puesto} место и получили SC {monto}.",
+    "challengeWin": "Вы прошли испытание: SC {monto}.",
+    "shipped": "Посылка у {transportista}. Трек {seguimiento}.",
+    "rankUp": "Теперь у вас ранг {rango}."
+  },
   "ship": {
     "title": "Отправка вещей",
     "step": {

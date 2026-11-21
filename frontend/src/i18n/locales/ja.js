@@ -619,6 +619,24 @@ export default {
     "mainNav": "メインナビ",
     "closeMenu": "メニューを閉じる"
   },
+  "notif": {
+    "markAll": "すべて既読にする",
+    "t_deposito": "入金を反映しました",
+    "t_retiro": "出金",
+    "t_carrera": "レースの賞金",
+    "t_desafio": "チャレンジ達成",
+    "t_envio": "発送しました",
+    "t_rango": "ランクアップ",
+    "t_aviso": "お知らせ",
+    "depositOk": "SC {monto} をウォレットに反映しました。",
+    "depositBonus": "SC {monto} と、ボーナス SC {bono} を反映しました。",
+    "withdrawPaid": "SC {monto} を {moneda} で送金しました。",
+    "withdrawNo": "SC {monto} の出金は完了しませんでした。残高はウォレットに戻っています。",
+    "racePrize": "#{puesto} 位になり SC {monto} を獲得しました。",
+    "challengeWin": "チャレンジ達成：SC {monto}。",
+    "shipped": "{transportista} が配送中です。追跡番号 {seguimiento}。",
+    "rankUp": "ランクが {rango} になりました。"
+  },
   "ship": {
     "title": "アイテムを配送",
     "step": {

@@ -619,6 +619,24 @@ export default {
     "mainNav": "Navigazione principale",
     "closeMenu": "Chiudi il menu"
   },
+  "notif": {
+    "markAll": "Segna tutto come letto",
+    "t_deposito": "Deposito accreditato",
+    "t_retiro": "Prelievo",
+    "t_carrera": "Premio della gara",
+    "t_desafio": "Sfida vinta",
+    "t_envio": "In viaggio",
+    "t_rango": "Nuovo rango",
+    "t_aviso": "Avviso",
+    "depositOk": "SC {monto} sono nel tuo portafoglio.",
+    "depositBonus": "SC {monto} sono arrivati, più SC {bono} di bonus.",
+    "withdrawPaid": "Ti abbiamo mandato i tuoi SC {monto} in {moneda}.",
+    "withdrawNo": "Il tuo prelievo di SC {monto} non è andato. Il saldo è tornato nel portafoglio.",
+    "racePrize": "Sei arrivato #{puesto} e hai preso SC {monto}.",
+    "challengeWin": "Hai vinto una sfida: SC {monto}.",
+    "shipped": "Ce l’ha {transportista}. Tracking {seguimiento}.",
+    "rankUp": "Ora sei {rango}."
+  },
   "ship": {
     "title": "Spedisci i tuoi oggetti",
     "step": {

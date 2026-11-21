@@ -22,6 +22,7 @@ const InventoryItem = require("../../database/models/InventoryItem");
 const wallet = require("../wallet");
 const kyc = require("../verification");
 const { sc } = require("../../utils/money");
+const avisos = require("../notificaciones");
 const { errorDe } = require("../../utils/errors");
 
 /** Deja la marca. Se llama desde todo lo de abajo. */
@@ -224,6 +225,23 @@ async function moverPedido({ admin, orderId, estado, transportista, seguimiento,
 
   pedido.estado = estado;
   await pedido.save();
+
+  /*
+    AL JUGADOR SOLO SE LE AVISA CUANDO SALE.
+
+    "Preparando" y "entregado" los mira en sus pedidos; el unico
+    momento en que la campanita le sirve es cuando el paquete se fue y
+    hay un numero de seguimiento para mirar.
+  */
+  if (estado === "shipped") {
+    await avisos.avisar({
+      userId: pedido.user,
+      tipo: "envio",
+      clave: "notif.shipped",
+      datos: { transportista: pedido.transportista, seguimiento: pedido.seguimiento },
+      destino: "/profile?tab=pedidos",
+    });
+  }
 
   await anotar({
     admin,

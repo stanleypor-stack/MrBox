@@ -6,6 +6,7 @@ const wallet = require("../wallet");
 const { MONEDAS, buscar } = require("./monedas");
 const oxapay = require("./oxapay");
 const { sc } = require("../../utils/money");
+const avisos = require("../notificaciones");
 const { errorDe } = require("../../utils/errors");
 const { logger } = require("../../utils/logger");
 
@@ -433,6 +434,15 @@ async function resolver({ admin, id, accion, motivo = "" }) {
     );
 
     if (!rechazado) throw errorDe("ALREADY_CLAIMED");
+
+    await avisos.avisar({
+      userId: rechazado.user,
+      tipo: "retiro",
+      clave: "notif.withdrawNo",
+      datos: { monto: sc(rechazado.montoSc) },
+      destino: "/profile?tab=movimientos",
+    });
+
     /* Se libera el lugar: este canje ya no esta en el aire. */
     await User.updateOne(
       { _id: rechazado.user, canjesPendientes: { $gt: 0 } },
@@ -557,6 +567,14 @@ async function resolver({ admin, id, accion, motivo = "" }) {
       `[cashier] canje pagado ${tomado._id} · SC ${tomado.montoSc} = ` +
       `${tomado.montoMoneda} ${tomado.moneda} a ${tomado.cotizacion}`
     );
+
+    await avisos.avisar({
+      userId: tomado.user,
+      tipo: "retiro",
+      clave: "notif.withdrawPaid",
+      datos: { monto: sc(tomado.montoSc), moneda: tomado.moneda },
+      destino: "/profile?tab=movimientos",
+    });
     return resumir(tomado);
   }
 

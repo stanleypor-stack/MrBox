@@ -17,6 +17,7 @@ const { ChallengeWin } = require("../../database/models/Challenge");
 
 const wallet = require("../wallet");
 const { sc } = require("../../utils/money");
+const avisos = require("../notificaciones");
 const { logger } = require("../../utils/logger");
 
 /**
@@ -118,6 +119,14 @@ async function revisar({ user, caja, precioSc, premioSc, premioItemId, boxOpenId
             ? (d.itemName || "objeto")
             : `${d.multiplicador}x ${d.boxName || caja.name}`,
         },
+      });
+
+      await avisos.avisar({
+        userId: user._id,
+        tipo: "desafio",
+        clave: "notif.challengeWin",
+        datos: { monto: sc(d.premioSc) },
+        destino: "/challenges",
       });
 
       ganados.push({

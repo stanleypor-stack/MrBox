@@ -42,6 +42,7 @@ const Settings = require("../../database/models/Settings");
 const User = require("../../database/models/User");
 const wallet = require("../wallet");
 const { sc } = require("../../utils/money");
+const avisos = require("../notificaciones");
 const { errorDe } = require("../../utils/errors");
 const { logger } = require("../../utils/logger");
 
@@ -669,8 +670,28 @@ async function otorgarRango({ userId, numero }) {
   const R = rangos();
   const n = Math.max(1, Math.min(R.length, Number(numero) || 1));
 
-  await User.updateOne({ _id: userId }, { $set: { rangoAfiliado: n, pidioRangoEl: null } });
-  return rangoNumero(n);
+  const antes = await User.findOneAndUpdate(
+    { _id: userId },
+    { $set: { rangoAfiliado: n, pidioRangoEl: null } }
+  ).select("rangoAfiliado").lean();
+
+  const rango = rangoNumero(n);
+
+  /* Solo cuando SUBE. Bajar de rango tambien pasa --una campana que se
+     apaga, un socio que se pasa de la raya-- y avisarlo con la misma
+     campanita que las buenas noticias seria una crueldad inutil: eso
+     se habla, no se notifica. */
+  if (!antes || n > (Number(antes.rangoAfiliado) || 1)) {
+    await avisos.avisar({
+      userId,
+      tipo: "rango",
+      clave: "notif.rankUp",
+      datos: { rango: rango.nombre },
+      destino: "/affiliates",
+    });
+  }
+
+  return rango;
 }
 
 module.exports = {

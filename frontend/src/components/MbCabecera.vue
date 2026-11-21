@@ -216,14 +216,21 @@
         <div v-if="entro" class="mb-iconos" v-click-fuera="cerrarAvisos">
           <div class="mb-iconos__caja">
             <button
-              type="button" :aria-label="$t('header.notifications')"
+              type="button"
+              :aria-label="sinLeer ? `${$t('header.notifications')} (${sinLeer})` : $t('header.notifications')"
               :aria-expanded="avisosAbiertos ? 'true' : 'false'"
               class="mb-iconos__b" :class="{ 'is-on': avisosAbiertos }"
-              @click="avisosAbiertos = !avisosAbiertos"
+              @click="alternarAvisos"
             >
               <svg width="17" height="17" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
                 <path d="M12 2a1.6 1.6 0 0 0-1.6 1.6v.6A6.5 6.5 0 0 0 5.5 10.6V15l-1.8 2.3c-.4.5 0 1.2.6 1.2h15.4c.6 0 1-.7.6-1.2L18.5 15v-4.4a6.5 6.5 0 0 0-4.9-6.4v-.6A1.6 1.6 0 0 0 12 2zm-2.6 18a2.6 2.6 0 0 0 5.2 0z" />
               </svg>
+
+              <!-- La bolita. Hasta 9, y de ahi "9+": el numero exacto
+                   no cambia nada y tres cifras no entran. -->
+              <span v-if="sinLeer" class="mb-iconos__bolita" aria-hidden="true">
+                {{ sinLeer > 9 ? '9+' : sinLeer }}
+              </span>
             </button>
             <span class="mb-iconos__raya" aria-hidden="true"></span>
             <router-link to="/profile" class="mb-iconos__b" :aria-label="$t('nav.rewards')">
@@ -248,14 +255,72 @@
                 </svg>{{ $t('header.notifications') }}
               </span>
               <button type="button" class="mb-avisos__cerrar" :aria-label="$t('common.close')"
-                      @click="avisosAbiertos = false">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff"
-                     stroke-width="3" stroke-linecap="round" aria-hidden="true">
+                      @click="cerrarAvisos()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff"
+                       stroke-width="3" stroke-linecap="round" aria-hidden="true">
                   <path d="M6 6l12 12M18 6 6 18" />
                 </svg>
               </button>
             </div>
-            <div class="mb-avisos__vacio">{{ $t('header.allCaughtUp') }}</div>
+
+            <div v-if="cargandoAvisos" class="mb-avisos__vacio">{{ $t('common.loading') }}</div>
+
+            <div v-else-if="!avisos.length" class="mb-avisos__vacio">
+              <span class="mb-avisos__vacioDibujo" aria-hidden="true">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0" />
+                </svg>
+              </span>
+              {{ $t('header.allCaughtUp') }}
+            </div>
+
+            <!--
+              LA LISTA.
+
+              Cada fila es un boton si lleva a algun lado y un div si
+              no: un `div` con `@click` no se puede tocar con el
+              teclado y no se anuncia como algo que se puede tocar.
+            -->
+            <ul v-else class="mb-avisos__lista">
+              <li v-for="a in avisos" :key="a._id">
+                <component
+                  :is="a.destino ? 'button' : 'div'"
+                  :type="a.destino ? 'button' : null"
+                  class="mb-notif" :class="{ 'es-nuevo': !a.leida, 'es-tocable': !!a.destino }"
+                  @click="a.destino ? irAlAviso(a) : null"
+                >
+                  <span class="mb-notif__icono" :class="'es-' + a.tipo" aria-hidden="true">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                      <path :d="DIBUJOS[a.tipo] || DIBUJOS.aviso" />
+                    </svg>
+                  </span>
+
+                  <span class="mb-notif__texto">
+                    <span class="mb-notif__alto">
+                      <b>{{ $t('notif.t_' + a.tipo) }}</b>
+                      <span class="mb-notif__cuando">{{ haceCuanto(a.cuando) }}</span>
+                    </span>
+                    <span class="mb-notif__linea">{{ $t(a.clave, a.datos) }}</span>
+                  </span>
+
+                  <span v-if="!a.leida" class="mb-notif__punto" aria-hidden="true"></span>
+                </component>
+              </li>
+            </ul>
+
+            <!--
+              "Marcar todo como leido" va ABAJO y a lo ancho.
+
+              Arriba, al lado del titulo, no entra: en castellano son
+              22 letras y en aleman mas, y el panel mide 330. Abajo
+              tiene todo el ancho en los nueve idiomas.
+            -->
+            <button
+              v-if="sinLeer" type="button" class="mb-avisos__todo"
+              @click="marcarTodo"
+            >{{ $t('notif.markAll') }}</button>
           </div>
         </div>
 
@@ -342,6 +407,29 @@ import api from "@/api";
   montaje serian varios por visita. Guardada la promesa, el segundo
   montaje se cuelga del primer pedido en vez de hacer otro.
 */
+/*
+  UN DIBUJO POR TIPO DE AVISO.
+
+  Van aca y no en la plantilla porque son datos: siete caminos de SVG
+  metidos en el HTML lo vuelven ilegible.
+*/
+const DIBUJOS = {
+  /* flecha que entra a una billetera */
+  deposito: "M12 3v9m0 0 3.2-3.2M12 12 8.8 8.8M4 13v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5",
+  /* flecha que sale */
+  retiro: "M12 20v-9m0 0 3.2 3.2M12 11 8.8 14.2M4 11V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5",
+  /* bandera a cuadros */
+  carrera: "M5 21V4m0 0c3-1.6 6 1.6 9 0v8c-3 1.6-6-1.6-9 0",
+  /* escudo con un tilde */
+  desafio: "M12 3l7 3v5c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6zM9.2 12l2 2 3.6-3.8",
+  /* una caja en un camion */
+  envio: "M3 7h10v9H3zM13 10h4l3 3v3h-7zM7 19a1.6 1.6 0 1 0 0-3.2A1.6 1.6 0 0 0 7 19zM17 19a1.6 1.6 0 1 0 0-3.2a1.6 1.6 0 0 0 0 3.2z",
+  /* una estrella */
+  rango: "m12 3 2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.4 6.7 19.2l1.1-5.9-4.3-4.1 5.9-.8z",
+  /* la campana */
+  aviso: "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0",
+};
+
 let ajustesPublicos = null;
 
 function traerAjustesPublicos() {
@@ -379,7 +467,12 @@ export default {
 
   data() {
     return {
+      DIBUJOS,
       avisosAbiertos: false,
+      avisos: [],
+      sinLeer: 0,
+      cargandoAvisos: false,
+      relojDeAvisos: null,
       /* Este es el desplegable DE LA CABECERA, que en el telefono ni
          se dibuja. No confundir con `abierto.cuenta`, que es el menu
          del telefono y lo dibuja App.vue. */
@@ -459,8 +552,15 @@ export default {
     /* Abrio una caja o vendio algo: la billetera de arriba quedo vieja. */
     inventarioCambio() { this.traerInventario(); },
 
-    /* Al entrar o salir, el inventario del encabezado cambia. */
-    entro: "traerInventario",
+    /* Al entrar o salir, el inventario del encabezado cambia. Y la
+       campanita: la de otro no es la mia, y sin sesion no hay. */
+    entro(hay) {
+      this.traerInventario();
+      this.avisos = [];
+      this.sinLeer = 0;
+      if (hay) this.arrancarElReloj();
+      else this.pararElReloj();
+    },
 
     /* Al abrirla se vuelve a contar: es un pedido chico y es el
        momento exacto en que alguien mira los numeros. */
@@ -468,6 +568,27 @@ export default {
   },
 
   methods: {
+    /*
+      EL RELOJ DE LA BOLITA.
+
+      Un minuto, y SOLO con la pestana a la vista: nadie mira una
+      bolita en una pestana de atras, y una pestana olvidada tres dias
+      pidiendo cada minuto es ruido que alguien paga.
+    */
+    arrancarElReloj() {
+      this.pararElReloj();
+      if (!this.entro) return;
+      this.contarAvisos();
+      this.relojDeAvisos = window.setInterval(() => {
+        if (document.visibilityState === "visible") this.contarAvisos();
+      }, 60000);
+    },
+
+    pararElReloj() {
+      if (this.relojDeAvisos) window.clearInterval(this.relojDeAvisos);
+      this.relojDeAvisos = null;
+    },
+
     medir() {
       if (!this.$el || !this.$el.getBoundingClientRect) return;
       const alto = Math.round(this.$el.getBoundingClientRect().height);
@@ -500,9 +621,96 @@ export default {
       if (this.deUnBotonQueAbre(e)) return;
       this.walletAbierta = false;
     },
+    /*
+      ABRIR TRAE LA LISTA; CERRAR LA MARCA LEIDA.
+
+      Marcarla al abrir apagaria el resaltado de "esto es nuevo" en el
+      mismo momento en que lo ibas a leer.
+    */
+    alternarAvisos() {
+      if (this.avisosAbiertos) { this.cerrarAvisos(); return; }
+      this.avisosAbiertos = true;
+      this.traerAvisos();
+    },
+
     cerrarAvisos(e) {
       if (this.deUnBotonQueAbre(e)) return;
+      if (!this.avisosAbiertos) return;
       this.avisosAbiertos = false;
+      if (this.sinLeer) this.marcarTodo();
+    },
+
+    /** La lista, cuando se abre el panel. */
+    async traerAvisos() {
+      if (!this.entro) return;
+      this.cargandoAvisos = !this.avisos.length;
+      try {
+        const { data } = await api.get("/notifications");
+        this.avisos = data.data.items;
+        this.sinLeer = data.data.sinLeer;
+      } catch {
+        /* Sin avisos la cabecera anda igual: no se le pone un cartel
+           rojo a alguien por una campanita que no cargo. */
+      } finally {
+        this.cargandoAvisos = false;
+      }
+    },
+
+    /** Solo el numero de la bolita. Es lo que se pide cada minuto. */
+    async contarAvisos() {
+      if (!this.entro) return;
+      try {
+        const { data } = await api.get("/notifications/count");
+        this.sinLeer = data.data.sinLeer;
+      } catch { /* la bolita puede esperar */ }
+    },
+
+    async marcarTodo() {
+      if (!this.sinLeer) return;
+      /* Se apaga en la pantalla antes de que conteste el servidor: la
+         bolita es informacion del que mira, no del servidor, y si
+         falla se vuelve a encender sola en el proximo conteo. */
+      this.sinLeer = 0;
+      this.avisos = this.avisos.map((a) => ({ ...a, leida: true }));
+      try {
+        await api.post("/notifications/read", {});
+      } catch { /* se corrige solo en el proximo conteo */ }
+    },
+
+    /** Tocar un aviso lleva a donde paso. */
+    irAlAviso(a) {
+      this.cerrarAvisos();
+      if (!a.destino) return;
+      if (this.$route.fullPath !== a.destino) this.$router.push(a.destino).catch(() => {});
+    },
+
+    /**
+     * "hace 2 h", en el idioma de quien mira.
+     *
+     * `Intl` lo arma solo y en los nueve idiomas. Escribirlo a mano
+     * serian nueve tablas de singulares y plurales --y en ruso, tres
+     * formas por unidad-- para decir algo que el navegador ya sabe.
+     */
+    haceCuanto(cuando) {
+      const segundos = Math.round((Date.now() - new Date(cuando).getTime()) / 1000);
+      const escalas = [
+        [60, "second", 1],
+        [3600, "minute", 60],
+        [86400, "hour", 3600],
+        [604800, "day", 86400],
+        [2629800, "week", 604800],
+        [31557600, "month", 2629800],
+        [Infinity, "year", 31557600],
+      ];
+
+      const [, unidad, divisor] = escalas.find(([tope]) => Math.abs(segundos) < tope);
+
+      try {
+        return new Intl.RelativeTimeFormat(this.$i18n.locale, { numeric: "auto" })
+          .format(-Math.round(segundos / divisor), unidad);
+      } catch {
+        return new Date(cuando).toLocaleDateString();
+      }
     },
     cerrarCuenta(e) {
       if (this.deUnBotonQueAbre(e)) return;
@@ -587,10 +795,14 @@ export default {
     */
     this.medir();
     window.addEventListener("resize", this.medir);
+
+    /* Y la bolita de la campanita, si ya hay sesion. */
+    this.arrancarElReloj();
   },
 
   beforeDestroy() {
     window.removeEventListener("resize", this.medir);
+    this.pararElReloj();
   },
 };
 </script>
@@ -939,6 +1151,7 @@ export default {
 }
 
 .mb-iconos__b {
+  position: relative; /* el ancla de la bolita */
   width: 46px;
   height: 36px;
   border: 0;
@@ -970,6 +1183,23 @@ export default {
   box-shadow: 0 20px 50px rgba(0, 0, 0, .55);
   display: flex;
   flex-direction: column;
+
+  /*
+    EN EL TELEFONO, CENTRADO EN LA PANTALLA.
+
+    Colgado de la campanita se salia por la derecha: el panel mide 330
+    y la campanita vive a 60px del borde. Fijo y centrado entra
+    siempre, igual que la billetera.
+  */
+  @include en-celular {
+    position: fixed;
+    top: calc(var(--alto-cabecera, 64px) + 8px);
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(360px, calc(100vw - 24px));
+    height: min(430px, 70vh);
+  }
 }
 
 .mb-avisos__cabeza {
@@ -981,9 +1211,26 @@ export default {
 
 .mb-avisos__titulo { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 16px; }
 
+.mb-avisos__todo {
+  flex: none;
+  height: 38px;
+  margin: 0 8px 8px;
+  border-radius: 12px;
+  border: 0;
+  background: #16294a;
+  color: $texto-2;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 12.5px;
+  cursor: pointer;
+  @include foco;
+  &:hover { background: #1d3354; color: #fff; }
+}
+
 .mb-avisos__cerrar {
   width: 32px;
   height: 32px;
+  flex: none;
   border-radius: 50%;
   border: 0;
   background: #16294a;
@@ -997,11 +1244,132 @@ export default {
 .mb-avisos__vacio {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   color: #8ea3c7;
   font-weight: 700;
   font-size: 14px;
+}
+
+.mb-avisos__vacioDibujo { color: #2f4a7a; }
+
+/*
+  LA LISTA.
+
+  Se desliza ella sola adentro del panel, que mide 430 fijos: si
+  creciera con los avisos, treinta de ellos taparian la pantalla.
+*/
+.mb-avisos__lista {
+  flex: 1;
+  margin: 0;
+  padding: 0 8px 10px;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #2a4472 transparent;
+}
+
+.mb-notif {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  /* El que lleva a algun lado se comporta como un boton; el que no, no
+     finge que se puede tocar. */
+  &.es-tocable {
+    cursor: pointer;
+    @include foco;
+    &:hover { background: #16294a; }
+  }
+
+  /* Sin leer: un azul apenas mas claro, como mrloot. Un color fuerte
+     para "no leido" convierte la lista en un semaforo. */
+  &.es-nuevo { background: rgba(47, 111, 224, .1); }
+  &.es-nuevo.es-tocable:hover { background: rgba(47, 111, 224, .18); }
+}
+
+.mb-notif__icono {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #16294a;
+  color: $texto-2;
+
+  /* Un color por tipo: de reojo se sabe si entro plata o salio un
+     paquete sin leer una palabra. */
+  &.es-deposito { background: rgba(93, 255, 176, .14); color: $verde; }
+  &.es-retiro   { background: rgba(159, 192, 255, .14); color: $enlace; }
+  &.es-carrera  { background: rgba(255, 211, 90, .14); color: $amarillo; }
+  &.es-desafio  { background: rgba(139, 79, 224, .18); color: #c9a8ff; }
+  &.es-envio    { background: rgba(63, 124, 240, .16); color: #8ab6ff; }
+  &.es-rango    { background: rgba(245, 184, 10, .16); color: #ffd98a; }
+}
+
+.mb-notif__texto { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+
+.mb-notif__alto {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+
+  b { font-weight: 900; font-size: 13px; color: #fff; }
+}
+
+.mb-notif__cuando { flex: none; font-size: 11px; color: $texto-4; }
+
+.mb-notif__linea {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: $texto-3;
+  /* Dos renglones y corta: un aviso es un titular, no un parrafo. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mb-notif__punto {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  margin-top: 13px;
+  border-radius: 50%;
+  background: $azul;
+}
+
+/* La bolita del boton. */
+.mb-iconos__bolita {
+  position: absolute;
+  top: 2px;
+  right: 6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: $rareza-pink;
+  color: #fff;
+  font-weight: 900;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
 }
 
 /* ── La cuenta ────────────────────────────────────────────────────── */
