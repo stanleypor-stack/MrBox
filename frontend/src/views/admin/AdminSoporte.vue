@@ -83,6 +83,68 @@
           </div>
         </div>
 
+        <!--
+          ── LA SUGERENCIA DE LA IA ────────────────────────────────
+
+          Una PROPUESTA, no una respuesta. Nunca se manda sola: el
+          botón de abajo la copia al cuadro de texto y de ahí en más
+          es un borrador escrito a mano como cualquier otro.
+
+          Va acá, entre la conversación y el cuadro, porque es el
+          orden en que se lee: lo que dijo, lo que proponemos, lo que
+          finalmente mandás.
+        -->
+        <div v-if="iaPrendida" class="ads__ia" :class="{ 'is-derivar': sugerencia && sugerencia.derivar }">
+          <div class="ads__ia-cabeza">
+            <span class="ads__ia-chapa">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" />
+                <circle cx="12" cy="12" r="3.4" />
+              </svg>
+              {{ $t('admin.ia.title') }}
+            </span>
+
+            <template v-if="sugerencia">
+              <span class="ads__ia-dato" :class="confianzaTono">
+                {{ $t('admin.ia.confidence') }} {{ Math.round(sugerencia.confianza * 100) }}%
+              </span>
+              <span class="ads__ia-dato">{{ $t('admin.ia.cat.' + sugerencia.categoria) }}</span>
+            </template>
+
+            <span class="ad-crece"></span>
+
+            <button
+              type="button" class="ads__ia-b" :disabled="pensando || ocupado" @click="pedirSugerencia"
+            >
+              {{ pensando ? $t('admin.ia.thinking') : (sugerencia ? $t('admin.ia.again') : $t('admin.ia.write')) }}
+            </button>
+          </div>
+
+          <p v-if="iaError" class="ads__ia-mal">{{ iaError }}</p>
+
+          <template v-if="sugerencia">
+            <!-- Llegó un mensaje después de escribirla: ya no contesta lo último. -->
+            <p v-if="sugerencia.viejo" class="ads__ia-aviso">{{ $t('admin.ia.stale') }}</p>
+
+            <!-- Lo que el servidor decidió que no se contesta solo. -->
+            <p v-if="sugerencia.derivar" class="ads__ia-aviso ads__ia-aviso--fuerte">
+              {{ $t('admin.ia.handoff') }}
+            </p>
+
+            <p class="ads__ia-texto">{{ sugerencia.texto }}</p>
+
+            <div class="ads__ia-pie">
+              <button type="button" class="ad-b ad-b--suave" :disabled="ocupado" @click="usarSugerencia">
+                {{ $t('admin.ia.use') }}
+              </button>
+              <span class="ad-tenue ads__ia-nota">{{ sugerencia.motivo }}</span>
+            </div>
+          </template>
+
+          <p v-else-if="!pensando && !iaError" class="ad-tenue ads__ia-nota">{{ $t('admin.ia.empty') }}</p>
+        </div>
+
         <!-- Las respuestas guardadas, que se pegan en el cuadro -->
         <div v-if="guardadas.length" class="ads__guardadas">
           <button
@@ -222,10 +284,27 @@ export default {
       n: { esperandoNos: 0, esperandoAlJugador: 0, cerradas: 0, sinDueno: 0, cerradasHoy: 0, primeraRespuestaMin: null },
       ocupado: false,
       reloj: null,
+
+      /* La sugerencia de la IA. `pensando` es aparte de `ocupado`
+         porque tarda unos segundos y no tiene que congelar el resto
+         de la pantalla mientras tanto. */
+      iaPrendida: false,
+      sugerencia: null,
+      pensando: false,
+      iaError: "",
     };
   },
 
   computed: {
+    /* Verde arriba de 85, ámbar de 70 a 85, rojo abajo. El umbral de
+       verdad lo aplica el servidor; esto solo lo pinta. */
+    confianzaTono() {
+      const c = (this.sugerencia && this.sugerencia.confianza) || 0;
+      if (c >= 0.85) return "is-bien";
+      if (c >= 0.7) return "is-medio";
+      return "is-mal";
+    },
+
     /* El que escribió, con todo lo suyo al lado del chat. */
     j() { return this.elegido && this.elegido.jugador ? this.elegido.jugador : null; },
 
@@ -276,10 +355,54 @@ export default {
         this.esperando = data.data.esperando;
         this.porEstado = data.data.porEstado;
         this.n = data.data.numeros || this.n;
+        this.iaPrendida = !!(data.data.ia && data.data.ia.prendida);
         this.$emit("pendientes", { support: this.esperando });
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
       }
+    },
+
+    /**
+     * PIDE LA SUGERENCIA.
+     *
+     * Cuesta plata y escribe en la base, asi que es un boton y no
+     * algo que pase solo al abrir la conversacion: si se generara en
+     * cada apertura, mirar la bandeja saldria una fortuna.
+     */
+    async pedirSugerencia() {
+      if (!this.elegido || this.pensando) return;
+      this.pensando = true;
+      this.iaError = "";
+      try {
+        const { data } = await api.post(`/admin/support/${this.elegido._id}/draft`);
+        this.sugerencia = data.data;
+      } catch (err) {
+        /*
+          El que ya estaba se QUEDA.
+
+          Si falla rehacerlo --la llave vencida, un minuto sin red--
+          borrar la sugerencia anterior le saca al del equipo algo
+          que servia, y encima por un problema que no es suyo. El
+          error se muestra arriba y el borrador sigue abajo.
+        */
+        this.iaError = err.textoParaElJugador || "";
+      } finally {
+        this.pensando = false;
+      }
+    },
+
+    /*
+      La copia al cuadro de texto, y nada mas. De ahi en adelante es
+      un borrador escrito a mano: se corrige, se manda o se borra.
+      Pisar lo que ya habia escrito seria perderle el trabajo a
+      alguien, asi que si el cuadro tiene algo, se agrega abajo.
+    */
+    usarSugerencia() {
+      if (!this.sugerencia) return;
+      const hay = this.borrador.trim();
+      this.borrador = hay ? `${hay}
+
+${this.sugerencia.texto}` : this.sugerencia.texto;
     },
 
     async abrir(id) {
@@ -287,6 +410,9 @@ export default {
         const { data } = await api.get(`/admin/support/${id}`);
         this.elegido = data.data;
         this.borrador = "";
+        /* La que ya estaba guardada, si alguien la pidio antes. */
+        this.sugerencia = data.data.borrador || null;
+        this.iaError = "";
         this.$nextTick(this.alFondo);
         await this.traer();
       } catch (err) {
@@ -523,6 +649,111 @@ export default {
 }
 
 .ads__guardadas { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px; }
+
+/* ── La sugerencia de la IA ──────────────────────────────────────── */
+
+/*
+  Se distingue del resto a proposito: tiene borde propio y una chapa.
+  Nadie tiene que dudar de si lo que esta leyendo lo escribio una
+  persona del equipo o una maquina.
+*/
+.ads__ia {
+  margin: 0 14px 10px;
+  padding: 10px 12px 12px;
+  border-radius: 12px;
+  border: 1px solid $borde-fuerte;
+  background: linear-gradient(180deg, rgba(63, 124, 240, .10), rgba(18, 33, 58, 0)) $panel;
+
+  /* Cuando el servidor dice que va a una persona, el borde avisa. */
+  &.is-derivar { border-color: rgba(255, 211, 90, .45); }
+}
+
+.ads__ia-cabeza {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ads__ia-chapa {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: $azul;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.ads__ia-dato {
+  padding: 2px 8px;
+  border-radius: 7px;
+  background: $panel-alto;
+  color: $texto-4;
+  font-weight: 800;
+  font-size: 11px;
+
+  &.is-bien { color: $verde; }
+  &.is-medio { color: $amarillo; }
+  &.is-mal { color: $rojo; }
+}
+
+.ads__ia-b {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid $azul;
+  background: transparent;
+  color: $azul;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+  @include foco;
+
+  &:hover:not(:disabled) { background: rgba(63, 124, 240, .14); }
+  &:disabled { opacity: .5; cursor: default; }
+}
+
+.ads__ia-aviso {
+  margin: 8px 0 0;
+  padding: 6px 9px;
+  border-radius: 8px;
+  background: rgba(255, 211, 90, .12);
+  color: $amarillo;
+  font-weight: 700;
+  font-size: 12px;
+
+  &--fuerte { background: rgba(255, 211, 90, .18); font-weight: 800; }
+}
+
+.ads__ia-mal {
+  margin: 8px 0 0;
+  color: $rojo;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+/* `pre-wrap` porque el borrador trae renglones, y sin esto se leen
+   todos pegados en un parrafo solo. */
+.ads__ia-texto {
+  margin: 9px 0 0;
+  white-space: pre-wrap;
+  color: $texto-2;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ads__ia-pie {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.ads__ia-nota { font-size: 11.5px; }
 
 .ads__guardada {
   height: 30px;

@@ -1105,6 +1105,7 @@ router.put("/settings", soloAdmin(["owner"]), async (req, res) => {
       "pozosDeCarrera", "pozosDeCarrera.daily", "pozosDeCarrera.weekly", "pozosDeCarrera.monthly",
       /* Soporte */
       "soporte.respuestaAutomatica", "soporte.horarioMostrado",
+      "soporte.borradorDeIa", "soporte.modeloDeIa", "soporte.umbralDeIa",
       /* La cinta de Live Pulls */
       "pulls.relleno", "pulls.porMinuto", "pulls.baratosPct", "pulls.topeSc",
     ];
@@ -1215,7 +1216,27 @@ router.get("/support", async (req, res) => {
       perPage: Number(req.query.perPage) || 25,
     });
 
-    return res.json({ success: true, data: datos });
+    /*
+      Y si el borrador esta disponible, que son DOS cosas: que la
+      perilla este prendida y que el servidor tenga la llave. Si
+      falta cualquiera de las dos, el boton no se dibuja; un boton
+      que al tocarlo dice "no hay llave" es peor que no tenerlo.
+
+      Va en la bandeja porque es lo primero que pide la pantalla, y
+      no viaja la llave ni nada parecido: solo un si o un no.
+    */
+    const cfg = await Settings.leer();
+    const ia = require("../../services/ia");
+
+    return res.json({
+      success: true,
+      data: Object.assign(datos, {
+        ia: {
+          prendida: ia.prendida() && (cfg.soporte || {}).borradorDeIa !== false,
+          modelo: ((cfg.soporte || {}).modeloDeIa || "").trim() || ia.MODELO_POR_OMISION,
+        },
+      }),
+    });
   } catch (err) {
     return responderError(res, err, "support");
   }
@@ -1236,6 +1257,22 @@ router.get("/support/:id", async (req, res) => {
     return res.json({ success: true, data: await soporte.verDelEquipo(req.params.id) });
   } catch (err) {
     return responderError(res, err, "support.thread");
+  }
+});
+
+/**
+ * QUE LA IA ESCRIBA UN BORRADOR DE LA PROXIMA RESPUESTA.
+ *
+ * No manda nada: deja la propuesta en la ficha para que la lea alguien
+ * del equipo. Es POST y no GET porque cuesta plata y escribe en la
+ * base: un GET lo repite cualquier recarga de pantalla.
+ */
+router.post("/support/:id/draft", async (req, res) => {
+  try {
+    const b = await soporte.escribirBorrador({ hiloId: req.params.id, admin: req.user });
+    return res.json({ success: true, data: b });
+  } catch (err) {
+    return responderError(res, err, "support.draft");
   }
 });
 

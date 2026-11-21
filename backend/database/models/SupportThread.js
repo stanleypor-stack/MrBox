@@ -69,6 +69,34 @@ const supportThreadSchema = new mongoose.Schema(
     /* Para el puntito de "tenés un mensaje nuevo" de cada lado. */
     leidoPorElJugadorEl: { type: Date, default: null },
     leidoPorElEquipoEl: { type: Date, default: null },
+
+    /**
+     * EL BORRADOR QUE ESCRIBIO LA IA.
+     *
+     * Es una PROPUESTA: no se le muestra al jugador ni se manda sola.
+     * Vive acá y no en `mensajes` justamente por eso --un mensaje es
+     * algo que alguien dijo-- y porque así se puede rehacer sin dejar
+     * basura en la conversación.
+     *
+     * Se guarda uno solo, el último. Rehacerlo pisa el anterior: el
+     * del equipo quiere la mejor propuesta, no el historial de
+     * intentos.
+     */
+    borradorIa: {
+      texto: { type: String, default: "" },
+      confianza: { type: Number, default: 0 },
+      categoria: { type: String, default: "" },
+      derivar: { type: Boolean, default: false },
+      motivo: { type: String, default: "" },
+      modelo: { type: String, default: "" },
+      /* Cuántos mensajes tenía la conversación cuando se escribió: si
+         después llegó otro, el borrador quedó viejo y el panel lo
+         dice en vez de mostrarlo como si estuviera al día. */
+      sobreMensajes: { type: Number, default: 0 },
+      creadoEl: { type: Date, default: null },
+      /* Quién lo pidió, para poder preguntarle. */
+      pedidoPor: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    },
   },
   { timestamps: true }
 );

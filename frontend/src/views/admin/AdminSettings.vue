@@ -133,6 +133,11 @@ const GRUPOS = [
     campos: [
       { id: "autoReply", ruta: "soporte.respuestaAutomatica", tipo: "siNo" },
       { id: "hours", ruta: "soporte.horarioMostrado", tipo: "texto" },
+      /* El borrador de la IA. La llave NO esta aca: vive en el
+         entorno del servidor, no en la base ni en esta pantalla. */
+      { id: "iaOn", ruta: "soporte.borradorDeIa", tipo: "siNo" },
+      { id: "iaModel", ruta: "soporte.modeloDeIa", tipo: "texto" },
+      { id: "iaThreshold", ruta: "soporte.umbralDeIa", tipo: "numero" },
     ],
   },
   {

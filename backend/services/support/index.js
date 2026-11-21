@@ -4,6 +4,7 @@ const User = require("../../database/models/User");
 const BalanceTransaction = require("../../database/models/BalanceTransaction");
 const Redemption = require("../../database/models/Redemption");
 const Order = require("../../database/models/Order");
+const ia = require("../ia");
 const { errorDe } = require("../../utils/errors");
 const { sc } = require("../../utils/money");
 
@@ -334,12 +335,93 @@ async function verDelEquipo(hiloId) {
   await hilo.save();
 
   const j = hilo.user || {};
+
+  /*
+    EL BORRADOR VA EN `verDelEquipo` Y NO EN `completo`.
+
+    `completo` tambien arma lo que ve el JUGADOR en su chat. Si el
+    borrador saliera de ahi, cualquiera podria leer en la respuesta de
+    la API la propuesta que todavia no le mandamos --y el motivo, que
+    a veces dice "ojo que este viene enojado, derivalo".
+  */
+  const b = hilo.borradorIa || {};
+  const borrador = b.creadoEl
+    ? {
+      texto: b.texto || "",
+      confianza: b.confianza || 0,
+      categoria: b.categoria || "",
+      derivar: !!b.derivar,
+      motivo: b.motivo || "",
+      modelo: b.modelo || "",
+      creadoEl: b.creadoEl,
+      /* Si llegaron mensajes despues, esto ya no contesta lo ultimo. */
+      viejo: (b.sobreMensajes || 0) < hilo.mensajes.length,
+    }
+    : null;
+
   return Object.assign(completo(hilo), {
+    borrador,
     asignadoA: (hilo.asignado && hilo.asignado.username) || "",
     jugador: (await fichaDelJugador(j._id)) || {
       _id: j._id, username: j.username, email: j.email,
     },
   });
+}
+
+/**
+ * PIDE EL BORRADOR Y LO GUARDA EN LA CONVERSACION.
+ *
+ * Lo llama el panel, nunca el jugador. Si la IA esta apagada o no hay
+ * llave, revienta con AI_OFF y la pantalla lo dice: no hay un camino
+ * silencioso donde el boton no haga nada.
+ */
+async function escribirBorrador({ hiloId, admin }) {
+  const cfg = await Settings.leer();
+  if (cfg && cfg.soporte && cfg.soporte.borradorDeIa === false) {
+    throw errorDe("AI_OFF", {}, 503);
+  }
+
+  const hilo = await SupportThread.findById(hiloId);
+  if (!hilo) throw errorDe("NOT_FOUND");
+
+  const ficha = await fichaDelJugador(hilo.user);
+  const b = await ia.borradorDeSoporte({ hilo, ficha });
+
+  hilo.borradorIa = {
+    texto: b.texto,
+    confianza: b.confianza,
+    categoria: b.categoria,
+    derivar: b.derivar,
+    motivo: b.motivo,
+    modelo: b.modelo,
+    sobreMensajes: hilo.mensajes.length,
+    creadoEl: b.creadoEl,
+    pedidoPor: admin ? admin._id : null,
+  };
+
+  /*
+    `validateBeforeSave: false` NO, a proposito: si el borrador viene
+    con algo que el esquema no acepta, se quiere el error ahora y no
+    una conversacion guardada a medias.
+
+    Y no toca `ultimoMensajeEl` ni el estado: escribir un borrador no
+    es contestar, y la conversacion tiene que seguir apareciendo como
+    pendiente hasta que alguien la conteste de verdad.
+  */
+  await hilo.save();
+
+  return {
+    texto: b.texto,
+    confianza: b.confianza,
+    categoria: b.categoria,
+    derivar: b.derivar,
+    motivo: b.motivo,
+    modelo: b.modelo,
+    creadoEl: b.creadoEl,
+    viejo: false,
+    costoUsd: ia.costoAproximado(b.tokens),
+    tokens: b.tokens,
+  };
 }
 
 async function responder(datos) {
@@ -395,6 +477,7 @@ module.exports = {
   bandeja,
   verDelEquipo,
   fichaDelJugador,
+  escribirBorrador,
   responder,
   mover,
   respuestasGuardadas,

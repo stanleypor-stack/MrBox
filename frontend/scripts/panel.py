@@ -659,6 +659,12 @@ PANEL = {
     "admin.set.autoReply": "Automatic first reply",
     "admin.setHelp.autoReply": "Sent once per conversation, in the player's language.",
     "admin.set.hours": "Support hours shown",
+    "admin.set.iaOn": "Draft replies with AI",
+    "admin.set.iaModel": "AI model (blank = the default)",
+    "admin.set.iaThreshold": "Send to a person below this confidence (0 to 1)",
+    "admin.setHelp.iaOn": "Adds a button on every conversation that drafts the next reply. It never sends anything: you read it, copy it into the box and send it yourself. It also needs ANTHROPIC_API_KEY set on the server — without the key the button does not appear.",
+    "admin.setHelp.iaModel": "Leave it blank unless you know why. A bigger model answers better and costs more per conversation.",
+    "admin.setHelp.iaThreshold": "Below this, the draft is flagged for a person to check. Money, accounts and complaints always go to a person whatever the number says.",
     "admin.setHelp.hours": "The line under the support button.",
     "admin.set.fillerOn": "Fill the live pulls strip",
     "admin.setHelp.fillerOn": "Adds filler openings to the strip while the site is new. They touch nothing: no ledger, no inventory, no prize for anyone.",
@@ -791,6 +797,30 @@ PANEL = {
     "admin.afi.openModels": "What a partner can pick alone",
     "admin.afi.openModelsHelp": "The rest we hand out campaign by campaign. Per-player is usually closed: it is the one that pays up front.",
     "admin.afi.whyLadder": "Why the ladder is changing",
+
+    # -- El borrador que escribe la IA ---------------------------------
+    #
+    # Es una PROPUESTA y el panel lo dice en todos lados: "draft",
+    # "use this". Nunca "answer" ni "reply", que suenan a algo que ya
+    # salio.
+    "admin.ia.title": "AI draft",
+    "admin.ia.write": "Draft a reply",
+    "admin.ia.again": "Redo",
+    "admin.ia.thinking": "Writing…",
+    "admin.ia.use": "Use this",
+    "admin.ia.confidence": "confidence",
+    "admin.ia.empty": "Nobody has asked for a draft on this one yet.",
+    "admin.ia.stale": "A message came in after this was written, so it does not answer the last one. Redo it.",
+    "admin.ia.handoff": "This one is for a person. It touches money, an account or a complaint — read the draft, but check it against the facts before you send it.",
+    "admin.ia.cat.deposito": "deposit",
+    "admin.ia.cat.retiro": "withdrawal",
+    "admin.ia.cat.envio": "shipping",
+    "admin.ia.cat.cuenta": "account",
+    "admin.ia.cat.caja": "boxes",
+    "admin.ia.cat.bono": "bonus",
+    "admin.ia.cat.queja": "complaint",
+    "admin.ia.cat.otro": "other",
+
     "admin.afi.onRequest": "On request",
     "admin.afi.weekly": "Every week",
     "admin.afi.monthly": "Every month",

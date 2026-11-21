@@ -451,6 +451,26 @@ const settingsSchema = new mongoose.Schema(
        * Se editan desde el panel y se insertan en el cuadro de texto:
        * nunca se mandan solas.
        */
+      /**
+       * EL BORRADOR QUE ESCRIBE LA IA.
+       *
+       * `borradorDeIa` lo prende y lo apaga. Prendido no manda nada:
+       * agrega un boton en la ficha de la conversacion que escribe una
+       * propuesta de respuesta para que la lea alguien del equipo.
+       *
+       * No hay llave de API aca adentro a proposito: vive en el
+       * entorno del servidor (ANTHROPIC_API_KEY) y no en la base, que
+       * se respalda, se copia a una maquina de pruebas y se mira desde
+       * el panel.
+       */
+      borradorDeIa: { type: Boolean, default: true },
+
+      /* Vacio = el que trae el servicio. Se cambia sin tocar codigo. */
+      modeloDeIa: { type: String, default: "", trim: true, maxlength: 60 },
+
+      /* Abajo de esto el panel lo marca en rojo y pide que lo revisen. */
+      umbralDeIa: { type: Number, default: 0.7, min: 0, max: 1 },
+
       respuestas: {
         type: [
           {

@@ -94,6 +94,15 @@ const CODIGOS = {
   NOTHING_TO_SHIP: "There is nothing to ship.",
   NO_DEMOS_LEFT: "You have used your free demo opens.",
 
+  /* El borrador de soporte. Son del panel, no los ve un jugador. */
+  AI_OFF: "The support assistant is off: no API key is configured.",
+  AI_REFUSED: "The model declined to draft a reply to this one.",
+  AI_BAD_OUTPUT: "The model answered with something that is not a draft.",
+  AI_AUTH: "The API key is missing or no longer valid. Ask whoever runs the server.",
+  AI_BUSY: "Too many drafts at once. Wait a few seconds and try again.",
+  AI_UNREACHABLE: "Could not reach the model. Answer by hand this time.",
+  AI_FAILED: "The model failed ({estado}). Answer by hand this time.",
+
   /* Cajas de la comunidad */
   BOX_NOT_VALID: "That box does not add up.",
   TOO_FEW_ITEMS: "That box needs more items.",

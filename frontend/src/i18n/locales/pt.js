@@ -223,6 +223,13 @@ export default {
     "NO_ADDRESS": "Adicione um endereço de entrega antes.",
     "ADDRESS_NOT_FOUND": "Esse endereço não existe.",
     "NO_DEMOS_LEFT": "Você já usou suas demos grátis.",
+    "AI_OFF": "El asistente de soporte está apagado.",
+    "AI_AUTH": "La llave de la API falta o ya no sirve.",
+    "AI_BUSY": "Demasiados borradores a la vez. Esperá unos segundos.",
+    "AI_UNREACHABLE": "No se pudo llegar al modelo. Contestá a mano esta vez.",
+    "AI_FAILED": "El modelo falló. Contestá a mano esta vez.",
+    "AI_REFUSED": "El modelo no quiso escribir un borrador para esta.",
+    "AI_BAD_OUTPUT": "El modelo contestó algo que no es un borrador.",
     "NOTHING_TO_SHIP": "Não há nada para enviar.",
     "BOX_NOT_VALID": "Essa caixa não fecha.",
     "TOO_FEW_ITEMS": "Uma caixa precisa de ao menos {minimo} itens.",
@@ -1788,6 +1795,9 @@ export default {
       "poolMonthly": "Monthly race pool",
       "autoReply": "Automatic first reply",
       "hours": "Support hours shown",
+      "iaOn": "Draft replies with AI",
+      "iaModel": "AI model (blank = the default)",
+      "iaThreshold": "Send to a person below this confidence (0 to 1)",
       "fillerOn": "Fill the live pulls strip",
       "perMinute": "Filler per minute",
       "cheapPct": "How many are cheap, out of a hundred",
@@ -1821,6 +1831,9 @@ export default {
       "poolWeekly": "Weeks start on Monday, in UTC.",
       "poolMonthly": "Paid out to the top ten when the month closes.",
       "autoReply": "Sent once per conversation, in the player's language.",
+      "iaOn": "Adds a button on every conversation that drafts the next reply. It never sends anything: you read it, copy it into the box and send it yourself. It also needs ANTHROPIC_API_KEY set on the server — without the key the button does not appear.",
+      "iaModel": "Leave it blank unless you know why. A bigger model answers better and costs more per conversation.",
+      "iaThreshold": "Below this, the draft is flagged for a person to check. Money, accounts and complaints always go to a person whatever the number says.",
       "hours": "The line under the support button.",
       "fillerOn": "Adds filler openings to the strip while the site is new. They touch nothing: no ledger, no inventory, no prize for anyone.",
       "perMinute": "The prototype runs at 60, one a second.",
@@ -1939,6 +1952,27 @@ export default {
       "onRequest": "On request",
       "weekly": "Every week",
       "monthly": "Every month"
+    },
+    "ia": {
+      "title": "AI draft",
+      "write": "Draft a reply",
+      "again": "Redo",
+      "thinking": "Writing…",
+      "use": "Use this",
+      "confidence": "confidence",
+      "empty": "Nobody has asked for a draft on this one yet.",
+      "stale": "A message came in after this was written, so it does not answer the last one. Redo it.",
+      "handoff": "This one is for a person. It touches money, an account or a complaint — read the draft, but check it against the facts before you send it.",
+      "cat": {
+        "deposito": "deposit",
+        "retiro": "withdrawal",
+        "envio": "shipping",
+        "cuenta": "account",
+        "caja": "boxes",
+        "bono": "bonus",
+        "queja": "complaint",
+        "otro": "other"
+      }
     }
   }
 };

@@ -50,6 +50,7 @@ Necesitan `lib.js` al lado (helpers de sesión y de base).
 | `api-vs-sorteo.js` | Lo que muestra la API es lo que usa el sorteo | verificación |
 | `replay-aperturas.js` | 251 aperturas reales reproducidas exactas | verificación |
 | `comunidad-comisiones.js` | Al que arma una caja le entra su mitad, y el panel dice el mismo numero | verificacion |
+| `soporte-borrador.js` | El borrador de la IA: que no mande, que no filtre el mail, y que la plata vaya a una persona | verificacion |
 | `probar.js` | Arnés de los casos de inyección (`node probar.js <caso>`) | INY-* |
 
 ## Después de correrlas
