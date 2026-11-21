@@ -5,31 +5,23 @@
 
     <div role="dialog" aria-modal="true" :aria-label="titulo" class="mb-auth__caja">
       <!-- ── La mitad del cartel ──────────────────────────────────── -->
+      <!--
+        EL CARTEL ES SOLO DE PC.
+
+        Va el poster como lo mando Dani, entero y sin tocar: trae su
+        propio titulo dibujado, asi que no hay nada que escribirle
+        encima. En el telefono no hay cartel --se esconde entero, ver
+        el `en-celular` de abajo-- igual que en mrloot: ahi la pantalla
+        es el formulario y nada mas.
+      -->
       <div class="mb-auth__cartel" aria-hidden="true">
-        <!--
-          DOS ARTES, UNO POR TAMANO.
+        <img class="mb-auth__arte" src="/img/registro-pc.webp" alt="">
+      </div>
 
-          En PC va el poster como lo mando Dani, entero y sin tocar:
-          trae su propio titulo dibujado, asi que el texto del sitio se
-          esconde y no se dice dos veces lo mismo.
-
-          En el telefono ese poster no entra --es alto y angosto, y el
-          carton ahi es ancho y bajo: recortarlo se come el titulo o
-          las figuras--. Va la version compuesta, que es la misma
-          escena fundida con el fondo del sitio, y encima el titulo que
-          dibuja el sitio, que se traduce a los nueve idiomas y lee las
-          aperturas y el bono de la configuracion.
-
-          Las dos con `loading="eager"`: es lo primero que se ve.
-        -->
-        <img class="mb-auth__arte mb-auth__arte--pc" src="/img/registro-pc.webp" alt="">
-        <img class="mb-auth__arte mb-auth__arte--celu" src="/img/registro.webp" alt="">
-
-        <!-- El velo esta para que se lea el texto del sitio, asi que
-             solo hace falta donde ese texto se dibuja. -->
-        <div class="mb-auth__velo"></div>
-
-        <div class="mb-auth__marca">
+      <!-- ── La mitad del formulario ──────────────────────────────── -->
+      <form class="mb-auth__forma" @submit.prevent="enviar">
+        <!-- Solo en el telefono: en PC el logo ya esta en el poster. -->
+        <span class="mb-auth__logo" aria-hidden="true">
           <svg width="200" height="52" viewBox="0 0 1000 260" role="img" aria-label="MR BOX">
             <defs>
               <linearGradient id="rgFace" x1="0" y1="0" x2="0" y2="1">
@@ -48,22 +40,8 @@
             <use href="#rgWord" fill="none" stroke="#0b2266" stroke-width="7" stroke-linejoin="round" />
             <use href="#rgWord" fill="url(#rgFace)" />
           </svg>
+        </span>
 
-          <span class="mb-auth__grito" v-html="$t('auth.signUpAndClaim')"></span>
-          <!-- v-html porque el texto trae un <br>: el cartel del diseño va
-             en dos renglones, y con interpolación normal el <br> se
-             escaparia y se leeria tal cual. -->
-        <!-- Las cajas son del registro: van en el carton, que es lo
-             que se lleva por registrarse. El bono es del deposito y va
-             en el renglon de abajo. -->
-        <span class="mb-auth__regalo" v-html="$t('auth.freeOpens', { n: aperturasDeRegalo })"></span>
-        <span class="mb-auth__ademas">{{ $t('auth.plusBonus', { pct: pctBono }) }}</span>
-        </div>
-
-      </div>
-
-      <!-- ── La mitad del formulario ──────────────────────────────── -->
-      <form class="mb-auth__forma" @submit.prevent="enviar">
         <router-link to="/" class="mb-auth__cerrar" :aria-label="$t('common.close')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff"
                stroke-width="3" stroke-linecap="round" aria-hidden="true">
@@ -305,8 +283,6 @@ export default {
       aceptaTerminos: false,
       enviando: false,
       error: "",
-      aperturasDeRegalo: 3,
-      pctBono: 50,
       sitioCaptcha: process.env.VUE_APP_TURNSTILE_SITE_KEY || "",
       widgetCaptcha: null,
     };
@@ -503,23 +479,6 @@ export default {
       }
     },
 
-    async traerRegalo() {
-      try {
-        const { data } = await api.get("/public/settings");
-        if (data.data && data.data.aperturasDeRegalo) {
-          this.aperturasDeRegalo = data.data.aperturasDeRegalo;
-
-          /* La oferta sale de las perillas: si Dani cambia el 50% o el
-             piso de $50 en el panel, el cartel cambia solo. */
-          const b = data.data.bonoDeBienvenida;
-          if (b) {
-            if (Number(b.pct) > 0) this.pctBono = Math.round(Number(b.pct) * 100);
-          }
-        }
-      } catch {
-        /* Se queda con 3, que es el valor por defecto del sitio. */
-      }
-    },
   },
 
   watch: {
@@ -528,7 +487,6 @@ export default {
   },
 
   created() {
-    this.traerRegalo();
 
     /*
       EL CODIGO QUE VIENE EN EL ENLACE DEL SOCIO (/r/SUCODIGO).
@@ -622,212 +580,44 @@ export default {
 }
 
 /*
-  EL ARTE.
+  EL POSTER.
 
-  Reemplaza al arcoiris que estaba dibujado con CSS y a los seis
-  recortes de lamina que flotaban encima. `cover` y anclado abajo: lo
-  que importa son los cofres y los premios, que estan en la mitad de
-  abajo; lo que sobra se recorta por arriba, que es donde el arte solo
-  tiene estallido.
+  Va entero, no recortado: `contain` y no `cover`. Con `cover` el
+  carton le comia una franja de cada lado, y cuanto se comia dependia
+  de la pantalla --el alto del carton lo decide el formulario, que es
+  mas alto en registrarse que en entrar, asi que no hay un ancho fijo
+  que acierte siempre--.
+
+  Y pegado abajo, asi lo que sobra queda todo arriba. Centrado, la
+  sobra se parte en dos y la de abajo se notaba: el borde inferior del
+  poster es asfalto rosa con textura y debajo aparecia una franja lisa
+  que se leia como un bloque aparte. El borde de ARRIBA en cambio es
+  violeta liso --#2a0475, medido-- y el carton usa ese mismo color de
+  fondo: no se ve una franja, se ve el cielo un poco mas largo.
 */
-/* En PC, el poster de Dani. En el telefono, el compuesto. */
-.mb-auth__arte--celu { display: none; }
-
-@include en-celular {
-  .mb-auth__arte--pc { display: none; }
-  .mb-auth__arte--celu { display: block; }
-}
-
 .mb-auth__arte {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  /*
-    25% y no `bottom`: con `bottom` se recortaban los cofres, que son
-    lo primero que mira cualquiera. A 375px de ancho el arte entra a
-    467 de alto en una caja de 320, asi que sobran 147: anclado al
-    25% se van 37 de arriba y 110 de abajo, y quedan los cofres
-    enteros con los premios asomando.
-  */
-  object-position: center 25%;
-
-  /*
-    EN EL TELEFONO, PEGADO ARRIBA. MEDIDO.
-
-    El arte entra a 646px de alto en 375 de ancho, y sus primeros
-    200px son el cielo oscuro que se funde con el fondo del sitio. El
-    bloque de texto mide 222. Anclando el arte arriba de todo, esos
-    200px caen justo detras del texto y lo que sobra del carton son
-    las dos figuras, enteras y sin nada encima.
-
-    Con cualquier otro anclaje el recorte se come el cielo y el texto
-    termina sobre las caras.
-  */
-  @include en-celular { object-position: center top; }
-}
-
-/*
-  EL DE PC ENTRA ENTERO, NO RECORTADO.
-
-  `contain` y no `cover`: el poster lo mando Dani asi y va asi. Con
-  `cover` el carton le comia una franja de cada lado --el alto del
-  carton lo decide el formulario, que cambia entre registrarse y
-  entrar, asi que no hay un ancho fijo que acierte siempre-- y lo que
-  se recorta depende de en que pantalla se mire.
-
-  Lo que sobra lo tapa el degrade del carton, que son los bordes del
-  propio poster.
-*/
-.mb-auth__arte--pc {
   object-fit: contain;
-  /*
-    Y PEGADO ABAJO, ASI LA SOBRA QUEDA ARRIBA.
-
-    Centrado, la sobra se parte en dos y la de abajo se notaba: el
-    borde inferior del poster es asfalto rosa con textura, y debajo
-    aparecia una franja lisa que se leia como un bloque aparte. El
-    borde de ARRIBA en cambio es violeta liso --#2a0475, medido-- y
-    contra un fondo del mismo color no se ve donde termina.
-  */
   object-position: center bottom;
 }
 
 
-/*
-  EL VELO.
-
-  El estallido tiene mucho amarillo y la letra blanca se perderia
-  sobre el cofre. Baja de arriba --que es donde va el texto-- y deja
-  los cofres y los premios limpios.
-*/
-.mb-auth__velo {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  /*
-    Un alto fijo y no un porcentaje: el velo esta para que se lea el
-    texto, y el texto mide lo que mide. En el carton alto de la
-    computadora, un 62% eran 380px de oscuro sobre un arte que no lo
-    necesitaba.
-  */
-  height: 245px;
-  /* Casi opaco arriba: el estallido es amarillo y verde brillante, y
-     con .88 el titulo blanco se leia a medias. */
-  background: linear-gradient(180deg,
-    rgba(5, 10, 20, .96) 0%,
-    rgba(5, 10, 20, .93) 40%,
-    rgba(5, 10, 20, .68) 68%,
-    rgba(5, 10, 20, .2) 88%,
-    rgba(5, 10, 20, 0) 100%);
-}
-
-.mb-auth__marca {
-  position: relative;
-  /* Por encima del velo, que es lo unico que hay entre el texto y el
-     arte. */
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding-top: 22px;
-}
-
-/*
-  EL TEXTO DEL SITIO Y SU VELO: SOLO EN EL TELEFONO.
-
-  En PC el poster de Dani ya trae su titulo dibujado; dejar encima el
-  del sitio pondria "SIGN UP AND CLAIM" dos veces, una arriba de la
-  otra. Y el velo esta para que ESE texto se lea, asi que sin texto no
-  tiene nada que hacer: oscurecia el poster de arriba por gusto.
-
-  Va DESPUES de las dos reglas de arriba y no antes: Sass las escribe
-  en el orden en que estan, y `display: flex` puesto mas abajo le
-  ganaba a un `display: none` puesto mas arriba.
-*/
-.mb-auth__velo,
-.mb-auth__marca { display: none; }
-
-@include en-celular {
-  .mb-auth__velo { display: block; }
-  .mb-auth__marca { display: flex; }
-}
-
-/*
-  Mas chico que antes: con el arte detras, los tamanos de cuando el
-  fondo era un degrade liso tapaban los cofres.
-*/
-.mb-auth__grito {
-  font-family: $fuente-cartel;
-  font-size: 27px;
-  line-height: 1.02;
-  text-align: center;
-  color: #fff;
-  // El relieve del diseño: dos sombras duras, sin desenfoque.
-  text-shadow: 0 3px 0 #1c4fc4, 0 6px 0 #0b2266;
-}
-
-.mb-auth__regalo {
-  margin-top: 2px;
-  padding: 8px 18px;
-  border-radius: 11px;
-  background: $amarillo-v;
-  border: 3px solid #c9921a;
-  font-family: $fuente-cartel;
-  font-size: 21px;
-  line-height: 1.02;
-  text-align: center;
-  color: $azul-tinta;
-  transform: rotate(-2deg);
-}
-
-/* El renglon del bono, debajo del carton amarillo. */
-.mb-auth__ademas {
-  margin-top: 7px;
-  font-weight: 900;
-  font-size: 13.5px;
-  line-height: 1.2;
-  text-align: center;
-  color: #fff;
-  /*
-    Dos sombras duras para el relieve, y dos difusas para que se lea.
-
-    Este renglon es el ultimo del carton: cae donde el velo ya se
-    esta yendo, o sea sobre el estallido de colores. El relieve azul
-    solo no alcanza; el halo oscuro lo despega de cualquier fondo.
-  */
-  text-shadow:
-    0 2px 0 #1c4fc4,
-    0 4px 0 #0b2266,
-    0 0 10px rgba(5, 10, 20, .95),
-    0 0 22px rgba(5, 10, 20, .8);
-}
-
 @include en-celular {
   /*
-    EN EL TELEFONO EL CARTON SE ACHICA.
+    EN EL TELEFONO NO HAY CARTEL.
 
-    Lo importante es el formulario: si el carton se come media
-    pantalla, para escribir el usuario hay que scrollear.
+    Como en mrloot: la pantalla es el formulario y nada mas. Antes el
+    arte se achicaba y se le escribia el titulo encima, y en 375px de
+    ancho el texto se comia la imagen o la imagen tapaba el texto; las
+    dos cosas se vieron.
 
-    Pero no tanto: con 320 el texto --222px-- dejaba menos de cien
-    para el arte, y lo poco que se veia eran las cabezas cortadas. Con
-    420 quedan 198 limpios debajo del texto, que es donde entran las
-    dos figuras.
+    El logo no se pierde: pasa adentro del formulario, arriba a la
+    izquierda, enfrentado a la cruz de cerrar.
   */
-  .mb-auth__cartel { min-height: 420px; }
-
-  .mb-auth__marca { padding-top: 18px; gap: 7px; }
-
-  .mb-auth__grito { font-size: 24px; }
-  .mb-auth__regalo { font-size: 19px; padding: 7px 16px; }
-  .mb-auth__ademas { font-size: 12.5px; margin-top: 6px; }
-
-  /* En el telefono el carton mide 320: el velo cubre dos tercios. */
-  .mb-auth__velo { height: 235px; }
+  .mb-auth__cartel { display: none; }
 }
 
 /* ── El formulario ────────────────────────────────────────────────── */
@@ -841,6 +631,37 @@ export default {
   flex-direction: column;
   gap: 16px;
   @include en-celular { padding: 24px 18px 36px; }
+}
+
+/*
+  EL LOGO, SOLO EN EL TELEFONO.
+
+  En PC esta dibujado adentro del poster, asi que aca sobraria. En el
+  telefono no hay poster --mrloot tampoco tiene-- y sin esto la
+  pantalla arrancaria directo en "Crea tu cuenta", sin decir de que
+  sitio es.
+
+  Va arriba a la izquierda, enfrentado a la cruz de cerrar, y con el
+  mismo alto que ella para que los dos queden en la misma linea.
+*/
+.mb-auth__logo {
+  display: none;
+
+  @include en-celular {
+    display: flex;
+    align-items: center;
+    height: 44px;
+    /* El titulo viene despues y trae su propio aire. */
+    margin-bottom: -4px;
+
+    svg {
+      width: 150px;
+      height: auto;
+      /* La cruz mide 44 y empieza a 16 del borde: dejarle lugar para
+         que el logo no se le meta abajo en una pantalla angosta. */
+      max-width: calc(100% - 56px);
+    }
+  }
 }
 
 .mb-auth__cerrar {
