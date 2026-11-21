@@ -12,7 +12,26 @@
         </button>
 
         <div class="mb-abrir__quien">
-          <span v-if="lamina" class="mb-art mb-abrir__arte" :class="lamina.clase" :style="lamina.estilo" aria-hidden="true"></span>
+          <!--
+            LA DE LA COMUNIDAD SE DIBUJA; LA DE LA CASA TIENE LAMINA.
+
+            Una caja de comunidad no tiene arte: no hay nadie dibujando
+            una por cada una. Antes esto pedia su lamina igual, y como
+            su `imageUrl` viene vacio caia en el comodin de los
+            "MR BOX Credit" --una moneda-- y arriba del titulo aparecia
+            un signo de peso en lugar de la caja.
+          -->
+          <mb-caja-dibujada
+            v-if="esDeComunidad" class="mb-abrir__dibujo"
+            :color="caja.portada.color" :textura="caja.portada.textura || 'liso'"
+            :estilo="caja.portada.estilo" :portada="asoman"
+            :posiciones="caja.portada.posiciones || {}"
+            :logo-izquierdo="caja.portada.logoIzquierdo" :logo-derecho="caja.portada.logoDerecho"
+          />
+          <span
+            v-else-if="lamina" class="mb-art mb-abrir__arte"
+            :class="lamina.clase" :style="lamina.estilo" aria-hidden="true"
+          ></span>
           <h1>{{ caja.name }}</h1>
         </div>
 
@@ -271,6 +290,7 @@
 import { mapGetters } from "vuex";
 import api from "@/api";
 import MbRuleta from "@/components/MbRuleta.vue";
+import MbCajaDibujada from "@/components/MbCajaDibujada.vue";
 import { sprite } from "@/utils/sprite";
 import { despertar, silenciar, sonarPremio } from "@/utils/sonido";
 
@@ -309,7 +329,7 @@ const RAREZAS = [
  */
 export default {
   name: "BoxView",
-  components: { MbRuleta },
+  components: { MbRuleta, MbCajaDibujada },
 
   data() {
     return {
@@ -402,6 +422,25 @@ export default {
     gratisDeEstaCaja() { return !!(this.caja && this.caja.gratisAca); },
 
     lamina() { return this.caja ? sprite(this.caja.imageUrl) : null; },
+
+    /* Las de la casa no traen `portada`; las de la comunidad, si. */
+    esDeComunidad() { return !!(this.caja && this.caja.portada); },
+
+    /* Los premios que el creador puso asomando de su caja. Si no
+       eligio ninguno, los tres mas caros: es lo que habria elegido. */
+    asoman() {
+      const p = (this.caja && this.caja.portada) || {};
+      const premios = (this.caja && this.caja.prizes) || [];
+      const indices = p.asoman || [];
+      const elegidos = indices.map((i) => premios[i]).filter(Boolean);
+      const lista = elegidos.length
+        ? elegidos
+        : premios.slice().sort((a, b) => b.valueSc - a.valueSc).slice(0, 3);
+      return lista.map((x, i) => ({
+        clave: String(indices[i] != null ? indices[i] : i),
+        imageUrl: x.imageUrl,
+      }));
+    },
 
     /** Las rarezas con cuántos premios tiene cada una. */
     rarezas() {
@@ -760,6 +799,15 @@ export default {
   flex: none;
   /* En un telefono la tapita se va: abajo esta la caja entera, y esos
      46 px son los que le faltaban al nombre para entrar sin puntitos. */
+  @include en-celular { display: none; }
+}
+
+/* La dibujada ocupa el mismo lugar que la lamina de las de la casa.
+   Un poco mas ancha que alta porque la caja isometrica lo es. */
+.mb-abrir__dibujo {
+  width: 58px;
+  height: 46px;
+  flex: none;
   @include en-celular { display: none; }
 }
 

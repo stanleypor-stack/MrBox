@@ -1,5 +1,7 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
+const path = require("path");
+const fs = require("fs");
 
 const Item = require("../database/models/Item");
 const User = require("../database/models/User");
@@ -37,13 +39,30 @@ const eco = require("../services/boxes/economia");
  * Se puede correr mil veces: si la caja ya existe, la deja como esta.
  */
 
+/*
+  LOS LOGOS, LOS QUE DIBUJO `logosDeComunidad.py`.
+
+  Van como `data:` porque es lo que guarda el editor cuando un creador
+  sube el suyo: asi estas tres pasan por el mismo camino y por la misma
+  revision que cualquier caja hecha por un jugador.
+*/
+const LOGOS = path.join(__dirname, "..", "..", "audit", "logos-comunidad");
+
+function logo(nombre) {
+  const f = path.join(LOGOS, nombre + ".txt");
+  if (!fs.existsSync(f)) {
+    throw new Error(`falta ${nombre}.txt: corre antes python scripts/logosDeComunidad.py`);
+  }
+  return fs.readFileSync(f, "utf8").trim();
+}
+
 const CAJAS = [
   {
     nombre: "PACK RIPPER",
     descripcion:
       "Sobres, bundles y cajas selladas. Casi siempre te llevas un sobre suelto; "
       + "una vez cada diez mil, la escultura de Charizard.",
-    portada: { color: "#f0b429", textura: "chispas", estilo: 2 },
+    portada: { color: "#f0b429", textura: "chispas", estilo: 2, logo: "pack-ripper" },
     /* Lo que asoma de la caja: el gral y dos del medio que se ven bien. */
     asoman: ["Charizard Sculpture", "Shrouded Fable Booster Box", "Scarlet & Violet 7: Stellar Crown Booster"],
     premios: [
@@ -66,7 +85,7 @@ const CAJAS = [
     descripcion:
       "El escritorio entero, de la alfombrilla a la placa de video. "
       + "Dos de cada mil aperturas se llevan una 4090.",
-    portada: { color: "#19c2a8", textura: "panal", estilo: 1 },
+    portada: { color: "#19c2a8", textura: "panal", estilo: 1, logo: "battle-station" },
     asoman: ["Nvidia GeForce RTX 4090 ROG Strix OC", "34 QHD Curved Monitor", "Gaming Headset"],
     premios: [
       ["Computer Sticker", 6205],
@@ -88,7 +107,7 @@ const CAJAS = [
     descripcion:
       "Cordones, Dunks y, al fondo del todo, unas Jordan 1 Retro High. "
       + "La mayoria de las veces salis con los cordones.",
-    portada: { color: "#e2542f", textura: "cuadros", estilo: 2 },
+    portada: { color: "#e2542f", textura: "cuadros", estilo: 2, logo: "sole-survivor" },
     asoman: ["Jordan 1 Retro High", "SB Dunk Low Grateful Dead Bears Orange", "Dunk Low Neapolitan"],
     premios: [
       ["Shoe Laces", 5400],
@@ -132,11 +151,19 @@ async function sembrar() {
   console.log("creador: %s | admin: %s\n", creador.username, jefe.username);
 
   for (const d of CAJAS) {
+    /*
+      SI YA ESTA, SE VUELVE A GUARDAR ENCIMA.
+
+      `guardar` con un id actualiza la misma caja: el slug, las
+      aperturas y lo que lleva ganado el creador siguen donde estaban.
+      Lo unico que cambia es lo que dice este archivo, asi que tocar
+      una portada aca y volver a correrlo alcanza.
+
+      Y vuelve a pasar por revision, porque guardar baja la caja del
+      aire a proposito: una caja aprobada que se puede editar es una
+      que se aprueba con medias y se publica con relojes.
+    */
     const yaEsta = await Box.findOne({ name: d.nombre, creator: creador._id }).lean();
-    if (yaEsta) {
-      console.log("%s ya existe (%s), la dejo como esta", d.nombre.padEnd(15), yaEsta.slug);
-      continue;
-    }
 
     /* De nombres a objetos del catalogo, en el orden escrito. */
     const premios = [];
@@ -154,12 +181,18 @@ async function sembrar() {
       throw new Error(`${d.nombre}: alguno de los que asoman no esta entre los premios`);
     }
 
+    const { logo: cual, ...portada } = d.portada;
+    const marca = logo(cual);
+
     const caja = await comunidad.guardar({
       user: creador,
+      boxId: yaEsta ? yaEsta._id : undefined,
       nombre: d.nombre,
       descripcion: d.descripcion,
       premios: premios.map((p) => ({ itemId: p.itemId, peso: p.peso })),
-      portada: { ...d.portada, asoman },
+      /* El mismo en las dos caras: son las dos caras de una caja, no
+         dos marcas distintas. */
+      portada: { ...portada, asoman, logoIzquierdo: marca, logoDerecho: marca },
     });
 
     await comunidad.mandarARevisar({ user: creador, boxId: caja._id });
@@ -168,7 +201,8 @@ async function sembrar() {
     const lista = await Box.findById(caja._id).lean();
     const chase = lista.prizes.reduce((a, p) => (p.valueSc > a.valueSc ? p : a), lista.prizes[0]);
 
-    console.log("%s SC %s | retorno %s%% | %d objetos | %s",
+    console.log("%s %s SC %s | retorno %s%% | %d objetos | %s",
+      yaEsta ? "actualizada" : "creada    ",
       d.nombre.padEnd(15),
       lista.priceSc.toFixed(2).padStart(8),
       (eco.retornoReal(lista.prizes, lista.priceSc) * 100).toFixed(2),

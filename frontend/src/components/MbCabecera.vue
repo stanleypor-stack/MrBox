@@ -107,9 +107,11 @@
             :aria-expanded="walletAbierta ? 'true' : 'false'" aria-label="Wallet"
             @click="walletAbierta = !walletAbierta"
           >
-            <span class="mb-sc mb-sc--20" aria-hidden="true">SC</span>{{ plata(saldo) }}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c9d7f7"
-                 stroke-width="2.6" stroke-linecap="round" aria-hidden="true">
+            <span class="mb-sc mb-sc--20" aria-hidden="true">SC</span>
+            <span class="mb-wallet__monto">{{ plata(saldo) }}</span>
+            <span class="mb-wallet__monto mb-wallet__monto--corto" aria-hidden="true">{{ saldoCorto }}</span>
+            <svg class="mb-wallet__galon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="#c9d7f7" stroke-width="2.6" stroke-linecap="round" aria-hidden="true">
               <path :d="walletAbierta ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'" />
             </svg>
           </button>
@@ -515,6 +517,42 @@ export default {
       CUALQUIER toque de afuera, y apagar sin mirar cerraría también el
       menú lateral que alguien acabara de abrir.
     */
+    /*
+      EL SALDO CORTO, PARA EL TELEFONO.
+
+      En 375 px la cabecera tiene que entrar el logo, la billetera y
+      tres botones. Con "497,520.45" la pildora pedia 173 px donde hay
+      101, y el numero se salia y quedaba tapado por la campanita: se
+      leia "497,520." y el resto no estaba. Un saldo cortado a la
+      mitad es peor que un saldo redondeado, porque no se nota que
+      esta cortado.
+
+      Asi que arriba de cien mil se muestra "497.5K" y el exacto queda
+      a un toque, adentro de la billetera. Abajo de eso entra entero y
+      se muestra entero: no se redondea plata porque si.
+
+      Son dos numeros en el marcado y el CSS elige cual: medir el
+      ancho desde JavaScript obligaria a escuchar el `resize` para
+      algo que una media query ya sabe.
+    */
+    saldoCorto() {
+      const n = Number(this.saldo) || 0;
+
+      /*
+        EL CORTE ESTA EN MIL, Y EL DECIMAL ES UNO SOLO.
+
+        No es un numero elegido de lindo: es el que entra. Medido en
+        375 px, en la pildora caben seis caracteres antes de que la
+        cifra se monte encima del boton de depositar. "999.99" entra;
+        "9,999.99" se pasa once pixeles. Y con dos decimales,
+        "497.52K" se pasa seis, asi que va uno: "497.5K".
+      */
+      if (Math.abs(n) < 1000) return this.plata(n);
+      return new Intl.NumberFormat("en-US", {
+        notation: "compact", maximumFractionDigits: 1,
+      }).format(n);
+    },
+
     walletAbierta: {
       get() { return this.abierto.wallet; },
       set(v) {
@@ -941,29 +979,6 @@ export default {
   .mb-cuenta { display: none; }
   .mb-cuenta.es-visita { display: flex; }
 
-  /*
-    LOS ICONOS, SUELTOS Y CUADRADOS.
-
-    En escritorio los tres viven dentro de una pastilla con borde
-    blanco. A 375px esa pastilla no entra al lado de la billetera, asi
-    que se desarma en botones de 38 como en el diseno de celular.
-  */
-  .mb-iconos__caja {
-    border: 0;
-    background: transparent;
-    padding: 0;
-    gap: 8px;
-    height: auto;
-  }
-
-  .mb-iconos__raya { display: none; }
-
-  .mb-iconos__b {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    background: #16253f;
-  }
 }
 
 /* ── La billetera ─────────────────────────────────────────────────── */
@@ -981,10 +996,53 @@ export default {
   box-shadow: 0 6px 18px rgba(0, 0, 0, .35);
 }
 
+/*
+  LA CIFRA NO SE SALE NI SE PARTE.
+
+  `min-width: 0` en la pildora y en el boton para que puedan achicarse
+  dentro del hueco que les toca, y `nowrap` para que el numero no se
+  corte en dos renglones adentro de una pildora de 46 px de alto.
+*/
+.mb-wallet { min-width: 0; }
+
+/*
+  Y NO SE LLAMA `__cifra`: ESA YA EXISTE.
+
+  `mb-wallet__cifra` es la cifra grande de adentro de la billetera
+  abierta, 32 px, y su regla esta mas abajo en este mismo archivo. Con
+  la misma especificidad gana la ultima, asi que llamar igual a la de
+  la cabecera hacia que se vieran las dos a la vez.
+*/
+.mb-wallet__monto { white-space: nowrap; }
+.mb-wallet__monto--corto { display: none; }
+
+@include en-celular {
+  .mb-wallet__monto { display: none; }
+  .mb-wallet__monto--corto { display: inline; }
+
+  /*
+    Y SE VA EL GALON, QUE ES LO QUE SOBRA.
+
+    A 375 px la cifra tenia que terminar antes del boton de depositar
+    y no llegaba: "9,999.99" se le montaba doce pixeles encima. El
+    galon son catorce de dibujo mas seis de aire, y es lo unico de la
+    pildora que no dice nada: la pildora ENTERA abre la billetera, no
+    hace falta una flechita que lo anuncie.
+
+    Con eso y un poco menos de aire adentro, el saldo exacto entra
+    hasta SC 99.999,99, que es mas de lo que va a tener nadie mirando
+    esto en un telefono.
+  */
+  .mb-wallet__galon { display: none; }
+  .mb-wallet { padding-left: 10px; gap: 6px; }
+  .mb-wallet__saldo { gap: 6px; }
+}
+
 .mb-wallet__saldo {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
   height: 40px;
   padding: 0;
   border: 0;
@@ -1165,6 +1223,42 @@ export default {
 
   &.is-on { background: #1d3354; }
   &:hover { background: #16294a; }
+}
+
+/*
+  LOS ICONOS, SUELTOS Y CUADRADOS EN EL TELEFONO.
+
+  En escritorio los tres viven dentro de una pastilla con borde
+  blanco. A 375 px esa pastilla no entra al lado de la billetera, asi
+  que se desarma en botones de 38, como en el diseno de celular.
+
+  ESTE BLOQUE ESTABA DOSCIENTAS LINEAS MAS ARRIBA Y NO HACIA NADA.
+
+  Sass escribe el `@media` donde esta escrito, no al final. Estando
+  antes que `.mb-iconos__caja` y `.mb-iconos__b`, las dos reglas
+  tenian la misma especificidad y ganaba la de abajo: la de
+  escritorio. O sea que en el telefono los tres botones seguian
+  midiendo 46 adentro de su pastilla, los tres se comian 164 px de
+  ancho, y a la billetera le quedaban 101 de los 169 que necesita.
+  Por eso el saldo se salia por debajo de la campanita.
+*/
+@include en-celular {
+  .mb-iconos__caja {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    gap: 8px;
+    height: auto;
+  }
+
+  .mb-iconos__raya { display: none; }
+
+  .mb-iconos__b {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #16253f;
+  }
 }
 
 .mb-iconos__raya { width: 1px; height: 20px; background: #3a5687; }

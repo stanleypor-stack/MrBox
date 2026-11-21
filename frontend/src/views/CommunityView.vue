@@ -11,7 +11,7 @@
 
     <div v-else class="mb-com__grilla">
       <router-link v-for="c in cajas" :key="c._id" :to="`/boxes/${c.slug}`" class="mb-ccaja mb-card">
-        <span class="mb-ccaja__marco">
+        <span class="mb-ccaja__marco" :style="{ background: halo(c) }">
           <mb-caja-dibujada
             :color="c.portada.color" :textura="c.portada.textura || 'liso'" :estilo="c.portada.estilo"
             :portada="asoman(c)" :posiciones="c.portada.posiciones || {}"
@@ -73,6 +73,25 @@ export default {
     },
 
     esNueva(c) { return Date.now() - new Date(c.createdAt || 0).getTime() < UNA_SEMANA; },
+
+    /*
+      EL HALO, DEL COLOR DE SU PROPIO CARTON.
+
+      Las cajas de la casa tienen uno detras, del color de su
+      categoria (ver MbCajaEnGrilla). Las de la comunidad no tenian
+      nada: la caja quedaba apoyada sobre un cuadrado gris plano, y
+      los premios que asoman --que suelen ser fotos oscuras-- se
+      perdian contra el fondo.
+
+      La misma formula que las de la casa, pero el color lo pone el
+      creador sin saberlo: es el del carton que eligio.
+    */
+    halo(c) {
+      const hex = ((c.portada && c.portada.color) || "#9b30ff").replace("#", "");
+      const n = parseInt(hex.length === 3 ? hex.replace(/(.)/g, "$1$1") : hex, 16);
+      const rgb = [(n >> 16) & 255, (n >> 8) & 255, n & 255].join(",");
+      return `radial-gradient(circle at 50% 56%, rgba(${rgb}, .30) 0%, #12213a 72%)`;
+    },
 
     /** Los premios que asoman, en el orden que eligió el creador. */
     asoman(c) {
@@ -163,14 +182,19 @@ export default {
   position: relative;
   aspect-ratio: 1 / 1;
   border-radius: 14px;
-  background: $panel;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
 
-  // El dibujo es más ancho que alto; se centra adentro del cuadrado.
-  > div { position: absolute; left: 6%; right: 6%; top: 22%; }
+  /*
+    El dibujo es más ancho que alto y se centra adentro del cuadrado.
+
+    Antes arrancaba en el 22% y dejaba casi un cuarto de tarjeta de
+    aire muerto arriba. Ahora entra más grande y más alto: lo que
+    asoma de la caja usa ese espacio, que es justo para lo que está.
+  */
+  > div { position: absolute; left: 2%; right: 2%; top: 13%; }
 }
 
 .mb-ccaja__nueva {

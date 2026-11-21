@@ -522,6 +522,20 @@ function resumenDeCaja(caja) {
       rarity: p.rarity,
       imageUrl: p.imageUrl,
     })),
+
+    /*
+      LA PORTADA, SOLO SI ES DE LA COMUNIDAD.
+
+      Las cajas de la casa tienen su arte en una lamina y no la
+      necesitan. Las de la comunidad no tienen arte: se DIBUJAN con el
+      color, la textura y los premios que eligio el creador.
+
+      Sin esto, la pantalla de una caja de comunidad se quedaba sin
+      nada que dibujar. Y como `imageUrl` viene vacio, caia en el
+      comodin de los "MR BOX Credit" --que es una moneda-- y arriba
+      del todo aparecia un signo de peso en lugar de la caja.
+    */
+    ...(caja.creator ? { portada: caja.portada || {} } : {}),
   };
 }
 
