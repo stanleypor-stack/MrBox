@@ -5,9 +5,6 @@
     <template v-else>
       <!-- ── El cartel ────────────────────────────────────────────── -->
       <section class="mb-cartel">
-        <span class="mb-cartel__halo" aria-hidden="true"></span>
-        <span class="mb-cartel__rayos" aria-hidden="true"></span>
-        <span class="mb-cartel__lineas" aria-hidden="true"></span>
         <span class="mb-cartel__bandera" aria-hidden="true"></span>
 
         <h1>
@@ -25,20 +22,40 @@
           </div>
         </div>
 
-        <div class="mb-cartel__pie">
-          <div class="mb-cartel__tabs" role="tablist" :aria-label="$t('nav.races')">
-            <router-link
-              v-for="t in TIPOS" :key="t" :to="`/races/${t}`" role="tab"
-              :aria-selected="tipo === t ? 'true' : 'false'"
-              :class="{ 'is-activa': tipo === t }"
-            >{{ $t('races.' + t + 'Short') }}</router-link>
-          </div>
-
-          <button type="button" :aria-expanded="comoAbierto ? 'true' : 'false'" @click="comoAbierto = !comoAbierto">
-            {{ $t('races.howItWorks') }}
-          </button>
-        </div>
       </section>
+
+      <!--
+        LOS BOTONES VAN ABAJO DEL CARTEL, NO ADENTRO.
+
+        Como en mrloot. Adentro ocupaban dos renglones en el telefono y
+        empujaban el cartel a los 330px de alto; afuera el cartel queda
+        del tamano del titulo y el reloj, que es lo que tiene que
+        mostrar.
+      -->
+      <div class="mb-cartel__pie">
+        <div class="mb-cartel__tabs" role="tablist" :aria-label="$t('nav.races')">
+          <router-link
+            v-for="t in TIPOS" :key="t" :to="`/races/${t}`" role="tab"
+            :aria-selected="tipo === t ? 'true' : 'false'"
+            :class="{ 'is-activa': tipo === t }"
+          >{{ $t('races.' + t + 'Short') }}</router-link>
+        </div>
+
+        <!-- Una rueda con un signo de pregunta, como la de ellos. El
+             texto sigue estando para quien no ve el dibujo. -->
+        <button
+          type="button" class="mb-cartel__ayuda"
+          :aria-expanded="comoAbierto ? 'true' : 'false'"
+          :aria-label="$t('races.howItWorks')" :title="$t('races.howItWorks')"
+          @click="comoAbierto = !comoAbierto"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M9.4 9.2a2.7 2.7 0 0 1 5.2.9c0 1.8-2.6 2.2-2.6 3.9M12 17.4h.01" />
+          </svg>
+        </button>
+      </div>
 
       <div v-if="comoAbierto" class="mb-como-va">
         <div v-for="(p, i) in [1, 2, 3]" :key="i">
@@ -290,14 +307,30 @@ export default {
   position: relative;
   overflow: hidden;
   border-radius: 22px;
-  background: #0e3a8c;
-  border: 1px solid #2a5bd0;
-  min-height: 330px;
+  /*
+    LISO, Y DEL COLOR DE LA FOTO.
+
+    Medido sobre la foto de Dani: su mitad vacia es #1c242c de punta a
+    punta --las cinco alturas y las cinco columnas dan el mismo
+    numero-- asi que el cartel usa ese color y la foto entra sin que se
+    note donde empieza.
+
+    Antes aca habia un degrade azul fuerte con rayos en abanico y
+    lineas diagonales encima. Era del cartel viejo, cuando el cartel
+    era todo fondo; al lado de la foto se veia como un parche.
+  */
+  background: #1c242c;
+  border: 1px solid #27354a;
+  /* 214px en pantalla, que es el alto del de mrloot. Medido en el
+     suyo, al lado del nuestro. El nuestro media 330. */
+  min-height: calc(214px / var(--escala, 1));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  /* Justo: con 14 de aire y 30 de relleno el cartel se iba a 232 y el
+     de ellos mide 214. */
+  gap: 10px;
 
   /*
     EL TEXTO A LA IZQUIERDA Y LA BANDERA AL COSTADO, COMO MRLOOT.
@@ -308,7 +341,7 @@ export default {
   */
   align-items: flex-start;
   text-align: left;
-  padding: 30px 44px;
+  padding: 24px 44px;
 
   > * { position: relative; }
 
@@ -325,11 +358,12 @@ export default {
     ancho, que es donde los pone mrloot.
   */
   @include en-celular {
+    /* El alto lo pone el contenido: titulo, reloj y nada mas. */
     min-height: 0;
-    padding: 20px 18px 18px;
-    gap: 10px;
+    padding: 18px 16px;
+    gap: 8px;
 
-    h1, .mb-cartel__raya, .mb-cartel__rotulo, .mb-reloj { max-width: 64%; }
+    h1, .mb-cartel__raya, .mb-cartel__rotulo, .mb-reloj { max-width: 62%; }
 
     .mb-cartel__pozo { font-size: 34px; }
     .mb-cartel__tipo { font-size: 22px; }
@@ -341,50 +375,40 @@ export default {
   }
 }
 
-.mb-cartel__halo {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 45%, #2f6fe0 0%, #123f96 45%, #0a2560 100%);
-}
-
-.mb-cartel__rayos {
-  position: absolute;
-  inset: 0;
-  background: repeating-conic-gradient(from 0deg at 50% 45%, rgba(255, 255, 255, .07) 0deg 4deg, rgba(255, 255, 255, 0) 4deg 14deg);
-}
-
-.mb-cartel__lineas {
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(100deg, rgba(255, 255, 255, 0) 0 70px, rgba(255, 255, 255, .07) 70px 73px, rgba(255, 255, 255, 0) 73px 160px);
-}
-
 /*
-  LA BANDERA, AL COSTADO.
+  LA FOTO DE DANI, POR LA DERECHA.
 
-  Antes aca habia una foto a pantalla completa de fondo. Tapaba el azul
-  del sitio y en el telefono le pasaba por encima al reloj: "HS",
-  "MIN" y "SEG" caian sobre el blanco de una bandera.
+  Primero la puse de fondo a pantalla completa y tapaba el azul del
+  sitio; despues dibuje una bandera en SVG y, al lado de un render con
+  brillos y sombras, se notaba plana. Esto es lo que queda: la foto de
+  el, recortada a las banderas, ocupando la mitad derecha.
 
-  Ahora es lo que hace mrloot: el fondo es el azul de siempre --el halo
-  y los rayos de abajo-- y la bandera es UNA, dibujada, parada al
-  costado derecho. Ver public/img/carreras/bandera.svg.
+  El `mask-image` es lo que la hace entrar sin costura: la foto se
+  desvanece hacia la izquierda y el azul del cartel aparece por debajo,
+  justo donde va el texto. Sin eso se ve el borde de la foto como una
+  linea vertical en el medio del cartel.
 */
 .mb-cartel__bandera {
   position: absolute;
-  top: 50%;
-  right: 3%;
-  transform: translateY(-50%);
-  width: min(320px, 32%);
-  aspect-ratio: 320 / 300;
-  background: url("/img/carreras/bandera.svg") center / contain no-repeat;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 46%;
+  background: url("/img/carreras/banderas.webp") right center / cover no-repeat;
 
-  /* Mas chica y pegada arriba: abajo van los botones, a lo ancho. */
+  mask-image: linear-gradient(90deg, transparent 0%, #000 36%, #000 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 36%, #000 100%);
+
+  /*
+    En el telefono la foto entra mas tarde: el reloj llega hasta el 62%
+    del ancho y el asta de la bandera le cruzaba por encima al ultimo
+    casillero. Con el desvanecido hasta el 46% de la capa, la foto
+    empieza a verse recien pasado el reloj.
+  */
   @include en-celular {
-    top: 20px;
-    right: 10px;
-    transform: none;
-    width: 112px;
+    width: 52%;
+    mask-image: linear-gradient(90deg, transparent 0%, #000 46%, #000 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 46%, #000 100%);
   }
 }
 
@@ -435,26 +459,40 @@ export default {
 
 .mb-reloj__l { font-weight: 900; font-size: 11px; letter-spacing: .1em; color: #9cc4ff; }
 
+/*
+  EL PIE, ABAJO DEL CARTEL.
+
+  Era parte del cartel y ahora es una fila suya, pegada a la izquierda
+  igual que el titulo. Es como esta en mrloot, y de paso el cartel se
+  queda solo con lo que importa.
+*/
 .mb-cartel__pie {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  align-items: center;
   gap: 10px;
-  margin-top: 6px;
+  margin-top: 14px;
 
-  button {
-    height: 48px;
-    padding: 0 18px;
-    border-radius: 12px;
-    border: 1px solid #2a5bd0;
-    background: rgba(6, 18, 48, .72);
-    color: #fff;
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    @include foco;
-  }
+  @include en-celular { margin-top: 10px; gap: 8px; }
+}
+
+/* La rueda del signo de pregunta. */
+.mb-cartel__ayuda {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid #2a5bd0;
+  background: $panel-alto;
+  color: #c9d7f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  @include foco;
+
+  &:hover { color: #fff; border-color: #3f7ae6; }
+  @include en-celular { width: 42px; height: 42px; }
 }
 
 .mb-cartel__tabs {
