@@ -442,6 +442,12 @@ export default {
     "ruleOnce": "Бонус можно получить один раз.",
     "ruleFirst": "Действует только для первого пополнения."
   },
+  "txState": {
+    "requested": "requested",
+    "rejected": "rejected",
+    "cancelled": "cancelled",
+    "paid": "paid"
+  },
   "cashier": {
     "state": {
       "pending": "В ОЖИДАНИИ",

@@ -442,6 +442,12 @@ export default {
     "ruleOnce": "Il bonus si riscuote una sola volta.",
     "ruleFirst": "Vale solo per il primo deposito del conto."
   },
+  "txState": {
+    "requested": "richiesto",
+    "rejected": "rifiutato",
+    "cancelled": "annullato",
+    "paid": "pagato"
+  },
   "cashier": {
     "state": {
       "pending": "IN ATTESA",

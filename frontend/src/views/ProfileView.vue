@@ -283,7 +283,7 @@
                   <td class="mb-tenue">{{ fechaHora(m.createdAt) }}</td>
                   <td>
                     <b>{{ $t('txType.' + m.type) }}</b>
-                    <span v-if="m.label" class="mb-tenue"> · {{ m.label }}</span>
+                    <span v-if="m.label" class="mb-tenue"> · {{ etiqueta(m.label) }}</span>
                     <span v-if="m.reason" class="mb-tenue"> · {{ m.reason }}</span>
                   </td>
                   <td class="mb-der" :class="m.amountSc >= 0 ? 'mb-entra' : 'mb-sale'">
@@ -816,6 +816,22 @@ export default {
   },
 
   methods: {
+    /*
+      EL ESTADO DE UN MOVIMIENTO, EN EL IDIOMA DEL JUGADOR.
+
+      Los `label` de los canjes se guardan como texto plano en ingles
+      --"requested", "rejected", "cancelled"-- porque quedan escritos
+      en el libro y ese no se reescribe. Aca se traducen al mostrar,
+      y lo que no reconoce sale tal cual: asi una fila vieja, o una
+      que diga "USDT · TRC20", se sigue leyendo igual.
+    */
+    etiqueta(label) {
+      const conocidos = ["requested", "rejected", "cancelled", "paid"];
+      /* `txState.*` y no `cashier.state.*`: esas estan en mayusculas
+         porque son chapas de estado, y acá va texto corrido. */
+      return conocidos.includes(label) ? this.$t("txState." + label) : label;
+    },
+
     plata(n) {
       return Number(n || 0).toLocaleString("en-US", {
         minimumFractionDigits: 2, maximumFractionDigits: 2,

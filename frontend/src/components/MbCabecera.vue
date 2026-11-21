@@ -1259,8 +1259,19 @@ export default {
     entre ella y los iconos, que quedan contra el borde. Es como lo
     tiene mrloot.
   */
-  .mb-head__centro { flex: 0 1 auto; }
-  .mb-head__der { margin-left: auto; }
+  .mb-head__centro {
+    flex: 0 1 auto;
+    /*
+      Y UN POCO MAS AL MEDIO.
+
+      Pegada al logo quedaba toda la cabecera cargada a la izquierda
+      y el hueco entero del lado de los iconos. Con el mismo margen
+      automatico de los dos lados, el sobrante se reparte y la
+      pildora cae entre el logo y los iconos, como en mrloot.
+    */
+    margin-left: auto;
+    margin-right: auto;
+  }
 
   .mb-iconos__caja {
     border: 0;

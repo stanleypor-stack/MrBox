@@ -95,6 +95,8 @@ const CODIGOS = {
   NO_DEMOS_LEFT: "You have used your free demo opens.",
 
   /* El borrador de soporte. Son del panel, no los ve un jugador. */
+  FILE_NOT_FOUND: "That file is not on this submission any more.",
+
   AI_OFF: "The support assistant is off: no API key is configured.",
   AI_REFUSED: "The model declined to draft a reply to this one.",
   AI_BAD_OUTPUT: "The model answered with something that is not a draft.",

@@ -337,6 +337,10 @@ T = {
  "wallet.codeOn":     {"en":"{code} is on: +{pct}% on every purchase.","de":"{code} ist aktiv: +{pct}% auf jeden Kauf.","fr":"{code} est actif : +{pct}% sur chaque achat.","es":"{code} quedó activo: +{pct}% en cada compra.","pt":"{code} está ativo: +{pct}% em cada compra.","it":"{code} è attivo: +{pct}% su ogni acquisto.","ru":"{code} активирован: +{pct}% к каждой покупке.","ja":"{code} が有効になりました。購入ごとに +{pct}%。","zh":"{code} 已生效：每次购买 +{pct}%。"},
  "wallet.max":         {"en":"Max","de":"Max","fr":"Max","es":"Todo","pt":"Tudo","it":"Max","ru":"Всё","ja":"全額","zh":"全部"},
 
+ "txState.requested":       {"en":"requested","de":"beantragt","fr":"demandé","es":"pedido","pt":"pedido","it":"richiesto","ru":"requested","ja":"requested","zh":"requested"},
+ "txState.rejected":        {"en":"rejected","de":"abgelehnt","fr":"refusé","es":"rechazado","pt":"recusado","it":"rifiutato","ru":"rejected","ja":"rejected","zh":"rejected"},
+ "txState.cancelled":       {"en":"cancelled","de":"storniert","fr":"annulé","es":"cancelado","pt":"cancelado","it":"annullato","ru":"cancelled","ja":"cancelled","zh":"cancelled"},
+ "txState.paid":            {"en":"paid","de":"bezahlt","fr":"payé","es":"pagado","pt":"pago","it":"pagato","ru":"paid","ja":"paid","zh":"paid"},
  "cashier.state.pending":  {"en":"WAITING","de":"WARTET","fr":"EN ATTENTE","es":"EN ESPERA","pt":"AGUARDANDO","it":"IN ATTESA","ru":"В ОЖИДАНИИ","ja":"確認待ち","zh":"等待中"},
  "cashier.state.approved": {"en":"APPROVED","de":"GENEHMIGT","fr":"APPROUVÉ","es":"APROBADO","pt":"APROVADO","it":"APPROVATO","ru":"ОДОБРЕНО","ja":"承認済み","zh":"已批准"},
  "cashier.state.paid":     {"en":"PAID","de":"BEZAHLT","fr":"PAYÉ","es":"PAGADO","pt":"PAGO","it":"PAGATO","ru":"ВЫПЛАЧЕНО","ja":"支払済み","zh":"已支付"},

@@ -180,21 +180,33 @@
 
           <p v-if="!Object.keys(detalle.datos || {}).length" class="ad-tenue">{{ $t('admin.empty') }}</p>
 
+          <!--
+            CADA ADJUNTO ES UN OBJETO, NO UN NOMBRE.
+
+            El servidor manda `{ campo, nombre, tamano }` y esto los
+            trataba como si fueran texto: el boton mostraba el JSON
+            entero y al tocarlo pedia `/files/[object Object]`, que no
+            existe. Por eso no se veia la foto y saltaba un cartel
+            rojo que ademas hablaba del inventario.
+          -->
           <div v-if="(detalle.adjuntos || []).length" class="adl__archivos">
-            <div v-for="a in detalle.adjuntos" :key="a" class="adl__archivo">
+            <div v-for="a in detalle.adjuntos" :key="a.campo" class="adl__archivo">
               <button
-                v-if="!detalle.archivos[a]" type="button" class="ad-b ad-b--chico"
-                @click="verArchivo(a)"
-              >{{ a }}</button>
+                v-if="!detalle.archivos[a.campo]" type="button" class="ad-b ad-b--chico"
+                @click="verArchivo(a.campo)"
+              >
+                {{ a.nombre || a.campo }}
+                <span v-if="a.tamano" class="ad-tenue">{{ enKb(a.tamano) }}</span>
+              </button>
 
               <template v-else>
-                <span class="ad-tenue">{{ detalle.archivos[a].nombre || a }}</span>
+                <span class="ad-tenue">{{ detalle.archivos[a.campo].nombre || a.campo }}</span>
                 <img
-                  v-if="esImagen(detalle.archivos[a].contenido)"
-                  :src="detalle.archivos[a].contenido" :alt="a"
+                  v-if="esImagen(detalle.archivos[a.campo].contenido)"
+                  :src="detalle.archivos[a.campo].contenido" :alt="a.campo"
                 >
-                <a v-else :href="detalle.archivos[a].contenido" target="_blank" rel="noopener">
-                  {{ detalle.archivos[a].nombre || a }}
+                <a v-else :href="detalle.archivos[a.campo].contenido" target="_blank" rel="noopener">
+                  {{ detalle.archivos[a.campo].nombre || a.campo }}
                 </a>
               </template>
             </div>
@@ -441,6 +453,13 @@ export default {
     /* Lo que se puede dibujar: lo demas se abre aparte. */
     esImagen(contenido) {
       return typeof contenido === "string" && contenido.startsWith("data:image/");
+    },
+
+    /* El peso del adjunto, para saber antes de tocarlo si es una foto
+       de verdad o un archivo de cuatro bytes que no va a servir. */
+    enKb(bytes) {
+      const n = Number(bytes) || 0;
+      return n < 1024 ? `${n} B` : `${Math.round(n / 1024)} KB`;
     },
 
     /** Una foto, que tambien se pide de a una y tambien queda anotada. */

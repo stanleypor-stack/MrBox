@@ -442,6 +442,12 @@ export default {
     "ruleOnce": "奖励只能领取一次。",
     "ruleFirst": "仅适用于账户首次充值。"
   },
+  "txState": {
+    "requested": "requested",
+    "rejected": "rejected",
+    "cancelled": "cancelled",
+    "paid": "paid"
+  },
   "cashier": {
     "state": {
       "pending": "等待中",

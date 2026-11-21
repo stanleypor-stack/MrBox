@@ -81,9 +81,11 @@
           :bono="bonoDeBienvenida" :desde="desdeCuando" @depositar="alDepositar"
         />
 
-        <p class="mb-caja__nota">
-          {{ lado === 'in' ? $t('wallet.depositNote') : $t('wallet.withdrawNote') }}
-        </p>
+        <!-- La del deposito se queda: explica que la acreditacion la
+             dispara la red y no nosotros, que es lo que mas se
+             pregunta. La del canje se fue: decia lo que ya dice la
+             fila del movimiento cuando el canje pasa a aprobado. -->
+        <p v-if="lado === 'in'" class="mb-caja__nota">{{ $t('wallet.depositNote') }}</p>
       </div>
 
       <!-- ── Depositar ────────────────────────────────────────────── -->
@@ -479,23 +481,18 @@
             </button>
           </form>
 
-          <!-- Los pedidos que ya hizo -->
-          <div v-if="pedidos.length" class="mb-caja__lista">
-            <span class="mb-caja__lista-t">{{ $t('wallet.yourRequests') }}</span>
-            <div v-for="p in pedidos" :key="p._id" class="mb-caja__pedido">
-              <span class="mb-caja__pedido-a">
-                <b><span class="mb-sc mb-sc--14" aria-hidden="true">SC</span>{{ plata(p.montoSc) }}</b>
-                <span class="mb-tenue">{{ p.moneda }} · {{ p.red }}</span>
-              </span>
-              <span class="mb-caja__pedido-b">
-                <span class="mb-caja__chapa" :class="'is-' + p.estado">{{ $t('cashier.state.' + p.estado) }}</span>
-                <button
-                  v-if="p.estado === 'pending'" type="button" class="mb-caja__cancelar"
-                  @click="cancelar(p)"
-                >{{ $t('action.cancel') }}</button>
-              </span>
-            </div>
-          </div>
+          <!--
+            LOS CANJES YA HECHOS NO VAN ACA.
+
+            Estaban repetidos: la misma informacion esta en el perfil,
+            en Movimientos, con la fecha y el saldo despues de cada
+            uno. Dos listas de lo mismo se desincronizan en cuanto una
+            se actualiza y la otra no.
+
+            El unico boton que se pierde es el de cancelar un pedido
+            pendiente. Esta anotado para moverlo: por ahora se cancela
+            escribiendole a soporte.
+          -->
         </template>
 
         <p v-else class="mb-caja__nota">{{ $t('common.loading') }}</p>
@@ -559,7 +556,6 @@ export default {
          el cajon: ver `avisarQueVioElBono`. */
       bonoDesde: null,
       canje: null,
-      pedidos: [],
       qr: "",
       /* El del enlace de pago, que es otro: lleva monto y moneda. */
       qrDePago: "",
@@ -1140,12 +1136,10 @@ export default {
     async traerCanje() {
       if (!this.entro) return;
       try {
-        const [antes, mios] = await Promise.all([
-          api.get("/wallet/withdraw"),
-          api.get("/wallet/withdrawals"),
-        ]);
-        this.canje = antes.data.data;
-        this.pedidos = mios.data.data.items;
+        /* Ya no se piden los canjes hechos: esa lista vive en el
+           perfil, en Movimientos. */
+        const { data } = await api.get("/wallet/withdraw");
+        this.canje = data.data;
         if (!this.monedas.length) this.monedas = this.canje.monedas;
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
@@ -1254,15 +1248,6 @@ export default {
       }
     },
 
-    async cancelar(p) {
-      try {
-        const { data } = await api.post(`/wallet/withdrawals/${p._id}/cancel`);
-        this.$store.commit("saldo", data.data);
-        await this.traerCanje();
-      } catch (err) {
-        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
-      }
-    },
   },
 
   async created() {
@@ -1953,51 +1938,6 @@ export default {
   cursor: pointer;
   @include foco;
   &:disabled { opacity: .5; cursor: default; }
-}
-
-.mb-caja__lista { display: flex; flex-direction: column; gap: 8px; }
-.mb-caja__lista-t { font-weight: 900; font-size: 14px; }
-
-.mb-caja__pedido {
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: $panel-alto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 13px;
-}
-
-.mb-caja__pedido-a { display: flex; flex-direction: column; gap: 2px; b { display: flex; align-items: center; gap: 5px; } }
-.mb-caja__pedido-b { display: flex; align-items: center; gap: 8px; }
-
-.mb-caja__chapa {
-  padding: 3px 9px;
-  border-radius: 8px;
-  background: #24365e;
-  color: $texto-3;
-  font-weight: 900;
-  font-size: 11px;
-
-  &.is-pending { background: rgba(255, 211, 90, .16); color: $amarillo; }
-  &.is-approved { background: rgba(63, 124, 240, .18); color: #9fc0ff; }
-  &.is-paid { background: rgba(93, 255, 176, .14); color: $verde; }
-  &.is-rejected { background: rgba(255, 91, 107, .14); color: #ff9aa5; }
-}
-
-.mb-caja__cancelar {
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 8px;
-  border: 1px solid #ff5b6b;
-  background: transparent;
-  color: #ff9aa5;
-  font-family: inherit;
-  font-weight: 800;
-  font-size: 12px;
-  cursor: pointer;
-  @include foco;
 }
 
 .mb-tenue { color: $texto-4; }

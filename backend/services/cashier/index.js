@@ -315,7 +315,21 @@ async function pedirCanje({ user, montoSc, ticker, red, direccion }) {
       /* Lo canjeable lo vuelve a mirar la base al descontar: el control
          de arriba no sobrevive a dos pedidos al mismo tiempo. */
       soloCanjeable: true,
-      reference: { kind: "redemption", id: pedido._id, label: `${par.moneda.ticker} · ${par.red.clave}` },
+      /*
+        EL `label` ES EL ESTADO; LA MONEDA VA EN `reason`.
+
+        Antes el pedido se anotaba con la moneda en el `label`, y en
+        Movimientos se leia "Redemption · USDT · TRC20" mientras que
+        el rechazo decia "Redemption · rejected". Dos filas de lo
+        mismo que no se parecian, y en ninguna se veia que la primera
+        era el PEDIDO.
+
+        Ahora las tres usan el mismo lugar para el estado --requested,
+        rejected, cancelled-- y la moneda baja a `reason`, que es
+        donde el rechazo ya pone su motivo.
+      */
+      reason: `${par.moneda.ticker} · ${par.red.clave}`,
+      reference: { kind: "redemption", id: pedido._id, label: "requested" },
     });
   } catch (err) {
     /* No se pudo cobrar: el pedido no existe. Mejor borrarlo que

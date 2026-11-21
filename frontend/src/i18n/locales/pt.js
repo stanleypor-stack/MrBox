@@ -442,6 +442,12 @@ export default {
     "ruleOnce": "O bônus pode ser resgatado uma vez.",
     "ruleFirst": "Vale apenas para o primeiro depósito da conta."
   },
+  "txState": {
+    "requested": "pedido",
+    "rejected": "recusado",
+    "cancelled": "cancelado",
+    "paid": "pago"
+  },
   "cashier": {
     "state": {
       "pending": "AGUARDANDO",

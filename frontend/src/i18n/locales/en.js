@@ -442,6 +442,12 @@ export default {
     "ruleOnce": "The bonus can be claimed once.",
     "ruleFirst": "It applies only to the first deposit on the account."
   },
+  "txState": {
+    "requested": "requested",
+    "rejected": "rejected",
+    "cancelled": "cancelled",
+    "paid": "paid"
+  },
   "cashier": {
     "state": {
       "pending": "WAITING",

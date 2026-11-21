@@ -442,6 +442,12 @@ export default {
     "ruleOnce": "ボーナスの受け取りは1回だけです。",
     "ruleFirst": "アカウント初回の入金のみが対象です。"
   },
+  "txState": {
+    "requested": "requested",
+    "rejected": "rejected",
+    "cancelled": "cancelled",
+    "paid": "paid"
+  },
   "cashier": {
     "state": {
       "pending": "確認待ち",

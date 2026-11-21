@@ -442,6 +442,12 @@ export default {
     "ruleOnce": "El bono se puede reclamar una sola vez.",
     "ruleFirst": "Se aplica únicamente al primer depósito de la cuenta."
   },
+  "txState": {
+    "requested": "pedido",
+    "rejected": "rechazado",
+    "cancelled": "cancelado",
+    "paid": "pagado"
+  },
   "cashier": {
     "state": {
       "pending": "EN ESPERA",

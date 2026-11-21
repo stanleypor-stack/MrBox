@@ -864,8 +864,16 @@ router.get("/verification/:id/files/:campo", async (req, res) => {
       .lean();
     if (!v) throw errorDe("ITEM_NOT_FOUND", {}, 404);
 
+    /*
+      `FILE_NOT_FOUND` Y NO `ITEM_NOT_FOUND`.
+
+      El segundo dice "ese objeto no esta en tu inventario", que es un
+      mensaje para un jugador mirando sus premios. Al del equipo
+      mirando la foto de un documento le decia eso mismo, y no se
+      entendia que lo que fallaba era el archivo.
+    */
     const archivo = (v.archivos || []).find((a) => a.campo === req.params.campo);
-    if (!archivo) throw errorDe("ITEM_NOT_FOUND", {}, 404);
+    if (!archivo) throw errorDe("FILE_NOT_FOUND", { campo: req.params.campo }, 404);
 
     await admin.anotar({
       admin: req.user,

@@ -442,6 +442,12 @@ export default {
     "ruleOnce": "Der Bonus kann einmal eingelöst werden.",
     "ruleFirst": "Gilt nur für die erste Einzahlung des Kontos."
   },
+  "txState": {
+    "requested": "beantragt",
+    "rejected": "abgelehnt",
+    "cancelled": "storniert",
+    "paid": "bezahlt"
+  },
   "cashier": {
     "state": {
       "pending": "WARTET",
