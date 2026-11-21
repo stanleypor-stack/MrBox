@@ -78,6 +78,33 @@ const userSchema = new mongoose.Schema(
     jugadoSc: { type: Number, default: 0 },
 
     /*
+      LO QUE COMPRO DE VERDAD, DE TODA LA VIDA DE LA CUENTA.
+
+      Sube solo con un movimiento `purchase` y nunca baja. No es lo
+      mismo que el saldo ni que lo jugado: un jugador puede tener SC
+      5.000 sin haber comprado nada --premios de carrera, codigos,
+      bonos, aperturas de regalo-- y hasta ahora no habia forma barata
+      de distinguirlo sin sumar el libro entero.
+
+      Existe para una sola cosa: la comision del socio se paga sobre lo
+      que entro, no sobre lo que la casa regalo. Ver `anotarComision`.
+    */
+    compradoSc: { type: Number, default: 0 },
+
+    /*
+      CUANTO DE ESE MARGEN YA SE LE PASO AL SOCIO.
+
+      Va de la mano del de arriba: lo comisionable es lo comprado menos
+      esto. Sin llevar la cuenta, el tope se aplicaria entero otra vez
+      en cada apertura y no serviria de nada.
+
+      Puede bajar: una apertura de margen negativo --se llevo algo mas
+      caro que la caja-- devuelve cupo, porque esa plata volvio al
+      jugador.
+    */
+    margenDeAfiliadoSc: { type: Number, default: 0 },
+
+    /*
       LA PARTE DEL SALDO QUE ES BONO Y TODAVIA NO SE JUGO.
 
       MR BOX no tiene rollover: lo que comprás lo usás enseguida. Pero el

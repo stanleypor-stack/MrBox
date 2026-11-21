@@ -768,6 +768,22 @@ export default {
   grid-template-columns: minmax(min-content, 1fr) minmax(0, auto) minmax(min-content, 1fr);
   align-items: center;
   gap: 10px;
+
+  /*
+    EN EL TELEFONO LAS PUNTAS NO RESERVAN DE MAS.
+
+    Con `1fr` a los dos lados, la columna de la izquierda --que en el
+    telefono es una flechita de 32 px-- se reservaba tanto ancho como
+    la de los tres botones. Esos ~110 px de aire muerto salian del
+    medio, y "PACK RIPPER" terminaba en "PACK RIPP...".
+
+    Con `min-content` a los costados, cada punta ocupa lo suyo y el
+    nombre se queda con todo lo que sobra. Sigue centrado entre la
+    flecha y los botones porque lo centra `__quien`.
+  */
+  @include en-celular {
+    grid-template-columns: min-content minmax(0, 1fr) min-content;
+  }
 }
 
 .mb-abrir__volver {
@@ -797,9 +813,23 @@ export default {
   width: 46px;
   height: 46px;
   flex: none;
-  /* En un telefono la tapita se va: abajo esta la caja entera, y esos
-     46 px son los que le faltaban al nombre para entrar sin puntitos. */
-  @include en-celular { display: none; }
+
+  /*
+    EN EL TELEFONO TAMBIEN, PERO CHICA.
+
+    Antes aca habia un `display: none`: la tapita se iba del todo para
+    que el nombre entrara sin puntitos. El resultado era un titulo
+    suelto en una barra vacia, sin decir de que caja se trata hasta
+    bajar.
+
+    Y el lugar estaba: en el telefono el boton de volver es una
+    flechita sola, asi que la columna de la izquierda ya sobra. Con 32
+    px --dos tercios-- entra la caja y el nombre sigue sin recortarse.
+  */
+  @include en-celular {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 /* La dibujada ocupa el mismo lugar que la lamina de las de la casa.
@@ -808,7 +838,19 @@ export default {
   width: 58px;
   height: 46px;
   flex: none;
-  @include en-celular { display: none; }
+
+  /* Igual que la lamina, guardando la proporcion de la isometrica. */
+  @include en-celular {
+    width: 40px;
+    height: 32px;
+  }
+}
+
+@include en-celular {
+  /* Pegadas: con los 10 px de la version de escritorio, la caja y el
+     nombre se leen como dos cosas y no como una. Y centradas en el
+     hueco que queda entre la flecha y los botones. */
+  .mb-abrir__quien { gap: 7px; justify-content: center; }
 }
 
 .mb-abrir__quien h1 {
@@ -886,7 +928,30 @@ export default {
   &.is-on { background: $amarillo-v; }
 }
 
-.mb-abrir__botones { justify-self: end; display: flex; gap: 8px; }
+.mb-abrir__botones {
+  justify-self: end;
+  display: flex;
+  gap: 8px;
+
+  /*
+    MAS CHICOS EN EL TELEFONO.
+
+    Los tres de 44 px mas sus huecos se llevan 148 de los 375 de
+    ancho. Con la caja ya puesta al lado del nombre, lo que sobraba
+    para el titulo no alcanzaba ni para "PACK RIPPER". A 38 px se
+    recuperan 24 px, que es justo lo que faltaba, y siguen bien por
+    encima de los 24 que pide un objetivo tactil comodo.
+  */
+  @include en-celular {
+    gap: 6px;
+
+    .mb-cuadrado {
+      width: 38px;
+      height: 38px;
+      border-radius: 9px;
+    }
+  }
+}
 
 .mb-justo {
   margin: 0;

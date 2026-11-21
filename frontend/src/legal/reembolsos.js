@@ -27,7 +27,7 @@ export const TEXTO = [
 
   /* ── 2 ─────────────────────────────────────────────────────────── */
   h("2. When we do refund"),
-  p("Write to [[EMAIL DE SOPORTE]] in any of these cases and we will put it right:"),
+  p("Write to support@mrbox.gg in any of these cases and we will put it right:"),
   li([
     "You were charged twice for the same purchase.",
     "You were charged and no SC arrived.",

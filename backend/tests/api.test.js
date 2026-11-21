@@ -361,6 +361,13 @@ test("la comision del socio sale del MARGEN, no de lo jugado", async (t) => {
   const { datos } = await pedir("POST", "/auth/register", {
     cuerpo: cuentaNueva({ affiliateCode: "MARGEN" }),
   });
+  /*
+    Y COMPRO: la comision se paga sobre lo que el referido puso de su
+    bolsillo, no sobre lo que la casa le regalo. Sin esto el margen
+    comisionable seria cero y esta prueba mediria el tope, que tiene
+    la suya aparte, en vez del porcentaje del modelo.
+  */
+  await User.updateOne({ _id: datos.user._id }, { $set: { compradoSc: 10000 } });
   const jugador = await User.findById(datos.user._id).lean();
 
   /* Jugo SC 1.000 en cajas al 92%: el margen son SC 80. */

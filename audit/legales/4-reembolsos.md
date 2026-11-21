@@ -23,7 +23,7 @@ This does not affect your rights if something we sell you is faulty, or if a cha
 
 ## 2. When we do refund
 
-Write to [[EMAIL DE SOPORTE]] in any of these cases and we will put it right:
+Write to support@mrbox.gg in any of these cases and we will put it right:
 
 - You were charged twice for the same purchase.
 - You were charged and no SC arrived.
@@ -75,5 +75,4 @@ If we credit you SC, an item or a benefit by mistake, it stays ours and we may t
 Cada uno de estos aparece en el texto escrito `[[así]]`. Son decisiones
 del titular del sitio y de su abogado.
 
-- **EMAIL DE SOPORTE** — 1 vez
 - **PLAZO DEL EMISOR** — 1 vez

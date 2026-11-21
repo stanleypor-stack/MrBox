@@ -155,6 +155,21 @@ async function mover({
     cambios.$inc.bonoPendienteSc = sc((cambios.$inc.bonoPendienteSc || 0) - juegaSc);
   }
 
+  /*
+    LO COMPRADO, APARTE.
+
+    Es el unico lugar por el que entra plata comprada, asi que es el
+    unico lugar donde puede llevarse la cuenta sin que se escape nada.
+    Se usa para una cosa sola: la comision del socio se paga sobre lo
+    que entro y no sobre lo que la casa regalo (ver `anotarComision`).
+
+    `monto > 0` ademas del tipo: un `purchase` en negativo seria una
+    devolucion, y una devolucion no es una compra.
+  */
+  if (type === "purchase" && monto > 0) {
+    cambios.$inc.compradoSc = sc(monto);
+  }
+
   const sesion = (await hayTransacciones())
     ? await mongoose.startSession()
     : null;

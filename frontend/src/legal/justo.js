@@ -75,7 +75,7 @@ export const TEXTO = [
 
   /* ── 8 ─────────────────────────────────────────────────────────── */
   h("8. If the numbers do not match"),
-  p("Write to us at [[EMAIL DE SOPORTE]] with the opening, the seeds and the nonce. If you can show that a result does not reconcile, that is a bug on our side and we will tell you what happened and put it right."),
+  p("Write to us at support@mrbox.gg with the opening, the seeds and the nonce. If you can show that a result does not reconcile, that is a bug on our side and we will tell you what happened and put it right."),
 ];
 
 export default { ACTUALIZADO, TEXTO };

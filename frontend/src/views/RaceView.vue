@@ -288,19 +288,51 @@ export default {
   overflow: hidden;
   border-radius: 22px;
   /*
-    LISO, Y DEL COLOR DE LA FOTO.
+    EL MISMO DEGRADE QUE LA FOTO, PARA QUE NO HAYA COSTURA.
 
-    Medido sobre la foto de Dani: su mitad vacia es #1c242c de punta a
-    punta --las cinco alturas y las cinco columnas dan el mismo
-    numero-- asi que el cartel usa ese color y la foto entra sin que se
-    note donde empieza.
+    Estaba en un #1c242c liso. Ese numero salio de medir la foto en
+    cinco puntos, y la medicion fue pobre: la foto NO es lisa, tiene un
+    degrade vertical que va de un azul casi negro arriba a un azul
+    medio abajo. El liso empataba solo con la franja de arriba, asi que
+    la mitad izquierda se veia apagada y aparecia una linea donde
+    empezaba la foto.
 
-    Antes aca habia un degrade azul fuerte con rayos en abanico y
-    lineas diagonales encima. Era del cartel viejo, cuando el cartel
-    era todo fondo; al lado de la foto se veia como un parche.
+    Estos nueve pasos son el borde izquierdo de la foto medido cada
+    12,5% de alto. Con el degrade igual, el azul cruza el cartel entero
+    y no se ve donde termina el fondo y empieza la imagen.
+
+    Antes de todo esto habia un degrade azul fuerte con rayos en
+    abanico. Era del cartel viejo, cuando el cartel era todo fondo.
   */
-  background: #1c242c;
-  border: 1px solid #27354a;
+  background:
+    /*
+      EL RESPLANDOR DE LA FOTO, SEGUIDO HACIA LA IZQUIERDA.
+
+      La foto tiene un halo azul detras de las banderas --#5398f7, lo
+      mas fuerte a un 80% de su ancho-- y se cortaba justo donde
+      terminaba la imagen. Repetirlo en el fondo, centrado un poco mas
+      adentro, hace que el azul cruce el cartel entero en vez de
+      quedarse de un lado.
+    */
+    radial-gradient(125% 150% at 64% 26%,
+      rgba(83, 152, 247, .40) 0%,
+      rgba(83, 152, 247, .16) 44%,
+      rgba(83, 152, 247, 0) 72%),
+    /* Y abajo el borde izquierdo de la foto, medido cada 12,5% de
+       alto, para que el empalme no se note a ninguna altura. */
+    linear-gradient(
+      180deg,
+      #1d2737 0%,
+      #1e2833 12.5%,
+      #202c38 25%,
+      #233043 37.5%,
+      #253a55 50%,
+      #2c466b 62.5%,
+      #2f517e 75%,
+      #335a8f 87.5%,
+      #37629e 100%
+    );
+  border: 1px solid rgba(255, 255, 255, .07);
   /* 214px en pantalla, que es el alto del de mrloot. Medido en el
      suyo, al lado del nuestro. El nuestro media 330. */
   min-height: calc(214px / var(--escala, 1));

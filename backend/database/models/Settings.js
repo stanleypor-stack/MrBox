@@ -476,7 +476,7 @@ const settingsSchema = new mongoose.Schema(
        * puede tener el suyo (`nombreDeSoporte` en su cuenta) y ese
        * gana: asi "Martin" firma Martin y el resto firma con esto.
        */
-      firma: { type: String, default: "Soporte", trim: true, maxlength: 40 },
+      firma: { type: String, default: "MrBox Support", trim: true, maxlength: 40 },
 
       borradorDeIa: { type: Boolean, default: true },
 

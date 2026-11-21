@@ -110,7 +110,7 @@ function sortearAMano(semillaServidor, semillaCliente, nonce, premios) {
   const marca = `poc${String(Date.now()).slice(-8)}`;
   const creados = { users: [], codigos: [] };
 
-  async function jugadorNuevo(nombre, saldoSc, codigo) {
+  async function jugadorNuevo(nombre, saldoSc, codigo, comprando = false) {
     const u = await User.create({
       username: `${marca}_${nombre}`,
       email: `${marca}_${nombre}@mrbox.local`,
@@ -121,8 +121,12 @@ function sortearAMano(semillaServidor, semillaCliente, nonce, premios) {
     });
     creados.users.push(u._id);
     if (saldoSc > 0) {
+      /*
+        `manual` y no `purchase` a proposito: es saldo REGALADO. Para
+        que cuente como comprado hay que pedirlo con `comprando`.
+      */
       await wallet.mover({
-        userId: u._id, amountSc: saldoSc, type: "manual",
+        userId: u._id, amountSc: saldoSc, type: comprando ? "purchase" : "manual",
         reference: { kind: "poc", label: "saldo de prueba" },
       });
     }
@@ -253,7 +257,8 @@ function sortearAMano(semillaServidor, semillaCliente, nonce, premios) {
     });
     creados.codigos.push(codigo._id);
 
-    const traido = await jugadorNuevo("traido", 3000, codigo.code);
+    /* Este COMPRO sus SC: su margen si se comisiona. */
+    const traido = await jugadorNuevo("traido", 3000, codigo.code, true);
 
     let margenReal = 0;
     let abiertas = 0;
@@ -318,25 +323,90 @@ function sortearAMano(semillaServidor, semillaCliente, nonce, premios) {
     bien((cpa.margenPendienteSc || 0) === 0, "cpa no acumula pozo de margen");
     bien(CERCA(cpa.jugadoPorLosSuyosSc || 0, 1000, 0.01), "pero si le cuenta lo jugado");
 
-    /* ══ 10. DE DONDE SALIO LA PLATA ════════════════════════════════ */
-    console.log("\n10. CON QUE PLATA SE GENERO LA COMISION\n");
+    /* ══ 10. SOLO SOBRE LO QUE COMPRO ══════════════════════════════ */
+    console.log("\n10. LA COMISION SE PAGA SOLO SOBRE LO QUE EL JUGADOR COMPRO\n");
 
+    /*
+      Dos referidos del mismo socio, con la misma plata y las mismas
+      aperturas. La unica diferencia es de donde salio el saldo: uno lo
+      compro y al otro se lo regalo la casa.
+    */
     const compras = await BalanceTransaction.aggregate([
       { $match: { user: traido._id, type: "purchase" } },
       { $group: { _id: null, t: { $sum: "$amountSc" } } },
     ]);
     const comprado = compras.length ? compras[0].t : 0;
-    const codFinal = await AffiliateCode.findById(codigo._id).lean();
+    const codTrasCompra = await AffiliateCode.findById(codigo._id).lean();
 
-    console.log(`      el traido compro      : ${comprado.toFixed(2)} SC`);
-    console.log(`      el socio tiene anotado: ${(codFinal.ganadoSc || 0).toFixed(2)} SC`);
+    console.log(`      EL QUE COMPRO`);
+    console.log(`        compro            : ${comprado.toFixed(2)} SC`);
+    console.log(`        el socio tiene    : ${(codTrasCompra.ganadoSc || 0).toFixed(2)} SC`);
+    bien(comprado > 0 && (codTrasCompra.ganadoSc || 0) > 0,
+      "el que compro SI le genera comision a su socio");
 
-    const conRegalado = comprado === 0 && (codFinal.ganadoSc || 0) > 0;
-    console.log(`\n      ${conRegalado ? "ASI ES" : "no pasa"}: se genera comision con saldo que la casa REGALO.`);
-    console.log("      No es un error de codigo: es una decision de negocio sin tomar.");
-    console.log("      Hoy el margen que se reparte no descuenta bonos, premios de");
-    console.log("      carrera ni aperturas de regalo, asi que un socio puede cobrar");
-    console.log("      en efectivo sobre plata que nunca entro a la casa.");
+    /* Y ahora el regalado, con su propio codigo para no mezclar. */
+    const socio2 = await jugadorNuevo("socio2", 0);
+    await User.updateOne({ _id: socio2._id }, { $set: { rangoAfiliado: 1 } });
+    const cod2 = await AffiliateCode.create({
+      owner: socio2._id, code: `${marca}RG`.toUpperCase().slice(0, 20),
+      modelo: "revshare", activa: true,
+    });
+    creados.codigos.push(cod2._id);
+
+    /* Mismo saldo, pero REGALADO: no pasa por `purchase`. */
+    const regalado = await jugadorNuevo("regalado", 3000, cod2.code, false);
+
+    let margenDelRegalado = 0;
+    let aperturasDelRegalado = 0;
+    for (let i = 0; i < 14; i += 1) {
+      const fresco = await User.findById(regalado._id).select("+balanceSc");
+      if ((fresco.balanceSc || 0) < caja.priceSc) break;
+      await cajas.abrir({ user: fresco, slug: caja.slug, veces: 1 });
+      aperturasDelRegalado += 1;
+      const ultimo = await BoxOpen.findOne({ user: regalado._id }).sort("-nonce").lean();
+      margenDelRegalado += ultimo.priceSc - ultimo.premio.valueSc;
+    }
+
+    const codRegalo = await AffiliateCode.findById(cod2._id).lean();
+    const suyo = await User.findById(regalado._id).select("compradoSc margenDeAfiliadoSc").lean();
+
+    console.log(`\n      EL QUE NO COMPRO NADA`);
+    console.log(`        compro            : ${(suyo.compradoSc || 0).toFixed(2)} SC`);
+    console.log(`        aperturas         : ${aperturasDelRegalado}`);
+    console.log(`        margen que dejo   : ${margenDelRegalado.toFixed(2)} SC`);
+    console.log(`        el socio tiene    : ${(codRegalo.ganadoSc || 0).toFixed(2)} SC`);
+
+    bien((suyo.compradoSc || 0) === 0, "no compro nada");
+    bien(margenDelRegalado > 0, "pero jugo y le dejo margen a la casa");
+    bien((codRegalo.ganadoSc || 0) === 0,
+      "Y SU SOCIO NO COBRA UN PESO: la comision sale de lo comprado, no de lo regalado");
+    bien((codRegalo.margenPendienteSc || 0) === 0,
+      "ese margen ni siquiera entra al pozo");
+    bien((suyo.margenDeAfiliadoSc || 0) <= 0,
+      "y el tope de la cuenta nunca sube de cero");
+
+    /* ══ 11. UNA PERDIDA SI PASA ENTERA ════════════════════════════ */
+    console.log("\n11. PERO UNA PERDIDA DE LA CASA SI CUENTA, AUNQUE NO HAYA COMPRADO\n");
+
+    /*
+      El tope es un maximo, no un filtro en los dos sentidos. Si fuera
+      simetrico, un referido que nunca compro podria ganarle SC 5.000 a
+      la casa y el socio seguiria cobrando de sus otros referidos como
+      si nada.
+    */
+    await afiliados.anotarComision({ jugador: regalado, jugadoSc: 10, margenSc: -5000 });
+    const trasLaPerdida = await AffiliateCode.findById(cod2._id).lean();
+    bien((trasLaPerdida.margenPendienteSc || 0) < 0,
+      `la perdida deja el pozo en rojo igual (${(trasLaPerdida.margenPendienteSc || 0).toFixed(2)})`);
+
+    /* Y despues de eso, lo que gane vuelve a tapar ese rojo. */
+    await afiliados.anotarComision({ jugador: regalado, jugadoSc: 10, margenSc: 100 });
+    const despuesDeTapar = await AffiliateCode.findById(cod2._id).lean();
+    bien(CERCA(despuesDeTapar.margenPendienteSc || 0, (trasLaPerdida.margenPendienteSc || 0) + 100, 0.02),
+      "y una ganancia posterior tapa ese rojo en vez de perderse");
+    bien((despuesDeTapar.ganadoSc || 0) === 0,
+      "sin pagarle nada al socio mientras siga en rojo");
+
   } finally {
     /* No se deja basura: esto corre contra la base de desarrollo. */
     await BoxOpen.deleteMany({ user: { $in: creados.users } });

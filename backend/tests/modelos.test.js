@@ -62,7 +62,14 @@ test.after(async () => {
 let n = 0;
 
 /** Un socio con una campaña de ese modelo, y un jugador atado a ella. */
-async function armar({ modelo, rango = 1 }) {
+/*
+  `compradoSc` alto por defecto: la comision se paga sobre lo que el
+  referido COMPRO, y un referido sin compras no genera un peso. Las
+  pruebas de abajo miden los porcentajes de cada modelo, no el tope, y
+  con el campo en cero medirian siempre lo mismo: cero. El tope tiene
+  su propia prueba al final.
+*/
+async function armar({ modelo, rango = 1, compradoSc = 100000 }) {
   n += 1;
 
   const socio = await User.create({
@@ -85,6 +92,7 @@ async function armar({ modelo, rango = 1 }) {
     passwordHash: "x",
     referredBy: socio._id,
     affiliateCode: codigo.code,
+    compradoSc,
   });
 
   await AffiliateConversion.create({
@@ -438,4 +446,81 @@ test("crear una campaña: el modelo tiene que estar abierto", async (t) => {
     () => afiliados.crearCampana({ usuario: socio, code: `UNAMAS${n}`, modelo: "revshare" }),
     (err) => err.code === "TOO_MANY_CAMPAIGNS"
   );
+});
+
+/* ══ 7. El tope: solo sobre lo que el referido compro ═════════════ */
+
+test("un referido que NO compro nada no le genera un peso al socio", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  /* Saldo de premios y codigos, cero comprado. */
+  const { codigo, jugador } = await armar({ modelo: "revshare", compradoSc: 0 });
+
+  const r = await afiliados.anotarComision({ jugador, jugadoSc: 1000, margenSc: 80 });
+  assert.equal(r.ganado, 0, "el margen de saldo regalado no se comisiona");
+
+  const c = await AffiliateCode.findById(codigo._id).lean();
+  assert.equal(c.ganadoSc, 0, "al socio no se le anota nada");
+  assert.equal(c.margenPendienteSc, 0, "y ese margen ni entra al pozo");
+  assert.equal(c.jugadoPorLosSuyosSc, 1000, "pero lo jugado se cuenta igual");
+});
+
+test("el margen comisionable se corta en lo que compro, no mas", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  /* Compro SC 100 y la casa le gano SC 250: solo 100 son comisionables. */
+  const { codigo, jugador } = await armar({ modelo: "revshare", compradoSc: 100 });
+
+  const r = await afiliados.anotarComision({ jugador, jugadoSc: 3000, margenSc: 250 });
+  assert.equal(r.ganado, 35, "35% de 100, no de 250");
+
+  /* Y una segunda jugada ganadora ya no aporta: el cupo se agoto. */
+  const otra = await afiliados.anotarComision({ jugador, jugadoSc: 500, margenSc: 90 });
+  assert.equal(otra.ganado, 0, "el cupo estaba gastado");
+
+  const c = await AffiliateCode.findById(codigo._id).lean();
+  assert.equal(c.ganadoSc, 35);
+
+  const u = await User.findById(jugador._id).lean();
+  assert.equal(u.margenDeAfiliadoSc, 100, "el acumulado no pasa de lo comprado");
+});
+
+test("una perdida de la casa cuenta entera, aunque el referido no haya comprado", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  /*
+    El tope es un maximo, no un filtro simetrico. Si frenara tambien lo
+    negativo, un referido sin compras podria llevarse un premio gordo y
+    el socio seguiria cobrando de sus otros referidos como si nada.
+  */
+  const { codigo, jugador } = await armar({ modelo: "revshare", compradoSc: 0 });
+
+  await afiliados.anotarComision({ jugador, jugadoSc: 50, margenSc: -400 });
+
+  const c = await AffiliateCode.findById(codigo._id).lean();
+  assert.equal(c.margenPendienteSc, -400, "la perdida deja el pozo en rojo igual");
+  assert.equal(c.ganadoSc, 0);
+
+  const u = await User.findById(jugador._id).lean();
+  assert.equal(u.margenDeAfiliadoSc, -400, "y le devuelve cupo, porque esa plata volvio");
+});
+
+test("comprar despues de perder vuelve a abrir el cupo", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  const { codigo, jugador } = await armar({ modelo: "revshare", compradoSc: 200 });
+
+  /* Gasta todo el cupo. */
+  await afiliados.anotarComision({ jugador, jugadoSc: 1000, margenSc: 200 });
+  let c = await AffiliateCode.findById(codigo._id).lean();
+  assert.equal(c.ganadoSc, 70, "35% de 200");
+
+  /* Compra otros 200: el cupo se renueva por ese monto. */
+  await wallet.mover({ userId: jugador._id, amountSc: 200, type: "purchase" });
+  const masRico = await User.findById(jugador._id).lean();
+  assert.equal(masRico.compradoSc, 400, "la compra sube el contador");
+
+  await afiliados.anotarComision({ jugador: masRico, jugadoSc: 1000, margenSc: 500 });
+  c = await AffiliateCode.findById(codigo._id).lean();
+  assert.equal(c.ganadoSc, 140, "otros 35% de 200, y no de los 500");
 });

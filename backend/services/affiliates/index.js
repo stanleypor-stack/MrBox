@@ -310,6 +310,62 @@ async function anotarComision({ jugador, jugadoSc, margenSc }) {
   const rango = rangoNumero(dueno && dueno.rangoAfiliado);
 
   /*
+    SOLO SOBRE LO QUE EL JUGADOR COMPRO.
+
+    Un referido puede juntar saldo sin poner un peso --premios de
+    carrera, codigos, bonos, aperturas de regalo-- y jugarlo. Eso
+    generaba margen contable, y el socio cobraba en efectivo sobre
+    plata que nunca entro a la casa. No era un error de cuenta: era una
+    regla que faltaba.
+
+    La regla: a lo largo de la vida de una cuenta, el margen que se le
+    pasa al socio nunca supera lo que esa cuenta COMPRO.
+
+        acumulado_nuevo = min(acumulado_viejo + margen, comprado)
+        comisionable    = acumulado_nuevo - acumulado_viejo
+
+    Sale solo en los dos casos que importan:
+
+      - compro cero: el acumulado no puede pasar de cero, asi que una
+        apertura ganadora para la casa aporta cero. El socio no cobra.
+      - perdio la casa: el margen negativo SI pasa entero --el minimo
+        no lo frena-- y deja el pozo en rojo, que es lo que evita que
+        el socio cobre de las buenas y la casa se coma sola las malas.
+
+    Se hace con un pipeline para que la base aplique el tope en el
+    mismo momento en que lee: `returnDocument: before` devuelve
+    exactamente los valores sobre los que el tope se aplico, asi que la
+    resta de aca es la que paso de verdad, sin ventana entre medio.
+  */
+  const margenPedido = sc(margenSc);
+  let margenContable = 0;
+
+  if (margenPedido !== 0) {
+    const antes = await User.findOneAndUpdate(
+      { _id: jugador._id },
+      [{
+        $set: {
+          margenDeAfiliadoSc: {
+            $min: [
+              { $add: [{ $ifNull: ["$margenDeAfiliadoSc", 0] }, margenPedido] },
+              { $ifNull: ["$compradoSc", 0] },
+            ],
+          },
+        },
+      }],
+      /* `updatePipeline` lo pide Mongoose 9 para aceptar un arreglo
+         como actualizacion; sin eso lo toma por error de tipeo. */
+      { returnDocument: "before", updatePipeline: true },
+    ).select("compradoSc margenDeAfiliadoSc").lean();
+
+    if (antes) {
+      const viejo = Number(antes.margenDeAfiliadoSc) || 0;
+      const comprado = Number(antes.compradoSc) || 0;
+      margenContable = sc(Math.min(viejo + margenPedido, comprado) - viejo);
+    }
+  }
+
+  /*
     EL MARGEN SE ACUMULA, NEGATIVO INCLUIDO.
 
     Antes el revshare se pagaba sobre el margen de ESA jugada con el
@@ -325,7 +381,7 @@ async function anotarComision({ jugador, jugadoSc, margenSc }) {
   if (codigo.modelo !== "cpa") {
     const sumado = await AffiliateCode.findOneAndUpdate(
       { _id: codigo._id },
-      { $inc: { margenPendienteSc: sc(margenSc) } },
+      { $inc: { margenPendienteSc: margenContable } },
       { new: true }
     ).select("margenPendienteSc").lean();
 

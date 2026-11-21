@@ -17,7 +17,7 @@ Please read these Terms before you use MR BOX. By creating an account, buying SC
 
 ### A. The company
 
-MR BOX is operated by [[RAZÓN SOCIAL]], registered in [[PAÍS]] under number [[Nº DE REGISTRO]], with registered address at [[DIRECCIÓN]]. In these Terms, "MR BOX", "we", "us" and "our" mean that company, and your agreement is with it. You can reach us at [[EMAIL DE SOPORTE]] or through the chat on the site.
+MR BOX is operated by [[RAZÓN SOCIAL]], registered in [[PAÍS]] under number [[Nº DE REGISTRO]], with registered address at [[DIRECCIÓN]]. In these Terms, "MR BOX", "we", "us" and "our" mean that company, and your agreement is with it. You can reach us at support@mrbox.gg or through the chat on the site.
 
 ### B. What we sell
 
@@ -59,11 +59,11 @@ You must pay with a method that belongs to you. Paying with someone else's card,
 
 Do not share your password, do not let anyone else use your account, and do not sell, lend or transfer it. Anything done from your account is treated as done by you, and we are not liable for losses caused by someone else getting in.
 
-Tell us straight away at [[EMAIL DE SOPORTE]] if you think somebody has access to your account.
+Tell us straight away at support@mrbox.gg if you think somebody has access to your account.
 
 ### D. Closing it
 
-You can close your account whenever you want, by writing to [[EMAIL DE SOPORTE]]. Before you do, redeem or ship what you have: unused SC is not refundable except as set out in section 3.D, and items left in your inventory are forfeited when the account closes.
+You can close your account whenever you want, by writing to support@mrbox.gg. Before you do, redeem or ship what you have: unused SC is not refundable except as set out in section 3.D, and items left in your inventory are forfeited when the account closes.
 
 We can suspend or close your account too. If we close it because you broke these Terms, section 16 applies and you may lose your SC and items. If we close it for any other reason, we will ship or redeem what you are owed first.
 
@@ -165,7 +165,7 @@ Delivery estimates are estimates. We aim to dispatch within 14 days of a confirm
 
 ### D. Lost, damaged or faulty
 
-If a parcel does not arrive, write to [[EMAIL DE SOPORTE]] and we will chase the carrier. If what arrives is damaged or faulty, write to us within 14 days of delivery with photographs; we may ask you to send the item back at our cost before we replace it or credit you. If the item turns out to be fine, we will send it back to you and no credit is due.
+If a parcel does not arrive, write to support@mrbox.gg and we will chase the carrier. If what arrives is damaged or faulty, write to us within 14 days of delivery with photographs; we may ask you to send the item back at our cost before we replace it or credit you. If the item turns out to be fine, we will send it back to you and no credit is due.
 
 Nothing here takes away the rights you have as a consumer where you live, including rights about goods that are faulty or not as described.
 
@@ -258,7 +258,7 @@ You must not:
 - harass other players or our staff, in chat or anywhere else
 - resell access to your account or to the site
 
-If you find a bug, tell us at [[EMAIL DE SOPORTE]] instead of using it. We would rather fix it.
+If you find a bug, tell us at support@mrbox.gg instead of using it. We would rather fix it.
 
 ## 12. Mistakes
 
@@ -270,7 +270,7 @@ Report a billing error within 30 days. After that we treat the charge as correct
 
 ## 13. Chargebacks
 
-If you think a charge is wrong, write to us first at [[EMAIL DE SOPORTE]]. We answer within 7 business days and refund to the original payment method where you are right.
+If you think a charge is wrong, write to us first at support@mrbox.gg. We answer within 7 business days and refund to the original payment method where you are right.
 
 Starting a chargeback on a purchase you authorised and received, without contacting us first, is a serious breach of these Terms. We may close the account and any connected ones, cancel the SC and items that came from the disputed payment, hold any pending shipment, and recover the amount and the fees from your balance.
 
@@ -284,7 +284,7 @@ You can set a daily spending limit or a daily loss limit on your account, or tak
 
 A limit you tighten applies immediately; a limit you loosen, and the end of a break, take effect only after a cooling-off period. We do this on purpose.
 
-If you want help, write to [[EMAIL DE SOPORTE]] and we will close your account. [[RECURSOS DE AYUDA AL JUGADOR — a definir con el abogado]]
+If you want help, write to support@mrbox.gg and we will close your account. [[RECURSOS DE AYUDA AL JUGADOR — a definir con el abogado]]
 
 ## 15. Where we do not operate
 
@@ -324,7 +324,7 @@ Nothing in these Terms takes away rights you have as a consumer that cannot be t
 
 ## 20. If something goes wrong between us
 
-Write to us first at [[EMAIL DE SOPORTE]]. We answer complaints within [[PLAZO DE RESPUESTA A RECLAMOS]] and we would rather sort it out than argue about it.
+Write to us first at support@mrbox.gg. We answer complaints within [[PLAZO DE RESPUESTA A RECLAMOS]] and we would rather sort it out than argue about it.
 
 These Terms are governed by the law of [[JURISDICCIÓN]], and the courts of [[JURISDICCIÓN]] have jurisdiction, except where the law of your country as a consumer gives you the right to go to your own courts, which it may.
 
@@ -356,7 +356,7 @@ You cannot transfer your account or this agreement. We can transfer it to a comp
 
 ### F. Notices
 
-We write to you at the email on your account, or through the site. Write to us at [[EMAIL DE SOPORTE]].
+We write to you at the email on your account, or through the site. Write to us at support@mrbox.gg.
 
 ### G. Things outside anyone's control
 
@@ -373,7 +373,6 @@ Using MR BOX, including as an affiliate or as a community-box creator, does not 
 Cada uno de estos aparece en el texto escrito `[[así]]`. Son decisiones
 del titular del sitio y de su abogado.
 
-- **EMAIL DE SOPORTE** — 9 veces
 - **JURISDICCIÓN** — 2 veces
 - **RAZÓN SOCIAL** — 1 vez
 - **PAÍS** — 1 vez

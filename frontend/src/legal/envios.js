@@ -54,7 +54,7 @@ export const TEXTO = [
   h("5. When it does not arrive"),
 
   s("A. Lost"),
-  p("If tracking stops moving or the parcel does not turn up, write to [[EMAIL DE SOPORTE]]. We open a claim with the carrier. Carriers will not treat a parcel as lost until a waiting period has passed — usually [[PLAZO PARA RECLAMO AL TRANSPORTISTA]] — so there is a wait before we can act. Once it is confirmed lost, you get the item again if we can source it, or its value in SC."),
+  p("If tracking stops moving or the parcel does not turn up, write to support@mrbox.gg. We open a claim with the carrier. Carriers will not treat a parcel as lost until a waiting period has passed — usually [[PLAZO PARA RECLAMO AL TRANSPORTISTA]] — so there is a wait before we can act. Once it is confirmed lost, you get the item again if we can source it, or its value in SC."),
 
   s("B. Damaged or faulty"),
   p("Tell us within 14 days of delivery and send photographs of the item and of the packaging. We may ask you to send it back, at our cost, before we replace it or credit you. If it turns out to be fine, we send it back and nothing is credited."),

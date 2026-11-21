@@ -57,7 +57,7 @@ Raising a limit, removing one, or ending a break early does not. It takes effect
 
 ### E. Closing the account
 
-If you want out for good, write to [[EMAIL DE SOPORTE]] and we will close the account. Before you do, redeem your balance and ship or sell what is in your inventory: once the account closes, what is left in it is gone.
+If you want out for good, write to support@mrbox.gg and we will close the account. Before you do, redeem your balance and ship or sell what is in your inventory: once the account closes, what is left in it is gone.
 
 ## 4. Under 18
 
@@ -79,7 +79,7 @@ If this stopped being a hobby, talking to somebody who is not us is worth more t
 
 [[LÍNEAS DE AYUDA POR PAÍS — a definir con el abogado. Hay que listar las de los países donde se opere, no una genérica.]]
 
-You can also write to us at [[EMAIL DE SOPORTE]]. We will set a limit, start a break or close the account for you, and we will not ask why.
+You can also write to us at support@mrbox.gg. We will set a limit, start a break or close the account for you, and we will not ask why.
 
 ---
 
@@ -88,6 +88,5 @@ You can also write to us at [[EMAIL DE SOPORTE]]. We will set a limit, start a b
 Cada uno de estos aparece en el texto escrito `[[así]]`. Son decisiones
 del titular del sitio y de su abogado.
 
-- **EMAIL DE SOPORTE** — 2 veces
 - **SOFTWARE DE BLOQUEO RECOMENDADO — a definir** — 1 vez
 - **LÍNEAS DE AYUDA POR PAÍS — a definir con el abogado. Hay que listar las de los países donde se opere, no una genérica.** — 1 vez

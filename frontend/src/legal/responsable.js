@@ -56,7 +56,7 @@ export const TEXTO = [
   p("Raising a limit, removing one, or ending a break early does not. It takes effect only after a waiting period. This is deliberate: the moment you most want to undo a limit is the moment it is doing its job."),
 
   s("E. Closing the account"),
-  p("If you want out for good, write to [[EMAIL DE SOPORTE]] and we will close the account. Before you do, redeem your balance and ship or sell what is in your inventory: once the account closes, what is left in it is gone."),
+  p("If you want out for good, write to support@mrbox.gg and we will close the account. Before you do, redeem your balance and ship or sell what is in your inventory: once the account closes, what is left in it is gone."),
 
   /* ── 4 ─────────────────────────────────────────────────────────── */
   h("4. Under 18"),
@@ -77,7 +77,7 @@ export const TEXTO = [
   h("6. Where to get help"),
   p("If this stopped being a hobby, talking to somebody who is not us is worth more than anything on this page."),
   p("[[LÍNEAS DE AYUDA POR PAÍS — a definir con el abogado. Hay que listar las de los países donde se opere, no una genérica.]]"),
-  p("You can also write to us at [[EMAIL DE SOPORTE]]. We will set a limit, start a break or close the account for you, and we will not ask why."),
+  p("You can also write to us at support@mrbox.gg. We will set a limit, start a break or close the account for you, and we will not ask why."),
 ];
 
 export default { ACTUALIZADO, TEXTO };

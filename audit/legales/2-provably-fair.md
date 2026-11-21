@@ -79,13 +79,4 @@ The reel that spins when you open a box is decoration. The items scrolling past 
 
 ## 8. If the numbers do not match
 
-Write to us at [[EMAIL DE SOPORTE]] with the opening, the seeds and the nonce. If you can show that a result does not reconcile, that is a bug on our side and we will tell you what happened and put it right.
-
----
-
-## Lo que falta decidir
-
-Cada uno de estos aparece en el texto escrito `[[así]]`. Son decisiones
-del titular del sitio y de su abogado.
-
-- **EMAIL DE SOPORTE** — 1 vez
+Write to us at support@mrbox.gg with the opening, the seeds and the nonce. If you can show that a result does not reconcile, that is a bug on our side and we will tell you what happened and put it right.

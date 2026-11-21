@@ -55,7 +55,7 @@ You get a tracking number when the parcel is dispatched.
 
 ### A. Lost
 
-If tracking stops moving or the parcel does not turn up, write to [[EMAIL DE SOPORTE]]. We open a claim with the carrier. Carriers will not treat a parcel as lost until a waiting period has passed — usually [[PLAZO PARA RECLAMO AL TRANSPORTISTA]] — so there is a wait before we can act. Once it is confirmed lost, you get the item again if we can source it, or its value in SC.
+If tracking stops moving or the parcel does not turn up, write to support@mrbox.gg. We open a claim with the carrier. Carriers will not treat a parcel as lost until a waiting period has passed — usually [[PLAZO PARA RECLAMO AL TRANSPORTISTA]] — so there is a wait before we can act. Once it is confirmed lost, you get the item again if we can source it, or its value in SC.
 
 ### B. Damaged or faulty
 
@@ -90,5 +90,4 @@ del titular del sitio y de su abogado.
 
 - **PAÍSES A LOS QUE SE ENVÍA — a definir con el operador logístico** — 1 vez
 - **PLAZO DE ENTREGA POR REGIÓN — a definir** — 1 vez
-- **EMAIL DE SOPORTE** — 1 vez
 - **PLAZO PARA RECLAMO AL TRANSPORTISTA** — 1 vez
