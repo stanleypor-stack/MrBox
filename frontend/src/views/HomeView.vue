@@ -315,7 +315,6 @@
 import { mapGetters } from "vuex";
 import api from "@/api";
 import MbTarjetaDeCaja from "@/components/MbTarjetaDeCaja.vue";
-import MbMarca from "@/components/MbMarca.vue";
 import { sprite } from "@/utils/sprite";
 
 const COLORES = {
@@ -346,30 +345,35 @@ const TINTES = {
 /*
   LAS MARCAS DE LA PORTADA.
 
-  Las que tienen un simbolo que se reconoce de lejos van DIBUJADAS
-  --simples, en un color solo, ver MbMarca-- y las demas escritas con
-  la tipografia que las distingue. Son marcas de sus duenos: estan para
-  decir "tenemos cosas de esta marca" y llevar al catalogo filtrado.
+  Cada una con su dibujo oficial, en blanco sobre la tarjeta azul (ver
+  MbMarca). Son marcas de sus duenos: estan para decir "tenemos cosas
+  de esta marca" y llevar al catalogo filtrado.
+
+  `conNombre` va solo en las que son un SIMBOLO sin letras --la
+  estrella, el rodete, la pipa, el salto--. Las que ya traen su nombre
+  dibujado no lo repiten abajo.
 
   `busca` es lo que se le pide al catalogo al tocarla.
 */
 const MARCAS = [
   { nombre: "Apple", rotulo: "Apple", busca: "Apple", dibujo: "apple" },
-  { nombre: "Rolex", rotulo: "Rolex", busca: "Rolex", dibujo: "rolex", conNombre: true },
+  { nombre: "Rolex", rotulo: "Rolex", busca: "Rolex", dibujo: "rolex" },
   { nombre: "PlayStation", rotulo: "PS5", busca: "PS5", dibujo: "playstation" },
-  { nombre: "Pokemon", rotulo: "Pokemon", busca: "Pokemon", tamano: "26px", espacio: "0", caja: "none" },
+  { nombre: "Pokemon", rotulo: "Pokemon", busca: "Pokemon", dibujo: "pokemon" },
   { nombre: "Mercedes-Benz", rotulo: "Mercedes", busca: "Mercedes", dibujo: "mercedes", conNombre: true },
-  { nombre: "Porsche", rotulo: "Porsche", busca: "Porsche", tamano: "20px", espacio: ".32em", caja: "uppercase" },
+  { nombre: "Porsche", rotulo: "Porsche", busca: "Porsche", dibujo: "porsche" },
   { nombre: "Nike", rotulo: "Nike", busca: "Nike", dibujo: "nike", conNombre: true },
-  { nombre: "Gucci", rotulo: "Gucci", busca: "Gucci", tamano: "24px", espacio: ".26em", caja: "uppercase" },
-  { nombre: "Louis Vuitton", rotulo: "LV", busca: "LV", tamano: "18px", espacio: ".12em", caja: "uppercase" },
+  { nombre: "Gucci", rotulo: "Gucci", busca: "Gucci", dibujo: "gucci" },
+  { nombre: "Louis Vuitton", rotulo: "LV", busca: "LV", dibujo: "lv" },
+  /* La unica escrita: el logo de Supreme ES su nombre en una
+     tipografia, no hay dibujo que bajar. */
   { nombre: "Supreme", rotulo: "Supreme", busca: "Supreme", tamano: "24px", espacio: "-.01em", caja: "none", italica: true },
-  { nombre: "Chanel", rotulo: "Chanel", busca: "Chanel", tamano: "22px", espacio: ".3em", caja: "uppercase" },
-  { nombre: "Nintendo", rotulo: "Nintendo", busca: "Nintendo", tamano: "24px", espacio: "0", caja: "none" },
-  { nombre: "Hublot", rotulo: "Hublot", busca: "Hublot", tamano: "22px", espacio: ".24em", caja: "uppercase" },
+  { nombre: "Chanel", rotulo: "Chanel", busca: "Chanel", dibujo: "chanel" },
+  { nombre: "Nintendo", rotulo: "Nintendo", busca: "Nintendo", dibujo: "nintendo" },
+  { nombre: "Hublot", rotulo: "Hublot", busca: "Hublot", dibujo: "hublot" },
   { nombre: "BMW", rotulo: "BMW", busca: "BMW", dibujo: "bmw", conNombre: true },
-  { nombre: "Jordan", rotulo: "Jordan", busca: "Jordan", tamano: "24px", espacio: ".1em", caja: "uppercase" },
-  { nombre: "Bose", rotulo: "Bose", busca: "Bose", tamano: "28px", espacio: ".04em", caja: "uppercase" },
+  { nombre: "Jordan", rotulo: "Jordan", busca: "Jordan", dibujo: "jordan", conNombre: true },
+  { nombre: "Bose", rotulo: "Bose", busca: "Bose", dibujo: "bose" },
 ];
 
 /* Las ocho preguntas del diseno. El texto vive en los idiomas. */
@@ -391,7 +395,20 @@ const PREGUNTAS = ["what", "fair", "deposit", "missing", "howOpen", "support", "
  */
 export default {
   name: "HomeView",
-  components: { MbTarjetaDeCaja, MbMarca },
+  components: {
+    MbTarjetaDeCaja,
+
+    /*
+      LAS MARCAS VIAJAN APARTE.
+
+      Son quince dibujos oficiales en vectores: 26 KB que no hacen
+      falta para pintar lo primero que se ve. La fila esta bien abajo
+      --despues de los banners, el pulso y dos filas de cajas-- asi
+      que se pide sola cuando el navegador llega ahi, y la portada
+      arranca igual de liviana que antes.
+    */
+    MbMarca: () => import(/* webpackChunkName: "marcas" */ "@/components/MbMarca.vue"),
+  },
 
   data() {
     return {
