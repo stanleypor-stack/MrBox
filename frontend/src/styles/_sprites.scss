@@ -77,6 +77,20 @@
   font-size: 0;
   line-height: 1;
 
+  /*
+    A LA ALTURA DE LOS NUMEROS.
+
+    Una caja `inline-flex` con el texto adentro en tamano cero apoya su
+    CENTRO sobre la linea del renglon, no su base: la moneda quedaba
+    medio cuerpo mas abajo que los numeros. Se veia en todo lo que no
+    es flex ("SC 1.180 JUGADO", el pie de las tarjetas).
+
+    `middle` la sube a la mitad de la altura de las letras, que es
+    justo donde esta el centro de un numero. Donde el padre ES flex
+    esto no hace nada: ahi manda `align-items`, y ahi ya estaba bien.
+  */
+  vertical-align: middle;
+
   &--13 { width: 13px; height: 13px; }
   &--14 { width: 14px; height: 14px; }
   &--15 { width: 15px; height: 15px; }

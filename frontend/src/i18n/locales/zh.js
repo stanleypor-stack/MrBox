@@ -92,7 +92,7 @@ export default {
     "returnLabel": "玩家返还",
     "youWon": "你赢得了",
     "sellFor": "以 {amount} 出售",
-    "keep": "保留",
+    "keep": "放入背包",
     "kept": "已放入你的背包",
     "openAgain": "再开一次",
     "demoNote": "仅为演示。不扣费，不保留。",

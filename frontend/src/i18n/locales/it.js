@@ -92,7 +92,7 @@ export default {
     "returnLabel": "Il giocatore recupera",
     "youWon": "Hai vinto",
     "sellFor": "Vendi per {amount}",
-    "keep": "Tienilo",
+    "keep": "Aggiungi all’inventario",
     "kept": "Aggiunto al tuo inventario",
     "openAgain": "Apri ancora",
     "demoNote": "Solo demo. Non si addebita nulla e non si tiene nulla.",

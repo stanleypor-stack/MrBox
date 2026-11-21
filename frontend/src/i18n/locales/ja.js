@@ -92,7 +92,7 @@ export default {
     "returnLabel": "プレイヤー還元率",
     "youWon": "獲得しました",
     "sellFor": "{amount} で売却",
-    "keep": "受け取る",
+    "keep": "インベントリに入れる",
     "kept": "インベントリに追加しました",
     "openAgain": "もう一度開ける",
     "demoNote": "デモです。課金も保存もされません。",

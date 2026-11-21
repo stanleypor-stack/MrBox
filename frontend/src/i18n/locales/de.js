@@ -92,7 +92,7 @@ export default {
     "returnLabel": "Spieler erhalten zurück",
     "youWon": "Du hast gewonnen",
     "sellFor": "Für {amount} verkaufen",
-    "keep": "Behalten",
+    "keep": "Ins Inventar",
     "kept": "In dein Inventar gelegt",
     "openAgain": "Nochmal öffnen",
     "demoNote": "Nur Demo. Es wird nichts berechnet und nichts behalten.",

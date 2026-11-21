@@ -92,7 +92,7 @@ export default {
     "returnLabel": "Players get back",
     "youWon": "You won",
     "sellFor": "Sell for {amount}",
-    "keep": "Keep it",
+    "keep": "Add to inventory",
     "kept": "Added to your inventory",
     "openAgain": "Open again",
     "demoNote": "Demo only. Nothing is charged and nothing is kept.",

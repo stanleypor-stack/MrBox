@@ -92,7 +92,7 @@ export default {
     "returnLabel": "Les joueurs récupèrent",
     "youWon": "Vous avez gagné",
     "sellFor": "Vendre pour {amount}",
-    "keep": "Garder",
+    "keep": "Dans l’inventaire",
     "kept": "Ajouté à ton inventaire",
     "openAgain": "Ouvrir à nouveau",
     "demoNote": "Démo seulement. Rien n’est débité ni conservé.",

@@ -136,19 +136,31 @@
 
       <div class="mb-abrir__salida">
         <!-- Lo que salió, en una línea. -->
-        <div v-if="resultado" class="mb-salio" aria-live="polite">
-          <span>{{ resultado.demo ? $t('box.demoNote') : $t('box.youWon') }}</span>
-          <span class="mb-salio__punto" aria-hidden="true">·</span>
-          <span class="mb-salio__que">{{ queSalio }}</span>
-          <span class="mb-salio__punto" aria-hidden="true">·</span>
-          <span class="mb-salio__valor">
-            <span class="mb-sc mb-sc--16" aria-hidden="true">SC</span>{{ plata(valorGanado) }}
-          </span>
+        <!--
+          DOS BOTONES Y NADA MAS.
 
-          <template v-if="!resultado.demo">
-            <button type="button" class="mb-salio__b" :disabled="vendiendo" @click="venderTodo">
+          Antes esto decia tambien "Ganaste · Tal cosa · SC 0,50". Lo
+          dice la ruleta de arriba, con el objeto a la vista: era
+          decirlo dos veces.
+
+          La demo si lleva renglon: ahi no hay botones --no hay nada
+          que vender ni que guardar-- y sin el no aparecia nada.
+        -->
+        <div v-if="resultado" class="mb-salio" aria-live="polite">
+          <template v-if="resultado.demo">
+            <span class="mb-salio__demo">
+              {{ $t('box.demoNote') }} · {{ queSalio }}
+            </span>
+          </template>
+
+          <template v-else>
+            <button
+              type="button" class="mb-salio__b mb-salio__b--vender"
+              :disabled="vendiendo" @click="venderTodo"
+            >
               {{ $t('box.sellFor', { amount: 'SC ' + plata(valorGanado) }) }}
             </button>
+
             <!--
               NO LLEVA AL INVENTARIO: EL PREMIO YA ESTA AHI.
 
@@ -157,7 +169,7 @@
               unico que hacia era sacarte de la caja que estabas
               abriendo, con las otras dos de regalo sin usar.
             -->
-            <button type="button" class="mb-salio__b" @click="quedarmelo">
+            <button type="button" class="mb-salio__b mb-salio__b--guardar" @click="quedarmelo">
               {{ $t('box.keep') }}
             </button>
           </template>
@@ -1029,42 +1041,80 @@ export default {
   &:disabled { opacity: .6; cursor: default; }
 }
 
+/*
+  LO QUE SALIO: DOS BOTONES, SIN CAJA ALREDEDOR.
+
+  Antes esto era una pastilla con el texto adentro y los botones al
+  final. Ahora los botones SON la barra: el fondo de la pastilla
+  sobraba, no hay nada que encerrar.
+*/
 .mb-salio {
   align-self: center;
-  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* El renglon de la demo, que no tiene botones. */
+.mb-salio__demo {
+  padding: 7px 14px;
   border-radius: 10px;
   background: $panel-alto;
   font-weight: 800;
   font-size: 13px;
   color: $texto-2;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
+  max-width: min(420px, 90vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.mb-salio__punto { opacity: .5; }
-.mb-salio__que { color: #fff; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mb-salio__valor { display: flex; align-items: center; gap: 5px; color: $verde; font-weight: 900; }
-
 .mb-salio__b {
-  height: 32px;
-  padding: 0 12px;
-  border-radius: 9px;
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 12px;
   border: 0;
-  background: #1d3354;
-  color: #fff;
   font-family: inherit;
-  font-weight: 800;
-  font-size: 12px;
+  font-weight: 900;
+  font-size: 14px;
+  letter-spacing: .01em;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
+  transition: filter .15s ease, transform .1s ease;
   @include foco;
-  &:hover { background: $lateral-hover; color: #fff; }
-  &:disabled { opacity: .5; cursor: default; }
+
+  &:hover { filter: brightness(1.08); }
+  &:active { transform: translateY(1px); }
+  &:disabled { opacity: .55; cursor: default; filter: none; transform: none; }
+
+  /* En el telefono entran los dos en una fila si se achican un poco. */
+  @include en-celular {
+    height: 40px;
+    padding: 0 14px;
+    font-size: 13px;
+  }
+}
+
+/*
+  VENDER ES PLATA: va en el verde con el que el sitio escribe el
+  dinero, con la letra en tinta para que se lea sobre un color claro.
+*/
+.mb-salio__b--vender {
+  background: linear-gradient(180deg, $verde 0%, #35d98c 100%);
+  color: $azul-tinta;
+  box-shadow: 0 4px 14px rgba(53, 217, 140, .25);
+}
+
+/* Guardarlo es seguir en la caja: el azul de los botones de siempre. */
+.mb-salio__b--guardar {
+  background: linear-gradient(180deg, $azul 0%, $azul-hondo 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(31, 79, 196, .3);
 }
 
 /* ── Lo que puede salir ───────────────────────────────────────────── */
