@@ -7,13 +7,26 @@
       <!-- ── La mitad del cartel ──────────────────────────────────── -->
       <div class="mb-auth__cartel" aria-hidden="true">
         <!--
-          EL ARTE, Y UN VELO ENCIMA.
+          DOS ARTES, UNO POR TAMANO.
 
-          El estallido tiene mucho amarillo y la letra blanca se
-          perderia sobre el cofre. El velo baja de arriba, que es
-          donde va el texto, y deja los cofres y los premios limpios.
+          En PC va el poster como lo mando Dani, entero y sin tocar:
+          trae su propio titulo dibujado, asi que el texto del sitio se
+          esconde y no se dice dos veces lo mismo.
+
+          En el telefono ese poster no entra --es alto y angosto, y el
+          carton ahi es ancho y bajo: recortarlo se come el titulo o
+          las figuras--. Va la version compuesta, que es la misma
+          escena fundida con el fondo del sitio, y encima el titulo que
+          dibuja el sitio, que se traduce a los nueve idiomas y lee las
+          aperturas y el bono de la configuracion.
+
+          Las dos con `loading="eager"`: es lo primero que se ve.
         -->
-        <img class="mb-auth__arte" src="/img/registro.webp" alt="">
+        <img class="mb-auth__arte mb-auth__arte--pc" src="/img/registro-pc.webp" alt="">
+        <img class="mb-auth__arte mb-auth__arte--celu" src="/img/registro.webp" alt="">
+
+        <!-- El velo esta para que se lea el texto del sitio, asi que
+             solo hace falta donde ese texto se dibuja. -->
         <div class="mb-auth__velo"></div>
 
         <div class="mb-auth__marca">
@@ -590,6 +603,16 @@ export default {
 .mb-auth__cartel {
   position: relative;
   flex: 1 1 320px;
+
+  /*
+    EL FONDO CONTINUA EL BORDE DE ARRIBA DEL POSTER.
+
+    En PC el poster va entero --`contain`, ver abajo-- y el carton es
+    un poco mas alto que el. Esa sobra se manda toda arriba, y este es
+    el color del borde superior del poster, medido: #2a0475. Asi no se
+    ve una franja, se ve el cielo un poco mas largo.
+  */
+  background: #2a0475;
   min-height: 620px;
   overflow: hidden;
 
@@ -607,6 +630,14 @@ export default {
   abajo; lo que sobra se recorta por arriba, que es donde el arte solo
   tiene estallido.
 */
+/* En PC, el poster de Dani. En el telefono, el compuesto. */
+.mb-auth__arte--celu { display: none; }
+
+@include en-celular {
+  .mb-auth__arte--pc { display: none; }
+  .mb-auth__arte--celu { display: block; }
+}
+
 .mb-auth__arte {
   position: absolute;
   inset: 0;
@@ -636,6 +667,33 @@ export default {
   */
   @include en-celular { object-position: center top; }
 }
+
+/*
+  EL DE PC ENTRA ENTERO, NO RECORTADO.
+
+  `contain` y no `cover`: el poster lo mando Dani asi y va asi. Con
+  `cover` el carton le comia una franja de cada lado --el alto del
+  carton lo decide el formulario, que cambia entre registrarse y
+  entrar, asi que no hay un ancho fijo que acierte siempre-- y lo que
+  se recorta depende de en que pantalla se mire.
+
+  Lo que sobra lo tapa el degrade del carton, que son los bordes del
+  propio poster.
+*/
+.mb-auth__arte--pc {
+  object-fit: contain;
+  /*
+    Y PEGADO ABAJO, ASI LA SOBRA QUEDA ARRIBA.
+
+    Centrado, la sobra se parte en dos y la de abajo se notaba: el
+    borde inferior del poster es asfalto rosa con textura, y debajo
+    aparecia una franja lisa que se leia como un bloque aparte. El
+    borde de ARRIBA en cambio es violeta liso --#2a0475, medido-- y
+    contra un fondo del mismo color no se ve donde termina.
+  */
+  object-position: center bottom;
+}
+
 
 /*
   EL VELO.
@@ -676,6 +734,26 @@ export default {
   align-items: center;
   gap: 8px;
   padding-top: 22px;
+}
+
+/*
+  EL TEXTO DEL SITIO Y SU VELO: SOLO EN EL TELEFONO.
+
+  En PC el poster de Dani ya trae su titulo dibujado; dejar encima el
+  del sitio pondria "SIGN UP AND CLAIM" dos veces, una arriba de la
+  otra. Y el velo esta para que ESE texto se lea, asi que sin texto no
+  tiene nada que hacer: oscurecia el poster de arriba por gusto.
+
+  Va DESPUES de las dos reglas de arriba y no antes: Sass las escribe
+  en el orden en que estan, y `display: flex` puesto mas abajo le
+  ganaba a un `display: none` puesto mas arriba.
+*/
+.mb-auth__velo,
+.mb-auth__marca { display: none; }
+
+@include en-celular {
+  .mb-auth__velo { display: block; }
+  .mb-auth__marca { display: flex; }
 }
 
 /*
