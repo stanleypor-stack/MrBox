@@ -245,8 +245,25 @@ async function pedirCanje({ user, montoSc, ticker, red, direccion }) {
 
     El contador baja al pagar, al rechazar y al cancelar.
   */
+  /*
+    `$not: { $gte: N }` Y NO `$lt: N`. NO ES LO MISMO.
+
+    En Mongo, `{ campo: { $lt: 3 } }` NO empareja un documento donde
+    el campo no esta. Y no estaba: `canjesPendientes` se agrego al
+    esquema despues, y `default: 0` solo corre al CREAR el documento,
+    asi que todas las cuentas anteriores quedaron sin el campo.
+
+    O sea que cualquiera que nunca hubiera canjeado no podia hacer su
+    primer canje NUNCA: la consulta no lo encontraba, `lugar` venia
+    vacio y se iba por el error de "tenes demasiados pendientes"
+    teniendo cero. Medido en la base de desarrollo: diez de
+    veintiuna cuentas sin el campo, la del dueno incluida.
+
+    `$not: { $gte: N }` si empareja el campo ausente, que es
+    justamente lo que hay que tratar como cero.
+  */
   const lugar = await User.findOneAndUpdate(
-    { _id: user._id, canjesPendientes: { $lt: PEDIDOS_A_LA_VEZ } },
+    { _id: user._id, canjesPendientes: { $not: { $gte: PEDIDOS_A_LA_VEZ } } },
     { $inc: { canjesPendientes: 1 } }
   ).lean();
 
@@ -255,7 +272,15 @@ async function pedirCanje({ user, montoSc, ticker, red, direccion }) {
       user: user._id,
       estado: { $in: ["pending", "approved"] },
     });
-    throw errorDe("TOO_MANY_THREADS", { pendientes: cuantos });
+    /*
+      Y EL ERROR ES DE CANJES, NO DE CONVERSACIONES.
+
+      Aca decia `TOO_MANY_THREADS`, que es el de soporte: al jugador
+      le llegaba "tenes demasiadas conversaciones abiertas" cuando
+      habia tocado el boton de canjear. Nadie iba a diagnosticar esto
+      nunca desde un ticket.
+    */
+    throw errorDe("TOO_MANY_REDEMPTIONS", { pendientes: cuantos, maximo: PEDIDOS_A_LA_VEZ });
   }
 
   /*

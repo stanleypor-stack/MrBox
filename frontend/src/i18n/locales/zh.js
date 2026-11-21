@@ -223,6 +223,7 @@ export default {
     "NO_ADDRESS": "请先添加收货地址。",
     "ADDRESS_NOT_FOUND": "该地址不存在。",
     "NO_DEMOS_LEFT": "你已经用完免费试开。",
+    "TOO_MANY_REDEMPTIONS": "You already have {maximo} cash outs waiting. Wait for one to be paid before asking for another.",
     "AI_OFF": "The support assistant is off.",
     "AI_AUTH": "The API key is missing or no longer valid.",
     "AI_BUSY": "Too many drafts at once. Wait a few seconds.",

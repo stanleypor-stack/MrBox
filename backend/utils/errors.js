@@ -129,6 +129,7 @@ const CODIGOS = {
   /* Soporte */
   MESSAGE_REQUIRED: "Write a message first.",
   TOO_MANY_THREADS: "You have too many open conversations.",
+  TOO_MANY_REDEMPTIONS: "You already have {maximo} cash outs waiting. Wait for one to be paid before asking for another.",
 
   /* General */
   NOT_FOUND: "That does not exist.",

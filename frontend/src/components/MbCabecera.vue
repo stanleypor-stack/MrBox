@@ -1246,6 +1246,22 @@ export default {
   con la misma especificidad ganaba la regla de abajo.
 */
 @include en-celular {
+  /*
+    LA PILDORA SE AJUSTA AL NUMERO, NO SE ESTIRA.
+
+    `.mb-head__centro` era `flex: 1 1 0`, o sea que la billetera se
+    quedaba con TODO el sobrante: pedia 161 px y le daban 181, y con
+    un saldo corto como "$ 0.00" la diferencia es mucho mayor. De ahi
+    salia una pildora larguisima con el numero flotando en el medio y
+    aire a los costados, que es lo que se veia mal.
+
+    Ahora mide lo que mide su contenido, y el sobrante se va al hueco
+    entre ella y los iconos, que quedan contra el borde. Es como lo
+    tiene mrloot.
+  */
+  .mb-head__centro { flex: 0 1 auto; }
+  .mb-head__der { margin-left: auto; }
+
   .mb-iconos__caja {
     border: 0;
     background: transparent;

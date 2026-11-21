@@ -223,6 +223,7 @@ export default {
     "NO_ADDRESS": "Adicione um endereço de entrega antes.",
     "ADDRESS_NOT_FOUND": "Esse endereço não existe.",
     "NO_DEMOS_LEFT": "Você já usou suas demos grátis.",
+    "TOO_MANY_REDEMPTIONS": "Ya tenés {maximo} canjes esperando. Esperá a que te paguen uno antes de pedir otro.",
     "AI_OFF": "El asistente de soporte está apagado.",
     "AI_AUTH": "La llave de la API falta o ya no sirve.",
     "AI_BUSY": "Demasiados borradores a la vez. Esperá unos segundos.",

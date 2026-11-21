@@ -212,3 +212,56 @@ test("sin bono, todo el saldo es canjeable de una", async (t) => {
   const s = await wallet.saldoDe(u._id);
   assert.equal(s.canjeableSc, 200);
 });
+
+/*
+  EL PRIMER CANJE DE UNA CUENTA VIEJA.
+
+  `canjesPendientes` se agrego al esquema despues de que ya hubiera
+  cuentas, y `default: 0` solo corre al CREAR el documento. Las
+  anteriores quedaron SIN el campo.
+
+  Y `pedirCanje` buscaba `{ canjesPendientes: { $lt: 3 } }`, que en
+  Mongo no empareja un documento donde el campo no esta. Resultado:
+  esas cuentas no podian hacer su primer canje nunca, y encima el
+  error que les llegaba era el de soporte --"tenes demasiadas
+  conversaciones abiertas"-- teniendo cero canjes pendientes.
+
+  Esta prueba crea la cuenta y le SACA el campo, que es como estan en
+  la base las de antes del cambio.
+*/
+test("una cuenta sin el campo canjesPendientes puede canjear igual", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  const u = await jugadorCon(500, { verificationLevel: 3 });
+  await User.collection.updateOne({ _id: u._id }, { $unset: { canjesPendientes: "" } });
+
+  const antes = await User.collection.findOne({ _id: u._id });
+  assert.equal(antes.canjesPendientes, undefined, "la cuenta arranca sin el campo, como las viejas");
+
+  /* La misma consulta que hace `pedirCanje` para tomar lugar. */
+  const lugar = await User.findOneAndUpdate(
+    { _id: u._id, canjesPendientes: { $not: { $gte: 3 } } },
+    { $inc: { canjesPendientes: 1 } }
+  ).lean();
+
+  assert.ok(lugar, "la consulta tiene que encontrarla: sin el campo es cero, no es 'lleno'");
+
+  const despues = await User.collection.findOne({ _id: u._id });
+  assert.equal(despues.canjesPendientes, 1, "y le queda uno tomado");
+});
+
+test("con el tope lleno, NO toma lugar", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  const u = await jugadorCon(500, { verificationLevel: 3, canjesPendientes: 3 });
+
+  const lugar = await User.findOneAndUpdate(
+    { _id: u._id, canjesPendientes: { $not: { $gte: 3 } } },
+    { $inc: { canjesPendientes: 1 } }
+  ).lean();
+
+  assert.equal(lugar, null, "con tres pendientes no entra un cuarto");
+
+  const igual = await User.collection.findOne({ _id: u._id });
+  assert.equal(igual.canjesPendientes, 3, "y no le sumo uno de prepo");
+});

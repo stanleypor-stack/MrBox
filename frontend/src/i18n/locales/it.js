@@ -223,6 +223,7 @@ export default {
     "NO_ADDRESS": "Aggiungi prima un indirizzo di spedizione.",
     "ADDRESS_NOT_FOUND": "Quell’indirizzo non esiste.",
     "NO_DEMOS_LEFT": "Hai usato le tue prove gratis.",
+    "TOO_MANY_REDEMPTIONS": "You already have {maximo} cash outs waiting. Wait for one to be paid before asking for another.",
     "AI_OFF": "The support assistant is off.",
     "AI_AUTH": "The API key is missing or no longer valid.",
     "AI_BUSY": "Too many drafts at once. Wait a few seconds.",
