@@ -490,9 +490,6 @@ T = {
  "side.categories": {"en":"Categories","de":"Kategorien","fr":"Catégories","es":"Categorías","pt":"Categorias","it":"Categorie","ru":"Категории","ja":"カテゴリ","zh":"分类"},
  "side.dashboard":  {"en":"Dashboard","de":"Übersicht","fr":"Tableau de bord","es":"Panel","pt":"Painel","it":"Pannello","ru":"Панель","ja":"ダッシュボード","zh":"控制台"},
 
- "races.daily":   {"en":"Daily","de":"Täglich","fr":"Quotidien","es":"Diaria","pt":"Diária","it":"Giornaliera","ru":"Ежедневно","ja":"デイリー","zh":"每日"},
- "races.weekly":  {"en":"Weekly","de":"Wöchentlich","fr":"Hebdo","es":"Semanal","pt":"Semanal","it":"Settimanale","ru":"Еженедельно","ja":"ウィークリー","zh":"每周"},
- "races.monthly": {"en":"Monthly","de":"Monatlich","fr":"Mensuel","es":"Mensual","pt":"Mensal","it":"Mensile","ru":"Ежемесячно","ja":"マンスリー","zh":"每月"},
 
  "auth.birthday":    {"en":"Date of birth","de":"Geburtsdatum","fr":"Date de naissance","es":"Fecha de nacimiento","pt":"Data de nascimento","it":"Data di nascita","ru":"Дата рождения","ja":"生年月日","zh":"出生日期"},
  "auth.country":     {"en":"Country","de":"Land","fr":"Pays","es":"País","pt":"País","it":"Paese","ru":"Страна","ja":"国","zh":"国家和地区"},
@@ -964,6 +961,7 @@ T = {
  "races.daily":        {"en":"DAILY RACE","de":"TAGESRENNEN","fr":"COURSE DU JOUR","es":"CARRERA DIARIA","pt":"CORRIDA DI\u00c1RIA","it":"GARA DEL GIORNO","ru":"\u0414\u041d\u0415\u0412\u041d\u0410\u042f \u0413\u041e\u041d\u041a\u0410","ja":"\u30c7\u30a4\u30ea\u30fc\u30ec\u30fc\u30b9","zh":"\u6bcf\u65e5\u7ade\u8d5b"},
  "races.weekly":       {"en":"WEEKLY RACE","de":"WOCHENRENNEN","fr":"COURSE DE LA SEMAINE","es":"CARRERA SEMANAL","pt":"CORRIDA SEMANAL","it":"GARA SETTIMANALE","ru":"\u041d\u0415\u0414\u0415\u041b\u042c\u041d\u0410\u042f \u0413\u041e\u041d\u041a\u0410","ja":"\u30a6\u30a3\u30fc\u30af\u30ea\u30fc\u30ec\u30fc\u30b9","zh":"\u6bcf\u5468\u7ade\u8d5b"},
  "races.monthly":      {"en":"MONTHLY RACE","de":"MONATSRENNEN","fr":"COURSE DU MOIS","es":"CARRERA MENSUAL","pt":"CORRIDA MENSAL","it":"GARA DEL MESE","ru":"\u041c\u0415\u0421\u042f\u0427\u041d\u0410\u042f \u0413\u041e\u041d\u041a\u0410","ja":"\u30de\u30f3\u30b9\u30ea\u30fc\u30ec\u30fc\u30b9","zh":"\u6bcf\u6708\u7ade\u8d5b"},
+ "races.stripGo":     {"en":"See the daily race","de":"Zum Tagesrennen","fr":"Voir la course du jour","es":"Ver la carrera diaria","pt":"Ver a corrida diária","it":"Vedi la gara del giorno","ru":"Открыть ежедневную гонку","ja":"デイリーレースを見る","zh":"查看每日竞赛"},
  "races.dailyShort":   {"en":"Daily","de":"T\u00e4glich","fr":"Jour","es":"Diaria","pt":"Di\u00e1ria","it":"Giorno","ru":"\u0414\u0435\u043d\u044c","ja":"\u6bce\u65e5","zh":"\u65e5"},
  "races.weeklyShort":  {"en":"Weekly","de":"W\u00f6chentlich","fr":"Semaine","es":"Semanal","pt":"Semanal","it":"Settimana","ru":"\u041d\u0435\u0434\u0435\u043b\u044f","ja":"\u6bce\u9031","zh":"\u5468"},
  "races.monthlyShort": {"en":"Monthly","de":"Monatlich","fr":"Mois","es":"Mensual","pt":"Mensal","it":"Mese","ru":"\u041c\u0435\u0441\u044f\u0446","ja":"\u6bce\u6708","zh":"\u6708"},

@@ -70,6 +70,20 @@ export default new Vuex.Store({
       diciendo "0 objetos" hasta recargar la pagina.
     */
     inventarioCambio: 0,
+
+    /*
+      LAS CARRERAS VIVAS, EN CORTO.
+
+      Tres filas --diaria, semanal, mensual-- con el pozo y cuando
+      termina cada una. Nada mas: la tabla de posiciones la pide la
+      pagina de carreras cuando hace falta.
+
+      Vive aca porque la tira del telefono aparece en cada pagina de
+      caja, y pedir lo mismo en cada una seria una consulta por
+      navegacion para un dato que cambia una vez por dia. `null` es
+      "todavia no se pidio"; una lista vacia es "no hay ninguna".
+    */
+    carreras: null,
   },
 
   getters: {
@@ -84,6 +98,7 @@ export default new Vuex.Store({
   },
 
   mutations: {
+    carreras(s, v) { s.carreras = v; },
     usuario(s, u) { s.usuario = u; },
     cargandoUsuario(s, v) { s.cargandoUsuario = !!v; },
 
@@ -137,6 +152,24 @@ export default new Vuex.Store({
   },
 
   actions: {
+    /**
+     * El resumen de las carreras, una sola vez por visita.
+     *
+     * Si ya esta, no vuelve a pedirlo. Si falla, deja una lista vacia
+     * en vez de dejar el `null`: con `null` la tira lo pediria otra vez
+     * en cada pagina de caja y, con el servidor caido, serian tres
+     * consultas por minuto para no dibujar nada.
+     */
+    async traerCarreras({ state, commit }) {
+      if (state.carreras) return;
+      try {
+        const { data } = await api.get("/races");
+        commit("carreras", Array.isArray(data.data) ? data.data : []);
+      } catch {
+        commit("carreras", []);
+      }
+    },
+
     /** Abre el chat de soporte, con un texto ya escrito si hace falta. */
     pedirSoporte({ commit }, borrador) {
       commit("soporte", borrador);

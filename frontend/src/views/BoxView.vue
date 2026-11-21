@@ -3,6 +3,15 @@
     <p v-if="cargando" class="mb-vacio">{{ $t('common.loading') }}</p>
 
     <template v-else-if="caja">
+      <!--
+        LA TIRA DE LA CARRERA, SOLO EN EL TELEFONO.
+
+        Va entre la billetera y el nombre de la caja. Se esconde
+        sola en escritorio y cuando no hay carrera viva: aca no hay
+        ningun `v-if` de ancho que mantener.
+      -->
+      <mb-tira-de-carrera />
+
       <!-- ── Volver · nombre de la caja ───────────────────────────── -->
       <div class="mb-abrir__barra">
         <button type="button" class="mb-abrir__volver" @click="$router.back()">
@@ -291,6 +300,7 @@ import { mapGetters } from "vuex";
 import api from "@/api";
 import MbRuleta from "@/components/MbRuleta.vue";
 import MbCajaDibujada from "@/components/MbCajaDibujada.vue";
+import MbTiraDeCarrera from "@/components/MbTiraDeCarrera.vue";
 import { sprite } from "@/utils/sprite";
 import { despertar, silenciar, sonarPremio } from "@/utils/sonido";
 
@@ -329,7 +339,7 @@ const RAREZAS = [
  */
 export default {
   name: "BoxView",
-  components: { MbRuleta, MbCajaDibujada },
+  components: { MbRuleta, MbCajaDibujada, MbTiraDeCarrera },
 
   data() {
     return {
