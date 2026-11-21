@@ -87,7 +87,9 @@ const SECCIONES = {
     ruta: "/admin/orders",
     porPagina: 25,
     ancho: "1100px",
-    w: ".9fr 1fr .6fr .9fr 1.6fr 1.2fr 1fr .9fr",
+    /* La columna de los objetos se lleva el ancho: es lo que hay que
+       leer para armar el paquete. */
+    w: ".8fr .8fr 2fr .7fr 1.3fr 1.1fr .9fr .8fr",
     anchoDeAcciones: "190px",
     filtros: [
       {
@@ -102,7 +104,26 @@ const SECCIONES = {
     columnas: [
       { campo: "codigo" },
       { campo: "username" },
-      { campo: "cuantos", der: true, tipo: "numero", valor: (f) => f.items.length },
+      /*
+        QUE PIDIO, NO CUANTOS PIDIO.
+
+        Esta columna decia "1". Nada mas: un numero. El que tenia que
+        armar el paquete no tenia forma de saber QUE poner adentro
+        sin abrir otra pantalla, y desde la lista era adivinar.
+
+        Ahora dice el objeto. Si son varios, el primero y cuantos
+        mas, que es lo que entra en una fila; la ficha del pedido los
+        tiene todos.
+      */
+      {
+        campo: "que",
+        valor: (f) => {
+          const n = (f.items || []).length;
+          if (!n) return "—";
+          const primero = f.items[0].name || "—";
+          return n === 1 ? primero : `${primero}  +${n - 1}`;
+        },
+      },
       { campo: "valorSc", der: true, tipo: "sc" },
       { campo: "destino", valor: (f) => `${f.destino.ciudad}, ${f.destino.pais}`, tenue: true },
       { campo: "seguimiento", valor: (f) => f.seguimiento || "", tenue: true },

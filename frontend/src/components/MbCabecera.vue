@@ -333,7 +333,19 @@
             :aria-expanded="cuentaAbierta ? 'true' : 'false'" :aria-label="$t('header.account')"
             @click="cuentaAbierta = !cuentaAbierta"
           >
-            <span class="mb-cuenta__avatar">{{ inicial }}</span>
+            <!--
+              LA FOTO SI LA SUBIO; LA INICIAL SI NO.
+
+              Antes esto dibujaba SIEMPRE la inicial y no miraba
+              `avatarUrl` en ningun momento, asi que cambiarse la foto
+              en el perfil no se veia en ningun lado del sitio salvo
+              en el perfil mismo.
+            -->
+            <img
+              v-if="usuario.avatarUrl" class="mb-cuenta__avatar mb-cuenta__avatar--foto"
+              :src="usuario.avatarUrl" alt=""
+            >
+            <span v-else class="mb-cuenta__avatar">{{ inicial }}</span>
             <span class="mb-cuenta__datos">
               <span class="mb-cuenta__nombre">{{ usuario.username }}</span>
               <!-- La barra de progreso al rango siguiente. -->
@@ -1517,6 +1529,13 @@ export default {
   font-family: inherit;
   cursor: pointer;
   @include foco;
+}
+
+/* La foto ocupa el mismo circulo que la inicial, recortada al medio:
+   una foto cuadrada y una apaisada tienen que quedar igual. */
+.mb-cuenta__avatar--foto {
+  object-fit: cover;
+  padding: 0;
 }
 
 .mb-cuenta__avatar {

@@ -1440,6 +1440,7 @@ export default {
       "label": "Reference",
       "codigo": "Order",
       "cuantos": "Items",
+      "que": "What to pack",
       "valorSc": "Worth",
       "destino": "Ships to",
       "seguimiento": "Tracking",

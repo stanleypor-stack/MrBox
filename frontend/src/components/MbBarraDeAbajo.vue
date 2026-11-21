@@ -57,7 +57,12 @@
       v-if="entro" type="button" :class="{ 'is-activo': abierto.cuenta }"
       :aria-expanded="abierto.cuenta ? 'true' : 'false'" @click="alternar('cuenta')"
     >
-      <span class="mb-abajo__yo">{{ inicial }}</span>{{ $t('header.account') }}
+      <!-- La foto si la subio, la inicial si no. -->
+      <img
+        v-if="usuario && usuario.avatarUrl" class="mb-abajo__yo mb-abajo__yo--foto"
+        :src="usuario.avatarUrl" alt=""
+      >
+      <span v-else class="mb-abajo__yo">{{ inicial }}</span>{{ $t('header.account') }}
     </button>
 
     <button v-else type="button" class="mb-abajo__alta" @click="ir('/signup')">
@@ -214,5 +219,11 @@ export default {
   font-family: $fuente-cartel;
   font-size: 11px;
   color: #fff;
+}
+
+/* La foto, recortada al mismo circulo que la inicial. */
+.mb-abajo__yo--foto {
+  object-fit: cover;
+  display: block;
 }
 </style>

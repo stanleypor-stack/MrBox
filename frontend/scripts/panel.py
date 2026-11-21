@@ -250,6 +250,7 @@ PANEL = {
     "admin.col.label": "Reference",
     "admin.col.codigo": "Order",
     "admin.col.cuantos": "Items",
+    "admin.col.que": "What to pack",
     "admin.col.valorSc": "Worth",
     "admin.col.destino": "Ships to",
     "admin.col.seguimiento": "Tracking",

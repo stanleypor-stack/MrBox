@@ -194,7 +194,23 @@ router.get("/categories", autorizar(false), async (req, res) => {
  */
 router.get("/rows", autorizar(false), async (req, res) => {
   try {
-    const comun = { live: true };
+    /*
+      LA PORTADA ES EL CATALOGO DE LA CASA.
+
+      Faltaba `creator: null` y las cajas de la comunidad entraban en
+      las cinco filas compitiendo con las nuestras. Se veia enseguida
+      en "las mas abiertas": tres cajas de comunidad arriba de todo,
+      con su dibujo generico, empujando afuera a las de la casa que
+      tienen arte hecho.
+
+      Las de la comunidad tienen su propia seccion, que es donde se
+      las busca. Mezclarlas aca ademas le da a cualquiera que arme
+      una caja un lugar en la portada con solo abrirla muchas veces.
+
+      `creator: null` tambien empareja el campo ausente, asi que
+      alcanza para las 163 de la casa.
+    */
+    const comun = { live: true, creator: null };
     const campos = "slug name category imageUrl priceSc retorno featured markedNew opens prizes";
 
     const resumir = (lista) =>
