@@ -463,6 +463,21 @@ const settingsSchema = new mongoose.Schema(
        * se respalda, se copia a una maquina de pruebas y se mira desde
        * el panel.
        */
+      /**
+       * CON QUE NOMBRE LE LLEGA AL JUGADOR.
+       *
+       * Antes salia con el nombre de USUARIO del que contesta, tal
+       * cual esta en la base. En local eso es "sol" y no molesta a
+       * nadie; en produccion el jugador ve el nombre interno de la
+       * cuenta de un empleado, que no es asunto suyo y encima es la
+       * mitad de un intento de entrar.
+       *
+       * Con esto puesto, firman todos igual. Cada persona del equipo
+       * puede tener el suyo (`nombreDeSoporte` en su cuenta) y ese
+       * gana: asi "Martin" firma Martin y el resto firma con esto.
+       */
+      firma: { type: String, default: "Soporte", trim: true, maxlength: 40 },
+
       borradorDeIa: { type: Boolean, default: true },
 
       /* Vacio = el que trae el servicio. Se cambia sin tocar codigo. */

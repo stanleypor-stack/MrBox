@@ -132,14 +132,31 @@
               {{ $t('admin.ia.handoff') }}
             </p>
 
-            <p class="ads__ia-texto">{{ sugerencia.texto }}</p>
+            <!--
+              DOS O TRES, PARA ELEGIR.
 
-            <div class="ads__ia-pie">
-              <button type="button" class="ad-b ad-b--suave" :disabled="ocupado" @click="usarSugerencia">
-                {{ $t('admin.ia.use') }}
-              </button>
-              <span class="ad-tenue ads__ia-nota">{{ sugerencia.motivo }}</span>
+              La primera es la que propone de verdad y lleva su marca;
+              las otras estan por si el tono no va o falta un dato. Cada
+              una con su boton: elegir es un click, no copiar y pegar.
+            -->
+            <div
+              v-for="(o, i) in sugerencia.opciones" :key="i"
+              class="ads__op" :class="{ 'is-primera': i === 0 }"
+            >
+              <div class="ads__op-cabeza">
+                <span v-if="i === 0" class="ads__op-marca">{{ $t('admin.ia.first') }}</span>
+                <span class="ads__op-eti">{{ o.etiqueta }}</span>
+                <span class="ad-crece"></span>
+                <button type="button" class="ads__op-b" :disabled="ocupado" @click="usarOpcion(o)">
+                  {{ $t('admin.ia.use') }}
+                </button>
+              </div>
+              <p class="ads__ia-texto">{{ o.texto }}</p>
             </div>
+
+            <p v-if="sugerencia.motivo" class="ad-tenue ads__ia-nota ads__ia-motivo">
+              {{ sugerencia.motivo }}
+            </p>
           </template>
 
           <p v-else-if="!pensando && !iaError" class="ad-tenue ads__ia-nota">{{ $t('admin.ia.empty') }}</p>
@@ -397,12 +414,18 @@ export default {
       Pisar lo que ya habia escrito seria perderle el trabajo a
       alguien, asi que si el cuadro tiene algo, se agrega abajo.
     */
-    usarSugerencia() {
-      if (!this.sugerencia) return;
+    usarOpcion(o) {
+      if (!o || !o.texto) return;
       const hay = this.borrador.trim();
       this.borrador = hay ? `${hay}
 
-${this.sugerencia.texto}` : this.sugerencia.texto;
+${o.texto}` : o.texto;
+
+      /* Al cuadro de texto, que es donde sigue el trabajo. */
+      this.$nextTick(() => {
+        const t = this.$el.querySelector(".ads__texto");
+        if (t) { t.focus(); t.setSelectionRange(t.value.length, t.value.length); }
+      });
     },
 
     async abrir(id) {
@@ -745,13 +768,68 @@ ${this.sugerencia.texto}` : this.sugerencia.texto;
   line-height: 1.5;
 }
 
-.ads__ia-pie {
+/*
+  CADA OPCION, SEPARADA DE LA DE AL LADO.
+
+  Sin el borde se leen como un texto largo con botones en el medio, y
+  hay que releer para saber donde termina una y empieza la otra. La
+  primera va un poco mas clara: es la que propone de verdad.
+*/
+.ads__op {
+  margin-top: 9px;
+  padding: 8px 10px 2px;
+  border-radius: 10px;
+  border: 1px solid $borde;
+  background: rgba(10, 22, 48, .5);
+
+  &.is-primera {
+    border-color: rgba(63, 124, 240, .4);
+    background: rgba(63, 124, 240, .07);
+  }
+}
+
+.ads__op-cabeza {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 10px;
-  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 24px;
 }
+
+.ads__op-marca {
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: $azul;
+  color: #fff;
+  font-weight: 900;
+  font-size: 10px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.ads__op-eti {
+  color: $texto-4;
+  font-weight: 800;
+  font-size: 11.5px;
+}
+
+.ads__op-b {
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 7px;
+  border: 1px solid $borde-fuerte;
+  background: $panel-alto;
+  color: $texto-2;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 11.5px;
+  cursor: pointer;
+  @include foco;
+
+  &:hover:not(:disabled) { background: $azul; border-color: $azul; color: #fff; }
+  &:disabled { opacity: .5; cursor: default; }
+}
+
+.ads__ia-motivo { display: block; margin-top: 10px; }
 
 .ads__ia-nota { font-size: 11.5px; }
 

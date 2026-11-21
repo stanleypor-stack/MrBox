@@ -347,7 +347,7 @@ async function verDelEquipo(hiloId) {
   const b = hilo.borradorIa || {};
   const borrador = b.creadoEl
     ? {
-      texto: b.texto || "",
+      opciones: (b.opciones || []).map((o) => ({ etiqueta: o.etiqueta || "", texto: o.texto || "" })),
       confianza: b.confianza || 0,
       categoria: b.categoria || "",
       derivar: !!b.derivar,
@@ -388,7 +388,7 @@ async function escribirBorrador({ hiloId, admin }) {
   const b = await ia.borradorDeSoporte({ hilo, ficha });
 
   hilo.borradorIa = {
-    texto: b.texto,
+    opciones: b.opciones,
     confianza: b.confianza,
     categoria: b.categoria,
     derivar: b.derivar,
@@ -411,7 +411,7 @@ async function escribirBorrador({ hiloId, admin }) {
   await hilo.save();
 
   return {
-    texto: b.texto,
+    opciones: b.opciones,
     confianza: b.confianza,
     categoria: b.categoria,
     derivar: b.derivar,
@@ -431,10 +431,29 @@ async function responder(datos) {
   const hilo = await SupportThread.findById(datos.hiloId);
   if (!hilo) throw errorDe("NOT_FOUND");
 
+  /*
+    EL JUGADOR NO VE EL NOMBRE DE USUARIO DE NADIE.
+
+    Esto mandaba `datos.admin.username`, o sea el nombre con el que
+    esa persona entra al panel. En local da igual; en produccion es
+    el nombre interno de la cuenta de un empleado, que no es asunto
+    del jugador y ademas es la mitad de un intento de entrar.
+
+    Manda el nombre propio del que contesta si lo tiene puesto, y si
+    no la firma de la casa. El usuario no sale nunca: `autor` guarda
+    el id, que es lo que hace falta para saber quien fue.
+  */
+  const cfg = await Settings.leer();
+  const firma = String(
+    datos.admin.nombreDeSoporte
+    || ((cfg && cfg.soporte && cfg.soporte.firma) || "")
+    || "Soporte"
+  ).trim();
+
   hilo.agregar({
     deAdmin: true,
     autor: datos.admin._id,
-    nombre: datos.admin.username,
+    nombre: firma,
     texto,
   });
 

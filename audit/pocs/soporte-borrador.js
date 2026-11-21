@@ -76,6 +76,16 @@ function clienteFalso(guion) {
   };
 }
 
+/* Lo que contestaria el modelo. `opciones` por omision, que es lo
+   que ahora pide el esquema. */
+const conOpciones = (extra = {}) => Object.assign({
+  opciones: [
+    { etiqueta: "corta y al grano", texto: "Ya lo estoy mirando, te confirmo por acá." },
+    { etiqueta: "con el detalle", texto: "Lo estoy mirando con el detalle del pago delante. Te confirmo por acá apenas tenga la respuesta." },
+  ],
+  confianza: 0.9, categoria: "caja", derivar: false, motivo: "Respuesta guardada 1.",
+}, extra);
+
 const respuestaDe = (obj, extra = {}) => Object.assign({
   model: "claude-haiku-5-5",
   stop_reason: "end_turn",
@@ -127,13 +137,7 @@ const respuestaDe = (obj, extra = {}) => Object.assign({
 
   console.log("\n1. QUE SE LE MANDA A LA API");
 
-  const falso = clienteFalso(respuestaDe({
-    borrador: "Lo estamos mirando.",
-    confianza: 0.95,
-    categoria: "retiro",
-    derivar: false,
-    motivo: "Sale de la respuesta guardada 2.",
-  }));
+  const falso = clienteFalso(respuestaDe(conOpciones({ categoria: "retiro", confianza: 0.95 })));
 
   await ia.borradorDeSoporte({ hilo, ficha, conQue: falso });
   const pedido = falso.visto[0];
@@ -174,42 +178,87 @@ const respuestaDe = (obj, extra = {}) => Object.assign({
     El caso que importa: el modelo dice que NO hace falta una persona
     y encima esta segurisimo. Como es un retiro, se deriva igual.
   */
-  const seguro = clienteFalso(respuestaDe({
-    borrador: "Tu retiro ya fue aprobado, te llega hoy.",
-    confianza: 0.99,
-    categoria: "retiro",
-    derivar: false,
-    motivo: "Estoy seguro.",
-  }));
+  const seguro = clienteFalso(respuestaDe(conOpciones({
+    opciones: [
+      { etiqueta: "directa", texto: "Tu retiro ya fue aprobado, te llega hoy." },
+      { etiqueta: "con plazo", texto: "Tu retiro salio, te llega antes de la noche." },
+    ],
+    confianza: 0.99, categoria: "retiro", derivar: false, motivo: "Estoy seguro.",
+  })));
   const r1 = await ia.borradorDeSoporte({ hilo, ficha, conQue: seguro });
   bien(r1.derivar === true,
     "un retiro se deriva aunque el modelo diga que no y tenga 99% de confianza");
 
-  const flojo = clienteFalso(respuestaDe({
-    borrador: "Creo que es por el horario.",
-    confianza: 0.4,
-    categoria: "caja",
-    derivar: false,
-    motivo: "No estoy seguro.",
-  }));
+  const flojo = clienteFalso(respuestaDe(conOpciones({ confianza: 0.4, motivo: "No estoy seguro." })));
   const r2 = await ia.borradorDeSoporte({ hilo, ficha, conQue: flojo });
   bien(r2.derivar === true, "con 40% de confianza tambien se deriva");
 
-  const bueno = clienteFalso(respuestaDe({
-    borrador: "Las cajas pagan lo mismo que las de la casa.",
-    confianza: 0.93,
-    categoria: "caja",
-    derivar: false,
-    motivo: "Respuesta guardada 1.",
-  }));
+  const bueno = clienteFalso(respuestaDe(conOpciones({ confianza: 0.93 })));
   const r3 = await ia.borradorDeSoporte({ hilo, ficha, conQue: bueno });
   bien(r3.derivar === false, "una pregunta de cajas con 93% no se deriva");
 
-  const inventado = clienteFalso(respuestaDe({
-    borrador: "x", confianza: 0.9, categoria: "lo-que-sea", derivar: false, motivo: "",
-  }));
+  const inventado = clienteFalso(respuestaDe(conOpciones({ categoria: "lo-que-sea" })));
   const r4 = await ia.borradorDeSoporte({ hilo, ficha, conQue: inventado });
   bien(r4.categoria === "otro", "una categoria que no existe cae en 'otro'");
+
+  console.log("\n3b. SIEMPRE MAS DE UNA, Y DISTINTAS");
+
+  const esquema = pedido.output_config.format.schema.properties.opciones;
+  bien(esquema.minItems === 2, "el esquema exige dos como minimo");
+  bien(esquema.maxItems === 3, "y tres como maximo, que mas no se leen");
+  bien(r3.opciones.length >= 2, `devuelve ${r3.opciones.length} opciones`);
+  bien(r3.opciones.every((o) => o.texto && o.etiqueta),
+    "cada una con su texto y su etiqueta de en que se diferencia");
+
+  /* Dos que dicen lo mismo no son dos opciones. */
+  const repetidas = clienteFalso(respuestaDe(conOpciones({
+    opciones: [
+      { etiqueta: "a", texto: "Ya lo estoy mirando." },
+      { etiqueta: "b", texto: "ya lo   estoy MIRANDO." },
+      { etiqueta: "c", texto: "Lo paso al area de pagos y te confirmo." },
+    ],
+  })));
+  const rRep = await ia.borradorDeSoporte({ hilo, ficha, conQue: repetidas });
+  bien(rRep.opciones.length === 2,
+    `dos que dicen lo mismo cuentan como una (quedaron ${rRep.opciones.length})`);
+
+  const vacias = clienteFalso(respuestaDe(conOpciones({ opciones: [] })));
+  let codigoVacio = "";
+  try { await ia.borradorDeSoporte({ hilo, ficha, conQue: vacias }); }
+  catch (e) { codigoVacio = e.codigo || e.code || ""; }
+  bien(codigoVacio === "AI_BAD_OUTPUT",
+    "si no manda ninguna, es un error y no un borrador vacio");
+
+  console.log("\n3c. COMO SUENA, Y CON QUE NOMBRE SALE");
+
+  const reglas = pedido.system[0].text;
+  bien(reglas.includes("Nunca decís que sos una inteligencia artificial"),
+    "las reglas le prohiben presentarse como IA");
+  bien(reglas.includes("consultar con mi responsable"),
+    "y le dan la formula para cuando lo decide un humano");
+  bien(reglas.includes("Lamento los inconvenientes") && reglas.includes("no dudes en contactarnos"),
+    "con la lista de muletillas que delatan a una maquina");
+  bien(reglas.includes("Sin firma ni nombre al final"),
+    "y no firma el texto: eso lo pone el sitio");
+
+  /* La firma: el jugador no ve el nombre de usuario de nadie. */
+  const cfg0 = await Settings.leer();
+  await soporte.responder({ hiloId: hilo._id, admin, texto: "Probando la firma." });
+  const trasResponder = await soporte.verDelEquipo(hilo._id);
+  const ultimo = trasResponder.mensajes[trasResponder.mensajes.length - 1];
+
+  bien(ultimo.nombre !== admin.username,
+    `no firma con el usuario del panel (firmo "${ultimo.nombre}", el usuario es "${admin.username}")`);
+  bien(ultimo.nombre === ((cfg0.soporte || {}).firma || "Soporte"),
+    "firma con el nombre de la casa");
+
+  await User.updateOne({ _id: admin._id }, { $set: { nombreDeSoporte: "Martin" } });
+  const admin2 = await User.findById(admin._id).lean();
+  await soporte.responder({ hiloId: hilo._id, admin: admin2, texto: "Y ahora con el mio." });
+  const trasPropio = await soporte.verDelEquipo(hilo._id);
+  bien(trasPropio.mensajes[trasPropio.mensajes.length - 1].nombre === "Martin",
+    "y si la persona tiene nombre propio, gana el suyo");
+  await User.updateOne({ _id: admin._id }, { $unset: { nombreDeSoporte: "" } });
 
   console.log("\n4. PEDIR UN BORRADOR NO LE ESCRIBE A NADIE");
 
@@ -217,7 +266,11 @@ const respuestaDe = (obj, extra = {}) => Object.assign({
   await SupportThread.updateOne({ _id: hilo._id }, {
     $set: {
       borradorIa: {
-        texto: "Propuesta de prueba.", confianza: 0.9, categoria: "retiro",
+        opciones: [
+          { etiqueta: "corta", texto: "Propuesta de prueba." },
+          { etiqueta: "con detalle", texto: "Propuesta de prueba, la segunda." },
+        ],
+        confianza: 0.9, categoria: "retiro",
         derivar: true, motivo: "ojo, viene enojado", modelo: "claude-haiku-5-5",
         sobreMensajes: antes.mensajes.length, creadoEl: new Date(), pedidoPor: admin._id,
       },
@@ -245,8 +298,9 @@ const respuestaDe = (obj, extra = {}) => Object.assign({
   bien(!/borradorIa|borrador/.test(cuerpoJugador), "ni siquiera viaja el campo");
 
   const delEquipo = await soporte.verDelEquipo(hilo._id);
-  bien(!!delEquipo.borrador && delEquipo.borrador.texto === "Propuesta de prueba.",
-    "pero el equipo si lo ve en su ficha");
+  bien(!!delEquipo.borrador && delEquipo.borrador.opciones.length === 2
+    && delEquipo.borrador.opciones[0].texto === "Propuesta de prueba.",
+  "pero el equipo si ve las dos opciones en su ficha");
   bien(delEquipo.borrador.derivar === true, "con su marca de 'esto lo contesta una persona'");
   bien(delEquipo.borrador.viejo === false, "y al dia, porque no llegaron mensajes despues");
 

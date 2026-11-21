@@ -1801,7 +1801,8 @@ export default {
       "fillerOn": "Fill the live pulls strip",
       "perMinute": "Filler per minute",
       "cheapPct": "How many are cheap, out of a hundred",
-      "cheapUpTo": "Cheap means up to"
+      "cheapUpTo": "Cheap means up to",
+      "firma": "Name players see on replies"
     },
     "setHelp": {
       "siteName": "Shown in titles and emails.",
@@ -1838,7 +1839,8 @@ export default {
       "fillerOn": "Adds filler openings to the strip while the site is new. They touch nothing: no ledger, no inventory, no prize for anyone.",
       "perMinute": "The prototype runs at 60, one a second.",
       "cheapPct": "85 looks like a real strip, because cheap prizes are what actually come out.",
-      "cheapUpTo": "In SC."
+      "cheapUpTo": "In SC.",
+      "firma": "What support replies are signed with. Without it the player sees the internal username of whoever answered. Anyone on the team can override it with their own name on their account."
     },
     "edit": "Edit",
     "needReason": "A reason is required.",
@@ -1959,6 +1961,7 @@ export default {
       "again": "Redo",
       "thinking": "Writing…",
       "use": "Use this",
+      "first": "my pick",
       "confidence": "confidence",
       "empty": "Nobody has asked for a draft on this one yet.",
       "stale": "A message came in after this was written, so it does not answer the last one. Redo it.",

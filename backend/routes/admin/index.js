@@ -1105,7 +1105,7 @@ router.put("/settings", soloAdmin(["owner"]), async (req, res) => {
       "pozosDeCarrera", "pozosDeCarrera.daily", "pozosDeCarrera.weekly", "pozosDeCarrera.monthly",
       /* Soporte */
       "soporte.respuestaAutomatica", "soporte.horarioMostrado",
-      "soporte.borradorDeIa", "soporte.modeloDeIa", "soporte.umbralDeIa",
+      "soporte.borradorDeIa", "soporte.modeloDeIa", "soporte.umbralDeIa", "soporte.firma",
       /* La cinta de Live Pulls */
       "pulls.relleno", "pulls.porMinuto", "pulls.baratosPct", "pulls.topeSc",
     ];

@@ -308,6 +308,10 @@ const userSchema = new mongoose.Schema(
 
     rank: { type: String, enum: ["user", "support", "admin", "owner"], default: "user", index: true },
 
+    /* Con que nombre firma en el chat de soporte. Vacio: la firma
+       de la casa (Settings.soporte.firma). Nunca el usuario. */
+    nombreDeSoporte: { type: String, default: "", trim: true, maxlength: 40 },
+
     /* Quién lo trajo. Se fija una vez, al registrarse, y no cambia más. */
     referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, index: true },
     affiliateCode: { type: String, default: "", trim: true, index: true },

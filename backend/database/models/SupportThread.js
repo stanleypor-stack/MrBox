@@ -83,7 +83,16 @@ const supportThreadSchema = new mongoose.Schema(
      * intentos.
      */
     borradorIa: {
-      texto: { type: String, default: "" },
+      /* Dos o tres, para elegir. Una sola no es una eleccion: o la
+         usas o la tiras, y si no te convence volves a escribir de
+         cero, que es justo el trabajo que esto venia a sacar. */
+      opciones: {
+        type: [{
+          etiqueta: { type: String, default: "" },
+          texto: { type: String, default: "" },
+        }],
+        default: [],
+      },
       confianza: { type: Number, default: 0 },
       categoria: { type: String, default: "" },
       derivar: { type: Boolean, default: false },

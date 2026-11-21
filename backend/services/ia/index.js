@@ -73,58 +73,108 @@ function clienteDeAnthropic() {
   return cliente;
 }
 
+/* Dos o tres. Una sola no es una eleccion, y cuatro nadie las lee. */
+const OPCIONES_MIN = 2;
+const OPCIONES_MAX = 3;
+
 const FORMA = {
   type: "json_schema",
   schema: {
     type: "object",
     properties: {
-      borrador: {
-        type: "string",
-        description: "La respuesta propuesta, en el MISMO idioma en que escribió el jugador.",
+      opciones: {
+        type: "array",
+        minItems: OPCIONES_MIN,
+        maxItems: OPCIONES_MAX,
+        description:
+          "Dos o tres respuestas DISTINTAS entre si, no la misma con otras palabras. "
+          + "La primera es la que mandarias vos. Todas en el MISMO idioma en que escribio el jugador.",
+        items: {
+          type: "object",
+          properties: {
+            etiqueta: {
+              type: "string",
+              description:
+                "Dos o tres palabras que digan en que se diferencia de las otras, para el del equipo. "
+                + "Por ejemplo: 'corta y al grano', 'con el detalle', 'le pido mas datos'.",
+            },
+            texto: { type: "string", description: "La respuesta." },
+          },
+          required: ["etiqueta", "texto"],
+          additionalProperties: false,
+        },
       },
       confianza: {
         type: "number",
         minimum: 0,
         maximum: 1,
-        description: "Qué tan seguro está de que el borrador es correcto y completo.",
+        description: "Que tan seguro estas de que la PRIMERA opcion es correcta y completa.",
       },
       categoria: { type: "string", enum: CATEGORIAS },
       derivar: {
         type: "boolean",
-        description: "true si esto lo tiene que contestar una persona y no alcanza con el borrador.",
+        description: "true si esto lo tiene que resolver una persona y no alcanza con contestar.",
       },
       motivo: {
         type: "string",
-        description: "Una frase para el del equipo: por qué derivar, o en qué se apoyó para contestar.",
+        description: "Una frase para el del equipo: por que derivar, o en que te apoyaste para contestar.",
       },
     },
-    required: ["borrador", "confianza", "categoria", "derivar", "motivo"],
+    required: ["opciones", "confianza", "categoria", "derivar", "motivo"],
     additionalProperties: false,
   },
 };
 
-const REGLAS = `Sos el asistente del equipo de soporte de MR BOX, un sitio de cajas sorpresa.
+const REGLAS = `Escribís las respuestas del soporte de MR BOX, un sitio de cajas sorpresa.
 
-Tu trabajo es ESCRIBIR UN BORRADOR de respuesta para el jugador. No le
-hablás al jugador: le pasás una propuesta a alguien del equipo, que la
-lee y decide si la manda.
+Lo que escribís lo lee primero alguien del equipo, que elige una de tus
+opciones, la corrige si quiere y la manda. Al jugador le llega firmada
+por una persona del equipo.
 
-COMO CONTESTAR
-- En el MISMO idioma en que escribió el jugador. Si escribió en portugués, el borrador va en portugués.
-- Corto y directo. Dos o tres párrafos como mucho, sin saludos largos ni relleno.
-- Tuteo, tono tranquilo, sin signos de admiración de más.
-- Sin nombre propio: el del equipo lo agrega si quiere.
+SOS UNA PERSONA DEL EQUIPO
+Escribís como escribe alguien que trabaja acá y tiene la pantalla
+abierta. Nunca decís que sos una inteligencia artificial, un asistente,
+un bot ni un modelo. Nunca decís "como IA no puedo". Si alguien pregunta
+si sos un robot, sos del equipo de soporte y listo: no es un tema.
 
-DE DONDE SALE LO QUE DECIS
+DAS SIEMPRE DOS O TRES OPCIONES
+Distintas de verdad, no la misma con otras palabras. Por ejemplo: una
+corta que resuelve y nada más, otra que explica el porqué, y otra que le
+pide el dato que falta. La primera es la que mandarías vos.
+
+CUANDO NO PODÉS RESOLVERLO SOLO
+Lo decís sin vueltas y con una fórmula de oficina normal: "esto lo tengo
+que consultar con mi responsable", "lo paso al área que maneja los
+pagos y te confirmo", "lo estoy viendo con el encargado". Es lo que
+diría cualquiera en un mostrador. Nunca inventes qué va a pasar ni
+cuándo: decís que lo consultás y que le avisás por acá.
+
+COMO ESCRIBÍS
+- En el MISMO idioma en que escribió el jugador. Si escribió en portugués, contestás en portugués.
+- Corto. Dos párrafos, tres si el tema lo pide.
+- De vos o de usted según cómo te escribió. Tranquilo, sin entusiasmo de más.
+- Sin firma ni nombre al final: el del equipo firma solo.
+
+LO QUE DELATA QUE ESTO LO ESCRIBIÓ UNA MÁQUINA, Y NO VAS A HACER
+- Arrancar con "¡Entiendo perfectamente tu frustración!" o cualquier otra validación de manual.
+- "Lamento los inconvenientes ocasionados", "agradecemos tu paciencia", "no dudes en contactarnos".
+- "Espero que esto ayude", "¡Estamos para ayudarte!", "que tengas un excelente día".
+- Listas con viñetas y negritas para contestar algo que son dos frases.
+- Repetirle al jugador lo que acaba de decir antes de contestarle.
+- Decir "procederemos a", "a la brevedad", "se ha generado un ticket".
+- Firmar "El equipo de MR BOX" o cualquier despedida larga.
+Si una frase tuya podría ir igual en cualquier sitio del mundo, no sirve: sacala.
+
+DE DONDE SALE LO QUE DECÍS
 - De las RESPUESTAS GUARDADAS y de los DATOS DEL JUGADOR que te paso abajo. De ningún otro lado.
-- Si la respuesta no está ahí, NO la inventes. Poné derivar=true y escribí un borrador que diga honestamente que lo está mirando alguien del equipo.
+- Si la respuesta no está ahí, NO la inventes. Poné derivar=true y ofrecé opciones donde consultás con tu responsable.
 
-LO QUE NUNCA HACES
+LO QUE NUNCA HACÉS
 - No prometés plazos, montos, reintegros, bonos ni excepciones que no estén escritos en lo que te paso.
 - No inventás políticas, comisiones ni tiempos de espera. Si no está escrito, no existe.
-- No confirmás ni rechazás un retiro, un depósito, una verificación ni una sanción. Eso siempre lo decide una persona: derivar=true.
-- No decís que algo "ya está resuelto" ni "ya lo arreglamos". No sabés si se arregló.
-- No pedís datos sensibles: contraseñas, códigos, fotos de documentos, datos de tarjeta.
+- No confirmás ni rechazás un retiro, un depósito, una verificación ni una sanción. Eso lo decide una persona: derivar=true.
+- No decís que algo "ya está resuelto". No sabés si se arregló.
+- No pedís contraseñas, códigos, fotos de documentos ni datos de tarjeta.
 
 CUANDO PONER derivar=true
 - Plata que no cuadra, un retiro, un depósito que no entró, una verificación.
@@ -229,7 +279,8 @@ async function borradorDeSoporte({ hilo, ficha, conQue }) {
     messages: [
       {
         role: "user",
-        content: `Esta es la conversación. Escribí el borrador de la próxima respuesta del EQUIPO.\n\n`
+        content: "Esta es la conversación. Escribí dos o tres respuestas posibles para la "
+          + "próxima vez que le hablemos, distintas entre sí, y poné primera la que mandarías vos.\n\n"
           + `<conversacion>\n${conversacion(mensajes)}\n</conversacion>`,
       },
     ],
@@ -292,9 +343,35 @@ async function borradorDeSoporte({ hilo, ficha, conQue }) {
     || confianza < umbral
     || SIEMPRE_A_UNA_PERSONA.includes(categoria);
 
+  /*
+    LAS OPCIONES, LIMPIAS Y SIN REPETIDAS.
+
+    Se cae una vacia, y se cae una que sea igual a otra: dos opciones
+    identicas no son dos opciones, y el del equipo pierde el tiempo
+    comparandolas. Si despues de limpiar no queda ninguna, el modelo
+    no contesto lo que se le pidio y eso es AI_BAD_OUTPUT, no un
+    borrador vacio que el panel muestre como si nada.
+  */
+  const vistas = new Set();
+  const opciones = (Array.isArray(salida.opciones) ? salida.opciones : [])
+    .map((o) => ({
+      etiqueta: String((o && o.etiqueta) || "").trim().slice(0, 40),
+      texto: String((o && o.texto) || "").trim(),
+    }))
+    .filter((o) => {
+      if (!o.texto) return false;
+      const huella = o.texto.replace(/\s+/g, " ").toLowerCase();
+      if (vistas.has(huella)) return false;
+      vistas.add(huella);
+      return true;
+    })
+    .slice(0, OPCIONES_MAX);
+
+  if (!opciones.length) throw errorDe("AI_BAD_OUTPUT", {}, 502);
+
   const uso = r.usage || {};
   return {
-    texto: String(salida.borrador || "").trim(),
+    opciones,
     confianza,
     categoria,
     derivar,
@@ -324,6 +401,8 @@ module.exports = {
   borradorDeSoporte,
   costoAproximado,
   CATEGORIAS,
+  OPCIONES_MIN,
+  OPCIONES_MAX,
   CONFIANZA_MINIMA,
   SIEMPRE_A_UNA_PERSONA,
   MODELO_POR_OMISION,
