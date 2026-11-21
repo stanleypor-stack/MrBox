@@ -894,6 +894,7 @@ export default {
     },
     "payments": "Выплаты",
     "claimedTotal": "Всего выплачено SC {amount}",
+    "paymentsShown": "последние {n} из {total}",
     "noPayments": "Выплат пока нет. Ваша доля появится здесь, как только кто-то откроет вашу коробку."
   },
   "order": {

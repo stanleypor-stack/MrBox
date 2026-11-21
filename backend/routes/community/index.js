@@ -189,10 +189,30 @@ router.get("/earnings", autorizar(true), async (req, res) => {
 router.get("/payments", autorizar(true), async (req, res) => {
   try {
     const porPagina = Math.min(100, Math.max(1, Number(req.query.perPage) || 25));
-    const filas = await BalanceTransaction.find({ user: req.user._id, type: "creator_share" })
-      .sort({ createdAt: -1 })
-      .limit(porPagina)
-      .lean();
+    const filtro = { user: req.user._id, type: "creator_share" };
+
+    /*
+      EL TOTAL ES DE TODO, NO DE LA PAGINA.
+
+      Antes `totalSc` era la suma de las filas que volvian --veinticinco
+      por omision-- y la pantalla lo muestra con el cartel "pagados en
+      total". Un creador con trescientos pagos leia arriba que habia
+      ganado SC 2.400 y abajo que le habian pagado SC 196.
+
+      La lista sigue siendo las ultimas veinticinco, que es lo que se
+      quiere ver. Lo que cambia es que el total lo cuenta la base sobre
+      TODAS las filas, y que viaja `cuantos` para que la pantalla pueda
+      decir cuantas esta mostrando de cuantas.
+    */
+    const [filas, resumen] = await Promise.all([
+      BalanceTransaction.find(filtro).sort({ createdAt: -1 }).limit(porPagina).lean(),
+      BalanceTransaction.aggregate([
+        { $match: filtro },
+        { $group: { _id: null, total: { $sum: "$amountSc" }, cuantos: { $sum: 1 } } },
+      ]),
+    ]);
+
+    const todo = resumen[0] || { total: 0, cuantos: 0 };
 
     return res.json({
       success: true,
@@ -203,7 +223,8 @@ router.get("/payments", autorizar(true), async (req, res) => {
           amountSc: sc(f.amountSc),
           createdAt: f.createdAt,
         })),
-        totalSc: sc(filas.reduce((a, f) => a + f.amountSc, 0)),
+        totalSc: sc(todo.total),
+        cuantos: todo.cuantos,
       },
     });
   } catch (err) {

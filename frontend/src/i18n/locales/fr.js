@@ -894,6 +894,7 @@ export default {
     },
     "payments": "Paiements",
     "claimedTotal": "SC {amount} versés au total",
+    "paymentsShown": "les {n} derniers sur {total}",
     "noPayments": "Rien de versé pour l’instant. Ta part apparaît ici dès qu’un joueur ouvre un de tes coffrets."
   },
   "order": {

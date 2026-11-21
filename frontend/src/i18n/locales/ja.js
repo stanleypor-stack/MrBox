@@ -894,6 +894,7 @@ export default {
     },
     "payments": "支払い",
     "claimedTotal": "合計 SC {amount} 支払済み",
+    "paymentsShown": "{total} 件中 {n} 件",
     "noPayments": "まだ支払いはありません。誰かがあなたのボックスを開けた瞬間にここに出ます。"
   },
   "order": {

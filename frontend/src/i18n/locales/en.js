@@ -894,6 +894,7 @@ export default {
     },
     "payments": "Payments",
     "claimedTotal": "SC {amount} paid out in total",
+    "paymentsShown": "last {n} of {total}",
     "noPayments": "Nothing paid out yet. Your cut lands here the moment someone opens one of your boxes."
   },
   "order": {

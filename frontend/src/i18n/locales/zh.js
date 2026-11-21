@@ -894,6 +894,7 @@ export default {
     },
     "payments": "收款",
     "claimedTotal": "共支付 SC {amount}",
+    "paymentsShown": "共 {total} 笔，显示最近 {n} 笔",
     "noPayments": "还没有收款。有人开你的盒子时，分成就会出现在这里。"
   },
   "order": {

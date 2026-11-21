@@ -15,7 +15,7 @@
           <span class="mb-pc__sub">
             {{ $tc('dashboard.boxesLive', total.alAire, { n: total.alAire }) }}
             ·
-            {{ $t('dashboard.creatorSince', { fecha: fecha(usuario.createdAt) }) }}
+            {{ $t('dashboard.creatorSince', { fecha: fecha(creadorDesde) }) }}
           </span>
           <span class="mb-pc__parte" v-html="$t('dashboard.youKeep', { pct: Math.round(parte * 100) })"></span>
         </div>
@@ -149,7 +149,15 @@
       <section class="mb-pc__seccion">
         <div class="mb-pc__titulo">
           <h2>{{ $t('dashboard.payments') }}</h2>
-          <span>{{ $t('dashboard.claimedTotal', { amount: plata(pagos.totalSc) }) }}</span>
+          <span>
+            {{ $t('dashboard.claimedTotal', { amount: plata(pagos.totalSc) }) }}
+            <!-- Y cuantas de cuantas, cuando la lista no las trae todas:
+                 el total de al lado es de TODAS, la tabla no. -->
+            <template v-if="pagos.cuantos > pagos.items.length">
+              &middot;
+              {{ $t('dashboard.paymentsShown', { n: pagos.items.length, total: pagos.cuantos }) }}
+            </template>
+          </span>
         </div>
 
         <p v-if="!pagos.items.length" class="mb-vacio mb-vacio--chico">{{ $t('dashboard.noPayments') }}</p>
@@ -197,7 +205,7 @@ export default {
       parte: 0.5,
       tope: 20,
       ganancias: { dias: 30, serie: [], ganadoSc: 0, aperturas: 0, porAperturaSc: 0 },
-      pagos: { items: [], totalSc: 0 },
+      pagos: { items: [], totalSc: 0, cuantos: 0 },
     };
   },
 
@@ -210,6 +218,22 @@ export default {
     },
 
     libres() { return Math.max(0, this.tope - this.total.cajas); },
+
+    /*
+      CREADOR DESDE SU PRIMERA CAJA, NO DESDE QUE SE REGISTRO.
+
+      Decia `usuario.createdAt`, que es el dia que se hizo la cuenta.
+      Alguien que juega hace dos anos y arma su primera caja hoy leia
+      "creador desde 2024", que no es cierto y ademas le quita merito
+      a lo que acaba de hacer.
+
+      Las cajas vienen de la mas nueva a la mas vieja, asi que la
+      primera es la ultima de la lista.
+    */
+    creadorDesde() {
+      if (this.cajas.length) return this.cajas[this.cajas.length - 1].createdAt;
+      return this.usuario && this.usuario.createdAt;
+    },
 
     /** El tope de la curva. Nunca cero: dividir por cero aplana todo. */
     techo() {

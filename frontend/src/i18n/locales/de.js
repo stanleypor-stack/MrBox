@@ -894,6 +894,7 @@ export default {
     },
     "payments": "Auszahlungen",
     "claimedTotal": "SC {amount} insgesamt ausgezahlt",
+    "paymentsShown": "letzte {n} von {total}",
     "noPayments": "Noch nichts ausgezahlt. Dein Anteil erscheint hier, sobald jemand eine deiner Boxen öffnet."
   },
   "order": {
