@@ -443,6 +443,9 @@ export default {
         this.$store.dispatch("avisar", { texto: this.$t("admin.done") });
         this.pidiendo = null;
         await this.traer(this.pagina);
+        /* Aprobar un canje o un KYC vacia una cola: el numero del menu
+           tiene que bajar ahi mismo y no en el proximo reloj. */
+        this.$store.dispatch("traerPendientesDelPanel");
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
       } finally {

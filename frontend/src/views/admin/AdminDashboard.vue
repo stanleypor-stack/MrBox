@@ -222,14 +222,14 @@ export default {
         this.d = data.data;
         this.traidoEl = Date.now();
         this.hace = 0;
-        /* El menú muestra estos números al lado de cada sección: es lo
-           que hace que alguien entre a mirarlas. */
-        this.$emit("pendientes", {
-          orders: this.d.pendientes.pedidos,
-          verification: this.d.pendientes.verificaciones,
-          community: this.d.pendientes.cajasDeComunidad,
-          support: this.d.pendientes.soporte,
-        });
+        /*
+          Y de paso el menu, que muestra lo mismo al costado de cada
+          seccion. Antes esta pantalla se los EMITIA al menu, y por eso
+          el menu no tenia numeros hasta que alguien entraba al
+          dashboard. Ahora los tiene por su cuenta; esto solo le avisa
+          que acaba de llegar algo fresco.
+        */
+        this.$store.dispatch("traerPendientesDelPanel");
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
       }

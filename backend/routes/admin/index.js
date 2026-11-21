@@ -9,6 +9,7 @@ const BoxOpen = require("../../database/models/BoxOpen");
 const Deal = require("../../database/models/Deal");
 const BalanceTransaction = require("../../database/models/BalanceTransaction");
 const Verification = require("../../database/models/Verification");
+const Redemption = require("../../database/models/Redemption");
 const SupportThread = require("../../database/models/SupportThread");
 const AdminLog = require("../../database/models/AdminLog");
 const AffiliateCode = require("../../database/models/AffiliateCode");
@@ -57,6 +58,47 @@ function paginar(req, porDefecto = 25) {
  * Todo sale del LIBRO, no de contadores: si un número de acá no coincide
  * con la suma de las transacciones, el que está mal es el número.
  */
+/**
+ * LO QUE ESPERA QUE ALGUIEN LO MIRE.
+ *
+ * Cinco colas, cinco `countDocuments` sobre campos indexados. Es lo
+ * que dibuja la pelotita amarilla de cada seccion del menu.
+ *
+ * Vive aca y lo usan la ruta de abajo y el dashboard: si cada uno
+ * contara por su lado, el menu y la pantalla podrian decir numeros
+ * distintos de la misma cola, que es peor que no decir nada.
+ *
+ * `redemptions` es el que faltaba, y es el que mas importa: es la
+ * unica cola por la que sale plata.
+ */
+async function contarPendientes() {
+  const [pedidos, verificaciones, cajasDeComunidad, soporte, canjes] = await Promise.all([
+    Order.countDocuments({ estado: { $in: ["pending", "packing"] } }),
+    Verification.countDocuments({ estado: "pending" }),
+    Box.countDocuments({ creator: { $ne: null }, approvalState: "pending" }),
+    SupportThread.countDocuments({ estado: "waiting_us" }),
+    /* Pendiente Y aprobado: un canje aprobado todavia hay que pagarlo,
+       asi que sigue siendo trabajo de alguien. */
+    Redemption.countDocuments({ estado: { $in: ["pending", "approved"] } }),
+  ]);
+
+  return { pedidos, verificaciones, cajasDeComunidad, soporte, canjes };
+}
+
+/**
+ * SOLO LOS CONTADORES.
+ *
+ * El menu la llama al entrar, al cambiar de seccion, despues de cada
+ * accion y cada tanto. Tiene que ser barata: cinco cuentas y nada mas.
+ */
+router.get("/pendientes", async (req, res) => {
+  try {
+    return res.json({ success: true, data: await contarPendientes() });
+  } catch (err) {
+    return responderError(res, err, "pendientes");
+  }
+});
+
 router.get("/dashboard", async (req, res) => {
   try {
     const dias = Math.min(90, Math.max(1, Number(req.query.days) || 14));
@@ -70,12 +112,7 @@ router.get("/dashboard", async (req, res) => {
       User.countDocuments({ rank: "user" }),
       User.countDocuments({ rank: "user", createdAt: { $gte: desde } }),
       Box.countDocuments({ live: true }),
-      Promise.all([
-        Order.countDocuments({ estado: { $in: ["pending", "packing"] } }),
-        Verification.countDocuments({ estado: "pending" }),
-        Box.countDocuments({ creator: { $ne: null }, approvalState: "pending" }),
-        SupportThread.countDocuments({ estado: "waiting_us" }),
-      ]),
+      contarPendientes(),
     ]);
 
     const de = (t) => {
@@ -146,12 +183,7 @@ router.get("/dashboard", async (req, res) => {
         jugadores,
         nuevos,
         cajasVivas,
-        pendientes: {
-          pedidos: pendientes[0],
-          verificaciones: pendientes[1],
-          cajasDeComunidad: pendientes[2],
-          soporte: pendientes[3],
-        },
+        pendientes,
         serie: serie.map((s) => ({ dia: s._id, jugadoSc: sc(s.total) })),
         top: top.map((t) => ({ name: t._id, aperturas: t.aperturas, jugadoSc: sc(t.jugadoSc) })),
       },

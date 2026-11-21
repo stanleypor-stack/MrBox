@@ -84,6 +84,16 @@ export default new Vuex.Store({
       "todavia no se pidio"; una lista vacia es "no hay ninguna".
     */
     carreras: null,
+
+    /*
+      LO QUE ESPERA EN EL PANEL.
+
+      Las pelotitas amarillas del menu. Viven aca y no en la pantalla
+      que esta abierta: antes las emitia el dashboard, asi que entrar
+      derecho a cualquier otra seccion no mostraba ninguna, y la
+      pantalla de soporte --que emitia solo la suya-- borraba el resto.
+    */
+    pendientesDelPanel: {},
   },
 
   getters: {
@@ -99,6 +109,7 @@ export default new Vuex.Store({
 
   mutations: {
     carreras(s, v) { s.carreras = v; },
+    pendientesDelPanel(s, v) { s.pendientesDelPanel = v || {}; },
     usuario(s, u) { s.usuario = u; },
     cargandoUsuario(s, v) { s.cargandoUsuario = !!v; },
 
@@ -167,6 +178,27 @@ export default new Vuex.Store({
         commit("carreras", Array.isArray(data.data) ? data.data : []);
       } catch {
         commit("carreras", []);
+      }
+    },
+
+    /**
+     * Cuanto espera en cada cola del panel.
+     *
+     * Se pide entera cada vez --son cinco `countDocuments` sobre
+     * campos indexados-- en vez de llevar la cuenta a mano. Restarle
+     * uno al contador despues de aprobar algo seria mas rapido y
+     * estaria mal en cuanto dos personas del equipo trabajen a la vez,
+     * que es justo cuando estos numeros importan.
+     *
+     * Si falla no toca lo que ya habia: un numero viejo es mejor que
+     * que desaparezcan todas las pelotitas por un corte de un segundo.
+     */
+    async traerPendientesDelPanel({ commit }) {
+      try {
+        const { data } = await api.get("/admin/pendientes");
+        commit("pendientesDelPanel", data.data);
+      } catch {
+        /* en silencio: es un adorno del menu, no una pantalla */
       }
     },
 

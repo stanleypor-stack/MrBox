@@ -86,7 +86,7 @@
         </header>
 
         <div class="ad__cuerpo">
-          <router-view @pendientes="pendientes = $event" />
+          <router-view />
         </div>
       </main>
     </template>
@@ -191,11 +191,29 @@ const ICONOS = {
 export default {
   name: "AdminShell",
 
-  data() { return { GRUPOS, ICONOS, menuAbierto: false, pendientes: {}, busqueda: "", conectados: 0 }; },
+  data() { return { GRUPOS, ICONOS, menuAbierto: false, busqueda: "", conectados: 0, reloj: null }; },
 
   computed: {
     ...mapState(["usuario", "cargandoUsuario"]),
     ...mapGetters(["esAdmin"]),
+
+    /*
+      LAS PELOTITAS DEL MENU.
+
+      El servidor cuenta colas; el menu tiene ids de seccion. El mapeo
+      va aca y no en el servidor: si manana una seccion cambia de
+      nombre en el menu, el que cuenta no se entera.
+    */
+    pendientes() {
+      const p = this.$store.state.pendientesDelPanel || {};
+      return {
+        orders: p.pedidos || 0,
+        verification: p.verificaciones || 0,
+        community: p.cajasDeComunidad || 0,
+        support: p.soporte || 0,
+        redemptions: p.canjes || 0,
+      };
+    },
 
     cargando() { return this.cargandoUsuario; },
     seccion() { return this.$route.path.split("/")[2] || "dashboard"; },
@@ -205,7 +223,12 @@ export default {
   },
 
   watch: {
-    $route() { this.menuAbierto = false; },
+    $route() {
+      this.menuAbierto = false;
+      /* Cambiar de seccion es el momento mas barato para refrescar:
+         ya se esta pidiendo la pantalla nueva igual. */
+      this.contar();
+    },
   },
 
   methods: {
@@ -221,6 +244,34 @@ export default {
       if (!texto) return;
       this.$router.push({ path: "/admin/players", query: { q: texto } });
     },
+
+    /* Una sola linea, pero la llaman cuatro lugares: el arranque, el
+       cambio de seccion, el reloj y cada pantalla que resuelve algo. */
+    contar() {
+      this.$store.dispatch("traerPendientesDelPanel");
+    },
+  },
+
+  created() {
+    this.contar();
+
+    /*
+      Y CADA MEDIO MINUTO.
+
+      No es para el que esta mirando --ese ya refresca al cambiar de
+      seccion y al resolver algo-- sino para la pestana que queda
+      abierta mientras otro del equipo trabaja: sin el reloj, los
+      numeros que ve son de cuando la abrio.
+
+      Treinta segundos porque son cinco `countDocuments` sobre campos
+      indexados. El dashboard entero, que es lo que se pedia antes, no
+      se podria pedir a este ritmo.
+    */
+    this.reloj = window.setInterval(this.contar, 30000);
+  },
+
+  beforeDestroy() {
+    if (this.reloj) window.clearInterval(this.reloj);
   },
 };
 </script>

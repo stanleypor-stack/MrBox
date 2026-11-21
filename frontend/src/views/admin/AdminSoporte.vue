@@ -373,7 +373,10 @@ export default {
         this.porEstado = data.data.porEstado;
         this.n = data.data.numeros || this.n;
         this.iaPrendida = !!(data.data.ia && data.data.ia.prendida);
-        this.$emit("pendientes", { support: this.esperando });
+        /* Antes era un emit con SOLO el suyo, y el menu hacia
+           `pendientes = $event`: abrir soporte borraba las pelotitas
+           de pedidos, verificaciones y cajas de comunidad. */
+        this.$store.dispatch("traerPendientesDelPanel");
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
       }
