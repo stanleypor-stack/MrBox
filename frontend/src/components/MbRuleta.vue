@@ -330,9 +330,35 @@ export default {
         3. recién ahí mover
       */
       await this.$nextTick();
+
+      /*
+        EL NAVEGADOR TIENE QUE VER EL ARRANQUE, NO SOLO RECIBIRLO.
+
+        Esto es lo que rompia la segunda apertura. Escribir el arranque
+        en el DOM no obliga al navegador a calcularlo: junta todo lo que
+        pase hasta el proximo dibujado en una sola cuenta. La primera
+        vez salia bien de pura suerte --venia de estar quieta y ya
+        dibujada-- pero de la segunda en adelante las dos escrituras
+        caian en la misma cuenta, el navegador veia la cinta pasar de
+        donde freno la vez anterior a donde frena ahora --tres pixeles--
+        y no habia nada que animar.
+
+        Leer el alto del elemento fuerza la cuenta en ese instante, con la
+        cinta en el arranque y sin transicion. Despues si: se prende la
+        transicion, se vuelve a forzar --para que la transicion tambien
+        quede aplicada-- y recien ahi se mueve.
+
+        Se fuerza leyendo el DOM y no esperando un cuadro de animacion a
+        proposito: en una pestana de atras el navegador no entrega
+        cuadros, y la promesa quedaria esperando para siempre.
+      */
+      const tiras = Array.isArray(this.$refs.tiras) ? this.$refs.tiras : [this.$refs.tiras];
+      const forzarElCalculo = () => tiras.forEach((t) => { if (t) void t.offsetHeight; });
+
+      forzarElCalculo();
       this.animando = true;
       await this.$nextTick();
-      await new Promise((r) => window.setTimeout(r, 32));
+      forzarElCalculo();
 
       this.cintas = this.cintas.map((cinta) => ({
         ...cinta,
@@ -358,6 +384,24 @@ export default {
         window.setTimeout(() => {
           this.quieta = true;
           this.girandoAhora = false;
+
+          /*
+            Y SE APAGA LA TRANSICION AL FRENAR.
+
+            La cinta ya esta donde tiene que estar: apagarla ahora no
+            mueve nada. Pero la deja en reposo SIN transicion, que es
+            como tiene que estar esperando. Antes quedaba prendida, y
+            una cinta quieta con una transicion de 5,2 segundos colgada
+            es una trampa: cualquier cosa que le toque el transform
+            --la proxima apertura, un cambio de tamano-- se va animando
+            sola desde donde quedo.
+
+            Con esto, si alguna vez fallara el forzado de arriba, lo
+            peor que pasa es que la cinta aparezca de golpe en el
+            arranque. Que se note feo, no que no pase nada.
+          */
+          this.animando = false;
+
           this.$emit("termino");
           listo();
         }, this.duracion + 80);
