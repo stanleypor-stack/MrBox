@@ -51,6 +51,7 @@ Necesitan `lib.js` al lado (helpers de sesión y de base).
 | `replay-aperturas.js` | 251 aperturas reales reproducidas exactas | verificación |
 | `comunidad-comisiones.js` | Al que arma una caja le entra su mitad, y el panel dice el mismo numero | verificacion |
 | `soporte-borrador.js` | El borrador de la IA: que no mande, que no filtre el mail, y que la plata vaya a una persona | verificacion |
+| `justo-y-afiliados.js` | El sorteo se rehace a mano y da lo mismo; y el socio cobra del margen real, nunca del negativo | verificacion |
 | `probar.js` | Arnés de los casos de inyección (`node probar.js <caso>`) | INY-* |
 
 ## Después de correrlas

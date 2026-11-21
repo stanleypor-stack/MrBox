@@ -253,6 +253,9 @@ router.get("/players/:id/full", async (req, res) => {
           freeOpens: u.freeOpens,
           affiliateCode: u.affiliateCode || "",
           referredBy: u.referredBy || null,
+          /* La foto que subio: la ficha dibujaba siempre la inicial,
+             asi que el equipo no veia la cara de la cuenta que mira. */
+          avatarUrl: u.avatarUrl || "",
           createdAt: u.createdAt,
           lastSeenAt: u.lastSeenAt,
           trabas: u.trabas || {},

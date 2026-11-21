@@ -188,6 +188,8 @@ PANEL = {
     "admin.col.montoSc": "Amount",
     "admin.col.moneda": "Coin",
     "admin.col.direccion": "Address",
+    "admin.col.puso": "Put in / took out",
+    "admin.col.premioMayor": "Top prize / opens to cover it",
 
     # ── Crear y editar ───────────────────────────────────────────────
     "admin.new": "New {que}",

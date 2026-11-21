@@ -322,6 +322,7 @@
                   <th>{{ $t('box.youWon') }}</th>
                   <th class="mb-der">{{ $t('profile.amount') }}</th>
                   <th class="mb-der">{{ $t('profile.net') }}</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -333,9 +334,59 @@
                   <td class="mb-der" :class="a.diferenciaSc >= 0 ? 'mb-entra' : 'mb-sale'">
                     {{ a.diferenciaSc >= 0 ? '+' : '' }}{{ plata(a.diferenciaSc) }}
                   </td>
+                  <td class="mb-der">
+                    <button type="button" class="mb-chico" :disabled="probando === a._id"
+                            @click="verificar(a)">{{ $t('profile.verify') }}</button>
+                  </td>
                 </tr>
               </tbody>
             </table>
+          </section>
+
+          <!-- ── La prueba de UNA apertura ────────────────────────── -->
+          <section v-if="prueba" id="p-prueba" class="mb-panel mb-prueba">
+            <header class="mb-prueba__top">
+              <div>
+                <h2>{{ $t('profile.verifyTitle') }}</h2>
+                <p class="mb-panel__p mb-tenue">{{ prueba.caja }} · {{ prueba.premio.name }}</p>
+              </div>
+              <button type="button" class="mb-chico" @click="prueba = null">{{ $t('common.close') }}</button>
+            </header>
+
+            <p class="mb-prueba__fallo" :class="veredicto.tono">{{ veredicto.texto }}</p>
+
+            <div v-if="prueba.semillaServidor" class="mb-semilla">
+              <span class="mb-semilla__rot">{{ $t('profile.serverSeed') }}</span>
+              <code>{{ prueba.semillaServidor }}</code>
+            </div>
+            <div class="mb-semilla">
+              <span class="mb-semilla__rot">{{ $t('profile.serverSeedHash') }}</span>
+              <code>{{ prueba.semillaServidorHash }}</code>
+            </div>
+            <div class="mb-semilla">
+              <span class="mb-semilla__rot">{{ $t('profile.clientSeed') }}</span>
+              <code>{{ prueba.semillaCliente }}</code>
+            </div>
+            <div class="mb-semilla">
+              <span class="mb-semilla__rot">{{ $t('profile.nonce') }}</span>
+              <code>{{ prueba.nonce }}</code>
+            </div>
+            <div class="mb-semilla">
+              <span class="mb-semilla__rot">{{ $t('profile.hmac') }}</span>
+              <code>{{ prueba.hmac }}</code>
+            </div>
+            <div class="mb-semilla">
+              <span class="mb-semilla__rot">{{ $t('profile.drawNumber') }}</span>
+              <code>{{ prueba.numero }}</code>
+            </div>
+            <div class="mb-semilla">
+              <span class="mb-semilla__rot">{{ $t('profile.drawPrize') }}</span>
+              <code>{{ prueba.premio.name }}</code>
+            </div>
+
+            <router-link class="mb-panel__p mb-prueba__como" :to="{ name: 'legal', params: { pagina: 'fair' } }">
+              {{ $t('box.provablyFair') }} &rarr;
+            </router-link>
           </section>
 
           <!-- La prueba del sorteo. -->
@@ -356,8 +407,45 @@
               <code>{{ semillas.actual.nonce }}</code>
             </div>
 
+            <!-- La semilla del jugador la elige el jugador: la politica
+                 publicada dice que puede, y antes el boton mandaba {}. -->
+            <label class="mb-semilla__nueva">
+              <span class="mb-semilla__rot">{{ $t('profile.newSeed') }}</span>
+              <input v-model="semillaNueva" type="text" maxlength="64"
+                     :placeholder="$t('profile.newSeedPh')" />
+            </label>
+
             <button type="button" class="mb-guardar" @click="rotar">{{ $t('profile.rotateSeed') }}</button>
             <p class="mb-panel__p mb-tenue">{{ $t('profile.rotateNote') }}</p>
+          </section>
+
+          <!-- ── Las tandas retiradas, con la semilla destapada ───── -->
+          <section v-if="semillas" class="mb-panel">
+            <h2>{{ $t('profile.pastSeeds') }}</h2>
+            <p class="mb-panel__p">{{ $t('profile.pastSeedsSub') }}</p>
+
+            <p v-if="!(semillas.anteriores || []).length" class="mb-panel__vacio">
+              {{ $t('profile.noPastSeeds') }}
+            </p>
+
+            <article v-for="t in semillas.anteriores" :key="t._id" class="mb-vieja">
+              <div class="mb-semilla">
+                <span class="mb-semilla__rot">{{ $t('profile.serverSeed') }}</span>
+                <code>{{ t.semillaServidor }}</code>
+              </div>
+              <div class="mb-semilla">
+                <span class="mb-semilla__rot">{{ $t('profile.clientSeed') }}</span>
+                <code>{{ t.semillaCliente }}</code>
+              </div>
+              <div class="mb-semilla">
+                <span class="mb-semilla__rot">{{ $t('profile.openingsWithIt') }}</span>
+                <code>{{ t.nonce }}</code>
+              </div>
+              <div class="mb-semilla">
+                <span class="mb-semilla__rot">{{ $t('profile.retiredOn') }}</span>
+                <code>{{ fechaHora(t.reveladaEn) }}</code>
+              </div>
+            </article>
           </section>
         </section>
 
@@ -679,6 +767,11 @@ export default {
       stats: null,
       afiliado: null,
       semillas: null,
+      semillaNueva: "",
+      /* La prueba de la apertura que se esta mirando, y cual se esta
+         pidiendo: el boton de esa fila se apaga mientras viaja. */
+      prueba: null,
+      probando: "",
       movimientos: { items: [], page: 1, pages: 0, total: 0 },
       aperturas: { items: [], page: 1, pages: 0 },
       actividad: [],
@@ -718,6 +811,24 @@ export default {
   },
 
   computed: {
+    /**
+     * Las tres respuestas posibles de una verificacion.
+     *
+     * La del medio no es una falla: la semilla sigue tapada porque
+     * todavia se esta usando, y revelarla antes dejaria que el jugador
+     * calcule que le va a salir. Se dice con todas las letras y se le
+     * explica como destaparla.
+     */
+    veredicto() {
+      if (!this.prueba) return { tono: "", texto: "" };
+      if (!this.prueba.verificable) {
+        return { tono: "mb-prueba--tapada", texto: this.$t("profile.verifyLocked") };
+      }
+      return this.prueba.coincide
+        ? { tono: "mb-prueba--bien", texto: this.$t("profile.verifyOk") }
+        : { tono: "mb-prueba--mal", texto: this.$t("profile.verifyBad") };
+    },
+
     /* Lo jugado para el Club VIP: incluye el piso del rango que le
        hayan puesto a mano. */
     jugadoVip() {
@@ -1105,6 +1216,29 @@ export default {
       }
     },
 
+    /**
+     * Rehace el sorteo de una apertura y muestra la prueba.
+     *
+     * El servidor es el que decide si se puede: mientras la semilla
+     * siga en uso no la revela, y contesta `verificable: false`. Eso
+     * NO es un error --es como tiene que funcionar-- asi que se
+     * muestra igual, con los datos que si se pueden ver.
+     */
+    async verificar(a) {
+      this.probando = a._id;
+      try {
+        const { data } = await api.get(`/inventory/fair/verify/${a._id}`);
+        this.prueba = { ...data.data, caja: a.boxName };
+        await this.$nextTick();
+        const panel = document.getElementById("p-prueba");
+        if (panel) panel.scrollIntoView({ behavior: "smooth", block: "center" });
+      } catch (err) {
+        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
+      } finally {
+        this.probando = "";
+      }
+    },
+
     async traerMovimientos(pagina) {
       try {
         const { data } = await api.get("/profile/transactions", {
@@ -1118,12 +1252,36 @@ export default {
 
     async rotar() {
       try {
-        const { data } = await api.post("/inventory/fair/rotate", {});
-        this.semillas = { ...this.semillas, actual: data.data.nueva };
+        /*
+          Con la semilla que eligio, si eligio una. Antes mandaba `{}`
+          siempre, asi que el campo del jugador no se usaba nunca y la
+          politica publicada --"podes cambiarla cuando quieras"--
+          quedaba sin cumplir.
+        */
+        await api.post("/inventory/fair/rotate", {
+          semillaCliente: this.semillaNueva.trim() || undefined,
+        });
+        this.semillaNueva = "";
+
+        /*
+          Y se vuelve a pedir todo: al rotar aparece una tanda revelada
+          nueva, y `anteriores` solo llega en esta respuesta. Pisar
+          `actual` a mano dejaba la lista de reveladas vieja.
+        */
+        const { data } = await api.get("/inventory/fair/seed");
+        this.semillas = data.data;
+        if (this.prueba) await this.rehacerPrueba();
         this.$store.dispatch("avisar", { texto: this.$t("profile.rotated") });
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
       }
+    },
+
+    /* La prueba que estaba abierta, ahora que puede estar destapada. */
+    async rehacerPrueba() {
+      const abierta = this.aperturas.items.find((x) => x.boxName === this.prueba.caja
+        && x.nonce === this.prueba.nonce);
+      if (abierta) await this.verificar(abierta);
     },
 
     async cobrar(c) {
@@ -1794,6 +1952,87 @@ export default {
 }
 
 .mb-semilla__rot { font-size: 11px; font-weight: 800; letter-spacing: .07em; color: $texto-4; text-transform: uppercase; }
+
+/* El campo donde elige la suya: mismo cuerpo que una semilla. */
+.mb-semilla__nueva {
+  border-radius: 12px;
+  background: #0e1a2e;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  input {
+    border: 1px solid rgba(255, 255, 255, .1);
+    background: transparent;
+    color: $texto;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    border-radius: 8px;
+    padding: 8px 10px;
+    width: 100%;
+    min-width: 0;
+
+    &::placeholder { color: $texto-4; }
+    &:focus { outline: 0; border-color: rgba(93, 255, 176, .5); }
+  }
+}
+
+/* Una tanda retirada: las cuatro filas juntas y separadas de la que sigue. */
+.mb-vieja {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+
+  &:last-child { padding-bottom: 0; margin-bottom: 0; border-bottom: 0; }
+}
+
+/* ── La prueba de una apertura ─────────────────────────────────────── */
+
+.mb-prueba {
+  display: grid;
+  gap: 8px;
+  scroll-margin-top: 90px;
+}
+
+.mb-prueba__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+
+  h2 { margin: 0; }
+  p { margin: 2px 0 0; }
+}
+
+/* El veredicto, que es lo unico que el jugador realmente lee. */
+.mb-prueba__fallo {
+  margin: 4px 0 6px;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.mb-prueba--bien   { background: rgba(93, 255, 176, .1);  color: $verde; }
+.mb-prueba--mal    { background: rgba(255, 154, 165, .1); color: $rojo; }
+.mb-prueba--tapada { background: rgba(255, 211, 90, .1);  color: $amarillo; }
+
+.mb-prueba__como {
+  margin-top: 4px;
+  color: $texto-4;
+  font-weight: 700;
+  text-decoration: none;
+
+  &:hover { color: $texto-2; }
+}
+
+@include en-celular {
+  .mb-prueba__top { flex-direction: column; align-items: stretch; gap: 10px; }
+}
 
 /* ── Controles ────────────────────────────────────────────────────── */
 

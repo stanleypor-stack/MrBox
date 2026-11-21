@@ -205,7 +205,7 @@ const SECCIONES = {
     ruta: "/admin/redemptions",
     porPagina: 25,
     ancho: "1100px",
-    w: "1fr 1.1fr .8fr .7fr .9fr 2fr .9fr",
+    w: "1fr 1.1fr .8fr .7fr 1.1fr .9fr 1.7fr .9fr",
     anchoDeAcciones: "230px",
     filtros: [
       { campo: "estado", opciones: ["pending", "approved", "paid", "rejected"], textos: "cashier.state" },
@@ -225,6 +225,29 @@ const SECCIONES = {
       { campo: "username", enlace: (f) => `/admin/players/${f.userId}` },
       { campo: "montoSc", der: true, tipo: "sc" },
       { campo: "nivel", der: true, tipo: "numero" },
+      /*
+        LO QUE PUSO CONTRA LO QUE YA SE LLEVO.
+
+        Es el dato que decide un pago y no estaba en ninguna parte: sin
+        el, aprobar es adivinar. Verde quiere decir que la casa gano
+        con esa cuenta aun pagando esto; rojo, que sale mas de lo que
+        entro --puede estar perfecto, es un premio-- y conviene mirar
+        de donde salio el saldo antes de apretar.
+      */
+      {
+        campo: "puso",
+        valor: (f) => {
+          const puso = Number(f.compradoSc) || 0;
+          const saco = Number(f.cobradoSc) || 0;
+          return `${puso.toFixed(2)} / ${saco.toFixed(2)}`;
+        },
+        der: true,
+        clase: (f) => {
+          const neto = (Number(f.compradoSc) || 0) - (Number(f.cobradoSc) || 0) - (Number(f.montoSc) || 0);
+          if (!(Number(f.compradoSc) || 0)) return "ad-rojo";
+          return neto >= 0 ? "ad-verde" : "ad-amarillo";
+        },
+      },
       { campo: "moneda", valor: (f) => `${f.moneda} · ${f.red}` },
       { campo: "direccion", tenue: true },
       { campo: "estado", tipo: "estado", textos: "cashier.state" },
@@ -306,17 +329,58 @@ const SECCIONES = {
   community: {
     ruta: "/admin/community",
     ancho: "1000px",
-    w: "2fr 1.1fr .9fr .7fr .8fr .8fr 1fr .9fr",
+    w: "1.8fr 1fr .8fr .6fr .7fr 1.3fr .7fr .9fr .9fr",
     anchoDeAcciones: "210px",
     filtros: [
       { campo: "estado", opciones: ["none", "pending", "approved", "rejected"], textos: "dashboard.state" },
     ],
     columnas: [
-      { campo: "name" },
+      /*
+        EL NOMBRE ABRE LA CAJA.
+
+        Sin esto habia que aprobar o rechazar una caja que arma un
+        jugador sin poder ver que le puso adentro. Es la misma falta
+        que la de los pedidos --la fila pedia una decision y escondia
+        el dato con el que se decide-- pero mas cara: aprobar publica
+        una caja que paga plata de verdad.
+      */
+      { campo: "name", enlace: (f) => `/admin/boxes/${f._id}` },
       { campo: "creador" },
       { campo: "priceSc", der: true, tipo: "sc" },
       { campo: "cuantosObjetos", der: true, tipo: "numero" },
       { campo: "retorno", der: true, tipo: "pct" },
+      /*
+        EL PREMIO MAS CARO, Y LO QUE CUESTA.
+
+        El retorno al 92% no dice nada del riesgo: una caja de SC 5 con
+        un premio de SC 200.000 al 0,0001% tiene un retorno perfecto y
+        un solo acierto se come meses de margen. Lo que importa es
+        cuantas aperturas necesita la casa para pagarlo, que es el
+        premio dividido el margen por apertura.
+      */
+      {
+        campo: "premioMayor",
+        valor: (f) => {
+          const premios = f.prizes || [];
+          if (!premios.length) return "—";
+          const mayor = premios.reduce((a, b) => (b.valueSc > a.valueSc ? b : a));
+          const margen = (Number(f.priceSc) || 0) * (1 - (Number(f.retorno) || 0) / 100);
+          if (!(margen > 0)) return `SC ${mayor.valueSc}`;
+          const cuantas = Math.round(mayor.valueSc / margen);
+          return `SC ${mayor.valueSc}  ·  ${cuantas.toLocaleString("en-US")} ap.`;
+        },
+        der: true,
+        clase: (f) => {
+          const premios = f.prizes || [];
+          if (!premios.length) return "";
+          const mayor = premios.reduce((a, b) => (b.valueSc > a.valueSc ? b : a));
+          const margen = (Number(f.priceSc) || 0) * (1 - (Number(f.retorno) || 0) / 100);
+          if (!(margen > 0)) return "ad-rojo";
+          const cuantas = mayor.valueSc / margen;
+          if (cuantas > 20000) return "ad-rojo";
+          return cuantas > 5000 ? "ad-amarillo" : "ad-verde";
+        },
+      },
       { campo: "opens", der: true, tipo: "numero" },
       { campo: "ganadoPorElCreadorSc", der: true, tipo: "sc" },
       { campo: "estado", tipo: "estado", textos: "dashboard.state" },

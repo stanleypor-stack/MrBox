@@ -159,9 +159,21 @@ router.post("/sell-many", autorizar(true), async (req, res) => {
 router.get("/fair/seed", autorizar(true), async (req, res) => {
   try {
     const tanda = await cajas.semillaDe(req.user._id);
-    const anteriores = await UserSeed.find({ user: req.user._id, activa: false })
-      .select("semillaServidorHash semillaCliente nonce reveladaEn")
-      .sort({ createdAt: -1 })
+    /*
+      LAS TANDAS VIEJAS, CON LA SEMILLA DESTAPADA.
+
+      `semillaServidor` es `select: false`, asi que hay que pedirla a
+      proposito. Sin ella esto no servia para nada: el jugador veia el
+      hash de una semilla retirada y no la semilla, que es justo el
+      numero que necesita para rehacer la cuenta. Se piden solo las
+      `reveladaEn != null` --ya retiradas-- para que no haya forma de
+      que salga una que todavia esta en uso.
+    */
+    const anteriores = await UserSeed.find({
+      user: req.user._id, activa: false, reveladaEn: { $ne: null },
+    })
+      .select("+semillaServidor semillaServidorHash semillaCliente nonce reveladaEn")
+      .sort({ reveladaEn: -1 })
       .limit(10)
       .lean();
 

@@ -2,6 +2,7 @@ const Redemption = require("../../database/models/Redemption");
 const Settings = require("../../database/models/Settings");
 const User = require("../../database/models/User");
 const DireccionDeDeposito = require("../../database/models/DireccionDeDeposito");
+const BalanceTransaction = require("../../database/models/BalanceTransaction");
 const wallet = require("../wallet");
 const { MONEDAS, buscar } = require("./monedas");
 const oxapay = require("./oxapay");
@@ -417,15 +418,50 @@ async function cola({ estado = "", page = 1, perPage = 25 }) {
   const cuenta = {};
   for (const f of porEstado) cuenta[f._id] = f.n;
 
+  /*
+    CUANTO PUSO Y CUANTO SE LLEVO, POR CADA UNO DE LA PAGINA.
+
+    Aprobar un pago es la unica puerta por la que sale plata de
+    verdad, y hasta ahora el panel no decia lo unico que hace falta
+    para decidir: si esa persona alguna vez deposito. Un jugador puede
+    juntar saldo de premios de carrera, codigos y bonos y pedir un
+    canje sin haber puesto un peso; eso puede estar perfecto --es un
+    premio-- o puede ser alguien exprimiendo promociones, y el que
+    aprueba tiene que poder distinguirlo de un vistazo.
+
+    Una sola consulta para toda la pagina, no una por fila.
+  */
+  const quienes = filas.map((p) => p.user && p.user._id).filter(Boolean);
+
+  const movidas = quienes.length ? await BalanceTransaction.aggregate([
+    { $match: { user: { $in: quienes }, type: { $in: ["purchase", "redemption"] } } },
+    { $group: { _id: { u: "$user", t: "$type" }, total: { $sum: "$amountSc" } } },
+  ]) : [];
+
+  const porJugador = new Map();
+  for (const m of movidas) {
+    const clave = String(m._id.u);
+    const fila = porJugador.get(clave) || { compradoSc: 0, cobradoSc: 0 };
+    /* `redemption` se guarda en negativo: sale del saldo. */
+    if (m._id.t === "purchase") fila.compradoSc += m.total;
+    else fila.cobradoSc += Math.abs(m.total);
+    porJugador.set(clave, fila);
+  }
+
   return {
-    items: filas.map((p) => ({
-      ...resumir(p),
-      userId: p.user && p.user._id,
-      username: (p.user && p.user.username) || "—",
-      email: (p.user && p.user.email) || "",
-      nivel: p.alPedir ? p.alPedir.verificationLevel : 0,
-      revisadoPorNombre: (p.revisadoPor && p.revisadoPor.username) || "",
-    })),
+    items: filas.map((p) => {
+      const suyo = porJugador.get(String(p.user && p.user._id)) || { compradoSc: 0, cobradoSc: 0 };
+      return {
+        ...resumir(p),
+        userId: p.user && p.user._id,
+        username: (p.user && p.user.username) || "—",
+        email: (p.user && p.user.email) || "",
+        nivel: p.alPedir ? p.alPedir.verificationLevel : 0,
+        revisadoPorNombre: (p.revisadoPor && p.revisadoPor.username) || "",
+        compradoSc: sc(suyo.compradoSc),
+        cobradoSc: sc(suyo.cobradoSc),
+      };
+    }),
     total,
     page: Math.max(1, page),
     pages: Math.max(1, Math.ceil(total / perPage)),

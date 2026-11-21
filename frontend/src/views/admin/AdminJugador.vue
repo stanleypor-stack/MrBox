@@ -2,7 +2,10 @@
   <div v-if="d" class="adj">
     <!-- ── Quién es ─────────────────────────────────────────────── -->
     <div class="adj__cabeza">
-      <span class="adj__avatar">{{ inicial }}</span>
+      <span class="adj__avatar">
+        <img v-if="j.avatarUrl" :src="j.avatarUrl" :alt="j.username" />
+        <template v-else>{{ inicial }}</template>
+      </span>
 
       <div class="adj__quien">
         <span class="adj__nombre">
@@ -661,6 +664,14 @@ export default {
 
 .adj { display: flex; flex-direction: column; gap: 20px; }
 .adj__cabeza { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+
+.adj__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
 
 .adj__avatar {
   width: 56px;
