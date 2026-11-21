@@ -214,6 +214,9 @@ async function mover({
           user: userId,
           type,
           amountSc: monto,
+          /* Lo que cuenta como jugado, que en una apertura gratis NO
+             es el importe: ver el comentario del campo en el modelo. */
+          juegaSc: sc(juegaSc) || 0,
           balanceBefore,
           balanceAfter,
           reference,

@@ -61,8 +61,15 @@
         <nav :aria-label="$t('foot.support')">
           <span class="mb-pie__titulo">{{ $t('foot.support') }}</span>
           <button type="button" @click="$emit('soporte')">{{ $t('foot.liveChat') }}</button>
-          <button type="button" @click="$emit('soporte')">{{ $t('foot.helpCenter') }}</button>
-          <router-link to="/profile?tab=refer">{{ $t('foot.partner') }}</router-link>
+          <!--
+            El centro de ayuda lleva a Controles, que es donde estan
+            los limites y la pausa. Antes abria el mismo chat que el
+            boton de arriba: dos botones pegados que hacian lo mismo.
+
+            "Programa de socios" salio de aca: el programa se maneja
+            desde Refer & Earn y el pie lo anunciaba dos veces.
+          -->
+          <router-link to="/profile?tab=controles">{{ $t('foot.helpCenter') }}</router-link>
         </nav>
 
         <div class="mb-pie__idioma">

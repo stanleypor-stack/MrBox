@@ -211,7 +211,25 @@ export default {
   z-index: 30;
   top: calc(100% + 6px);
   left: 0;
-  right: 0;
+
+  /*
+    TAN ANCHA COMO HAGA FALTA, NUNCA MAS ANGOSTA QUE EL BOTON.
+
+    Estaba con `left: 0; right: 0`, o sea exactamente el ancho del
+    boton. Con un boton que dice "Todas" las opciones de adentro
+    --"Compra", "Canje", "Apertura de caja", "Objeto vendido"-- no
+    entraban y las cortaba el `text-overflow` en "Compr...", "Aper...".
+    El filtro quedaba inservible: habia que adivinar cual era cual.
+
+    `min-width: 100%` la deja alineada con el boton como antes, y
+    `max-content` la estira hasta la opcion mas larga. El tope la
+    frena antes del borde de la pantalla en un telefono.
+  */
+  right: auto;
+  min-width: 100%;
+  width: max-content;
+  max-width: min(84vw, 340px);
+  box-sizing: border-box;
   margin: 0;
   padding: 6px;
   list-style: none;

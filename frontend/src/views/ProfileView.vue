@@ -803,7 +803,15 @@ export default {
         { id: "historial", texto: "profile.history", icono: "M6 2h12M6 22h12M7 2c0 5 10 5 10 10S7 17 7 22M17 2c0 5-10 5-10 10s10 5 10 10" },
         { id: "actividad", texto: "profile.activity", icono: "M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 3" },
         { id: "pedidos", texto: "profile.orders", icono: "M1 4h14v12H1zM15 9h4l4 4v3h-8zM5.5 19a1.5 1.5 0 1 0 0-.01M18.5 19a1.5 1.5 0 1 0 0-.01" },
+        /*
+          "Refer & Earn" esta oculto a pedido de Dani. La solapa se saca
+          de esta lista y con eso desaparece del menu lateral; la
+          seccion y la ruta quedan, asi que `/profile?tab=refer` sigue
+          abriendola y los enlaces que ya andan dando vueltas no se
+          rompen. Para volver a mostrarla, descomentar esta linea.
+
         { id: "refer", texto: "profile.refer", icono: "M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" },
+        */
         { id: "controles", texto: "profile.controls", icono: "M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" },
       ],
 
@@ -1077,6 +1085,18 @@ export default {
         profile: "perfil",
       };
       const traducido = Object.hasOwn(comoSeDice, clave) ? comoSeDice[clave] : clave;
+
+      /*
+        OCULTA NO ES LO MISMO QUE BORRADA.
+
+        `refer` ya no esta en la lista del menu, pero la seccion sigue
+        existiendo. Sin esto, `/profile?tab=refer` --un enlace viejo,
+        un favorito, el correo que invita a alguien-- caeria en el
+        perfil sin decir por que.
+      */
+      const OCULTAS = ["refer"];
+      if (OCULTAS.includes(traducido)) return traducido;
+
       return this.pestanas.some((p) => p.id === traducido) ? traducido : "perfil";
     },
 
@@ -1160,10 +1180,13 @@ export default {
 
     /** Todas las secciones, en paralelo y sin tumbar la pantalla si una falla. */
     async traerTodo() {
+      /* Las ocultas tambien: se llega por URL y tienen que traer lo
+         suyo igual que las del menu. */
+      const todas = [...this.pestanas.map((t) => t.id), "refer"];
       await Promise.all(
-        this.pestanas.map(async (t) => {
-          this.pestana = this.pestana || t.id;
-          await this.traerLoDe(t.id);
+        todas.map(async (id) => {
+          this.pestana = this.pestana || id;
+          await this.traerLoDe(id);
         })
       );
     },
@@ -2019,7 +2042,25 @@ export default {
 
 .mb-prueba--bien   { background: rgba(93, 255, 176, .1);  color: $verde; }
 .mb-prueba--mal    { background: rgba(255, 154, 165, .1); color: $rojo; }
-.mb-prueba--tapada { background: rgba(255, 211, 90, .1);  color: $amarillo; }
+
+/*
+  LA SEMILLA TODAVIA TAPADA NO VA EN AMARILLO.
+
+  Estaba con el fondo y el texto amarillos, los mismos que usa el
+  sitio para "algo esta esperando" o "mira esto". Y no es eso: que la
+  semilla siga en uso es como tiene que funcionar, no un problema del
+  jugador ni algo que tenga que resolver. Pintado de amarillo parecia
+  una advertencia.
+
+  Queda la misma frase, en gris y sin recuadro: explica por que no se
+  puede verificar todavia sin dar a entender que algo salio mal.
+*/
+.mb-prueba--tapada {
+  background: transparent;
+  padding: 2px 0 6px;
+  color: $texto-4;
+  font-weight: 700;
+}
 
 .mb-prueba__como {
   margin-top: 4px;

@@ -593,8 +593,9 @@ export default {
   min-height: 620px;
   overflow: hidden;
 
-  // En el teléfono el cartel se achica: lo importante es el formulario.
-  @include en-celular { flex: 1 1 100%; min-height: 300px; }
+  /* El alto en el telefono lo fija el bloque de abajo, que es el
+     ultimo y por lo tanto el que gana. */
+  @include en-celular { flex: 1 1 100%; }
 }
 
 /*
@@ -620,6 +621,20 @@ export default {
     enteros con los premios asomando.
   */
   object-position: center 25%;
+
+  /*
+    EN EL TELEFONO, PEGADO ARRIBA. MEDIDO.
+
+    El arte entra a 646px de alto en 375 de ancho, y sus primeros
+    200px son el cielo oscuro que se funde con el fondo del sitio. El
+    bloque de texto mide 222. Anclando el arte arriba de todo, esos
+    200px caen justo detras del texto y lo que sobra del carton son
+    las dos figuras, enteras y sin nada encima.
+
+    Con cualquier otro anclaje el recorte se come el cielo y el texto
+    termina sobre las caras.
+  */
+  @include en-celular { object-position: center top; }
 }
 
 /*
@@ -720,10 +735,12 @@ export default {
     Lo importante es el formulario: si el carton se come media
     pantalla, para escribir el usuario hay que scrollear.
 
-    El arte se recorta solo --`cover` anclado abajo-- asi que no hay
-    nada que reposicionar: los cofres siguen abajo y el texto arriba.
+    Pero no tanto: con 320 el texto --222px-- dejaba menos de cien
+    para el arte, y lo poco que se veia eran las cabezas cortadas. Con
+    420 quedan 198 limpios debajo del texto, que es donde entran las
+    dos figuras.
   */
-  .mb-auth__cartel { min-height: 320px; }
+  .mb-auth__cartel { min-height: 420px; }
 
   .mb-auth__marca { padding-top: 18px; gap: 7px; }
 

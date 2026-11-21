@@ -108,7 +108,29 @@ router.get("/stats", autorizar(true), async (req, res) => {
       BoxOpen.countDocuments({ user: id, demo: { $ne: true } }),
       BalanceTransaction.aggregate([
         { $match: { user: id } },
-        { $group: { _id: "$type", total: { $sum: "$amountSc" }, cuantos: { $sum: 1 } } },
+        {
+          $group: {
+            _id: "$type",
+            total: { $sum: "$amountSc" },
+            /*
+              Y lo jugado aparte, que no es lo mismo: una apertura
+              gratis mueve cero y sin embargo es una jugada. Las filas
+              viejas --de antes de que el campo existiera-- no lo
+              tienen, y ahi vale el importe, que para una paga es
+              exactamente lo mismo.
+            */
+            jugado: {
+              $sum: {
+                $cond: [
+                  { $gt: [{ $ifNull: ["$juegaSc", 0] }, 0] },
+                  "$juegaSc",
+                  { $abs: "$amountSc" },
+                ],
+              },
+            },
+            cuantos: { $sum: 1 },
+          },
+        },
       ]),
       InventoryItem.aggregate([
         { $match: { user: id, state: "held" } },
@@ -116,11 +138,14 @@ router.get("/stats", autorizar(true), async (req, res) => {
       ]),
     ]);
 
-    const porTipo = Object.fromEntries(sumas.map((s) => [s._id, { total: sc(s.total), cuantos: s.cuantos }]));
+    const porTipo = Object.fromEntries(sumas.map(
+      (s) => [s._id, { total: sc(s.total), jugado: sc(s.jugado), cuantos: s.cuantos }]
+    ));
     const de = (t) => (porTipo[t] ? porTipo[t].total : 0);
+    const jugadoDe = (t) => (porTipo[t] ? porTipo[t].jugado : 0);
 
     /* Lo jugado, pero sumado desde el libro, para poder comparar. */
-    const jugadoSegunElLibro = sc(Math.abs(de("box_open")) + Math.abs(de("deal")));
+    const jugadoSegunElLibro = sc(jugadoDe("box_open") + jugadoDe("deal"));
 
     return res.json({
       success: true,

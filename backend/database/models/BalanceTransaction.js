@@ -48,6 +48,24 @@ const balanceTransactionSchema = new mongoose.Schema(
     balanceBefore: { type: Number, required: true },
     balanceAfter: { type: Number, required: true },
 
+    /*
+      CUANTO DE ESTO CUENTA COMO JUGADO.
+
+      Casi siempre es lo mismo que `amountSc` en negativo, y por eso
+      durante un tiempo no se guardo. Pero no siempre: una apertura
+      gratis mueve CERO y sin embargo es una jugada --suma para el
+      rango VIP, para las carreras y para el rakeback-- y una fila de
+      importe cero no tiene forma de decirlo.
+
+      Sin este campo, sumar el libro daba menos que el contador del
+      jugador y Stats le mostraba un cartel rojo diciendo que los
+      numeros no cuadran. Cuadraban: lo que no se podia era verlo.
+
+      Cero en los movimientos que no son jugadas (comprar, canjear,
+      vender un objeto).
+    */
+    juegaSc: { type: Number, default: 0 },
+
     /* Qué lo causó: una apertura, un canje, una compra. */
     reference: {
       kind: { type: String, default: "" },
