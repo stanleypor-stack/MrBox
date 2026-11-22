@@ -29,6 +29,28 @@ router.use("/hooks", require("./wallet").aviso);
 router.use("/admin", require("./admin"));
 
 /* Para saber si el servidor esta vivo sin tener que mirar un registro. */
-router.get("/health", (req, res) => res.json({ success: true, ok: true, at: new Date() }));
+/*
+  LA SEÑAL DE VIDA, Y QUE IP VE EL SERVIDOR.
+
+  `ip` es la que el servidor cree que tiene QUIEN PREGUNTA, o sea la
+  suya propia: no dice nada de nadie mas. Esta porque de otra forma no
+  hay manera de saber si `PROXIES_DELANTE` esta bien puesto, y ese
+  numero mal puesto rompe en silencio todos los frenos por IP --el de
+  intentos de login, el primero.
+
+  Para comprobarlo: pedir /health mandando una `X-Forwarded-For`
+  inventada. Si `ip` devuelve la inventada, el numero esta de mas y
+  cualquiera elige su IP. Si devuelve la de verdad, esta bien.
+
+  `proxies` es el numero que tiene puesto, para no tener que adivinarlo
+  desde afuera.
+*/
+router.get("/health", (req, res) => res.json({
+  success: true,
+  ok: true,
+  at: new Date(),
+  ip: req.ip,
+  proxies: req.app.get("trust proxy"),
+}));
 
 module.exports = router;
