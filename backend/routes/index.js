@@ -13,6 +13,7 @@ router.use("/profile", require("./profile"));
 router.use("/boxes", require("./boxes"));
 router.use("/inventory", require("./inventory"));
 router.use("/deals", require("./deals"));
+router.use("/games", require("./games"));
 router.use("/community", require("./community"));
 router.use("/races", require("./races"));
 router.use("/vip", require("./vip"));

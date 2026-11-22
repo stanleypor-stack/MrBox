@@ -26,6 +26,8 @@ const TIPOS = [
   "box_open", //     abrió una caja
   "item_sold", //    vendió un objeto del inventario
   "deal", //         jugó en Deals
+  "game_bet", //     apostó en un juego
+  "game_win", //     cobró un juego
   "rakeback", //     devolución por rango VIP
   "race_prize", //   premio de una carrera
   "challenge", //    premio de un desafío

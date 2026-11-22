@@ -57,6 +57,7 @@ const CODIGOS = {
   BOX_HAS_NO_PRIZES: "That box has no items.",
   TOO_MANY_AT_ONCE: "You cannot open that many at once.",
   NO_SEED: "No seed to play with.",
+  GAMES_OFF: "Games are closed right now.",
 
   /* VIP y rakeback */
   RANK_TOO_LOW: "Your rank does not unlock that yet.",

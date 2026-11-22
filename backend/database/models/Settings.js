@@ -117,6 +117,41 @@ const settingsSchema = new mongoose.Schema(
     /** Aperturas de demostración para el que todavía no tiene cuenta. */
     aperturasDeDemo: { type: Number, default: 3 },
 
+    /* ── Los juegos ──────────────────────────────────────────────── */
+
+    /**
+     * LAS PERILLAS DE LOS OCHO JUEGOS.
+     *
+     * `apagados` cierra los ocho de una. Es un interruptor y no un
+     * despliegue: el día que algo salga mal con un pago, lo que hace
+     * falta es poder cortar en diez segundos.
+     *
+     * `margenes` es el margen de la casa de cada uno, en porciento.
+     * Vacío quiere decir el de fábrica, que es el que corre hoy en
+     * BetSweeps y el que dice la pantalla de cada juego (ver
+     * services/games/config.js). Mover uno cambia lo que se paga Y lo
+     * que dice la etiqueta, porque las dos cosas salen del mismo
+     * lugar.
+     *
+     * El mínimo y el máximo de apuesta valen para los ocho. El máximo
+     * en cero quiere decir "sin tope".
+     */
+    juegos: {
+      apagados: { type: Boolean, default: false },
+      apuestaMinimaSc: { type: Number, default: 0.1, min: 0.01 },
+      apuestaMaximaSc: { type: Number, default: 500, min: 0 },
+      margenes: {
+        dice: { type: Number, default: null },
+        crash: { type: Number, default: null },
+        slide: { type: Number, default: null },
+        keno: { type: Number, default: null },
+        reme: { type: Number, default: null },
+        mines: { type: Number, default: null },
+        towers: { type: Number, default: null },
+        plinko: { type: Number, default: null },
+      },
+    },
+
     /**
      * LAS CAJAS DE LOS BENEFICIOS DEL CLUB VIP.
      *
