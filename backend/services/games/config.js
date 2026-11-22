@@ -59,6 +59,30 @@ const RTP_DE_FABRICA = {
 
 const JUEGOS = Object.keys(DE_FABRICA);
 
+/*
+  LOS LIMITES DE APUESTA DE FABRICA.
+
+  El documento de perillas de un sitio que ya estaba andando es mas
+  viejo que este campo, asi que llega sin `juegos`. Con un `|| 0` eso
+  quedaba en "sin tope", que no es lo que dice el esquema ni lo que
+  nadie eligio: es un campo que todavia no existe. Los valores viven
+  aca y los usan el servicio y la ruta, que son los dos lugares que
+  los necesitan.
+*/
+const LIMITES_DE_FABRICA = { minimaSc: 0.1, maximaSc: 500 };
+
+/** El minimo y el maximo que valen hoy. */
+function limites(cfg = {}) {
+  const j = (cfg && cfg.juegos) || {};
+  const min = Number(j.apuestaMinimaSc);
+  const max = Number(j.apuestaMaximaSc);
+  return {
+    minimaSc: Number.isFinite(min) && min > 0 ? min : LIMITES_DE_FABRICA.minimaSc,
+    /* Cero SI es una eleccion valida aca: quiere decir sin tope. */
+    maximaSc: Number.isFinite(max) && max >= 0 ? max : LIMITES_DE_FABRICA.maximaSc,
+  };
+}
+
 /**
  * El margen de un juego, en porcentaje.
  *
@@ -124,6 +148,8 @@ function margenEfectivo(juego, cfg) {
 
 module.exports = {
   JUEGOS,
+  LIMITES_DE_FABRICA,
+  limites,
   DE_FABRICA,
   RTP_DE_FABRICA,
   margen,

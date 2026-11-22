@@ -53,8 +53,10 @@ router.get("/", autorizar(false), async (req, res) => {
       success: true,
       data: {
         apagados: !!j.apagados,
-        apuestaMinimaSc: Number(j.apuestaMinimaSc) || 0.1,
-        apuestaMaximaSc: Number(j.apuestaMaximaSc) || 0,
+        /* Los mismos nombres que usa la pantalla; los limites salen
+           de un solo lugar, que es el que tambien los hace cumplir. */
+        apuestaMinimaSc: cfgJuegos.limites(cfg).minimaSc,
+        apuestaMaximaSc: cfgJuegos.limites(cfg).maximaSc,
         juegos: cfgJuegos.JUEGOS.map((id) => ({
           id,
           /* El retorno, que es lo que dice la tarjeta. Sale del mismo

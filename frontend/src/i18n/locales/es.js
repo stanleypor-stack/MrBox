@@ -21,7 +21,8 @@ export default {
     "verification": "Verificación",
     "menu": "Menú",
     "home": "Inicio",
-    "wallet": "Billetera"
+    "wallet": "Billetera",
+    "games": "Juegos"
   },
   "action": {
     "signIn": "Iniciar sesión",
@@ -1091,6 +1092,24 @@ export default {
     "gotBox": "{caja} se sumó a tus aperturas gratis",
     "clubNeedBuy": "Las cajas del club se ganan con saldo propio. Cargá para empezar.",
     "claimedSoFar": "Cobrado hasta ahora"
+  },
+  "games": {
+    "playAmount": "Monto a jugar",
+    "amount": "Monto",
+    "winAmount": "Lo que ganás",
+    "numberOfPlays": "Cuántas jugadas",
+    "multiplier": "Multiplicador",
+    "chance": "Chance",
+    "play": "JUGAR",
+    "startAuto": "EMPEZAR AUTO",
+    "stop": "PARAR",
+    "rtp": "Retorno",
+    "maxPlay": "Máximo por jugada",
+    "provablyFair": "Sorteo verificable",
+    "sound": "Sonido",
+    "moreGames": "Más juegos",
+    "soon": "Pronto.",
+    "fairHelp": "Cada resultado sale de una semilla del servidor, la tuya y un contador. Rotá tu semilla en el perfil y podés comprobar cada ronda vos mismo."
   },
   "vip": {
     "sub": "Tu rango sube con lo que jugás, no con lo que gastás. Cada SC que jugás suma, y el rango que alcanzás es tuyo para siempre.",

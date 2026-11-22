@@ -21,7 +21,8 @@ export default {
     "verification": "身份验证",
     "menu": "菜单",
     "home": "首页",
-    "wallet": "钱包"
+    "wallet": "钱包",
+    "games": "游戏"
   },
   "action": {
     "signIn": "登录",
@@ -1091,6 +1092,24 @@ export default {
     "gotBox": "{caja} 已加入你的免费开箱",
     "clubNeedBuy": "俱乐部盒子要用自己的余额赚取，先充值吧。",
     "claimedSoFar": "已领总计"
+  },
+  "games": {
+    "playAmount": "游玩金额",
+    "amount": "金额",
+    "winAmount": "赢得金额",
+    "numberOfPlays": "游玩次数",
+    "multiplier": "倍数",
+    "chance": "概率",
+    "play": "开始",
+    "startAuto": "开始自动",
+    "stop": "停止",
+    "rtp": "返还率",
+    "maxPlay": "最大投注",
+    "provablyFair": "可验证公平",
+    "sound": "声音",
+    "moreGames": "更多游戏",
+    "soon": "即将推出。",
+    "fairHelp": "每个结果都由服务器种子、你的种子和一个计数器决定。在个人资料里更换种子，就能自己核对每一局。"
   },
   "vip": {
     "sub": "等级看你玩了多少，不看你花了多少。每一枚 SC 都算，且到手的等级永不降。",

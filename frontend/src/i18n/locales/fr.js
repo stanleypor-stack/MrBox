@@ -21,7 +21,8 @@ export default {
     "verification": "Vérification",
     "menu": "Menu",
     "home": "Accueil",
-    "wallet": "Portefeuille"
+    "wallet": "Portefeuille",
+    "games": "Jeux"
   },
   "action": {
     "signIn": "Se connecter",
@@ -1091,6 +1092,24 @@ export default {
     "gotBox": "{caja} ajoutée à vos ouvertures gratuites",
     "clubNeedBuy": "Les box du club se gagnent avec votre propre solde. Approvisionnez pour commencer.",
     "claimedSoFar": "Réclamé à ce jour"
+  },
+  "games": {
+    "playAmount": "Montant",
+    "amount": "Montant",
+    "winAmount": "Gain",
+    "numberOfPlays": "Nombre de parties",
+    "multiplier": "Multiplicateur",
+    "chance": "Chance",
+    "play": "JOUER",
+    "startAuto": "LANCER AUTO",
+    "stop": "ARRÊTER",
+    "rtp": "Retour",
+    "maxPlay": "Mise max",
+    "provablyFair": "Équité prouvable",
+    "sound": "Son",
+    "moreGames": "Plus de jeux",
+    "soon": "Bientôt disponible.",
+    "fairHelp": "Chaque résultat vient d’une graine serveur, de la vôtre et d’un nonce. Changez votre graine dans votre profil et vérifiez chaque partie."
   },
   "vip": {
     "sub": "Votre palier monte avec ce que vous jouez, pas avec ce que vous dépensez. Chaque Sweeps Coin joué compte, et le palier atteint est acquis.",

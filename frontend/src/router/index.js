@@ -35,6 +35,19 @@ const routes = [
     component: () => import(/* webpackChunkName: "deals" */ "@/views/DealsView.vue"),
   },
   {
+    /*
+      LOS JUEGOS.
+
+      Cuál está abierto va en la dirección y no en un estado
+      escondido: así se puede compartir el enlace de un juego, el
+      botón de atrás funciona y la barra lateral sabe cuál marcar.
+      Sin juego cae en Dice, que es el primero del diseño.
+    */
+    path: "/games/:juego?",
+    name: "games",
+    component: () => import(/* webpackChunkName: "juegos" */ "@/views/GamesView.vue"),
+  },
+  {
     /* Las tres carreras son la misma pantalla con otro `tipo`. */
     path: "/races/:tipo",
     name: "race",

@@ -21,7 +21,8 @@ export default {
     "verification": "Verification",
     "menu": "Menu",
     "home": "Home",
-    "wallet": "Wallet"
+    "wallet": "Wallet",
+    "games": "Games"
   },
   "action": {
     "signIn": "Sign in",
@@ -1091,6 +1092,24 @@ export default {
     "gotBox": "{caja} added to your free opens",
     "clubNeedBuy": "Club boxes are earned with your own balance. Add funds to start.",
     "claimedSoFar": "Claimed so far"
+  },
+  "games": {
+    "playAmount": "Play Amount",
+    "amount": "Amount",
+    "winAmount": "Win amount",
+    "numberOfPlays": "Number of Plays",
+    "multiplier": "Multiplier",
+    "chance": "Chance",
+    "play": "PLAY",
+    "startAuto": "START AUTO",
+    "stop": "STOP",
+    "rtp": "Return",
+    "maxPlay": "Max play",
+    "provablyFair": "Provably fair",
+    "sound": "Sound",
+    "moreGames": "More games",
+    "soon": "Coming soon.",
+    "fairHelp": "Every result comes from a server seed, your own seed and a nonce. Rotate your seed in your profile and you can check each round yourself."
   },
   "vip": {
     "sub": "Your tier grows with how much you play, not with how much you spend. Every Sweeps Coin you play adds to your progress, and the tier you reach is yours to keep.",

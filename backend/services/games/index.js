@@ -36,6 +36,7 @@ const User = require("../../database/models/User");
 const UserSeed = require("../../database/models/UserSeed");
 const GameRound = require("../../database/models/GameRound");
 const Settings = require("../../database/models/Settings");
+const cfgJuegos = require("./config");
 
 const wallet = require("../wallet");
 const controles = require("../controls");
@@ -123,9 +124,7 @@ async function revisarApuesta(apuestaSc, cfg) {
     throw errorDe("INVALID_AMOUNT", { campo: "apuesta" });
   }
 
-  const j = (cfg && cfg.juegos) || {};
-  const minimo = Number(j.apuestaMinimaSc) || 0.01;
-  const maximo = Number(j.apuestaMaximaSc) || 0;
+  const { minimaSc: minimo, maximaSc: maximo } = cfgJuegos.limites(cfg);
 
   if (monto < minimo) throw errorDe("BELOW_MINIMUM", { minimo });
   if (maximo > 0 && monto > maximo) throw errorDe("ABOVE_MAXIMUM", { maximo });

@@ -81,6 +81,46 @@
       </div>
 
       <!-- ── Categorías ───────────────────────────────────────────── -->
+      <!--
+        ── Los juegos ────────────────────────────────────────────
+
+        Plegable y con los ocho adentro, como lo dibuja el diseño: la
+        barra es el único lugar desde donde se salta de un juego a
+        otro sin volver atrás.
+      -->
+      <div class="mb-grupo">
+        <button
+          type="button" class="mb-grupo__plegable"
+          :aria-expanded="juegosAbiertos ? 'true' : 'false'"
+          @click="juegosAbiertos = !juegosAbiertos"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 11h4M8 9v4M15.5 10.5h.01M18 13h.01" />
+            <rect x="2" y="6" width="20" height="12" rx="4" />
+          </svg>
+          {{ $t('nav.games') }}
+          <span class="mb-grupo__chevron">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff"
+                 stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path :d="juegosAbiertos ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'" />
+            </svg>
+          </span>
+        </button>
+
+        <div v-if="juegosAbiertos" class="mb-grupo__lista">
+          <router-link
+            v-for="g in juegos" :key="g.id"
+            :to="`/games/${g.id}`"
+            class="mb-grupo__item mb-grupo__item--cat"
+            active-class="is-activo"
+          >
+            <img :src="g.icono" alt="" width="18" height="18">
+            {{ g.nombre }}
+          </router-link>
+        </div>
+      </div>
+
       <div class="mb-grupo">
         <button
           type="button" class="mb-grupo__plegable"
@@ -144,6 +184,7 @@
 import { mapGetters } from "vuex";
 import api from "@/api";
 import MbSelectorDeIdioma from "@/components/MbSelectorDeIdioma.vue";
+import { JUEGOS } from "@/juegos";
 
 /* Los iconos de categoria del diseno. */
 const ICONOS = {
@@ -205,6 +246,9 @@ export default {
       */
       abierta: typeof window === "undefined" || window.innerWidth >= 1280,
       categoriasAbiertas: true,
+      juegosAbiertos: true,
+      /* El listado es uno solo, compartido con la pantalla de juegos. */
+      juegos: JUEGOS,
       categorias: [],
       cuentas: {},
       enlaces: [

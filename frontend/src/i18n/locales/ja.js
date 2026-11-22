@@ -21,7 +21,8 @@ export default {
     "verification": "本人確認",
     "menu": "メニュー",
     "home": "ホーム",
-    "wallet": "ウォレット"
+    "wallet": "ウォレット",
+    "games": "ゲーム"
   },
   "action": {
     "signIn": "ログイン",
@@ -1091,6 +1092,24 @@ export default {
     "gotBox": "{caja} を無料オープンに追加しました",
     "clubNeedBuy": "クラブのボックスは自分の残高で獲得します。入金して始めましょう。",
     "claimedSoFar": "これまでの受領額"
+  },
+  "games": {
+    "playAmount": "プレイ額",
+    "amount": "金額",
+    "winAmount": "獲得額",
+    "numberOfPlays": "プレイ回数",
+    "multiplier": "倍率",
+    "chance": "確率",
+    "play": "プレイ",
+    "startAuto": "オート開始",
+    "stop": "停止",
+    "rtp": "還元率",
+    "maxPlay": "最大プレイ額",
+    "provablyFair": "検証可能な公平性",
+    "sound": "サウンド",
+    "moreGames": "他のゲーム",
+    "soon": "近日公開。",
+    "fairHelp": "すべての結果はサーバーシード、あなたのシード、ノンスから決まります。プロフィールでシードを更新すれば各ラウンドを検証できます。"
   },
   "vip": {
     "sub": "ランクは「いくら使ったか」ではなく「どれだけ遊んだか」で上がります。一度到達したランクは下がりません。",

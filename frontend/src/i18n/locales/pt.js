@@ -21,7 +21,8 @@ export default {
     "verification": "Verificação",
     "menu": "Menu",
     "home": "Início",
-    "wallet": "Carteira"
+    "wallet": "Carteira",
+    "games": "Jogos"
   },
   "action": {
     "signIn": "Entrar",
@@ -1091,6 +1092,24 @@ export default {
     "gotBox": "{caja} foi para suas aberturas grátis",
     "clubNeedBuy": "As caixas do clube se ganham com saldo próprio. Deposite para começar.",
     "claimedSoFar": "Resgatado até agora"
+  },
+  "games": {
+    "playAmount": "Valor da jogada",
+    "amount": "Valor",
+    "winAmount": "Ganho",
+    "numberOfPlays": "Número de jogadas",
+    "multiplier": "Multiplicador",
+    "chance": "Chance",
+    "play": "JOGAR",
+    "startAuto": "INICIAR AUTO",
+    "stop": "PARAR",
+    "rtp": "Retorno",
+    "maxPlay": "Jogada máxima",
+    "provablyFair": "Sorteio verificável",
+    "sound": "Som",
+    "moreGames": "Mais jogos",
+    "soon": "Em breve.",
+    "fairHelp": "Cada resultado vem de uma seed do servidor, da sua e de um nonce. Troque sua seed no perfil e confira cada rodada."
   },
   "vip": {
     "sub": "Seu nível sobe com o quanto você joga, não com quanto gasta. Cada SC jogado conta, e o nível alcançado é seu para sempre.",

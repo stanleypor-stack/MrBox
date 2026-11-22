@@ -21,7 +21,8 @@ export default {
     "verification": "Verifica",
     "menu": "Menu",
     "home": "Home",
-    "wallet": "Portafoglio"
+    "wallet": "Portafoglio",
+    "games": "Giochi"
   },
   "action": {
     "signIn": "Accedi",
@@ -1091,6 +1092,24 @@ export default {
     "gotBox": "{caja} aggiunta alle tue aperture gratis",
     "clubNeedBuy": "Le box del club si guadagnano con saldo proprio. Ricarica per iniziare.",
     "claimedSoFar": "Riscosso finora"
+  },
+  "games": {
+    "playAmount": "Importo",
+    "amount": "Importo",
+    "winAmount": "Vincita",
+    "numberOfPlays": "Numero di giocate",
+    "multiplier": "Moltiplicatore",
+    "chance": "Probabilità",
+    "play": "GIOCA",
+    "startAuto": "AVVIA AUTO",
+    "stop": "FERMA",
+    "rtp": "Ritorno",
+    "maxPlay": "Giocata max",
+    "provablyFair": "Equità verificabile",
+    "sound": "Suono",
+    "moreGames": "Altri giochi",
+    "soon": "In arrivo.",
+    "fairHelp": "Ogni risultato nasce da un seed del server, dal tuo e da un nonce. Cambia il tuo seed nel profilo e verifica ogni giro."
   },
   "vip": {
     "sub": "Il tuo livello cresce con quanto giochi, non con quanto spendi. Ogni Sweeps Coin giocato conta, e il livello raggiunto resta tuo.",

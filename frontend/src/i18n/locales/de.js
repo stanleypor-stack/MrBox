@@ -21,7 +21,8 @@ export default {
     "verification": "Verifizierung",
     "menu": "Menü",
     "home": "Start",
-    "wallet": "Wallet"
+    "wallet": "Wallet",
+    "games": "Spiele"
   },
   "action": {
     "signIn": "Anmelden",
@@ -1091,6 +1092,24 @@ export default {
     "gotBox": "{caja} zu deinen Gratis-Öffnungen hinzugefügt",
     "clubNeedBuy": "Club-Boxen verdienst du mit eigenem Guthaben. Lade auf, um zu starten.",
     "claimedSoFar": "Bisher abgeholt"
+  },
+  "games": {
+    "playAmount": "Einsatz",
+    "amount": "Betrag",
+    "winAmount": "Gewinn",
+    "numberOfPlays": "Anzahl der Spiele",
+    "multiplier": "Multiplikator",
+    "chance": "Chance",
+    "play": "SPIELEN",
+    "startAuto": "AUTO STARTEN",
+    "stop": "STOPP",
+    "rtp": "Auszahlung",
+    "maxPlay": "Max. Einsatz",
+    "provablyFair": "Beweisbar fair",
+    "sound": "Ton",
+    "moreGames": "Mehr Spiele",
+    "soon": "Demnächst.",
+    "fairHelp": "Jedes Ergebnis entsteht aus einem Server-Seed, deinem Seed und einem Nonce. Wechsle deinen Seed im Profil und prüfe jede Runde selbst."
   },
   "vip": {
     "sub": "Dein Rang wächst mit dem Spielen, nicht mit dem Ausgeben. Jeder gespielte Sweeps Coin zählt, und der erreichte Rang bleibt dir.",
