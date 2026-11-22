@@ -34,7 +34,7 @@ const ESPERA_PARA_AFLOJAR_HS = 24;
 const PAUSA_MAXIMA_DIAS = 365;
 
 /** Los tipos de movimiento que cuentan como "jugar". */
-const JUGAR = ["box_open", "deal"];
+const JUGAR = BalanceTransaction.TIPOS_QUE_JUEGAN;
 
 /**
  * Los límites que VALEN ahora.
@@ -95,12 +95,21 @@ async function loDeHoy(userId) {
   const jugadoSc = sc(JUGAR.reduce((a, t) => a + Math.abs(por[t] || 0), 0));
 
   /*
-    Lo perdido es lo que puso menos lo que recuperó vendiendo lo que
-    ganó. No es exacto al centavo --un objeto que todavía tiene en el
+    Lo perdido es lo que puso menos lo que recuperó: los objetos que
+    vendió y los juegos que cobró.
+
+    Los premios de los juegos TIENEN que estar acá. Un jugador que
+    apuesta 100 en el dice y cobra 95 perdió 5, no 100; sin esto, su
+    tope diario de pérdida se le cerraba a la primera vuelta y la
+    pantalla le decía que había perdido veinte veces lo que perdió.
+
+    No es exacto al centavo --un objeto que todavía tiene en el
     inventario no está vendido-- y a propósito: contar como "perdido"
     algo que todavía tiene sería mentirle en su contra.
   */
-  const recuperadoSc = sc(por.item_sold || 0);
+  const recuperadoSc = sc(
+    BalanceTransaction.TIPOS_QUE_DEVUELVEN.reduce((a, t) => a + (por[t] || 0), 0)
+  );
   const perdidaSc = sc(Math.max(0, jugadoSc - recuperadoSc));
 
   return { jugadoSc, recuperadoSc, perdidaSc, desde };

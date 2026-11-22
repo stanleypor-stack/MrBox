@@ -4,9 +4,9 @@
  * Una rueda de 15 casillas y tres colores. El jugador elige uno y el
  * indicador decide.
  *
- *   0                     amarillo   paga 14x   1 de 15
- *   pares (2,4,...,14)    rojo       paga  2x   7 de 15
- *   impares (1,3,...,13)  violeta    paga  2x   7 de 15
+ *   amarillo   paga 14x   1 de 15
+ *   rojo       paga  2x   7 de 15
+ *   violeta    paga  2x   7 de 15
  *
  * Los tres pagan lo mismo en el largo plazo: 14/15, o sea 93,333% de
  * retorno y 6,667 de margen. El amarillo no es "mejor": es la misma
@@ -19,21 +19,33 @@
  * que se escala son los pagos y no la rueda. Con el de fábrica la
  * escala es exactamente 1 y quedan 14x y 2x clavados.
  *
- * UNA RUEDA POR JUGADA, NO UNA COMPARTIDA
+ * LA RUEDA ES COMPARTIDA
  *
- * En BetSweeps, Slide es una ronda común: todos apuestan a la misma
- * rueda y se gira cada tantos segundos. Acá el diseño lo dibuja como
- * los otros siete --con Manual, Auto y su botón de jugar-- así que
- * cada jugada es la suya. La matemática es la misma; lo que cambia es
- * de quién es la rueda.
+ * Una sola para todos, que gira cada trece segundos. El sorteo, los
+ * tiempos y el pago de cada ronda están en `rondas.js`; acá viven la
+ * rueda y la tabla, que es lo que no depende de la ronda.
  */
 
 const cfgJuegos = require("./config");
-const fair = require("./fair");
-const { sc } = require("../../utils/money");
 const { errorDe } = require("../../utils/errors");
 
-const CASILLAS = 15;
+/*
+  EL ORDEN DE LA RUEDA, EL DEL DISEÑO.
+
+  No es "el 0 es amarillo y después alterna": el amarillo está en el
+  medio, en la casilla 7, y a los costados se van alternando rojo y
+  violeta. La cuenta es la misma --1, 7 y 7-- pero el lugar importa,
+  porque la cinta que gira en la pantalla se dibuja con este orden y
+  frena en la casilla que dice el servidor. Si acá dijera otra cosa,
+  la rueda pararía en un color y el resultado diría otro.
+*/
+const RUEDA = [
+  "red", "purple", "red", "purple", "red", "purple", "red",
+  "yellow",
+  "purple", "red", "purple", "red", "purple", "red", "purple",
+];
+
+const CASILLAS = RUEDA.length;
 const COLORES = ["yellow", "red", "purple"];
 
 /** Los pagos, ya con el margen de las perillas. */
@@ -45,8 +57,7 @@ function pagos(cfg) {
 
 /** De qué color es una casilla. */
 function colorDe(casilla) {
-  if (casilla === 0) return "yellow";
-  return casilla % 2 === 0 ? "red" : "purple";
+  return RUEDA[casilla] || "red";
 }
 
 function revisar(color) {
@@ -55,25 +66,4 @@ function revisar(color) {
   return c;
 }
 
-function jugar({ apuestaSc, color, semillas, cfg }) {
-  const elegido = revisar(color);
-
-  const { numeros, hmacs } = fair.numeros(1, semillas);
-  const casilla = fair.entero(numeros[0], CASILLAS);
-  const salio = colorDe(casilla);
-
-  const mult = salio === elegido ? pagos(cfg)[salio] : 0;
-
-  return {
-    casilla,
-    color: salio,
-    gano: mult > 0,
-    multiplicador: mult,
-    pagoSc: mult > 0 ? sc(apuestaSc * mult) : 0,
-    hmacs,
-    jugada: { color: elegido },
-    resultado: { casilla, color: salio, gano: mult > 0 },
-  };
-}
-
-module.exports = { CASILLAS, COLORES, pagos, colorDe, revisar, jugar };
+module.exports = { RUEDA, CASILLAS, COLORES, pagos, colorDe, revisar };

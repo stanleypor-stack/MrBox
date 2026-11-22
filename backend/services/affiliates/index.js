@@ -437,7 +437,9 @@ async function numerosDelReferido(userId) {
     return f ? Math.abs(sc(f.total)) : 0;
   };
 
-  return { depositadoSc: de("purchase"), jugadoSc: sc(de("box_open") + de("deal")) };
+  /* Todo lo que cuenta como jugado, juegos incluidos. */
+  const jugado = BalanceTransaction.TIPOS_QUE_JUEGAN.reduce((a, t) => a + de(t), 0);
+  return { depositadoSc: de("purchase"), jugadoSc: sc(jugado) };
 }
 
 /**

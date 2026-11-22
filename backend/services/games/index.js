@@ -43,6 +43,8 @@ const controles = require("../controls");
 const fairDeCajas = require("../boxes/fair");
 const { sc } = require("../../utils/money");
 const { errorDe } = require("../../utils/errors");
+const afiliados = require("../affiliates");
+const { logger } = require("../../utils/logger");
 
 /**
  * LA TANDA DE SEMILLAS DEL JUGADOR.
@@ -250,6 +252,11 @@ async function jugarUnaRonda({ user, juego, apuestaSc, revisar, sortear }) {
     });
   }
 
+  /* 8. Y la comision del socio, si lo trajo alguien. */
+  await comisionDelSocio({
+    userId: user._id, juego, apuestaSc: monto, pagoSc: pagoFinal,
+  });
+
   /*
     LOS DESAFIOS TODAVIA NO MIRAN LOS JUEGOS.
 
@@ -258,8 +265,12 @@ async function jugarUnaRonda({ user, juego, apuestaSc, revisar, sortear }) {
     que llamarlo con nulos no haría nada y además taparía el día que
     alguien quiera un desafío de juegos de verdad.
 
-    Lo jugado SI cuenta igual: sale del libro, no de acá, así que las
-    carreras, el rakeback y el Club VIP ya ven estas rondas.
+    TODO LO DEMAS SI CUENTA.
+
+    Lo jugado sale del libro --no de aca-- y la lista de lo que cuenta
+    como jugado vive en BalanceTransaction: las carreras, el rakeback,
+    los limites del jugador, el Club VIP y los numeros del panel ven
+    estas rondas sin que haya que avisarles.
   */
   const saldo = await wallet.saldoDe(user._id);
 
@@ -379,6 +390,8 @@ async function abrirRonda({ user, juego, apuestaSc, revisar, repartir }) {
       nonce: movida.nonce,
       hmacs: r.hmacs || [],
       abierta: true,
+      /* Mines y Towers: una por jugador y por juego (ver GameRound). */
+      unaSola: true,
     });
   } catch (err) {
     if (err && err.code === 11000) {
@@ -413,6 +426,40 @@ async function rondaAbierta(userId, juego) {
     .lean();
   if (!r) throw errorDe("NO_ROUND", { juego }, 404);
   return r;
+}
+
+/**
+ * LA COMISION DEL SOCIO POR UNA RONDA TERMINADA.
+ *
+ * El socio cobra sobre el margen de lo que juegan los suyos, y una
+ * vuelta de dice es margen igual que una apertura de caja: entro la
+ * apuesta, salio el premio, la diferencia es lo que quedo. Si esto no
+ * estuviera, un referido podria jugar mil vueltas y su socio no
+ * cobraria un peso, sin que nada avise.
+ *
+ * El margen puede ser NEGATIVO --el jugador gano-- y asi tiene que
+ * pasar: el servicio de afiliados acumula las dos puntas, y si solo
+ * le mandaramos las buenas, el socio cobraria de las que gana la casa
+ * y la casa se comeria sola las que pierde.
+ *
+ * VA EN SU PROPIO TRY, COMO EN LAS CAJAS
+ *
+ * Que falle anotarle la comision a un socio no puede tumbar la ronda
+ * de un jugador que ya aposto y ya cobro. Queda en el log.
+ */
+async function comisionDelSocio({ userId, juego, apuestaSc, pagoSc }) {
+  try {
+    const jugador = await User.findById(userId).lean();
+    if (!jugador || !jugador.affiliateCode) return;
+
+    await afiliados.anotarComision({
+      jugador,
+      jugadoSc: sc(apuestaSc),
+      margenSc: sc(sc(apuestaSc) - sc(pagoSc || 0)),
+    });
+  } catch (err) {
+    logger.error(`[games] comision del socio en ${juego}: ${err.message}`);
+  }
 }
 
 /**
@@ -456,6 +503,10 @@ async function cerrarRonda({ userId, ronda, multiplicador, pagoSc, resultado }) 
     });
   }
 
+  await comisionDelSocio({
+    userId, juego: ronda.juego, apuestaSc: ronda.apuestaSc, pagoSc: pagoFinal,
+  });
+
   return cerrada;
 }
 
@@ -476,6 +527,7 @@ async function guardarAvance({ ronda, resultado, oculto }) {
 
 module.exports = {
   RONDAS_MINIMAS_CON_BONO,
+  comisionDelSocio,
   TOPE_MINIMO_CON_BONO,
   revisarTopePorBono,
   semillaDe,

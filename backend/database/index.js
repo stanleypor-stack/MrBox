@@ -49,7 +49,38 @@ async function conectar() {
  * indices unicos es peor que un sitio que no arranca: el primero pierde
  * plata en silencio.
  */
+/*
+  EL INDICE VIEJO DE LAS RONDAS.
+
+  `{user, juego}` unico empezo filtrando por `abierta: true` y ahora
+  filtra por `unaSola: true`, porque Slide acepta varias apuestas en
+  la misma rueda. Mongo no cambia las opciones de un indice que ya
+  existe --tira "Index already exists with different options"-- asi
+  que al viejo hay que tirarlo una vez.
+
+  Se mira el filtro antes de tocar nada: en una base nueva no hay
+  nada que tirar, y en una que ya se migro tampoco.
+*/
+async function tirarIndiceViejoDeRondas() {
+  try {
+    const col = mongoose.connection.db.collection("gamerounds");
+    const indices = await col.indexes();
+    const viejo = indices.find(
+      (i) => i.name === "user_1_juego_1"
+        && i.partialFilterExpression
+        && i.partialFilterExpression.abierta !== undefined,
+    );
+    if (viejo) await col.dropIndex(viejo.name);
+  } catch (err) {
+    /* Si la coleccion no existe todavia, no hay nada que migrar. */
+    if (!/ns does not exist|IndexNotFound|NamespaceNotFound/i.test(String(err && err.message))) {
+      throw err;
+    }
+  }
+}
+
 async function asegurarIndices() {
+  await tirarIndiceViejoDeRondas();
   /* `createIndexes` y no `init`: `init` guarda su promesa y no vuelve a
      construir nada, asi que despues de un `dropDatabase` --lo que hace
      cada prueba-- dejaria la base sin indices. */

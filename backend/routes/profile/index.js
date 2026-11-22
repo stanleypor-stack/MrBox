@@ -144,8 +144,17 @@ router.get("/stats", autorizar(true), async (req, res) => {
     const de = (t) => (porTipo[t] ? porTipo[t].total : 0);
     const jugadoDe = (t) => (porTipo[t] ? porTipo[t].jugado : 0);
 
-    /* Lo jugado, pero sumado desde el libro, para poder comparar. */
-    const jugadoSegunElLibro = sc(jugadoDe("box_open") + jugadoDe("deal"));
+    /*
+      Lo jugado, pero sumado desde el libro, para poder comparar.
+
+      La lista sale del modelo: si acá faltara un tipo que el contador
+      del usuario sí cuenta --los juegos, por ejemplo-- el jugador
+      vería el cartel rojo de "los numeros no cuadran" sin que haya
+      nada roto.
+    */
+    const jugadoSegunElLibro = sc(
+      BalanceTransaction.TIPOS_QUE_JUEGAN.reduce((a, t) => a + jugadoDe(t), 0)
+    );
 
     return res.json({
       success: true,

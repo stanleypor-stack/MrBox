@@ -124,7 +124,10 @@ router.get("/dashboard", async (req, res) => {
       return f ? f.cuantos : 0;
     };
 
-    const jugadoSc = sc(Math.abs(de("box_open")) + Math.abs(de("deal")));
+    /* Lo jugado: cajas, deals y los ocho juegos (ver el modelo). */
+    const jugadoSc = sc(
+      BalanceTransaction.TIPOS_QUE_JUEGAN.reduce((a, t) => a + Math.abs(de(t)), 0)
+    );
     const pagadoSc = sc(de("item_sold") < 0 ? 0 : 0); // los premios no pasan por el libro
     const compradoSc = sc(de("purchase"));
     const canjeadoSc = sc(Math.abs(de("redemption")));
@@ -137,7 +140,18 @@ router.get("/dashboard", async (req, res) => {
       que importa y la única que no miente: un margen calculado como
       "8% de lo jugado" sería el margen TEORICO, que es otra cosa.
     */
-    const devueltoSc = sc(de("item_sold"));
+    /*
+      LO QUE VOLVIO AL JUGADOR.
+
+      Vender un objeto del inventario y cobrar un juego son lo mismo
+      para esta cuenta: plata que la casa devuelve por lo que se
+      jugo. Sumar las apuestas de los juegos sin restar los premios
+      daria un margen del 100% en los juegos, que seria lindo y falso.
+    */
+    const devueltoSc = sc(
+      BalanceTransaction.TIPOS_QUE_DEVUELVEN.reduce((a, t) => a + de(t), 0)
+    );
+    const pagadoEnJuegosSc = sc(de("game_win"));
     const regaladoSc = sc(
       de("race_prize") + de("challenge") + de("rakeback")
       + de("affiliate") + de("promo_code") + de("creator_share")
@@ -146,7 +160,12 @@ router.get("/dashboard", async (req, res) => {
 
     /* La curva de lo jugado por día. */
     const serie = await BalanceTransaction.aggregate([
-      { $match: { type: { $in: ["box_open", "deal"] }, createdAt: { $gte: desde } } },
+      {
+        $match: {
+          type: { $in: BalanceTransaction.TIPOS_QUE_JUEGAN },
+          createdAt: { $gte: desde },
+        },
+      },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
@@ -175,8 +194,10 @@ router.get("/dashboard", async (req, res) => {
         regaladoSc,
         margenSc,
         margenPct: jugadoSc > 0 ? Math.round((margenSc / jugadoSc) * 10000) / 100 : 0,
+        pagadoEnJuegosSc,
         aperturas: cuantos("box_open"),
         deals: cuantos("deal"),
+        jugadas: cuantos("game_bet"),
         compras: cuantos("purchase"),
         canjes: cuantos("redemption"),
         pagadoSc,

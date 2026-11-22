@@ -214,7 +214,11 @@ router.get("/risk", async (req, res) => {
         { $limit: 40 },
       ]),
       BalanceTransaction.aggregate([
-        { $match: { type: { $in: ["redemption", "box_open", "deal"] } } },
+        {
+          $match: {
+            type: { $in: ["redemption", ...BalanceTransaction.TIPOS_QUE_JUEGAN] },
+          },
+        },
         {
           $group: {
             _id: "$user",
@@ -328,7 +332,9 @@ router.get("/analytics", async (req, res) => {
     for (const f of jugadoPorMes) {
       const m = mes.get(f._id.mes) || { compradoSc: 0, jugadoSc: 0, compradores: 0 };
       if (f._id.tipo === "purchase") { m.compradoSc = sc(f.total); m.compradores = f.gente.length; }
-      if (f._id.tipo === "box_open" || f._id.tipo === "deal") m.jugadoSc = sc(m.jugadoSc + f.total);
+      if (BalanceTransaction.TIPOS_QUE_JUEGAN.includes(f._id.tipo)) {
+        m.jugadoSc = sc(m.jugadoSc + f.total);
+      }
       mes.set(f._id.mes, m);
     }
 
@@ -481,7 +487,7 @@ router.get("/segments", async (req, res) => {
 
     const compradores = await BalanceTransaction.distinct("user", { type: "purchase" });
     const jugaronHace14 = await BalanceTransaction.distinct("user", {
-      type: { $in: ["box_open", "deal"] },
+      type: { $in: BalanceTransaction.TIPOS_QUE_JUEGAN },
       createdAt: { $gte: hace14 },
     });
 

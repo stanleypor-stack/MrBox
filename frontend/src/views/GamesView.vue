@@ -33,6 +33,23 @@
       />
 
       <!--
+        LOS DOS DE RONDA COMPARTIDA.
+
+        Slide y Crash no se juegan de a uno: todos apuestan a la misma
+        rueda y al mismo vuelo. No llevan la columna de controles de
+        los otros seis porque el diseno les dibuja la suya.
+      -->
+      <MbJuegoSlide
+        v-else-if="elJuego.id === 'slide'"
+        :maximo-sc="maximoSc" :saldo-sc="saldo"
+      />
+
+      <MbJuegoCrash
+        v-else-if="elJuego.id === 'crash'"
+        :maximo-sc="maximoSc" :saldo-sc="saldo"
+      />
+
+      <!--
         LOS QUE TODAVIA NO ESTAN.
 
         Se dice, no se esconde. Una tarjeta que lleva a una pantalla
@@ -117,6 +134,8 @@ import MbJuegoKeno from "@/components/juegos/MbJuegoKeno.vue";
 import MbJuegoPlinko from "@/components/juegos/MbJuegoPlinko.vue";
 import MbJuegoMines from "@/components/juegos/MbJuegoMines.vue";
 import MbJuegoTowers from "@/components/juegos/MbJuegoTowers.vue";
+import MbJuegoSlide from "@/components/juegos/MbJuegoSlide.vue";
+import MbJuegoCrash from "@/components/juegos/MbJuegoCrash.vue";
 
 /**
  * LA PANTALLA DE LOS JUEGOS.
@@ -137,6 +156,7 @@ export default {
 
   components: {
     MbJuegoDice, MbJuegoReme, MbJuegoKeno, MbJuegoPlinko, MbJuegoMines, MbJuegoTowers,
+    MbJuegoSlide, MbJuegoCrash,
   },
 
   data() {

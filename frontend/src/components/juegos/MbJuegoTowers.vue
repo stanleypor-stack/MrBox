@@ -189,8 +189,17 @@ export default {
 
     etiquetaDelBoton() {
       if (this.girando) return this.$t("common.loading");
-      if (this.abierta) return this.$t("games.collect");
+      /* Igual que en Mines: con la torre empezada, el boton dice
+         cuanto se lleva si baja ahora. */
+      if (this.abierta) {
+        return this.$t("games.collectAmt", { amount: this.plata(this.cobraAhora) });
+      }
       return this.$t("games.play");
+    },
+
+    /** Lo que se lleva si cobra desde el piso donde esta parado. */
+    cobraAhora() {
+      return (parseFloat(this.apuesta) || 0) * this.multDe(this.subidos);
     },
 
     trabado() { return this.girando || this.abierta; },

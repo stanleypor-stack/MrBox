@@ -37,6 +37,32 @@ const TIPOS = [
   "manual", //       ajuste hecho desde el panel
 ];
 
+/*
+  LO QUE CUENTA COMO JUGADO.
+
+  Las carreras, el rango VIP, el rakeback, los limites que se pone el
+  jugador, las comisiones de referidos y todas las pantallas de
+  numeros suman "lo jugado" de este libro. La lista vivia copiada en
+  nueve archivos, asi que cuando entraron los ocho juegos originales
+  sumaban para el rango --que lo lleva el contador del usuario-- y no
+  para nada mas: el jugador veia su progreso VIP subir y la carrera
+  marcarle cero.
+
+  Ahora esta una sola vez. El dia que entre un juego nuevo, entra aca
+  y entra en todo.
+
+  LO QUE PAGA VA APARTE
+
+  `game_win` es plata que SALE, igual que vender un objeto. Suma en
+  `TIPOS_QUE_DEVUELVEN`, que es lo que se le resta a lo jugado para
+  sacar el margen de verdad. Si estuviera en la lista de arriba, cada
+  premio contaria como si el jugador hubiera apostado de nuevo.
+*/
+const TIPOS_QUE_JUEGAN = ["box_open", "deal", "game_bet"];
+
+/** Lo que la casa devuelve por lo jugado: premios y ventas. */
+const TIPOS_QUE_DEVUELVEN = ["item_sold", "game_win"];
+
 const balanceTransactionSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
@@ -88,3 +114,5 @@ balanceTransactionSchema.index({ type: 1, createdAt: -1 });
 
 module.exports = mongoose.model("BalanceTransaction", balanceTransactionSchema);
 module.exports.TIPOS = TIPOS;
+module.exports.TIPOS_QUE_JUEGAN = TIPOS_QUE_JUEGAN;
+module.exports.TIPOS_QUE_DEVUELVEN = TIPOS_QUE_DEVUELVEN;

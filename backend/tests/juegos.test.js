@@ -31,6 +31,7 @@ const { conectar, asegurarIndices } = require("../database");
 
 const User = require("../database/models/User");
 const GameRound = require("../database/models/GameRound");
+const GameTanda = require("../database/models/GameTanda");
 
 const mines = require("../services/games/mines");
 const towers = require("../services/games/towers");
@@ -146,10 +147,21 @@ test("SLIDE: los tres colores devuelven lo mismo", async () => {
   assert.equal(Math.round((1 / 15) * p.yellow * 10000) / 10000, Math.round((7 / 15) * p.red * 10000) / 10000);
   assert.equal(p.yellow, 14);
   assert.equal(p.red, 2);
-  /* El cero es amarillo; el resto alterna. */
-  assert.equal(slide.colorDe(0), "yellow");
-  assert.equal(slide.colorDe(2), "red");
+  /*
+    LA RUEDA ES LA DEL DISENO: el amarillo esta en el medio, no en el
+    cero. Importa el lugar y no solo la cuenta, porque la cinta de la
+    pantalla se dibuja con este orden y frena donde dice el servidor.
+  */
+  assert.equal(slide.colorDe(7), "yellow");
+  assert.equal(slide.colorDe(0), "red");
   assert.equal(slide.colorDe(3), "purple");
+
+  const cuenta = {};
+  for (let i = 0; i < slide.CASILLAS; i += 1) {
+    const c = slide.colorDe(i);
+    cuenta[c] = (cuenta[c] || 0) + 1;
+  }
+  assert.deepEqual(cuenta, { red: 7, purple: 7, yellow: 1 });
 });
 
 test("PLINKO: no se aceptan filas ni riesgos inventados", async () => {
@@ -314,6 +326,24 @@ test("towers: el multiplicador crece piso a piso y nunca baja de 1", async () =>
   }
 });
 
+/**
+ * ARRANCA EL VUELO DE LA RONDA DE AHORA, SIN ESPERAR.
+ *
+ * Crash deja apostar seis segundos y despues vuela. Un test que
+ * espere seis segundos de verdad es un test que nadie corre, asi que
+ * se le mueve el reloj a la ronda: se adelanta el cierre de apuestas
+ * los milisegundos que se le pidan. Lo que se prueba sigue siendo lo
+ * mismo, porque el multiplicador lo saca el servidor de ESA fecha.
+ */
+async function volar(desdeMs = 100) {
+  const tanda = await GameTanda.findOne({ juego: "crash" }).sort({ numero: -1 });
+  await GameTanda.updateOne(
+    { _id: tanda._id },
+    { $set: { abiertaHasta: new Date(Date.now() - desdeMs) } },
+  );
+  return tanda;
+}
+
 test("CRASH: no se puede cobrar por encima del punto de reventon", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
   /*
@@ -321,33 +351,199 @@ test("CRASH: no se puede cobrar por encima del punto de reventon", async (t) => 
     el servidor le cree, cobra 1000x siempre.
   */
   const j = await jugador({ saldo: 1000 });
+  assert.ok(await rondaFresca("crash", j.token), "no abrio la ronda");
 
-  const abrir = await pedir("POST", "/games/crash/open", {
+  const apostar = await pedir("POST", "/games/crash/bet", {
     token: j.token, cuerpo: { apuestaSc: 10 },
   });
-  assert.equal(abrir.estado, 200, JSON.stringify(abrir.datos));
-  assert.ok(!/punto/.test(JSON.stringify(abrir.datos)), "dijo donde revienta");
+  assert.equal(apostar.estado, 200, JSON.stringify(apostar.datos));
+  assert.ok(!/punto/.test(JSON.stringify(apostar.datos)), "dijo donde revienta");
+
+  await volar(100);
 
   const antes = await saldoDe(j.id);
   const r = await pedir("POST", "/games/crash/cashout", { token: j.token, cuerpo: { en: 1000 } });
-  assert.equal(r.estado, 200);
+  assert.equal(r.estado, 200, JSON.stringify(r.datos));
 
   const d = r.datos.data;
-  /* Apenas abierta, el reloj del servidor esta en ~1.00x: el 1000x
-     que pidio no puede salir de ahi. */
-  assert.ok(d.multiplicador <= 1.05, "pago " + d.multiplicador + "x recien abierta");
+  /* A los 100 ms el reloj del servidor esta en ~1.00x: el 1000x que
+     pidio no puede salir de ahi. */
+  assert.ok(d.multiplicador <= 1.05, "pago " + d.multiplicador + "x a los 100 ms");
   assert.ok(await saldoDe(j.id) <= antes + 11, "pago de mas");
 });
 
 test("crash: cobrar dos veces no paga dos veces", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
   const j = await jugador({ saldo: 100 });
-  await pedir("POST", "/games/crash/open", { token: j.token, cuerpo: { apuestaSc: 10 } });
+  assert.ok(await rondaFresca("crash", j.token), "no abrio la ronda");
+  const apostar = await pedir("POST", "/games/crash/bet", {
+    token: j.token, cuerpo: { apuestaSc: 10 },
+  });
+  assert.equal(apostar.estado, 200, JSON.stringify(apostar.datos));
+  await volar(100);
 
   const a = await pedir("POST", "/games/crash/cashout", { token: j.token });
   const b = await pedir("POST", "/games/crash/cashout", { token: j.token });
-  assert.equal(a.estado, 200);
+  assert.equal(a.estado, 200, JSON.stringify(a.datos));
   assert.notEqual(b.estado, 200, "cobro dos veces");
+});
+
+test("las rondas compartidas no cuentan el resultado antes de tiempo", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+  const j = await jugador({ saldo: 100 });
+
+  for (const juego of ["slide", "crash"]) {
+    const d = await rondaFresca(juego, j.token);
+    assert.ok(d, `${juego}: no abrio la ronda`);
+
+    assert.ok(d.semillaHash, `${juego}: no publico el hash de la semilla`);
+    assert.ok(!d.resultado, `${juego}: mando el resultado mientras se apostaba`);
+    /* El historial son rondas viejas: ahi los resultados van a la
+       vista a proposito. Lo que no puede salir es el de ESTA. */
+    assert.ok(
+      !/"casilla"|"punto"|"semilla":|vuelaHasta|giraHasta/.test(sinHistorial(d)),
+      `${juego}: se le escapo el resultado`,
+    );
+  }
+});
+
+test("CRASH: EL PUNTO DE REVENTON NO SALE MIENTRAS EL AVION VUELA", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+  /*
+    EL exploit grande de un crash compartido.
+
+    No alcanza con no mandar el punto: si se manda cuanto falta para
+    que la ronda termine, el punto sale de una resta --el vuelo dura
+    exactamente lo que tarda la curva en llegar ahi-- y el que mira la
+    red cobra siempre un milisegundo antes de reventar.
+
+    Asi que mientras vuela solo puede salir cuanto hace que arranco.
+  */
+  const j = await jugador({ saldo: 100 });
+  assert.ok(await rondaFresca("crash", j.token), "no abrio la ronda");
+  await volar(300);
+
+  const r = await pedir("GET", "/games/crash/estado", { token: j.token });
+  assert.equal(r.estado, 200, JSON.stringify(r.datos));
+  const d = r.datos.data;
+
+  assert.equal(d.estado, "girando", "no estaba volando: " + d.estado);
+  assert.ok(d.transcurridoMs >= 0, "no dijo cuanto hace que arranco");
+  assert.ok(!d.resultado, "mando el resultado en pleno vuelo");
+  assert.equal(d.faltaMs, undefined, "dijo cuanto falta: de ahi sale el punto");
+  assert.ok(
+    !/"punto"|"vuelaHasta"|"giraHasta"|"semilla":/.test(sinHistorial(d)),
+    "se le escapo por donde revienta",
+  );
+});
+
+test("slide: la casilla SI sale mientras gira, que es a donde va la cinta", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+  /*
+    Lo contrario de Crash, y a proposito: la cinta tiene que frenar en
+    algun lado y nadie puede hacer nada con el dato --no se puede
+    apostar ni cobrar-- asi que esconderlo seria esconderlo de la
+    animacion.
+  */
+  const j = await jugador({ saldo: 100 });
+  assert.ok(await rondaFresca("slide", j.token), "no abrio la ronda");
+
+  const tanda = await GameTanda.findOne({ juego: "slide" }).sort({ numero: -1 });
+  await GameTanda.updateOne(
+    { _id: tanda._id },
+    { $set: { abiertaHasta: new Date(Date.now() - 200) } },
+  );
+
+  const r = await pedir("GET", "/games/slide/estado", { token: j.token });
+  const d = r.datos.data;
+  assert.equal(d.estado, "girando");
+  assert.ok(d.resultado && Number.isInteger(d.resultado.casilla), "no dijo en que casilla frena");
+  assert.ok(d.resultado.casilla >= 0 && d.resultado.casilla < 15);
+});
+
+/**
+ * ABRE UNA RONDA NUEVA, SIN ESPERAR.
+ *
+ * Las rondas compartidas pasan por dos momentos: se apuesta y se
+ * juega. Un vuelo de Crash a 10x dura cuarenta segundos, asi que
+ * esperar el ciclo de verdad no es una prueba, es una siesta.
+ *
+ * Se le adelanta el final a la ronda de ahora y se pregunta el
+ * estado: ese pedido la paga y abre la que sigue, con su ventana de
+ * apuestas entera. Es el mismo camino que corre en produccion --nada
+ * se saltea-- pero sin el reloj de pared.
+ */
+/** Lo que contesto el servidor, sin las rondas viejas. */
+function sinHistorial(d) {
+  const copia = { ...d };
+  delete copia.historial;
+  return JSON.stringify(copia);
+}
+
+async function rondaFresca(juego, token) {
+  const t = await GameTanda.findOne({ juego }).sort({ numero: -1 });
+  if (t) {
+    await GameTanda.updateOne({ _id: t._id }, {
+      $set: {
+        abiertaHasta: new Date(Date.now() - 2000),
+        giraHasta: new Date(Date.now() - 1000),
+      },
+    });
+  }
+  const r = await pedir("GET", `/games/${juego}/estado`, { token });
+  const d = r.datos.data;
+  return d && d.estado === "apostando" ? d : null;
+}
+
+test("slide: se puede apostar a varios colores de la misma rueda", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+  const j = await jugador({ saldo: 100 });
+
+  /*
+    EL DISENO DIBUJA TRES COLUMNAS CON SUS APUESTAS.
+
+    La rueda es una sola, asi que ir al rojo y al amarillo de la
+    misma vuelta tiene que poder hacerse --como en BetSweeps-- y cada
+    apuesta tiene que cobrarse una vez.
+  */
+  const hay = await rondaFresca("slide", j.token);
+  if (!hay) return t.skip("la ronda no abrio a tiempo");
+
+  const antes = await saldoDe(j.id);
+  const roja = await pedir("POST", "/games/slide/bet", {
+    token: j.token, cuerpo: { apuestaSc: 5, color: "red" },
+  });
+  assert.equal(roja.estado, 200, JSON.stringify(roja.datos));
+
+  const amarilla = await pedir("POST", "/games/slide/bet", {
+    token: j.token, cuerpo: { apuestaSc: 3, color: "yellow" },
+  });
+  assert.equal(amarilla.estado, 200, JSON.stringify(amarilla.datos));
+
+  assert.ok(Math.abs(await saldoDe(j.id) - (antes - 8)) < 0.001, "cobro otra cosa que 8");
+
+  const mias = await GameRound.find({ user: j.id, juego: "slide" }).lean();
+  assert.equal(mias.length, 2, "no quedaron las dos apuestas anotadas");
+});
+
+test("crash: una sola apuesta por vuelo", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+  const j = await jugador({ saldo: 100 });
+
+  const hay = await rondaFresca("crash", j.token);
+  if (!hay) return t.skip("la ronda no abrio a tiempo");
+
+  const primera = await pedir("POST", "/games/crash/bet", {
+    token: j.token, cuerpo: { apuestaSc: 5 },
+  });
+  assert.equal(primera.estado, 200, JSON.stringify(primera.datos));
+  const despuesDeUna = await saldoDe(j.id);
+
+  const segunda = await pedir("POST", "/games/crash/bet", {
+    token: j.token, cuerpo: { apuestaSc: 5 },
+  });
+  assert.notEqual(segunda.estado, 200, "aposto dos veces en el mismo vuelo");
+  assert.equal(await saldoDe(j.id), despuesDeUna, "la segunda cobro igual");
 });
 
 test("crash: la curva y el reventon son los de BetSweeps", async () => {
@@ -419,18 +615,23 @@ test("EL TOPE DE LA CASA: ninguna ronda paga mas que el maximo", async (t) => {
   await Settings.updateOne({ key: "main" }, { $set: { "juegos.maximoPremioSc": 10000 } });
 });
 
-test("ninguno de los siete deja jugar sin saldo", async (t) => {
+test("ninguno de los ocho deja jugar sin saldo", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
   const j = await jugador({ saldo: 1 });
+
+  /* Slide y Crash solo aceptan apuestas con la ronda abierta: si no,
+     rebotan por cerrada y el test no probaria nada. */
+  await rondaFresca("slide", j.token);
+  await rondaFresca("crash", j.token);
 
   const pedidos = [
     ["/games/reme/play", { apuestaSc: 50 }],
     ["/games/keno/play", { apuestaSc: 50, elegidas: [1, 2, 3] }],
-    ["/games/slide/play", { apuestaSc: 50, color: "red" }],
+    ["/games/slide/bet", { apuestaSc: 50, color: "red" }],
     ["/games/plinko/play", { apuestaSc: 50, riesgo: "low", filas: 8 }],
     ["/games/mines/open", { apuestaSc: 50, tablero: 25, minas: 3 }],
     ["/games/towers/open", { apuestaSc: 50, riesgo: "med" }],
-    ["/games/crash/open", { apuestaSc: 50 }],
+    ["/games/crash/bet", { apuestaSc: 50 }],
   ];
 
   for (const [ruta, cuerpo] of pedidos) {

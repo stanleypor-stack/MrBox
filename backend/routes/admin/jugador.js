@@ -235,6 +235,21 @@ router.get("/players/:id/full", async (req, res) => {
       return f ? sc(f.total) : 0;
     };
 
+    /*
+      LO JUGADO Y LO DEVUELTO, CON LA LISTA DEL MODELO.
+
+      Cajas, deals y los ocho juegos cuentan como jugado; vender un
+      objeto y cobrar un juego son plata que volvio. Las dos listas
+      viven en BalanceTransaction, asi que un juego nuevo entra en
+      esta ficha sin tocarla.
+    */
+    const jugadoSc = () => sc(
+      BalanceTransaction.TIPOS_QUE_JUEGAN.reduce((a, t) => a + Math.abs(de(t)), 0)
+    );
+    const devueltoSc = () => sc(
+      BalanceTransaction.TIPOS_QUE_DEVUELVEN.reduce((a, t) => a + de(t), 0)
+    );
+
     const rango = vip.rangoDe(vip.jugadoParaVip(u), u.rangoManual);
 
     return res.json({
@@ -270,8 +285,8 @@ router.get("/players/:id/full", async (req, res) => {
         numeros: {
           compradoSc: de("purchase"),
           canjeadoSc: Math.abs(de("redemption")),
-          jugadoSc: sc(Math.abs(de("box_open")) + Math.abs(de("deal"))),
-          devueltoSc: de("item_sold"),
+          jugadoSc: jugadoSc(),
+          devueltoSc: devueltoSc(),
           regaladoSc: sc(de("race_prize") + de("challenge") + de("rakeback") + de("promo_code") + de("affiliate")),
           aperturas,
           deals,
@@ -291,8 +306,8 @@ router.get("/players/:id/full", async (req, res) => {
           mirar antes de regalarle algo.
         */
         margenSc: sc(
-          Math.abs(de("box_open")) + Math.abs(de("deal"))
-          - de("item_sold")
+          jugadoSc()
+          - devueltoSc()
           - (de("race_prize") + de("challenge") + de("rakeback") + de("promo_code") + de("affiliate"))
         ),
 

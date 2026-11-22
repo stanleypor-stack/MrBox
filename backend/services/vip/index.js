@@ -104,7 +104,7 @@ const CUANTOS_BENEFICIOS = RANGOS.map(
 const PERIODOS = ["daily", "weekly", "monthly"];
 
 /* Los tipos de movimiento que cuentan como jugar. */
-const JUGAR = ["box_open", "deal"];
+const JUGAR = BalanceTransaction.TIPOS_QUE_JUEGAN;
 
 /*
   LOS DE ARRIBA SON LOS DE FABRICA.

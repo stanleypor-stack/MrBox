@@ -42,7 +42,7 @@ const { logger } = require("../../utils/logger");
 const TIPOS = ["daily", "weekly", "monthly"];
 
 /* Los tipos de movimiento que suman. Los mismos que cuentan como jugar. */
-const JUGAR = ["box_open", "deal"];
+const JUGAR = BalanceTransaction.TIPOS_QUE_JUEGAN;
 
 /*
   EL REPARTO POR DEFECTO.

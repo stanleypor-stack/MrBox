@@ -160,8 +160,17 @@ export default {
 
     etiquetaDelBoton() {
       if (this.girando) return this.$t("common.loading");
-      if (this.abierta) return this.$t("games.collect");
+      /* Con la ronda abierta el boton dice cuanto se lleva si cobra
+         ahora, que es lo que dibuja el diseno. */
+      if (this.abierta) {
+        return this.$t("games.collectAmt", { amount: this.plata(this.cobraAhora) });
+      }
       return this.$t("games.play");
+    },
+
+    /** Lo que se lleva si cobra con lo que tiene destapado. */
+    cobraAhora() {
+      return (parseFloat(this.apuesta) || 0) * this.multDe(this.destapadas.length);
     },
 
     trabado() { return this.girando || this.abierta; },

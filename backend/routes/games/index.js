@@ -18,6 +18,8 @@ const plinko = require("../../services/games/plinko");
 const mines = require("../../services/games/mines");
 const towers = require("../../services/games/towers");
 const crash = require("../../services/games/crash");
+const rondas = require("../../services/games/rondas");
+const controles = require("../../services/controls");
 const wallet = require("../../services/wallet");
 
 const router = express.Router();
@@ -171,13 +173,6 @@ const DE_UNA = {
     revisar: (req) => ({ elegidas: keno.revisar(req.body.elegidas) }),
     sortear: ({ apuestaSc, semillas, cfg, jugada }) =>
       keno.jugar({ apuestaSc, elegidas: jugada.elegidas, semillas, cfg }),
-  },
-
-  slide: {
-    servicio: slide,
-    revisar: (req) => ({ color: slide.revisar(req.body.color) }),
-    sortear: ({ apuestaSc, semillas, cfg, jugada }) =>
-      slide.jugar({ apuestaSc, color: jugada.color, semillas, cfg }),
   },
 
   plinko: {
@@ -481,76 +476,296 @@ router.post("/towers/cashout", autorizar(true), limite, async (req, res) => {
   }
 });
 
-/* ── Crash ────────────────────────────────────────────────────────── */
-
-router.post("/crash/open", autorizar(true), limite, async (req, res) => {
-  try {
-    const r = await juegos.abrirRonda({
-      user: req.user,
-      juego: "crash",
-      apuestaSc: req.body.apuestaSc,
-      revisar: () => {
-        /* El cobro automático es opcional; si viene, tiene que ser un
-           multiplicador por encima de 1. */
-        const auto = Number(req.body.autoCobrarEn);
-        if (req.body.autoCobrarEn !== undefined && (!Number.isFinite(auto) || auto <= 1)) {
-          throw errorDe("INVALID_AMOUNT", { campo: "autoCobrarEn" });
-        }
-        return { autoCobrarEn: Number.isFinite(auto) && auto > 1 ? auto : null };
-      },
-      repartir: ({ semillas, cfg }) => {
-        const { punto, hmacs } = crash.arrancar({ semillas, cfg });
-        return {
-          hmacs,
-          /* El punto de reventón es LO tapado. Si saliera de acá, el
-             navegador cobraría siempre un centésimo antes. */
-          oculto: { punto },
-          publico: { arrancoEn: Date.now() },
-        };
-      },
-    });
-    return res.json({ success: true, data: r });
-  } catch (err) {
-    return responderError(res, err, "games/crash/open");
-  }
-});
+/* ── Slide y Crash: rondas compartidas ────────────────── */
 
 /**
- * COBRAR.
+ * LO QUE VE LA PANTALLA DE UNA RONDA.
  *
- * El multiplicador lo decide el reloj DEL SERVIDOR: cuánto pasó desde
- * que se creó la ronda. Lo que manda el cliente (`en`) solo puede
- * bajarlo, nunca subirlo, así que un navegador tocado no puede cobrar
- * más de lo que le tocaba.
+ * Mientras se apuesta y mientras gira, el resultado NO sale de aca:
+ * lo unico que viaja es el hash de la semilla, que es la promesa de
+ * que el resultado ya estaba decidido. Recien cuando la ronda
+ * termina se revela, y entonces cualquiera puede rehacerlo.
+ */
+async function tandaALaVista(juego, userId) {
+  const tanda = await rondas.tandaActual(juego);
+  const estado = rondas.estadoDe(tanda);
+  const ahora = Date.now();
+
+  const base = {
+    numero: tanda.numero,
+    estado,
+    semillaHash: tanda.semillaHash,
+    historial: await rondas.historial(juego, 20),
+  };
+
+  const arranco = new Date(tanda.abiertaHasta).getTime();
+  const vuela = tanda.vuelaHasta ? new Date(tanda.vuelaHasta).getTime() : arranco;
+  const termina = new Date(tanda.giraHasta).getTime();
+
+  /*
+    LO QUE SE CUENTA EN CADA MOMENTO, Y LO QUE NO.
+
+    Mientras se apuesta: cuanto falta para que arranque, y nada mas.
+
+    Mientras gira: cuanto hace que arranco, para que la animacion
+    sepa donde esta parada el que entra a mitad de la vuelta.
+
+      - Slide manda tambien EN QUE CASILLA frena. Tiene que mandarlo:
+        la cinta va hasta ahi. Y no le hace mal a nadie, porque a esa
+        altura ya no se puede apostar ni cobrar: no queda ninguna
+        decision por tomar.
+
+      - Crash NO manda el punto de reventon ni cuanto falta para el
+        final. Ahi SI queda una decision --cuando cobrar-- y saber
+        donde revienta la convierte en ninguna: se cobra un
+        milisegundo antes y el juego deja de tener margen. Por eso
+        tampoco va `faltaMs`: el final del vuelo ES el punto de
+        reventon, puesto en segundos, y una resta lo despeja.
+
+    Cuando ya salio: el resultado y cuanto queda para la proxima.
+  */
+  if (estado === "apostando") {
+    base.faltaMs = Math.max(0, arranco - ahora);
+  } else if (estado === "girando") {
+    base.transcurridoMs = Math.max(0, ahora - arranco);
+    if (juego === "slide") {
+      base.resultado = tanda.resultado;
+      base.faltaMs = Math.max(0, vuela - ahora);
+    }
+  } else {
+    base.resultado = tanda.resultado;
+    base.faltaMs = Math.max(0, termina - ahora);
+  }
+
+  /* El cartel de "LAST 100", que solo tiene Slide. */
+  if (juego === "slide") base.estadisticas = await rondas.estadisticas(juego, 100);
+
+  /* Las apuestas de la ronda: los dos juegos las muestran. Las mas
+     nuevas primero, que es como las dibuja el diseno. */
+  const apuestas = await GameRound.find({ juego, "jugada.tanda": String(tanda._id) })
+    .select("user apuestaSc jugada multiplicador pagoSc abierta createdAt")
+    .populate("user", "username")
+    .sort({ createdAt: -1 })
+    .limit(100)
+    .lean();
+
+  base.apuestas = apuestas.map((a) => ({
+    jugador: a.user && a.user.username ? a.user.username : "",
+    apuestaSc: a.apuestaSc,
+    color: a.jugada.color,
+    autoCobrarEn: a.jugada.autoCobrarEn || null,
+    multiplicador: a.multiplicador,
+    pagoSc: a.pagoSc,
+    abierta: a.abierta,
+  }));
+
+  if (userId) {
+    const mia = apuestas.find((a) => String(a.user && a.user._id) === String(userId));
+    base.miApuesta = mia
+      ? {
+        apuestaSc: mia.apuestaSc,
+        color: mia.jugada.color,
+        autoCobrarEn: mia.jugada.autoCobrarEn || null,
+        abierta: mia.abierta,
+        multiplicador: mia.multiplicador,
+        pagoSc: mia.pagoSc,
+      }
+      : null;
+  }
+
+  return { tanda, datos: base };
+}
+
+/**
+ * APUESTA A LA RONDA DE AHORA.
+ *
+ * Solo mientras esta abierta.
+ *
+ * CUANTAS POR RONDA
+ *
+ * En Crash, una: la de arriba es la apuesta del jugador en ese vuelo
+ * y el cobro cierra esa fila. La segunda tiene que rebotar y no
+ * cobrar nada.
+ *
+ * En Slide, las que quiera: la rueda es una sola y el diseno dibuja
+ * las tres columnas con sus apuestas, asi que se puede ir al rojo y
+ * al amarillo de la misma vuelta, como en BetSweeps. Cada apuesta es
+ * su propia fila y se paga sola.
+ */
+async function apostarEnTanda({ req, juego, revisar }) {
+  const cfg = await Settings.leer();
+  if ((cfg.juegos || {}).apagados) throw errorDe("GAMES_OFF", {}, 403);
+
+  const { tanda } = await tandaALaVista(juego, req.user._id);
+  if (rondas.estadoDe(tanda) !== "apostando") {
+    throw errorDe("ROUND_CLOSED", { juego }, 409);
+  }
+
+  const monto = await juegos.revisarApuesta(req.body.apuestaSc, cfg);
+  const jugada = revisar();
+
+  await juegos.revisarTopePorBono(req.user._id, monto, cfg);
+  await controles.revisarAntesDeJugar({ userId: req.user._id, montoSc: monto });
+
+  /*
+    SE MIRA ANTES DE COBRAR.
+
+    El indice unico alcanza para que no queden dos abiertas, pero si
+    se cobra primero y el indice rebota despues, la apuesta quedo
+    descontada por una ronda que no existe. Solo para los de a una.
+  */
+  const deAUna = juego === "crash";
+  if (deAUna) {
+    const yaTiene = await GameRound.findOne({
+      user: req.user._id, juego, abierta: true,
+    }).lean();
+    if (yaTiene) throw errorDe("ROUND_OPEN", { juego }, 409);
+  }
+
+  await wallet.mover({
+    userId: req.user._id,
+    amountSc: -monto,
+    type: "game_bet",
+    juegaSc: monto,
+    reference: { kind: "game", label: juego },
+  });
+
+  try {
+    await GameRound.create({
+      user: req.user._id,
+      juego,
+      apuestaSc: monto,
+      jugada: { ...jugada, tanda: String(tanda._id) },
+      semillaServidorHash: tanda.semillaHash,
+      nonce: tanda.numero,
+      abierta: true,
+      unaSola: deAUna,
+    });
+  } catch (err) {
+    if (err && err.code === 11000) {
+      await wallet.mover({
+        userId: req.user._id, amountSc: monto, type: "game_win",
+        reason: "devolucion: ya habia apostado en esa ronda",
+        reference: { kind: "game", label: juego },
+      }).catch(() => {});
+      throw errorDe("ROUND_OPEN", { juego }, 409);
+    }
+    throw err;
+  }
+
+  const { datos } = await tandaALaVista(juego, req.user._id);
+  return { ...datos, ...(await wallet.saldoDe(req.user._id)) };
+}
+
+for (const juego of ["slide", "crash"]) {
+  router.get(`/${juego}/estado`, autorizar(false), async (req, res) => {
+    try {
+      const { datos } = await tandaALaVista(juego, req.user ? req.user._id : null);
+      return res.json({ success: true, data: datos });
+    } catch (err) {
+      return responderError(res, err, `games/${juego}/estado`);
+    }
+  });
+
+  router.post(`/${juego}/bet`, autorizar(true), limite, async (req, res) => {
+    try {
+      const datos = await apostarEnTanda({
+        req,
+        juego,
+        revisar: () => (juego === "slide"
+          ? { color: slide.revisar(req.body.color) }
+          : (() => {
+            const auto = Number(req.body.autoCobrarEn);
+            if (req.body.autoCobrarEn !== undefined && (!Number.isFinite(auto) || auto <= 1)) {
+              throw errorDe("INVALID_AMOUNT", { campo: "autoCobrarEn" });
+            }
+            return { autoCobrarEn: Number.isFinite(auto) && auto > 1 ? auto : null };
+          })()),
+      });
+      return res.json({ success: true, data: datos });
+    } catch (err) {
+      return responderError(res, err, `games/${juego}/bet`);
+    }
+  });
+}
+
+/**
+ * COBRAR EN CRASH, A MANO Y EN VIVO.
+ *
+ * El multiplicador lo decide el reloj DEL SERVIDOR: cuanto paso desde
+ * que la ronda empezo a girar. Si eso ya paso el punto de reventon,
+ * no se paga. Lo que diga el navegador no entra en la cuenta.
  */
 router.post("/crash/cashout", autorizar(true), limite, async (req, res) => {
   try {
-    const ronda = await juegos.rondaAbierta(req.user._id, "crash");
+    const cfg = await Settings.leer();
+    const tanda = await rondas.tandaActual("crash");
 
-    const msDesde = Date.now() - new Date(ronda.createdAt).getTime();
+    if (rondas.estadoDe(tanda) !== "girando") {
+      throw errorDe("ROUND_CLOSED", { juego: "crash" }, 409);
+    }
+
+    const mia = await GameRound.findOne({
+      user: req.user._id, juego: "crash", "jugada.tanda": String(tanda._id), abierta: true,
+    }).lean();
+    if (!mia) throw errorDe("NO_ROUND", { juego: "crash" }, 404);
+
+    const msDesde = Date.now() - new Date(tanda.abiertaHasta).getTime();
     const r = crash.cobrar({
-      apuestaSc: ronda.apuestaSc,
-      punto: (ronda.oculto || {}).punto || 1,
+      apuestaSc: mia.apuestaSc,
+      punto: tanda.resultado.punto,
       msDesde,
       pedido: req.body.en,
     });
 
-    await juegos.cerrarRonda({
+    const acotado = cfgJuegos.acotarPago(mia.apuestaSc, r.pagoSc, cfg);
+
+    /* `abierta: true` en el filtro: dos clicks pagan una sola vez. */
+    const cerrada = await GameRound.findOneAndUpdate(
+      { _id: mia._id, abierta: true },
+      {
+        $set: {
+          abierta: false,
+          cerradaEl: new Date(),
+          multiplicador: acotado.recortado ? acotado.multiplicador : r.multiplicador,
+          pagoSc: acotado.pagoSc,
+          resultado: { en: r.en, reventado: r.reventado },
+        },
+      },
+      { returnDocument: "after" },
+    ).lean();
+
+    if (!cerrada) throw errorDe("NO_ROUND", { juego: "crash" }, 409);
+
+    if (acotado.pagoSc > 0) {
+      await wallet.mover({
+        userId: req.user._id,
+        amountSc: acotado.pagoSc,
+        type: "game_win",
+        reference: { kind: "game", id: mia._id, label: "crash" },
+      });
+    }
+
+    /*
+      LA COMISION DEL SOCIO.
+
+      Este cobro cierra la fila a mano, sin pasar por `cerrarRonda`,
+      asi que la comision hay que anotarla aca: si no, el unico juego
+      que no le paga al socio seria justamente el que se cobra a mano.
+    */
+    await juegos.comisionDelSocio({
       userId: req.user._id,
-      ronda,
-      multiplicador: r.multiplicador,
-      pagoSc: r.pagoSc,
-      resultado: { punto: (ronda.oculto || {}).punto, reventado: r.reventado, en: r.en },
+      juego: "crash",
+      apuestaSc: mia.apuestaSc,
+      pagoSc: acotado.pagoSc,
     });
 
     return res.json({
       success: true,
       data: {
-        rondaId: ronda._id,
-        punto: (ronda.oculto || {}).punto,
         reventado: r.reventado,
-        multiplicador: r.multiplicador,
-        pagoSc: r.pagoSc,
+        multiplicador: cerrada.multiplicador,
+        pagoSc: cerrada.pagoSc,
         ...(await wallet.saldoDe(req.user._id)),
       },
     });

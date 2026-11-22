@@ -45,7 +45,7 @@ async function rellenar() {
   */
   const pagas = await BalanceTransaction.updateMany(
     {
-      type: { $in: ["box_open", "deal"] },
+      type: { $in: BalanceTransaction.TIPOS_QUE_JUEGAN },
       amountSc: { $lt: 0 },
       $or: [{ juegaSc: { $exists: false } }, { juegaSc: 0 }],
     },
@@ -135,7 +135,7 @@ async function rellenar() {
   console.log("\nCONTROL: contador contra libro");
 
   const porJugador = await BalanceTransaction.aggregate([
-    { $match: { type: { $in: ["box_open", "deal"] } } },
+    { $match: { type: { $in: BalanceTransaction.TIPOS_QUE_JUEGAN } } },
     {
       $group: {
         _id: "$user",

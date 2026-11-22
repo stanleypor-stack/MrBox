@@ -133,7 +133,7 @@ async function laPantalla(usuario) {
       {
         $match: {
           user: { $in: traidos.map((u) => u._id) },
-          type: { $in: ["purchase", "box_open", "deal"] },
+          type: { $in: ["purchase", ...BalanceTransaction.TIPOS_QUE_JUEGAN] },
         },
       },
       { $group: { _id: { user: "$user", tipo: "$type" }, total: { $sum: "$amountSc" } } },
