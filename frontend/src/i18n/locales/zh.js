@@ -1105,6 +1105,7 @@ export default {
     "stop": "停止",
     "rtp": "返还率",
     "maxPlay": "最大投注",
+    "maxWin": "最大赢得",
     "provablyFair": "可验证公平",
     "sound": "声音",
     "moreGames": "更多游戏",

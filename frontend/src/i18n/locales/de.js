@@ -1105,6 +1105,7 @@ export default {
     "stop": "STOPP",
     "rtp": "Auszahlung",
     "maxPlay": "Max. Einsatz",
+    "maxWin": "Max. Gewinn",
     "provablyFair": "Beweisbar fair",
     "sound": "Ton",
     "moreGames": "Mehr Spiele",

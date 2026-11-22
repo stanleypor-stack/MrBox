@@ -34,9 +34,18 @@
               </div>
             </div>
 
+            <!--
+              LOS DOS DATOS DEL DISEÑO, CON LOS NUMEROS DE VERDAD.
+
+              El diseño muestra "Max play" y "Max win" y los tiene
+              escritos a mano, que es lo que corresponde a un
+              prototipo. Acá los trae el servidor: son los mismos
+              números que hace cumplir al pagar, así que la etiqueta
+              no puede mentir.
+            -->
             <div class="gx-fchips">
-              <span v-if="elJuego.rtp">{{ $t('games.rtp') }}<em>{{ elJuego.rtp.toFixed(2) }}%</em></span>
               <span>{{ $t('games.maxPlay') }}<em>{{ plata(maximoSc) }}</em></span>
+              <span>{{ $t('games.maxWin') }}<em>{{ plata(maximoPremioSc) }}</em></span>
             </div>
 
             <div class="gx-sqbtns">
@@ -102,6 +111,7 @@ export default {
     return {
       sonido: true,
       maximoSc: 0,
+      maximoPremioSc: 0,
       minimoSc: 0.1,
       rtp: {},
       apagados: false,
@@ -141,6 +151,7 @@ export default {
         const d = data.data;
         this.apagados = d.apagados;
         this.maximoSc = d.apuestaMaximaSc;
+        this.maximoPremioSc = d.maximoPremioSc;
         this.minimoSc = d.apuestaMinimaSc;
         /* El retorno sale del servidor, que es el que paga: la pantalla
            no tiene por qué saberlo de memoria. */

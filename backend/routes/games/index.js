@@ -65,6 +65,7 @@ router.get("/", autorizar(false), async (req, res) => {
            de un solo lugar, que es el que tambien los hace cumplir. */
         apuestaMinimaSc: cfgJuegos.limites(cfg).minimaSc,
         apuestaMaximaSc: cfgJuegos.limites(cfg).maximaSc,
+        maximoPremioSc: cfgJuegos.limites(cfg).premioSc,
         juegos: cfgJuegos.JUEGOS.map((id) => ({
           id,
           /* El retorno, que es lo que dice la tarjeta. Sale del mismo

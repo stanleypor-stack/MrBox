@@ -1105,6 +1105,7 @@ export default {
     "stop": "СТОП",
     "rtp": "Возврат",
     "maxPlay": "Макс. ставка",
+    "maxWin": "Макс. выигрыш",
     "provablyFair": "Честность доказуема",
     "sound": "Звук",
     "moreGames": "Другие игры",

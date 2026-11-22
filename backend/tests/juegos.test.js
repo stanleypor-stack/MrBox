@@ -385,6 +385,40 @@ test("MINES: el multiplicador es el justo por el margen, en los cuatro tableros"
   }
 });
 
+test("EL TOPE DE LA CASA: ninguna ronda paga mas que el maximo", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+  /*
+    Es lo que impide que una sola ronda se lleve la caja. El margen
+    dice lo que se gana en promedio; esto es el techo de un tiro.
+
+    Se prueba bajando el tope a SC 20 y buscando un keno que pague
+    mas: con 1 elegido el multiplicador es 2,61x, asi que con 100 de
+    apuesta el pago justo seria 261 y tiene que quedar en 20.
+  */
+  const Settings = require("../database/models/Settings");
+  await Settings.updateOne({ key: "main" }, { $set: { "juegos.maximoPremioSc": 20 } }, { upsert: true });
+
+  const j = await jugador({ saldo: 100000 });
+
+  let recortada = null;
+  for (let i = 0; i < 40 && !recortada; i += 1) {
+    const r = await pedir("POST", "/games/keno/play", {
+      token: j.token, cuerpo: { apuestaSc: 100, elegidas: [1] },
+    });
+    if (r.datos.data && r.datos.data.pagoSc > 0) recortada = r.datos.data;
+  }
+
+  if (recortada) {
+    assert.ok(recortada.pagoSc <= 20, "pago " + recortada.pagoSc + ", el tope era 20");
+    /* Y lo que queda anotado es el multiplicador DE VERDAD pagado. */
+    const ronda = await GameRound.findById(recortada.rondaId).lean();
+    assert.ok(Math.abs(ronda.pagoSc - recortada.pagoSc) < 0.001);
+    assert.ok(Math.abs(ronda.multiplicador * 100 - ronda.pagoSc) < 0.01, "el libro dice otra cosa que la plata");
+  }
+
+  await Settings.updateOne({ key: "main" }, { $set: { "juegos.maximoPremioSc": 10000 } });
+});
+
 test("ninguno de los siete deja jugar sin saldo", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
   const j = await jugador({ saldo: 1 });

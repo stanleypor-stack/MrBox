@@ -1105,6 +1105,7 @@ export default {
     "stop": "停止",
     "rtp": "還元率",
     "maxPlay": "最大プレイ額",
+    "maxWin": "最大獲得額",
     "provablyFair": "検証可能な公平性",
     "sound": "サウンド",
     "moreGames": "他のゲーム",

@@ -140,6 +140,23 @@ const settingsSchema = new mongoose.Schema(
       apagados: { type: Boolean, default: false },
       apuestaMinimaSc: { type: Number, default: 0.1, min: 0.01 },
       apuestaMaximaSc: { type: Number, default: 500, min: 0 },
+
+      /**
+       * LO MAXIMO QUE PUEDE PAGAR UNA RONDA.
+       *
+       * Es el "Max win" que muestra la pantalla de cada juego, y es
+       * un tope de verdad: ninguna ronda paga mas que esto, sin
+       * importar el multiplicador que haya salido.
+       *
+       * Sin el, un Keno de 1010x sobre la apuesta maxima paga medio
+       * millon, y un Mines con muchas minas puede dar multiplicadores
+       * de cuatro cifras. El margen dice lo que se pierde EN
+       * PROMEDIO; esto es lo que impide que una sola ronda se lleve
+       * la caja.
+       *
+       * El numero es el de BetSweeps.
+       */
+      maximoPremioSc: { type: Number, default: 10000, min: 0 },
       margenes: {
         dice: { type: Number, default: null },
         crash: { type: Number, default: null },

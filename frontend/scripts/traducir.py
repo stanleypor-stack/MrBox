@@ -1041,6 +1041,7 @@ T = {
  "games.stop": {"en":"STOP","de":"STOPP","fr":"ARRÊTER","es":"PARAR","pt":"PARAR","it":"FERMA","ru":"СТОП","ja":"停止","zh":"停止"},
  "games.rtp": {"en":"Return","de":"Auszahlung","fr":"Retour","es":"Retorno","pt":"Retorno","it":"Ritorno","ru":"Возврат","ja":"還元率","zh":"返还率"},
  "games.maxPlay": {"en":"Max play","de":"Max. Einsatz","fr":"Mise max","es":"Máximo por jugada","pt":"Jogada máxima","it":"Giocata max","ru":"Макс. ставка","ja":"最大プレイ額","zh":"最大投注"},
+ "games.maxWin": {"en":"Max win","de":"Max. Gewinn","fr":"Gain max","es":"Máximo que paga","pt":"Ganho máximo","it":"Vincita max","ru":"Макс. выигрыш","ja":"最大獲得額","zh":"最大赢得"},
  "games.provablyFair": {"en":"Provably fair","de":"Beweisbar fair","fr":"Équité prouvable","es":"Sorteo verificable","pt":"Sorteio verificável","it":"Equità verificabile","ru":"Честность доказуема","ja":"検証可能な公平性","zh":"可验证公平"},
  "games.sound": {"en":"Sound","de":"Ton","fr":"Son","es":"Sonido","pt":"Som","it":"Suono","ru":"Звук","ja":"サウンド","zh":"声音"},
  "games.moreGames": {"en":"More games","de":"Mehr Spiele","fr":"Plus de jeux","es":"Más juegos","pt":"Mais jogos","it":"Altri giochi","ru":"Другие игры","ja":"他のゲーム","zh":"更多游戏"},

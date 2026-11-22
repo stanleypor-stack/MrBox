@@ -204,6 +204,24 @@ async function jugarUnaRonda({ user, juego, apuestaSc, revisar, sortear }) {
     throw err;
   }
 
+  /*
+    EL TOPE DE LA CASA, ANTES DE ANOTAR NADA.
+
+    Ninguna ronda paga mas que `maximoPremioSc`, salga lo que salga.
+    Es el "Max win" que muestra la pantalla y es el numero de
+    BetSweeps. El margen dice lo que la casa gana EN PROMEDIO; esto
+    es lo que impide que una sola ronda se lleve la caja: un Keno de
+    1010x sobre la apuesta maxima paga medio millon sin esto.
+
+    Se aplica aca, en el unico lugar por el que pasan los ocho, para
+    que ningun juego pueda saltearselo por olvido. Y lo que se anota
+    es el multiplicador RECORTADO, no el que salio: si se guardara el
+    otro, el libro diria una cosa y la plata otra.
+  */
+  const acotado = cfgJuegos.acotarPago(monto, sc(r.pagoSc || 0), cfg);
+  const pagoFinal = acotado.pagoSc;
+  const multFinal = acotado.recortado ? acotado.multiplicador : (r.multiplicador || 0);
+
   /* 6. La ronda queda anotada ANTES de pagar: una ronda pagada que no
         figura en ningún lado no se puede auditar después. */
   const ronda = await GameRound.create({
@@ -212,8 +230,8 @@ async function jugarUnaRonda({ user, juego, apuestaSc, revisar, sortear }) {
     apuestaSc: monto,
     jugada: r.jugada || {},
     resultado: r.resultado || {},
-    multiplicador: r.multiplicador || 0,
-    pagoSc: sc(r.pagoSc || 0),
+    multiplicador: multFinal,
+    pagoSc: pagoFinal,
     semillaServidorHash: movida.semillaServidorHash,
     semillaCliente: movida.semillaCliente,
     nonce: movida.nonce,
@@ -223,10 +241,10 @@ async function jugarUnaRonda({ user, juego, apuestaSc, revisar, sortear }) {
   });
 
   /* 7. Y recién ahora se paga. */
-  if (r.pagoSc > 0) {
+  if (pagoFinal > 0) {
     await wallet.mover({
       userId: user._id,
-      amountSc: sc(r.pagoSc),
+      amountSc: pagoFinal,
       type: "game_win",
       reference: { kind: "game", id: ronda._id, label: juego },
     });
@@ -250,6 +268,11 @@ async function jugarUnaRonda({ user, juego, apuestaSc, revisar, sortear }) {
     rondaId: ronda._id,
     apuestaSc: monto,
     ...r,
+    /* Lo que de verdad se pago, despues del tope. Va DESPUES de `r`
+       para que pise lo que calculo el juego. */
+    multiplicador: multFinal,
+    pagoSc: pagoFinal,
+    topeDeLaCasa: acotado.recortado,
     prueba: {
       semillaServidorHash: movida.semillaServidorHash,
       semillaCliente: movida.semillaCliente,
@@ -400,14 +423,22 @@ async function rondaAbierta(userId, juego) {
  * y solo uno encuentra la ronda abierta. El otro no paga.
  */
 async function cerrarRonda({ userId, ronda, multiplicador, pagoSc, resultado }) {
+  /* El mismo tope que en las de una sola vuelta: ver el comentario
+     de `jugarUnaRonda`. Mines y Towers son justamente los que mas
+     alto pueden llegar. */
+  const cfg = await Settings.leer();
+  const acotado = cfgJuegos.acotarPago(ronda.apuestaSc, sc(pagoSc || 0), cfg);
+  const pagoFinal = acotado.pagoSc;
+  const multFinal = acotado.recortado ? acotado.multiplicador : (multiplicador || 0);
+
   const cerrada = await GameRound.findOneAndUpdate(
     { _id: ronda._id, abierta: true },
     {
       $set: {
         abierta: false,
         cerradaEl: new Date(),
-        multiplicador: multiplicador || 0,
-        pagoSc: sc(pagoSc || 0),
+        multiplicador: multFinal,
+        pagoSc: pagoFinal,
         resultado: resultado || ronda.resultado || {},
       },
     },
@@ -416,10 +447,10 @@ async function cerrarRonda({ userId, ronda, multiplicador, pagoSc, resultado }) 
 
   if (!cerrada) throw errorDe("NO_ROUND", { juego: ronda.juego }, 409);
 
-  if (pagoSc > 0) {
+  if (pagoFinal > 0) {
     await wallet.mover({
       userId,
-      amountSc: sc(pagoSc),
+      amountSc: pagoFinal,
       type: "game_win",
       reference: { kind: "game", id: ronda._id, label: ronda.juego },
     });

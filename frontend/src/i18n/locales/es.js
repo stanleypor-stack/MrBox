@@ -1105,6 +1105,7 @@ export default {
     "stop": "PARAR",
     "rtp": "Retorno",
     "maxPlay": "Máximo por jugada",
+    "maxWin": "Máximo que paga",
     "provablyFair": "Sorteo verificable",
     "sound": "Sonido",
     "moreGames": "Más juegos",

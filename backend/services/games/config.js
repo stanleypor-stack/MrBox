@@ -69,17 +69,41 @@ const JUEGOS = Object.keys(DE_FABRICA);
   aca y los usan el servicio y la ruta, que son los dos lugares que
   los necesitan.
 */
-const LIMITES_DE_FABRICA = { minimaSc: 0.1, maximaSc: 500 };
+const LIMITES_DE_FABRICA = { minimaSc: 0.1, maximaSc: 500, premioSc: 10000 };
 
 /** El minimo y el maximo que valen hoy. */
 function limites(cfg = {}) {
   const j = (cfg && cfg.juegos) || {};
   const min = Number(j.apuestaMinimaSc);
   const max = Number(j.apuestaMaximaSc);
+  const premio = Number(j.maximoPremioSc);
   return {
     minimaSc: Number.isFinite(min) && min > 0 ? min : LIMITES_DE_FABRICA.minimaSc,
     /* Cero SI es una eleccion valida aca: quiere decir sin tope. */
     maximaSc: Number.isFinite(max) && max >= 0 ? max : LIMITES_DE_FABRICA.maximaSc,
+    premioSc: Number.isFinite(premio) && premio >= 0 ? premio : LIMITES_DE_FABRICA.premioSc,
+  };
+}
+
+/**
+ * ACOTA UN PAGO AL MAXIMO DE LA CASA.
+ *
+ * Devuelve el multiplicador y el pago ya recortados. Se aplica en UN
+ * solo lugar --`services/games/index.js`-- para que ningun juego
+ * pueda saltearselo por olvido.
+ *
+ * El multiplicador que se devuelve es el que de verdad se pago, no el
+ * que salio: si se guardara el otro, el libro diria una cosa y la
+ * plata otra.
+ */
+function acotarPago(apuestaSc, pagoSc, cfg) {
+  const tope = limites(cfg).premioSc;
+  if (!(tope > 0) || !(pagoSc > tope)) return { pagoSc, recortado: false };
+
+  return {
+    pagoSc: tope,
+    multiplicador: apuestaSc > 0 ? Math.round((tope / apuestaSc) * 10000) / 10000 : 0,
+    recortado: true,
   };
 }
 
@@ -150,6 +174,7 @@ module.exports = {
   JUEGOS,
   LIMITES_DE_FABRICA,
   limites,
+  acotarPago,
   DE_FABRICA,
   RTP_DE_FABRICA,
   margen,
