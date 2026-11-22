@@ -36,7 +36,20 @@ const fair = require("./fair");
 const { sc } = require("../../utils/money");
 const { errorDe } = require("../../utils/errors");
 
-const PISOS = 10;
+/*
+  NUEVE PISOS, NO DIEZ.
+
+  BetSweeps arma la torre con diez. El diseno la dibuja con NUEVE
+  --su grilla va de la fila 8 a la 0-- y el frente tiene que ser el
+  del diseno, asi que manda el diseno: con diez, el ultimo piso no
+  tendria donde dibujarse.
+
+  No cambia el retorno: cada piso paga lo mismo y el margen se cobra
+  una sola vez. Lo unico que cambia es hasta donde se puede llegar,
+  o sea el multiplicador maximo. Si alguna vez se quiere la torre de
+  diez, se cambia este numero Y la grilla del diseno, no uno solo.
+*/
+const PISOS = 9;
 
 const DIFICULTADES = {
   easy: { baldosas: 4, dragones: 1 },

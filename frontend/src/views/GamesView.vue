@@ -22,6 +22,16 @@
         :maximo-sc="maximoSc" :saldo-sc="saldo" :margen="margenDe('plinko')"
       />
 
+      <MbJuegoMines
+        v-else-if="elJuego.id === 'mines'"
+        :maximo-sc="maximoSc" :saldo-sc="saldo"
+      />
+
+      <MbJuegoTowers
+        v-else-if="elJuego.id === 'towers'"
+        :maximo-sc="maximoSc" :saldo-sc="saldo"
+      />
+
       <!--
         LOS QUE TODAVIA NO ESTAN.
 
@@ -105,6 +115,8 @@ import MbJuegoDice from "@/components/juegos/MbJuegoDice.vue";
 import MbJuegoReme from "@/components/juegos/MbJuegoReme.vue";
 import MbJuegoKeno from "@/components/juegos/MbJuegoKeno.vue";
 import MbJuegoPlinko from "@/components/juegos/MbJuegoPlinko.vue";
+import MbJuegoMines from "@/components/juegos/MbJuegoMines.vue";
+import MbJuegoTowers from "@/components/juegos/MbJuegoTowers.vue";
 
 /**
  * LA PANTALLA DE LOS JUEGOS.
@@ -123,7 +135,9 @@ import MbJuegoPlinko from "@/components/juegos/MbJuegoPlinko.vue";
 export default {
   name: "GamesView",
 
-  components: { MbJuegoDice, MbJuegoReme, MbJuegoKeno, MbJuegoPlinko },
+  components: {
+    MbJuegoDice, MbJuegoReme, MbJuegoKeno, MbJuegoPlinko, MbJuegoMines, MbJuegoTowers,
+  },
 
   data() {
     return {
@@ -208,6 +222,27 @@ export default {
   que no se usa en ningún otro lado del sitio.
 */
 @import "@/styles/juegos";
+
+/*
+  LOS JUEGOS, A SU TAMANO DE VERDAD.
+
+  El sitio aplica `zoom: .84` arriba de 1100 px (ver App.vue): su
+  prototipo estaba dibujado a 1440 y a 1366 entraba un quinto mas
+  grande de lo que debia.
+
+  Los juegos salen del MISMO prototipo y ya estan medidos para eso:
+  el `max-width: 1100px` del diseno es 1100 pixeles de pantalla, no
+  1100 encogidos al 84%. Adentro del zoom quedaban en 924 y por eso
+  sobraba lugar a los costados.
+
+  Aca se deshace el zoom para este bloque y nada mas. `--escala` es
+  la misma variable que App.vue ya usa para esto, asi que si alguna
+  vez cambia el 0,84, esto lo sigue solo. En el telefono vale 1 y no
+  cambia nada.
+*/
+.gx-wrap {
+  zoom: calc(1 / var(--escala, 1));
+}
 
 /* Lo único que no está en el diseño: el cartel de los que faltan. */
 .gx-pronto {
