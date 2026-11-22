@@ -96,3 +96,43 @@ services:
       #  boton, que es lo que Dani eligio por ahora.
       - key: ANTHROPIC_API_KEY
         sync: false
+
+  # ── El sitio ─────────────────────────────────────────────────────
+  #
+  #  Estatico: lo que deja `npm run build` en `frontend/dist`. Render lo
+  #  sirve gratis y sin limite de horas, porque no hay nada corriendo.
+  #
+  #  POR QUE APUNTA AL BACKEND POR SU DIRECCION
+  #
+  #  Un sitio estatico de Render no puede reenviar `/api` a otro
+  #  servicio: sus reglas de ruta solo mueven cosas adentro del mismo
+  #  sitio. Asi que el navegador habla directo con `mrbox-api`, y por
+  #  eso hace falta que el backend lo permita: su `SITIO_URL` tiene que
+  #  ser la direccion de aca.
+  #
+  #  Con Netlify adelante esto no haria falta --Netlify si sabe
+  #  reenviar-- y por eso `netlify.toml` existe igual: mudarse es
+  #  cambiar esa variable por vacia.
+  - type: web
+    name: mrbox-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+
+    envVars:
+      - key: VUE_APP_API_URL
+        value: https://mrbox-api.onrender.com/api
+
+      #  El SITE KEY del captcha es publico a proposito: viaja en el
+      #  HTML. El secreto va en el backend.
+      - key: VUE_APP_TURNSTILE_SITE_KEY
+        sync: false
+
+    routes:
+      #  El sitio es una sola pagina con rutas del lado del navegador.
+      #  Sin esto, entrar derecho a `/boxes/mac` da 404: ese archivo no
+      #  existe en el disco.
+      - type: rewrite
+        source: /*
+        destination: /index.html

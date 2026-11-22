@@ -16,3 +16,6 @@ backend/datos/catalogo.json
 __pycache__/
 backend/scripts/tmp/
 .fotos-cache/
+
+# Las claves generadas para el despliegue. Nunca se suben.
+SECRETOS-DEL-DESPLIEGUE.txt

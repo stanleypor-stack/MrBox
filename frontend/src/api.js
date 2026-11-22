@@ -14,8 +14,22 @@ import { textoDeError } from "@/i18n";
  *      quien mira, UNA vez, así ninguna pantalla arma mensajes a mano.
  */
 
+/*
+  DONDE ESTA EL SERVIDOR.
+
+  Por defecto `/api`, o sea el mismo dominio que el sitio. Asi funciona
+  en desarrollo --el servidor de Vue reenvia `/api` al backend-- y asi
+  funciona detras de un proxy que haga lo mismo.
+
+  Pero no siempre estan juntos: en Render el sitio es estatico y el
+  servidor es otro servicio, con su propia direccion. Para ese caso se
+  pone `VUE_APP_API_URL` al compilar, y el sitio sabe a donde ir.
+
+  Se lee al compilar, no en el navegador: Vue reemplaza esto por el
+  texto en el paquete. Cambiarla pide volver a compilar.
+*/
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: process.env.VUE_APP_API_URL || "/api",
   timeout: 20000,
 });
 
