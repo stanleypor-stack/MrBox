@@ -45,12 +45,24 @@ services:
       - key: PORT
         value: 10000
 
-      #  Cuantos proxies hay entre el navegador y esto. Con Netlify
-      #  adelante reenviando `/api`, son dos: el de Netlify y el de
-      #  Render. Sin esto el limite de intentos de login cuenta todo
-      #  como si viniera de una sola IP.
+      #  CUANTOS PROXIES HAY DE VERDAD ENTRE EL NAVEGADOR Y ESTO.
+      #
+      #  Uno: el borde de Render. Decia 2 porque se escribio pensando
+      #  en Netlify adelante reenviando `/api`, y Netlify nunca entro:
+      #  el navegador le habla derecho a este servicio.
+      #
+      #  Y poner uno DE MAS no es un detalle. Express confia en los
+      #  ultimos N renglones de `X-Forwarded-For` y toma el de al lado
+      #  como el visitante. Con 2 y un solo proxy, ese renglon lo
+      #  escribe el que pide: elige la IP que quiere. Probado --con 2,
+      #  el servidor le cree la IP inventada; con 1, la ignora-- y eso
+      #  deja sin efecto TODOS los frenos por IP, el de intentos de
+      #  login incluido: una IP nueva por intento y nunca frena nada.
+      #
+      #  Si manana entra Cloudflare delante de ESTE servicio --con el
+      #  naranja prendido, no solo el DNS-- pasa a 2.
       - key: PROXIES_DELANTE
-        value: 2
+        value: 1
 
       #  ── Las que escribe Dani en el panel ──────────────────────────
       #
