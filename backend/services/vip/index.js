@@ -26,6 +26,8 @@
  */
 
 const RakebackClaim = require("../../database/models/RakebackClaim");
+const VipBeneficio = require("../../database/models/VipBeneficio");
+const Box = require("../../database/models/Box");
 const BalanceTransaction = require("../../database/models/BalanceTransaction");
 const User = require("../../database/models/User");
 
@@ -33,6 +35,7 @@ const wallet = require("../wallet");
 const Settings = require("../../database/models/Settings");
 const { sc } = require("../../utils/money");
 const controles = require("../controls");
+const cajas = require("../boxes");
 const { errorDe } = require("../../utils/errors");
 
 /*
@@ -65,10 +68,38 @@ const RANGOS = [
   como lo dibuja el diseno.
 */
 const BENEFICIOS = [
-  "levelUpBox", "welcomeBalance", "monthlyBox", "weeklyBox", "rakeback", "vipManager", "reload",
+  /*
+    `desde` es el NUMERO de rango en el que se desbloquea: 1 es Bronze,
+    2 Silver, y asi.
+
+    Antes esto era una lista de nombres y un arreglo aparte que decia
+    "cuantos tiene cada rango", siempre los primeros N. Eso obligaba a
+    que el orden del dibujo fuera el orden en que se desbloquean, y por
+    eso el rakeback figuraba recien en Ruby cuando los porcentajes de
+    `RANGOS` lo pagan DESDE SILVER: la tarjeta prometia menos de lo que
+    el servidor ya daba. Con el minimo escrito al lado de cada uno, las
+    dos cosas no se pueden separar de nuevo.
+
+    `automatico` dice si lo entrega el sitio solo. Los que no, los da
+    una persona desde el panel, y la tarjeta no tiene por que mentir
+    sobre eso.
+  */
+  { clave: "levelUpBox", desde: 1, automatico: true },
+  { clave: "welcomeBalance", desde: 2, automatico: false },
+  { clave: "monthlyBox", desde: 3, automatico: true },
+  { clave: "weeklyBox", desde: 4, automatico: true },
+  { clave: "rakeback", desde: 2, automatico: true },
+  { clave: "vipManager", desde: 7, automatico: false },
+  { clave: "reload", desde: 8, automatico: false },
 ];
 
-const CUANTOS_BENEFICIOS = [1, 2, 3, 4, 4, 5, 6, 7, 7];
+/** Las que se cobran apretando un boton y entregan una caja. */
+const BENEFICIOS_DE_CAJA = ["levelUpBox", "weeklyBox", "monthlyBox"];
+
+/* Cuantos tiene cada rango. Sale de `BENEFICIOS`, no al reves. */
+const CUANTOS_BENEFICIOS = RANGOS.map(
+  (_, i) => BENEFICIOS.filter((b) => b.desde <= i + 1).length
+);
 
 const PERIODOS = ["daily", "weekly", "monthly"];
 
@@ -197,8 +228,211 @@ function tabla() {
     desde: r.desde,
     color: r.color,
     rakeback: r.rakeback,
-    beneficios: BENEFICIOS.map((b, k) => ({ clave: b, tiene: k < CUANTOS_BENEFICIOS[i] })),
+    beneficios: BENEFICIOS.map((b) => ({
+      clave: b.clave,
+      tiene: b.desde <= i + 1,
+      automatico: b.automatico,
+    })),
   }));
+}
+
+/* ── El rango que se GANO jugando ────────────────────────── */
+
+/**
+ * EL RANGO QUE DA DERECHO A LOS BENEFICIOS.
+ *
+ * No es el mismo que muestra la pantalla, y la diferencia es a
+ * proposito.
+ *
+ * `rangoDe(jugadoParaVip(u), u.rangoManual)` es el que se VE: suma el
+ * piso que le pusieron a mano y respeta el rango que le asignaron. Eso
+ * esta bien para un jugador trasladado de otro sitio, que tiene que
+ * ver su rango de siempre.
+ *
+ * Pero los beneficios se GANAN, y de una sola manera: jugando con
+ * plata propia. Por eso este mira `jugadoPagoSc` --lo que de verdad
+ * salio del saldo, sin las aperturas de regalo-- y no mira ni el piso
+ * a mano ni el rango asignado.
+ *
+ * Y PIDE HABER COMPRADO ALGUNA VEZ.
+ *
+ * Sin eso, los tres regalos de bienvenida mas un codigo promocional
+ * son saldo de la casa, y jugarlo empujaria hacia un rango con sus
+ * cajas gratis sin que el jugador haya puesto un peso. Una cuenta
+ * nueva por persona y a repetir.
+ */
+function rangoGanado(usuario) {
+  if (!usuario) return rangoDe(0, "");
+  if (!(Number(usuario.compradoSc) > 0)) return rangoDe(0, "");
+  return rangoDe(Number(usuario.jugadoPagoSc) || 0, "");
+}
+
+/** Los campos que hacen falta para calcularlo, en un solo lugar. */
+const CAMPOS_DEL_RANGO = "jugadoSc jugadoPagoSc jugadoBaseSc compradoSc rangoManual";
+
+/**
+ * LA VUELTA DE UN BENEFICIO: lo que lo hace unico.
+ *
+ * La caja de subir, una por rango: el nombre del rango. Asi no se
+ * cobra dos veces el mismo escalon, ni de nuevo si manana baja y
+ * vuelve a subir.
+ *
+ * Las periodicas, una por ventana: el dia en que la ventana empieza,
+ * en UTC, que es la misma regla del rakeback y de las carreras.
+ */
+function vueltaDe(clave, rango, momento = new Date()) {
+  if (clave === "levelUpBox") return rango.nombre;
+  const periodo = clave === "weeklyBox" ? "weekly" : "monthly";
+  return ventanaDe(periodo, momento).desde.toISOString().slice(0, 10);
+}
+
+/** Que caja da cada beneficio. Sale de las perillas. */
+async function cajaDelBeneficio(clave) {
+  const cfg = await Settings.leer();
+  const elegidas = cfg.cajasDelClub || {};
+  const porClave = {
+    levelUpBox: elegidas.alSubir,
+    weeklyBox: elegidas.semanal,
+    monthlyBox: elegidas.mensual,
+  };
+
+  /* Vacia quiere decir "la primera de las de regalo": que el beneficio
+     siga entregando algo en vez de romperse. */
+  const deRegalo = (cfg.cajasDeRegalo || []).length
+    ? cfg.cajasDeRegalo
+    : Settings.CAJAS_DE_REGALO;
+
+  return porClave[clave] || deRegalo[0] || "";
+}
+
+/**
+ * EN QUE ESTADO ESTA CADA BENEFICIO.
+ *
+ * Los siete, con su rango minimo, si el jugador lo tiene y --para los
+ * tres que dan una caja-- si lo puede cobrar ahora.
+ */
+async function beneficiosDe(userId) {
+  const usuario = await User.findById(userId).select(CAMPOS_DEL_RANGO).lean();
+  if (!usuario) throw errorDe("NOT_LOGGED_IN", {}, 401);
+
+  const rango = rangoGanado(usuario);
+  const visible = rangoDe(jugadoParaVip(usuario), usuario.rangoManual);
+
+  const cobrados = await VipBeneficio.find({ user: userId })
+    .select("clave vuelta cajaSlug cajaNombre createdAt")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  /*
+    Los nombres de las cajas, de una sola consulta. El nombre sale de
+    la caja y no de la copia guardada en el cobro: una caja a la que
+    le cambiaron el nombre no tiene por que seguir figurando con el
+    viejo en la pantalla.
+  */
+  const slugs = [...new Set([
+    ...(await Promise.all(BENEFICIOS_DE_CAJA.map((c) => cajaDelBeneficio(c)))),
+    ...cobrados.map((c) => c.cajaSlug),
+  ].filter(Boolean))];
+
+  const cajasDeLaLista = await Box.find({ slug: { $in: slugs } }).select("slug name").lean();
+  const porSlug = new Map(cajasDeLaLista.map((c) => [c.slug, { slug: c.slug, nombre: c.name }]));
+
+  const lista = await Promise.all(BENEFICIOS.map(async (b) => {
+    const tiene = b.desde <= rango.numero;
+    const base = {
+      clave: b.clave,
+      desde: b.desde,
+      desdeRango: RANGOS[b.desde - 1] ? RANGOS[b.desde - 1].nombre : "",
+      automatico: b.automatico,
+      tiene,
+    };
+
+    if (!BENEFICIOS_DE_CAJA.includes(b.clave)) return base;
+
+    const vuelta = vueltaDe(b.clave, rango);
+    const ya = cobrados.find((c) => c.clave === b.clave && c.vuelta === vuelta);
+
+    /*
+      La caja de subir no se da en Bronze: ahi no se subio de ningun
+      lado, y los tres regalos de bienvenida ya son eso.
+    */
+    const corresponde = b.clave === "levelUpBox" ? tiene && rango.numero >= 2 : tiene;
+
+    const slug = ya ? ya.cajaSlug : await cajaDelBeneficio(b.clave);
+
+    return {
+      ...base,
+      vuelta,
+      yaCobrado: !!ya,
+      caja: slug ? (porSlug.get(slug) || { slug, nombre: slug }) : null,
+      sePuedeCobrar: corresponde && !ya,
+    };
+  }));
+
+  return {
+    /* El que se ve y el que manda, por separado y dicho. */
+    rango: visible,
+    rangoGanado: rango,
+    jugadoPagoSc: sc(usuario.jugadoPagoSc),
+    compro: Number(usuario.compradoSc) > 0,
+    beneficios: lista,
+  };
+}
+
+/**
+ * COBRAR UNO DE LOS TRES QUE DAN CAJA.
+ *
+ * La fila se crea PRIMERO, con su indice unico, por lo mismo que el
+ * rakeback: dos clicks rapidos leen los dos "no lo cobro".
+ *
+ * Y si despues la caja no se puede entregar --la sacaron del
+ * catalogo-- la fila se borra. Un cobro anotado sin caja entregada es
+ * peor que un cobro que no se pudo hacer: el jugador se queda sin las
+ * dos cosas y nadie se entera.
+ */
+async function cobrarBeneficio({ userId, clave }) {
+  if (!BENEFICIOS_DE_CAJA.includes(clave)) {
+    throw errorDe("INVALID_AMOUNT", { campo: "beneficio" });
+  }
+
+  await controles.revisarPausa(userId);
+
+  const usuario = await User.findById(userId).select(CAMPOS_DEL_RANGO).lean();
+  if (!usuario) throw errorDe("NOT_LOGGED_IN", {}, 401);
+
+  const b = BENEFICIOS.find((x) => x.clave === clave);
+  const rango = rangoGanado(usuario);
+
+  const minimo = clave === "levelUpBox" ? Math.max(2, b.desde) : b.desde;
+  if (rango.numero < minimo) {
+    throw errorDe("RANK_TOO_LOW", {
+      rango: rango.nombre,
+      hace: RANGOS[minimo - 1] ? RANGOS[minimo - 1].nombre : "",
+    }, 403);
+  }
+
+  const slug = await cajaDelBeneficio(clave);
+  const vuelta = vueltaDe(clave, rango);
+
+  let fila;
+  try {
+    fila = await VipBeneficio.create({
+      user: userId, clave, vuelta, rango: rango.nombre, cajaSlug: slug,
+    });
+  } catch (err) {
+    if (err && err.code === 11000) throw errorDe("ALREADY_CLAIMED", { clave });
+    throw err;
+  }
+
+  const regalo = await cajas.regalarCaja(userId, slug);
+  if (!regalo) {
+    await VipBeneficio.deleteOne({ _id: fila._id });
+    throw errorDe("BOX_NOT_FOUND", { slug });
+  }
+
+  await VipBeneficio.updateOne({ _id: fila._id }, { $set: { cajaNombre: regalo.nombre } });
+
+  return { clave, vuelta, caja: { slug: regalo.slug, nombre: regalo.nombre } };
 }
 
 /* ── Las ventanas del rakeback ────────────────────────────────────── */
@@ -243,12 +477,17 @@ async function jugadoEn(userId, desde, hasta) {
  * Cuánto hay para cobrar en cada ventana, y si ya se cobró.
  */
 async function rakebackDe(userId) {
-  /* `rangoManual` tambien: sin el, al trasladado como Diamond la
-     pantalla le decia Diamond y el rakeback le pagaba Bronze. */
-  const usuario = await User.findById(userId).select("jugadoSc jugadoBaseSc rangoManual").lean();
+  /*
+    EL RANGO GANADO, NO EL QUE SE VE.
+
+    El rakeback es uno de los siete beneficios, asi que se gana igual
+    que los otros seis: jugando con plata propia. Un rango puesto a
+    mano muestra la insignia, no paga.
+  */
+  const usuario = await User.findById(userId).select(CAMPOS_DEL_RANGO).lean();
   if (!usuario) throw errorDe("NOT_LOGGED_IN", {}, 401);
 
-  const rango = rangoDe(jugadoParaVip(usuario), usuario.rangoManual);
+  const rango = rangoGanado(usuario);
   const ahora = new Date();
 
   const cobrados = await RakebackClaim.find({ user: userId }).sort({ hasta: -1 }).limit(60).lean();
@@ -283,7 +522,9 @@ async function rakebackDe(userId) {
   ]);
 
   return {
-    rango,
+    /* El que se ve arriba de todo; el que paga es `rangoGanado`. */
+    rango: rangoDe(jugadoParaVip(usuario), usuario.rangoManual),
+    rangoGanado: rango,
     cajas,
     cobradoPorPeriodo: Object.fromEntries(total.map((t) => [t._id, sc(t.total)])),
     cobradoTotalSc: sc(total.reduce((a, t) => a + t.total, 0)),
@@ -308,12 +549,11 @@ async function cobrarRakeback({ userId, periodo }) {
      nada hasta que se le termine la pausa. */
   await controles.revisarPausa(userId);
 
-  /* `rangoManual` tambien: sin el, al trasladado como Diamond la
-     pantalla le decia Diamond y el rakeback le pagaba Bronze. */
-  const usuario = await User.findById(userId).select("jugadoSc jugadoBaseSc rangoManual").lean();
+  /* El rango GANADO, igual que arriba. */
+  const usuario = await User.findById(userId).select(CAMPOS_DEL_RANGO).lean();
   if (!usuario) throw errorDe("NOT_LOGGED_IN", {}, 401);
 
-  const rango = rangoDe(jugadoParaVip(usuario), usuario.rangoManual);
+  const rango = rangoGanado(usuario);
   const pct = rango.rakeback[periodo];
   if (!pct) throw errorDe("RANK_TOO_LOW", { rango: rango.nombre }, 403);
 
@@ -358,4 +598,8 @@ module.exports = {
   jugadoEn,
   rakebackDe,
   cobrarRakeback,
+  rangoGanado,
+  beneficiosDe,
+  cobrarBeneficio,
+  BENEFICIOS_DE_CAJA,
 };

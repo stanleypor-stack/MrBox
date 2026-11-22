@@ -54,6 +54,43 @@
         </div>
       </section>
 
+      <!--
+        ── Las cajas del club ─────────────────────────────────────
+
+        Se piden, no caen solas. Es lo mismo que hace el rakeback de
+        arriba, y por el mismo motivo: un reloj que reparta cajas cada
+        semana y cada mes es una cosa mas que se puede caer una noche
+        sin que nadie se entere. Acá el jugador ve lo que le toca y lo
+        agarra.
+      -->
+      <section v-if="club" class="mb-boost">
+        <h2>{{ $t('rewards.clubBoxes') }}</h2>
+        <p class="mb-ayuda">
+          {{ club.compro ? $t('rewards.clubHelp') : $t('rewards.clubNeedBuy') }}
+        </p>
+
+        <div class="mb-boost__grilla">
+          <article
+            v-for="b in cajasDelClub" :key="b.clave"
+            class="mb-boost__caja" :class="{ 'is-lista': b.sePuedeCobrar }"
+          >
+            <span class="mb-boost__rot">{{ $t('rewards.' + b.clave) }}</span>
+            <span class="mb-boost__caja-nombre">{{ b.caja ? b.caja.nombre : '—' }}</span>
+
+            <button
+              v-if="b.sePuedeCobrar" type="button" :disabled="cobrando === b.clave"
+              class="mb-boost__b" @click="cobrarCaja(b.clave)"
+            >{{ cobrando === b.clave ? $t('common.loading') : $t('rewards.claim') }}</button>
+
+            <span v-else-if="b.yaCobrado" class="mb-boost__estado">{{ $t('rewards.claimed') }}</span>
+
+            <span v-else class="mb-boost__estado">
+              {{ $t('rewards.fromRank', { rango: b.desdeRango }) }}
+            </span>
+          </article>
+        </div>
+      </section>
+
       <!-- ── El código y lo cobrado ───────────────────────────────── -->
       <div class="mb-dos">
         <section class="mb-panel">
@@ -107,9 +144,19 @@ const PERIODOS = ["daily", "weekly", "monthly"];
 export default {
   name: "RewardsView",
 
-  data() { return { PERIODOS, datos: null, codigo: "", cobrando: "", canjeando: false }; },
+  data() {
+    return { PERIODOS, datos: null, club: null, codigo: "", cobrando: "", canjeando: false };
+  },
 
-  computed: { ...mapGetters(["entro"]) },
+  computed: {
+    ...mapGetters(["entro"]),
+
+    /* Solo los tres que entregan una caja: los otros cuatro se
+       muestran en la pantalla del club, que es donde se explican. */
+    cajasDelClub() {
+      return ((this.club && this.club.beneficios) || []).filter((b) => !!b.vuelta);
+    },
+  },
 
   watch: { entro() { this.traer(); } },
 
@@ -123,8 +170,16 @@ export default {
     async traer() {
       if (!this.entro) return;
       try {
-        const { data } = await api.get("/vip/rakeback");
-        this.datos = data.data;
+        /*
+          Las dos juntas: son la misma pantalla y pedirlas una despues
+          de la otra la deja media dibujada mientras llega la segunda.
+        */
+        const [rake, club] = await Promise.all([
+          api.get("/vip/rakeback"),
+          api.get("/vip/beneficios"),
+        ]);
+        this.datos = rake.data.data;
+        this.club = club.data.data;
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
       }
@@ -137,6 +192,24 @@ export default {
         this.$store.commit("saldo", data.data);
         this.$store.dispatch("avisar", {
           texto: this.$t("rewards.claimedFor", { amount: "SC " + this.plata(data.data.montoSc) }),
+        });
+        await this.traer();
+      } catch (err) {
+        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
+      } finally {
+        this.cobrando = "";
+      }
+    },
+
+    /** Cobrar una de las cajas del club. */
+    async cobrarCaja(clave) {
+      this.cobrando = clave;
+      try {
+        const { data } = await api.post(`/vip/beneficios/${clave}`, {});
+        /* La cabecera muestra las aperturas gratis: acaba de cambiar. */
+        this.$store.commit("inventarioCambio");
+        this.$store.dispatch("avisar", {
+          texto: this.$t("rewards.gotBox", { caja: data.data.caja.nombre }),
         });
         await this.traer();
       } catch (err) {
@@ -377,5 +450,11 @@ export default {
   font-weight: 900;
 
   &--grande { font-size: 22px; color: $amarillo-v; }
+}
+
+.mb-boost__caja-nombre {
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 1.2;
 }
 </style>

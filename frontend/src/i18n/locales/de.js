@@ -1082,6 +1082,14 @@ export default {
     "codeBalance": "{code} hat SC {amount} gutgeschrieben.",
     "codeBoxes": "{code} hat {n} Gratis-Boxen freigeschaltet. Sie stehen auf der Startseite.",
     "redeemCode": "Code einlösen",
+    "clubBoxes": "Deine Club-Boxen",
+    "clubHelp": "Gratis-Boxen, die du mit eigenem Guthaben erspielst. Jede einmal.",
+    "levelUpBox": "Für den Aufstieg",
+    "weeklyBox": "Wochenbox",
+    "monthlyBox": "Monatsbox",
+    "fromRank": "Ab {rango}",
+    "gotBox": "{caja} zu deinen Gratis-Öffnungen hinzugefügt",
+    "clubNeedBuy": "Club-Boxen verdienst du mit eigenem Guthaben. Lade auf, um zu starten.",
     "claimedSoFar": "Bisher abgeholt"
   },
   "vip": {

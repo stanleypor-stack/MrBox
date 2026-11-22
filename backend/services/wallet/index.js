@@ -153,6 +153,20 @@ async function mover({
   if (juegaSc > 0) {
     cambios.$inc.jugadoSc = sc(juegaSc);
     cambios.$inc.bonoPendienteSc = sc((cambios.$inc.bonoPendienteSc || 0) - juegaSc);
+
+    /*
+      LO QUE PAGO EL JUGADOR, APARTE DE LO QUE JUGO.
+
+      Una apertura de regalo tambien es jugar --cuenta para las
+      carreras, el rakeback y el margen-- pero la pago la casa: su
+      asiento es de monto cero. `monto < 0` es exactamente "esto salio
+      del saldo", asi que separa una cosa de la otra sin tener que
+      mirar de que tipo es cada fila.
+
+      De aca salen los beneficios del Club VIP, que se ganan jugando
+      con plata propia (ver services/vip).
+    */
+    if (monto < 0) cambios.$inc.jugadoPagoSc = sc(juegaSc);
   }
 
   /*

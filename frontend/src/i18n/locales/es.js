@@ -1082,6 +1082,14 @@ export default {
     "codeBalance": "{code} te sumó SC {amount} al saldo.",
     "codeBoxes": "{code} te dio {n} cajas gratis. Están en la portada.",
     "redeemCode": "Canjear",
+    "clubBoxes": "Tus cajas del club",
+    "clubHelp": "Cajas gratis que ganás jugando con tu propio saldo. Cada una se cobra una vez.",
+    "levelUpBox": "Por subir de rango",
+    "weeklyBox": "Caja semanal",
+    "monthlyBox": "Caja mensual",
+    "fromRank": "Desde {rango}",
+    "gotBox": "{caja} se sumó a tus aperturas gratis",
+    "clubNeedBuy": "Las cajas del club se ganan con saldo propio. Cargá para empezar.",
     "claimedSoFar": "Cobrado hasta ahora"
   },
   "vip": {

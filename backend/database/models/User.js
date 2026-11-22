@@ -91,6 +91,23 @@ const userSchema = new mongoose.Schema(
     */
     compradoSc: { type: Number, default: 0 },
 
+    /**
+     * LO JUGADO QUE PAGO EL JUGADOR DE SU BOLSILLO.
+     *
+     * `jugadoSc` cuenta todo: tambien las aperturas de regalo, que se
+     * anotan con monto cero para que la casa sepa cuanto regalo. Este
+     * cuenta solo lo que de verdad salio del saldo.
+     *
+     * Existe porque los beneficios del Club VIP se ganan jugando con
+     * plata propia. Con `jugadoSc` a secas, tres cajas de regalo y un
+     * codigo promocional empujaban a alguien hacia un rango con sus
+     * beneficios sin haber puesto un peso.
+     *
+     * Lo mueve `wallet.mover` y nada mas, en el mismo lugar donde se
+     * descuenta: ver el comentario de ahi.
+     */
+    jugadoPagoSc: { type: Number, default: 0 },
+
     /*
       CUANTO DE ESE MARGEN YA SE LE PASO AL SOCIO.
 

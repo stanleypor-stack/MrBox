@@ -56,4 +56,37 @@ router.post("/rakeback/:periodo", autorizar(true), async (req, res) => {
   }
 });
 
+/* ── Los beneficios del club ──────────────────────────────────────── */
+
+/**
+ * EN QUE ESTADO ESTA CADA UNO.
+ *
+ * Los siete, con el rango que hace falta y --para los tres que dan una
+ * caja-- si se puede cobrar ahora.
+ */
+router.get("/beneficios", autorizar(true), async (req, res) => {
+  try {
+    return res.json({ success: true, data: await vip.beneficiosDe(req.user._id) });
+  } catch (err) {
+    return responderError(res, err, "vip/beneficios");
+  }
+});
+
+/**
+ * COBRAR UNO.
+ *
+ * Se piden, no se entregan solos. Es lo mismo que hace el rakeback y
+ * evita tener un reloj corriendo cada semana y cada mes: un reloj que
+ * se cae una noche deja a todos sin su caja y nadie se entera hasta
+ * que alguien reclama.
+ */
+router.post("/beneficios/:clave", autorizar(true), async (req, res) => {
+  try {
+    const r = await vip.cobrarBeneficio({ userId: req.user._id, clave: req.params.clave });
+    return res.json({ success: true, data: r });
+  } catch (err) {
+    return responderError(res, err, "vip/beneficios/claim");
+  }
+});
+
 module.exports = router;

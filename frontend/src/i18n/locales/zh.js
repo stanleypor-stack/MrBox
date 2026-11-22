@@ -1082,6 +1082,14 @@ export default {
     "codeBalance": "{code} 已为你的余额增加 SC {amount}。",
     "codeBoxes": "{code} 解锁了 {n} 个免费盲盒，可在首页查看。",
     "redeemCode": "兑换",
+    "clubBoxes": "你的俱乐部盒子",
+    "clubHelp": "用你自己的余额游玩赚取的免费盒子，每个只能领一次。",
+    "levelUpBox": "升级奖励",
+    "weeklyBox": "每周盒子",
+    "monthlyBox": "每月盒子",
+    "fromRank": "{rango} 起",
+    "gotBox": "{caja} 已加入你的免费开箱",
+    "clubNeedBuy": "俱乐部盒子要用自己的余额赚取，先充值吧。",
     "claimedSoFar": "已领总计"
   },
   "vip": {

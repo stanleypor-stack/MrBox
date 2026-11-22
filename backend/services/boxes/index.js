@@ -467,6 +467,36 @@ async function regalarCajasDeBienvenida(userId, cuantas = 0) {
   return regalo;
 }
 
+/**
+ * LE DA UNA CAJA SUELTA, POR SLUG.
+ *
+ * La usan los beneficios del Club VIP. Es lo mismo que una caja de
+ * bienvenida --la misma lista, el mismo contador, la misma forma de
+ * gastarla-- pero de a una y eligiendo cual.
+ *
+ * Si el slug no existe o la caja no está al aire se devuelve `null` y
+ * NO se escribe nada: el que llama decide si eso es un error o si
+ * sigue de largo. Un beneficio que anota el cobro pero no entrega la
+ * caja es peor que uno que no se pudo cobrar.
+ *
+ * @returns {Promise<{box, slug, nombre, usadaEl}|null>}
+ */
+async function regalarCaja(userId, slug) {
+  if (!slug) return null;
+
+  const caja = await Box.findOne({ slug, live: true }).select("slug name").lean();
+  if (!caja) return null;
+
+  const regalo = { box: caja._id, slug: caja.slug, nombre: caja.name, usadaEl: null };
+
+  await User.updateOne(
+    { _id: userId },
+    { $push: { cajasGratis: regalo }, $inc: { freeOpens: 1 } }
+  );
+
+  return regalo;
+}
+
 /** Las que le quedan sin abrir, para la portada y la cabecera. */
 async function cajasGratisDe(userId) {
   const u = await User.findById(userId).select("cajasGratis freeOpens").lean();
@@ -735,5 +765,6 @@ module.exports = {
   resumenDeCaja,
   economia: eco,
   regalarCajasDeBienvenida,
+  regalarCaja,
   cajasGratisDe,
 };

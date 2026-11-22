@@ -1082,6 +1082,14 @@ export default {
     "codeBalance": "{code} a ajouté SC {amount} à votre solde.",
     "codeBoxes": "{code} débloque {n} coffrets gratuits. Ils sont sur la page d’accueil.",
     "redeemCode": "Valider le code",
+    "clubBoxes": "Vos box du club",
+    "clubHelp": "Des box offertes que vous gagnez en jouant avec votre propre solde. Une fois chacune.",
+    "levelUpBox": "Pour la montée de rang",
+    "weeklyBox": "Box hebdomadaire",
+    "monthlyBox": "Box mensuelle",
+    "fromRank": "À partir de {rango}",
+    "gotBox": "{caja} ajoutée à vos ouvertures gratuites",
+    "clubNeedBuy": "Les box du club se gagnent avec votre propre solde. Approvisionnez pour commencer.",
     "claimedSoFar": "Réclamé à ce jour"
   },
   "vip": {

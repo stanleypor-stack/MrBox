@@ -1082,6 +1082,14 @@ export default {
     "codeBalance": "{code} ha aggiunto SC {amount} al saldo.",
     "codeBoxes": "{code} ha sbloccato {n} box gratuite. Sono in home.",
     "redeemCode": "Riscatta",
+    "clubBoxes": "Le tue box del club",
+    "clubHelp": "Box gratis che guadagni giocando con il tuo saldo. Una volta ciascuna.",
+    "levelUpBox": "Per la promozione",
+    "weeklyBox": "Box settimanale",
+    "monthlyBox": "Box mensile",
+    "fromRank": "Da {rango}",
+    "gotBox": "{caja} aggiunta alle tue aperture gratis",
+    "clubNeedBuy": "Le box del club si guadagnano con saldo proprio. Ricarica per iniziare.",
     "claimedSoFar": "Riscosso finora"
   },
   "vip": {

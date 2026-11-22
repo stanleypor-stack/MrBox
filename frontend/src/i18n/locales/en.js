@@ -1082,6 +1082,14 @@ export default {
     "codeBalance": "{code} added SC {amount} to your balance.",
     "codeBoxes": "{code} unlocked {n} free boxes. They are on the home page.",
     "redeemCode": "Redeem code",
+    "clubBoxes": "Your club boxes",
+    "clubHelp": "Free boxes you earn by playing with your own balance. Each one is claimed once.",
+    "levelUpBox": "For levelling up",
+    "weeklyBox": "Weekly box",
+    "monthlyBox": "Monthly box",
+    "fromRank": "From {rango}",
+    "gotBox": "{caja} added to your free opens",
+    "clubNeedBuy": "Club boxes are earned with your own balance. Add funds to start.",
     "claimedSoFar": "Claimed so far"
   },
   "vip": {

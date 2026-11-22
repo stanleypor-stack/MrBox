@@ -1082,6 +1082,14 @@ export default {
     "codeBalance": "{code} で SC {amount} が残高に追加されました。",
     "codeBoxes": "{code} で無料ボックスが {n} 個解放されました。ホームにあります。",
     "redeemCode": "使う",
+    "clubBoxes": "クラブのボックス",
+    "clubHelp": "自分の残高でプレイして獲得する無料ボックス。各1回まで。",
+    "levelUpBox": "ランクアップ報酬",
+    "weeklyBox": "週間ボックス",
+    "monthlyBox": "月間ボックス",
+    "fromRank": "{rango} から",
+    "gotBox": "{caja} を無料オープンに追加しました",
+    "clubNeedBuy": "クラブのボックスは自分の残高で獲得します。入金して始めましょう。",
     "claimedSoFar": "これまでの受領額"
   },
   "vip": {

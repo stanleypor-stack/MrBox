@@ -117,6 +117,23 @@ const settingsSchema = new mongoose.Schema(
     /** Aperturas de demostración para el que todavía no tiene cuenta. */
     aperturasDeDemo: { type: Number, default: 3 },
 
+    /**
+     * LAS CAJAS DE LOS BENEFICIOS DEL CLUB VIP.
+     *
+     * Tres beneficios dan una caja: al subir de rango, una por semana
+     * y una por mes. Cual da cada uno se elige acá y no en el código,
+     * porque es una decisión de negocio que va a cambiar seguido.
+     *
+     * Vacío quiere decir "la primera de las de regalo", que es un
+     * valor sensato y no un error: el día que alguien borre el slug,
+     * el beneficio sigue dando algo en vez de romperse.
+     */
+    cajasDelClub: {
+      alSubir: { type: String, default: "" },
+      semanal: { type: String, default: "" },
+      mensual: { type: String, default: "" },
+    },
+
     /* ── El bono por depósito ────────────────────────────────────────── */
 
     /**
