@@ -11,6 +11,10 @@ const GameRound = require("../../database/models/GameRound");
 const juegos = require("../../services/games");
 const cfgJuegos = require("../../services/games/config");
 const dice = require("../../services/games/dice");
+const reme = require("../../services/games/reme");
+const keno = require("../../services/games/keno");
+const slide = require("../../services/games/slide");
+const plinko = require("../../services/games/plinko");
 
 const router = express.Router();
 
@@ -137,5 +141,63 @@ router.post("/dice/play", autorizar(true), limite, async (req, res) => {
     return responderError(res, err, "games/dice");
   }
 });
+
+/* ── Los otros que empiezan y terminan de una ─────────────────────── */
+
+/**
+ * UNA PUERTA POR JUEGO, PERO UNA SOLA COCINA.
+ *
+ * Reme, Keno, Slide y Plinko son todos lo mismo visto desde el
+ * servidor: se apuesta, sale un resultado y se acabó. Lo único propio
+ * de cada uno es qué mira de lo que vino en el pedido y qué
+ * matemática aplica, así que eso es lo único que se escribe acá
+ * abajo. Cobrar, el nonce, la ronda y el pago los hace
+ * `services/games`, igual que Dice.
+ */
+const DE_UNA = {
+  reme: {
+    servicio: reme,
+    revisar: () => ({}),
+    sortear: ({ apuestaSc, semillas, cfg }) => reme.jugar({ apuestaSc, semillas, cfg }),
+  },
+
+  keno: {
+    servicio: keno,
+    revisar: (req) => ({ elegidas: keno.revisar(req.body.elegidas) }),
+    sortear: ({ apuestaSc, semillas, cfg, jugada }) =>
+      keno.jugar({ apuestaSc, elegidas: jugada.elegidas, semillas, cfg }),
+  },
+
+  slide: {
+    servicio: slide,
+    revisar: (req) => ({ color: slide.revisar(req.body.color) }),
+    sortear: ({ apuestaSc, semillas, cfg, jugada }) =>
+      slide.jugar({ apuestaSc, color: jugada.color, semillas, cfg }),
+  },
+
+  plinko: {
+    servicio: plinko,
+    revisar: (req) => plinko.revisar({ riesgo: req.body.riesgo, filas: req.body.filas }),
+    sortear: ({ apuestaSc, semillas, cfg, jugada }) =>
+      plinko.jugar({ apuestaSc, riesgo: jugada.riesgo, filas: jugada.filas, semillas, cfg }),
+  },
+};
+
+for (const [id, def] of Object.entries(DE_UNA)) {
+  router.post(`/${id}/play`, autorizar(true), limite, async (req, res) => {
+    try {
+      const r = await juegos.jugarUnaRonda({
+        user: req.user,
+        juego: id,
+        apuestaSc: req.body.apuestaSc,
+        revisar: () => def.revisar(req),
+        sortear: def.sortear,
+      });
+      return res.json({ success: true, data: r });
+    } catch (err) {
+      return responderError(res, err, `games/${id}`);
+    }
+  });
+}
 
 module.exports = router;
