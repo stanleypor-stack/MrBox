@@ -10,17 +10,33 @@
         <h3 class="mb-cod__t">{{ $t('redeem.heading') }}</h3>
         <p class="mb-cod__p">{{ $t('redeem.sub') }}</p>
 
-        <label class="mb-cod__rotulo" for="mb-cod-campo">{{ $t('redeem.label') }}</label>
-        <form class="mb-cod__fila" @submit.prevent="canjear">
-          <input
-            id="mb-cod-campo" ref="campo" v-model="codigo" class="mb-cod__campo"
-            :class="{ 'is-mal': !!error }" :placeholder="$t('redeem.placeholder')"
-            autocomplete="off" maxlength="24" @input="error = ''"
-          >
-          <button type="submit" class="mb-cod__b" :disabled="!codigo.trim() || yendo">
-            {{ yendo ? $t('common.loading') : $t('wallet.redeem') }}
-          </button>
-        </form>
+        <!--
+          EL CODIGO, ADENTRO DE SU PROPIO RECUADRO.
+
+          En el celular el rotulo, el campo y el boton quedaban sueltos
+          y centrados sobre el panel: tres cosas flotando que no se
+          leian como un formulario. El rotulo parecia otro titulo y el
+          boton, otro boton mas de la ventana.
+
+          Juntos adentro de un recuadro --mas oscuro, con su borde y
+          alineado a la izquierda-- se entiende de una que es un solo
+          campo con su boton, que es lo que hace la referencia. En la
+          pantalla grande el recuadro no existe: ahi los tres ya se
+          leian juntos porque estan en una sola fila.
+        -->
+        <div class="mb-cod__grupo">
+          <label class="mb-cod__rotulo" for="mb-cod-campo">{{ $t('redeem.label') }}</label>
+          <form class="mb-cod__fila" @submit.prevent="canjear">
+            <input
+              id="mb-cod-campo" ref="campo" v-model="codigo" class="mb-cod__campo"
+              :class="{ 'is-mal': !!error }" :placeholder="$t('redeem.placeholder')"
+              autocomplete="off" maxlength="24" @input="error = ''"
+            >
+            <button type="submit" class="mb-cod__b" :disabled="!codigo.trim() || yendo">
+              {{ yendo ? $t('common.loading') : $t('wallet.redeem') }}
+            </button>
+          </form>
+        </div>
 
         <p v-if="error" class="mb-cod__aviso">{{ error }}</p>
 
@@ -218,10 +234,29 @@ export default {
 
 .mb-cod__p { margin: 0 0 20px; color: $texto-3; font-size: 14.5px; line-height: 1.45; }
 
+/*
+  El recuadro del codigo. Solo en el celular: ver el comentario del
+  template. Mas oscuro que el panel para que se despegue, y alineado a
+  la izquierda aunque el resto de la ventana este centrado --un rotulo
+  y su campo se leen de arriba a abajo por el borde izquierdo, no por
+  el medio.
+*/
+.mb-cod__grupo {
+  @include en-celular {
+    text-align: left;
+    padding: 13px 13px 14px;
+    border-radius: 16px;
+    border: 1px solid #27406b;
+    background: rgba(4, 11, 27, .55);
+  }
+}
+
 .mb-cod__rotulo {
   font-weight: 800;
   font-size: 14px;
   margin-bottom: 9px;
+
+  @include en-celular { display: block; font-size: 13px; margin-bottom: 8px; }
 }
 
 .mb-cod__fila {
@@ -262,7 +297,24 @@ export default {
   cursor: pointer;
   @include foco;
 
-  &:disabled { opacity: .45; cursor: not-allowed; }
+  /*
+    Adentro del recuadro, un rectangulo redondeado y no una pastilla:
+    la pastilla al ancho de la pantalla parecia el boton principal de
+    la ventana.
+  */
+  @include en-celular { width: 100%; border-radius: 13px; }
+
+  /*
+    Apagado, un azul apagado de verdad y no el mismo boton transparente.
+    Con `opacity` el degrade y el borde blanco se veian atras del
+    panel y el boton quedaba como roto, no como esperando.
+  */
+  &:disabled {
+    background: #26416f;
+    border-color: rgba(255, 255, 255, .18);
+    color: rgba(255, 255, 255, .62);
+    cursor: not-allowed;
+  }
 }
 
 /* ── El cofre ───────────────────────────────────────────────────── */

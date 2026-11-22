@@ -235,7 +235,7 @@
               </span>
             </button>
             <span class="mb-iconos__raya" aria-hidden="true"></span>
-            <router-link to="/profile" class="mb-iconos__b" :aria-label="$t('nav.rewards')">
+            <router-link to="/rewards" class="mb-iconos__b" :aria-label="$t('nav.rewards')">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
                 <path d="M20.5 7h-2.4c.3-.5.4-1 .4-1.5A3.5 3.5 0 0 0 12 3.4 3.5 3.5 0 0 0 5.5 5.5c0 .5.1 1 .4 1.5H3.5A1.5 1.5 0 0 0 2 8.5v2A1.5 1.5 0 0 0 3.5 12H11V7h2v5h7.5a1.5 1.5 0 0 0 1.5-1.5v-2A1.5 1.5 0 0 0 20.5 7zM9 7a1.5 1.5 0 1 1 0-3c1.2 0 1.8 1.7 2 3zm6 0h-2c.2-1.3.8-3 2-3a1.5 1.5 0 1 1 0 3zM3.5 13.5V20A2 2 0 0 0 5.5 22H11v-8.5zM13 22h5.5a2 2 0 0 0 2-2v-6.5H13z" />
               </svg>
