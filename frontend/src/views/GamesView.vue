@@ -12,6 +12,16 @@
         :maximo-sc="maximoSc" :saldo-sc="saldo"
       />
 
+      <MbJuegoKeno
+        v-else-if="elJuego.id === 'keno'"
+        :maximo-sc="maximoSc" :saldo-sc="saldo" :margen="margenDe('keno')"
+      />
+
+      <MbJuegoPlinko
+        v-else-if="elJuego.id === 'plinko'"
+        :maximo-sc="maximoSc" :saldo-sc="saldo" :margen="margenDe('plinko')"
+      />
+
       <!--
         LOS QUE TODAVIA NO ESTAN.
 
@@ -93,6 +103,8 @@ import api from "@/api";
 import { JUEGOS } from "@/juegos";
 import MbJuegoDice from "@/components/juegos/MbJuegoDice.vue";
 import MbJuegoReme from "@/components/juegos/MbJuegoReme.vue";
+import MbJuegoKeno from "@/components/juegos/MbJuegoKeno.vue";
+import MbJuegoPlinko from "@/components/juegos/MbJuegoPlinko.vue";
 
 /**
  * LA PANTALLA DE LOS JUEGOS.
@@ -111,7 +123,7 @@ import MbJuegoReme from "@/components/juegos/MbJuegoReme.vue";
 export default {
   name: "GamesView",
 
-  components: { MbJuegoDice, MbJuegoReme },
+  components: { MbJuegoDice, MbJuegoReme, MbJuegoKeno, MbJuegoPlinko },
 
   data() {
     return {
@@ -165,6 +177,12 @@ export default {
       } catch (err) {
         this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
       }
+    },
+
+    /* El margen que publica el servidor, para que las tablas que
+       dibuja cada juego digan lo que de verdad se paga. */
+    margenDe(id) {
+      return 100 - (this.rtp[id] || 94);
     },
 
     ir(id) {

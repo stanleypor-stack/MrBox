@@ -81,6 +81,44 @@
       </div>
 
       <!-- ── Categorías ───────────────────────────────────────────── -->
+      <div class="mb-grupo">
+        <button
+          type="button" class="mb-grupo__plegable"
+          :aria-expanded="categoriasAbiertas ? 'true' : 'false'"
+          @click="categoriasAbiertas = !categoriasAbiertas"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff"
+               stroke-width="2" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="3.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+          {{ $t('side.categories') }}
+          <span class="mb-grupo__chevron">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff"
+                 stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path :d="categoriasAbiertas ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'" />
+            </svg>
+          </span>
+        </button>
+
+        <div v-if="categoriasAbiertas" class="mb-grupo__lista">
+          <router-link
+            v-for="c in categorias" :key="c.name"
+            :to="`/boxes?category=${encodeURIComponent(c.name)}`"
+            class="mb-grupo__item mb-grupo__item--cat"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path :d="icono(c.name)" />
+            </svg>
+            {{ c.name }}
+            <span class="mb-grupo__cuenta">{{ c.count }}</span>
+          </router-link>
+        </div>
+      </div>
+
       <!--
         ── Los juegos ────────────────────────────────────────────
 
@@ -117,44 +155,6 @@
           >
             <img :src="g.icono" alt="" width="18" height="18">
             {{ g.nombre }}
-          </router-link>
-        </div>
-      </div>
-
-      <div class="mb-grupo">
-        <button
-          type="button" class="mb-grupo__plegable"
-          :aria-expanded="categoriasAbiertas ? 'true' : 'false'"
-          @click="categoriasAbiertas = !categoriasAbiertas"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff"
-               stroke-width="2" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="3" width="7" height="7" rx="1.5" />
-            <rect x="14" y="3" width="7" height="7" rx="3.5" />
-            <rect x="3" y="14" width="7" height="7" rx="1.5" />
-            <rect x="14" y="14" width="7" height="7" rx="1.5" />
-          </svg>
-          {{ $t('side.categories') }}
-          <span class="mb-grupo__chevron">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff"
-                 stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path :d="categoriasAbiertas ? 'm6 15 6-6 6 6' : 'm6 9 6 6 6-6'" />
-            </svg>
-          </span>
-        </button>
-
-        <div v-if="categoriasAbiertas" class="mb-grupo__lista">
-          <router-link
-            v-for="c in categorias" :key="c.name"
-            :to="`/boxes?category=${encodeURIComponent(c.name)}`"
-            class="mb-grupo__item mb-grupo__item--cat"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path :d="icono(c.name)" />
-            </svg>
-            {{ c.name }}
-            <span class="mb-grupo__cuenta">{{ c.count }}</span>
           </router-link>
         </div>
       </div>

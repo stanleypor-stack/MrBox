@@ -205,6 +205,31 @@ for (const [id, def] of Object.entries(DE_UNA)) {
   });
 }
 
+/**
+ * LA TABLA DE PLINKO, PARA DIBUJARLA.
+ *
+ * Son 27 listas de numeros y la pantalla necesita la del riesgo y
+ * las filas que el jugador elija, antes de tirar. Viene del servidor
+ * y no escrita en el navegador porque es la MISMA que paga: si el
+ * margen cambia desde el panel, los numeritos del tablero cambian
+ * con el.
+ */
+router.get("/plinko/pagos", autorizar(false), async (req, res) => {
+  try {
+    const cfg = await Settings.leer();
+    const pagos = {};
+    for (const riesgo of plinko.RIESGOS) {
+      pagos[riesgo] = {};
+      for (let f = plinko.FILAS_MINIMO; f <= plinko.FILAS_MAXIMO; f += 1) {
+        pagos[riesgo][f] = plinko.tabla(riesgo, f, cfg);
+      }
+    }
+    return res.json({ success: true, data: { pagos } });
+  } catch (err) {
+    return responderError(res, err, "games/plinko/pagos");
+  }
+});
+
 /* ── Mines ────────────────────────────────────────────────────────── */
 
 /**
