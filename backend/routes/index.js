@@ -51,6 +51,13 @@ router.get("/health", (req, res) => res.json({
   at: new Date(),
   ip: req.ip,
   proxies: req.app.get("trust proxy"),
+  /*
+    La cadena tal como llega, para poder CONTAR los saltos en vez de
+    suponerlos. Son las direcciones por las que paso ESTE pedido --el
+    que pregunta-- y ninguna otra.
+  */
+  cadena: req.headers["x-forwarded-for"] || "",
+  socket: (req.socket && req.socket.remoteAddress) || "",
 }));
 
 module.exports = router;
