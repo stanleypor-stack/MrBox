@@ -45,24 +45,36 @@ services:
       - key: PORT
         value: 10000
 
-      #  CUANTOS PROXIES HAY DE VERDAD ENTRE EL NAVEGADOR Y ESTO.
+      #  CUANTOS SALTOS HAY ENTRE EL NAVEGADOR Y ESTO.
       #
-      #  Uno: el borde de Render. Decia 2 porque se escribio pensando
-      #  en Netlify adelante reenviando `/api`, y Netlify nunca entro:
-      #  el navegador le habla derecho a este servicio.
+      #  TRES, contados y no supuestos. `GET /api/health` devuelve la
+      #  cadena tal como llega, y en Render tiene esta forma:
       #
-      #  Y poner uno DE MAS no es un detalle. Express confia en los
-      #  ultimos N renglones de `X-Forwarded-For` y toma el de al lado
-      #  como el visitante. Con 2 y un solo proxy, ese renglon lo
-      #  escribe el que pide: elige la IP que quiere. Probado --con 2,
-      #  el servidor le cree la IP inventada; con 1, la ignora-- y eso
-      #  deja sin efecto TODOS los frenos por IP, el de intentos de
-      #  login incluido: una IP nueva por intento y nunca frena nada.
+      #     <el visitante>, <Cloudflare>, <interno de Render>
       #
-      #  Si manana entra Cloudflare delante de ESTE servicio --con el
-      #  naranja prendido, no solo el DNS-- pasa a 2.
+      #  Render sirve onrender.com detras de SU PROPIO Cloudflare, asi
+      #  que agrega dos saltos, no uno.
+      #
+      #  POR QUE IMPORTA EL NUMERO EXACTO
+      #
+      #  Express descarta los ultimos N renglones y toma el siguiente
+      #  como el visitante. Con 1 toma el interno de Render y con 2 el
+      #  de Cloudflare: los dos son infraestructura, iguales para todo
+      #  el mundo. Y entonces los frenos por IP dejan de ser por IP:
+      #  diez intentos de login fallidos de CUALQUIERA dejarian afuera
+      #  a todos los demas.
+      #
+      #  Con 3 toma al visitante. Y de paso no se puede mentir: una
+      #  `X-Forwarded-For` escrita por el que pide queda mas a la
+      #  izquierda y nunca se alcanza --comprobado pidiendo /health con
+      #  una inventada.
+      #
+      #  CUANDO HAYA DOMINIO PROPIO, VOLVER A CONTAR
+      #
+      #  Si se pone Cloudflare propio adelante son cuatro. No adivinar:
+      #  pedir /api/health y contar los renglones de `cadena`.
       - key: PROXIES_DELANTE
-        value: 1
+        value: 3
 
       #  ── Las que escribe Dani en el panel ──────────────────────────
       #
