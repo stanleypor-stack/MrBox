@@ -275,7 +275,7 @@
 
       <!-- ── Los que trajo ──────────────────────────────────────── -->
       <section class="mb-acaja mb-acaja--col">
-        <div class="mb-acab">
+        <div class="mb-acab mb-acab--apilada">
           <h2>{{ $t('affil.yourReferrals') }}</h2>
           <span class="mb-tenue">
             {{ $t('affil.funnel', {
@@ -297,15 +297,33 @@
             <span class="mb-der">{{ $t('affil.earnedYou') }}</span>
           </div>
 
+          <!--
+            Los seis datos son los mismos que en la cabecera de arriba
+            y van en el mismo orden. Lo que cambia en el celular es
+            como se acomodan, y eso lo hace la hoja de estilos; aca
+            cada uno solo dice cual es. `data-rotulo` lleva el titulo
+            de su columna, ya traducido, para que en el celular ---
+            donde la cabecera no se ve --- el numero no quede suelto.
+          -->
           <div v-for="r in d.referidos" :key="r._id" class="mb-alista__fila">
-            <span>{{ r.username }}</span>
-            <span class="mb-tenue">{{ r.codigo || '—' }}</span>
-            <span>
+            <span class="mb-afila__nombre">{{ r.username }}</span>
+            <span class="mb-afila__codigo mb-tenue">
+              <svg class="mb-afila__tag" width="11" height="11" viewBox="0 0 24 24"
+                   fill="currentColor" aria-hidden="true">
+                <path d="M10.6 2.5H4.8A2.3 2.3 0 0 0 2.5 4.8v5.8c0 .6.2 1.2.7 1.6l8.6 8.6a2.3 2.3 0 0 0 3.2 0l5.8-5.8a2.3 2.3 0 0 0 0-3.2l-8.6-8.6a2.3 2.3 0 0 0-1.6-.7zm-3 5.8a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+              </svg>{{ r.codigo || '—' }}
+            </span>
+            <span class="mb-afila__estado">
               <span class="mb-achip" :class="'is-' + r.estado">{{ $t('affil.st_' + r.estado) }}</span>
             </span>
-            <span class="mb-der">SC {{ plata(r.depositadoSc) }}</span>
-            <span class="mb-der">SC {{ plata(r.jugadoSc) }}</span>
-            <span class="mb-der" :class="r.montoSc ? 'mb-verde' : 'mb-tenue'">
+            <span class="mb-afila__dato mb-der" :data-rotulo="$t('affil.deposits')">
+              SC {{ plata(r.depositadoSc) }}
+            </span>
+            <span class="mb-afila__dato mb-der" :data-rotulo="$t('affil.volume')">
+              SC {{ plata(r.jugadoSc) }}
+            </span>
+            <span class="mb-afila__dato mb-der" :data-rotulo="$t('affil.earnedYou')"
+                  :class="r.montoSc ? 'mb-verde' : 'mb-tenue'">
               {{ r.montoSc ? 'SC ' + plata(r.montoSc) : '—' }}
             </span>
           </div>
@@ -913,6 +931,20 @@ export default {
   span { font-weight: 700; font-size: 13px; }
 }
 
+/*
+  En el celular el titulo y su contador no entran en la misma linea:
+  "Your referrals" en Luckiest Guy a 22px se lleva el ancho y el
+  contador queda apretado contra el borde. Uno abajo del otro se leen
+  los dos. Solo esta cabecera: las otras son mas cortas.
+*/
+.mb-acab--apilada {
+  @include en-celular {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+}
+
 .mb-acamps { display: flex; flex-direction: column; gap: 10px; }
 
 .mb-acamp {
@@ -1105,7 +1137,25 @@ export default {
 
 /* ── La lista ─────────────────────────────────────────────────────── */
 
-.mb-alista { border-radius: 16px; background: #0b1729; overflow: hidden; }
+.mb-alista {
+  border-radius: 16px;
+  background: #0b1729;
+  overflow: hidden;
+
+  /*
+    En el celular deja de ser una caja con renglones y pasa a ser una
+    pila de tarjetas, una por referido. El fondo y el recorte se los
+    queda cada tarjeta.
+  */
+  @include en-celular {
+    background: none;
+    border-radius: 0;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
 
 .mb-alista__fila {
   display: grid;
@@ -1127,10 +1177,99 @@ export default {
     text-transform: uppercase;
   }
 
+  /*
+    UNA TARJETA POR REFERIDO.
+
+    La fila tiene seis datos y en la pantalla grande cada uno cae
+    abajo de su cabecera. En el celular la cabecera se escondia y los
+    seis valores caian en dos columnas sueltas: el volumen y lo que
+    te dejo quedaban como dos numeros sin nombre, imposibles de
+    distinguir.
+
+    El orden lo arma `grid-template-areas`, no el orden del HTML: el
+    nombre con su estado arriba, la campaña abajo, una linea, y los
+    tres numeros en fila con su rotulo encima. El rotulo es el
+    `::before` de cada numero y sale de `data-rotulo`. La linea es el
+    `::after` de la fila, que en una grilla es una celda como
+    cualquier otra.
+  */
   @include en-celular {
-    grid-template-columns: 1fr 1fr;
-    row-gap: 6px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      "nombre nombre estado"
+      "campana campana campana"
+      "linea linea linea"
+      "d1 d2 d3";
+    column-gap: 8px;
+    row-gap: 9px;
+    /*
+      `stretch` y no `start`: los tres rotulos de abajo no miden lo
+      mismo --"lo que jugaron" entra en dos lineas donde "te dejo"
+      entra en una-- y con `start` cada numero arrancaba a la altura
+      que le tocaba, escalonados. Estirados a la misma altura, los
+      tres numeros se apoyan en el mismo renglon.
+    */
+    align-items: stretch;
+    padding: 12px 13px;
+    border: 1px solid #14233c;
+    border-radius: 14px;
+    background: #0b1729;
+
+    &::after { content: ""; grid-area: linea; height: 1px; background: #14233c; }
     &--cab { display: none; }
+  }
+}
+
+.mb-afila__nombre {
+  @include en-celular { grid-area: nombre; font-size: 15px; font-weight: 800; }
+}
+
+.mb-afila__estado {
+  @include en-celular { grid-area: estado; justify-self: end; }
+}
+
+.mb-afila__codigo {
+  @include en-celular {
+    grid-area: campana;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+}
+
+/* La etiquetita, solo en el celular: en la pantalla grande la columna
+   ya se llama "Campaign" y el icono seria ruido. */
+.mb-afila__tag {
+  display: none;
+  @include en-celular { display: block; flex: none; }
+}
+
+.mb-afila__dato {
+  @include en-celular {
+    display: flex;
+    flex-direction: column;
+    /* El rotulo arriba y el numero abajo del todo: ver `stretch`. */
+    justify-content: space-between;
+    gap: 2px;
+    font-size: 14px;
+    font-weight: 800;
+
+    &::before {
+      content: attr(data-rotulo);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      color: $texto-4;
+    }
+
+    &:nth-child(4) { grid-area: d1; }
+    &:nth-child(5) { grid-area: d2; }
+    &:nth-child(6) { grid-area: d3; }
   }
 }
 

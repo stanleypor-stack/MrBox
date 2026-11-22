@@ -163,7 +163,16 @@
             </div>
 
             <div class="mb-wallet__lista">
-              <router-link to="/profile" class="mb-wallet__linea" @click.native="walletAbierta = false">
+              <!--
+                EL SALDO NO LLEVA A NINGUN LADO.
+
+                Llevaba al perfil, que no es donde esta el saldo: el
+                saldo esta ahi mismo, a la derecha del renglon. Es el
+                unico de los tres que no tiene un lugar propio adonde
+                ir, asi que no finge tenerlo: `--quieta` le saca el
+                cursor de mano y el fondo del hover.
+              -->
+              <div class="mb-wallet__linea mb-wallet__linea--quieta">
                 <span class="mb-wallet__linea-izq">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="#a9bbe6" aria-hidden="true">
                     <path d="M3 7a2 2 0 0 1 2-2h13v4h3v10H5a2 2 0 0 1-2-2z" />
@@ -172,7 +181,7 @@
                 <span class="mb-wallet__linea-der">
                   <span class="mb-sc mb-sc--16" aria-hidden="true">SC</span>{{ plata(saldo) }}
                 </span>
-              </router-link>
+              </div>
 
               <router-link to="/inventory" class="mb-wallet__linea" @click.native="walletAbierta = false">
                 <span class="mb-wallet__linea-izq">
