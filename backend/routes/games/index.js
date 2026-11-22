@@ -15,6 +15,10 @@ const reme = require("../../services/games/reme");
 const keno = require("../../services/games/keno");
 const slide = require("../../services/games/slide");
 const plinko = require("../../services/games/plinko");
+const mines = require("../../services/games/mines");
+const towers = require("../../services/games/towers");
+const crash = require("../../services/games/crash");
+const wallet = require("../../services/wallet");
 
 const router = express.Router();
 
@@ -199,5 +203,334 @@ for (const [id, def] of Object.entries(DE_UNA)) {
     }
   });
 }
+
+/* ── Mines ────────────────────────────────────────────────────────── */
+
+/**
+ * LO QUE EL JUGADOR PUEDE VER DE UNA RONDA ABIERTA.
+ *
+ * Nunca las minas. La ronda guarda dónde están desde el primer
+ * momento --tiene que estar sorteado antes del primer click-- y esta
+ * función es la puerta por la que sale lo que se muestra. Mientras la
+ * ronda esté abierta, solo salen las casillas que el jugador YA
+ * destapó.
+ */
+function minesALaVista(ronda, cfg, { terminada = false, minadas = null } = {}) {
+  const destapadas = (ronda.resultado || {}).destapadas || [];
+  const { tablero, minas } = ronda.jugada;
+
+  return {
+    rondaId: ronda._id,
+    tablero,
+    minas,
+    destapadas,
+    ...mines.pagoDe({ apuestaSc: ronda.apuestaSc, tablero, minas, destapadas }, cfg),
+    /* Las minas solo cuando ya no se puede jugar. */
+    ...(terminada ? { minadas: minadas || (ronda.oculto || {}).minadas || [] } : {}),
+  };
+}
+
+router.post("/mines/open", autorizar(true), limite, async (req, res) => {
+  try {
+    const r = await juegos.abrirRonda({
+      user: req.user,
+      juego: "mines",
+      apuestaSc: req.body.apuestaSc,
+      revisar: () => mines.revisar({ tablero: req.body.tablero, minas: req.body.minas }),
+      repartir: ({ semillas, jugada }) => {
+        const { minadas, hmacs } = mines.armar({ ...jugada, semillas });
+        return {
+          hmacs,
+          /* Lo tapado va a `oculto`, que el modelo no devuelve. */
+          oculto: { minadas },
+          publico: { destapadas: [], ...jugada },
+        };
+      },
+    });
+    return res.json({ success: true, data: r });
+  } catch (err) {
+    return responderError(res, err, "games/mines/open");
+  }
+});
+
+router.post("/mines/tile", autorizar(true), limite, async (req, res) => {
+  try {
+    const cfg = await Settings.leer();
+    const ronda = await juegos.rondaAbierta(req.user._id, "mines");
+
+    const paso = mines.destapar({
+      ronda: {
+        tablero: ronda.jugada.tablero,
+        minas: ronda.jugada.minas,
+        minadas: (ronda.oculto || {}).minadas || [],
+        destapadas: (ronda.resultado || {}).destapadas || [],
+      },
+      casilla: req.body.casilla,
+      cfg,
+    });
+
+    const resultado = { ...ronda.resultado, destapadas: paso.destapadas, exploto: paso.exploto };
+
+    if (!paso.termino) {
+      await juegos.guardarAvance({ ronda, resultado });
+      return res.json({
+        success: true,
+        data: { ...minesALaVista({ ...ronda, resultado }, cfg), casilla: paso.casilla, exploto: false },
+      });
+    }
+
+    const pago = paso.exploto
+      ? { multiplicador: 0, pagoSc: 0 }
+      : mines.pagoDe({
+          apuestaSc: ronda.apuestaSc,
+          tablero: ronda.jugada.tablero,
+          minas: ronda.jugada.minas,
+          destapadas: paso.destapadas,
+        }, cfg);
+
+    await juegos.cerrarRonda({ userId: req.user._id, ronda, ...pago, resultado });
+
+    return res.json({
+      success: true,
+      data: {
+        ...minesALaVista({ ...ronda, resultado }, cfg, { terminada: true }),
+        casilla: paso.casilla,
+        exploto: paso.exploto,
+        termino: true,
+        ...pago,
+        ...(await wallet.saldoDe(req.user._id)),
+      },
+    });
+  } catch (err) {
+    return responderError(res, err, "games/mines/tile");
+  }
+});
+
+router.post("/mines/cashout", autorizar(true), limite, async (req, res) => {
+  try {
+    const cfg = await Settings.leer();
+    const ronda = await juegos.rondaAbierta(req.user._id, "mines");
+    const destapadas = (ronda.resultado || {}).destapadas || [];
+
+    /* Sin ninguna destapada no hay nada que cobrar: seria recuperar
+       la apuesta sin haber jugado. */
+    if (!destapadas.length) throw errorDe("NOTHING_TO_CLAIM", { juego: "mines" });
+
+    const pago = mines.pagoDe({
+      apuestaSc: ronda.apuestaSc,
+      tablero: ronda.jugada.tablero,
+      minas: ronda.jugada.minas,
+      destapadas,
+    }, cfg);
+
+    await juegos.cerrarRonda({ userId: req.user._id, ronda, ...pago, resultado: ronda.resultado });
+
+    return res.json({
+      success: true,
+      data: {
+        ...minesALaVista(ronda, cfg, { terminada: true }),
+        termino: true,
+        ...pago,
+        ...(await wallet.saldoDe(req.user._id)),
+      },
+    });
+  } catch (err) {
+    return responderError(res, err, "games/mines/cashout");
+  }
+});
+
+/* ── Dragon's Tower ───────────────────────────────────────────────── */
+
+function towersALaVista(ronda, cfg, { terminada = false } = {}) {
+  const subidos = (ronda.resultado || {}).subidos || 0;
+  const { riesgo } = ronda.jugada;
+
+  return {
+    rondaId: ronda._id,
+    riesgo,
+    subidos,
+    elegidas: (ronda.resultado || {}).elegidas || [],
+    ...towers.pagoDe({ apuestaSc: ronda.apuestaSc, riesgo, subidos }, cfg),
+    /* La torre entera recién cuando se terminó. */
+    ...(terminada ? { dragones: (ronda.oculto || {}).dragones || [] } : {}),
+  };
+}
+
+router.post("/towers/open", autorizar(true), limite, async (req, res) => {
+  try {
+    const r = await juegos.abrirRonda({
+      user: req.user,
+      juego: "towers",
+      apuestaSc: req.body.apuestaSc,
+      revisar: () => towers.revisar({ riesgo: req.body.riesgo }),
+      repartir: ({ semillas, jugada }) => {
+        const { dragones, hmacs } = towers.armar({ riesgo: jugada.riesgo, semillas });
+        return {
+          hmacs,
+          oculto: { dragones },
+          publico: { subidos: 0, elegidas: [], riesgo: jugada.riesgo },
+        };
+      },
+    });
+    return res.json({ success: true, data: r });
+  } catch (err) {
+    return responderError(res, err, "games/towers/open");
+  }
+});
+
+router.post("/towers/tile", autorizar(true), limite, async (req, res) => {
+  try {
+    const cfg = await Settings.leer();
+    const ronda = await juegos.rondaAbierta(req.user._id, "towers");
+
+    const paso = towers.pisar({
+      ronda: {
+        riesgo: ronda.jugada.riesgo,
+        subidos: (ronda.resultado || {}).subidos || 0,
+        dragones: (ronda.oculto || {}).dragones || [],
+      },
+      baldosa: req.body.baldosa,
+      cfg,
+    });
+
+    const resultado = {
+      ...ronda.resultado,
+      subidos: paso.subidos,
+      elegidas: [...((ronda.resultado || {}).elegidas || []), paso.baldosa],
+      quemo: paso.quemo,
+    };
+
+    if (!paso.termino) {
+      await juegos.guardarAvance({ ronda, resultado });
+      return res.json({
+        success: true,
+        data: { ...towersALaVista({ ...ronda, resultado }, cfg), baldosa: paso.baldosa, quemo: false },
+      });
+    }
+
+    const pago = paso.quemo
+      ? { multiplicador: 0, pagoSc: 0 }
+      : towers.pagoDe({ apuestaSc: ronda.apuestaSc, riesgo: ronda.jugada.riesgo, subidos: paso.subidos }, cfg);
+
+    await juegos.cerrarRonda({ userId: req.user._id, ronda, ...pago, resultado });
+
+    return res.json({
+      success: true,
+      data: {
+        ...towersALaVista({ ...ronda, resultado }, cfg, { terminada: true }),
+        baldosa: paso.baldosa,
+        quemo: paso.quemo,
+        termino: true,
+        ...pago,
+        ...(await wallet.saldoDe(req.user._id)),
+      },
+    });
+  } catch (err) {
+    return responderError(res, err, "games/towers/tile");
+  }
+});
+
+router.post("/towers/cashout", autorizar(true), limite, async (req, res) => {
+  try {
+    const cfg = await Settings.leer();
+    const ronda = await juegos.rondaAbierta(req.user._id, "towers");
+    const subidos = (ronda.resultado || {}).subidos || 0;
+
+    if (subidos <= 0) throw errorDe("NOTHING_TO_CLAIM", { juego: "towers" });
+
+    const pago = towers.pagoDe({ apuestaSc: ronda.apuestaSc, riesgo: ronda.jugada.riesgo, subidos }, cfg);
+    await juegos.cerrarRonda({ userId: req.user._id, ronda, ...pago, resultado: ronda.resultado });
+
+    return res.json({
+      success: true,
+      data: {
+        ...towersALaVista(ronda, cfg, { terminada: true }),
+        termino: true,
+        ...pago,
+        ...(await wallet.saldoDe(req.user._id)),
+      },
+    });
+  } catch (err) {
+    return responderError(res, err, "games/towers/cashout");
+  }
+});
+
+/* ── Crash ────────────────────────────────────────────────────────── */
+
+router.post("/crash/open", autorizar(true), limite, async (req, res) => {
+  try {
+    const r = await juegos.abrirRonda({
+      user: req.user,
+      juego: "crash",
+      apuestaSc: req.body.apuestaSc,
+      revisar: () => {
+        /* El cobro automático es opcional; si viene, tiene que ser un
+           multiplicador por encima de 1. */
+        const auto = Number(req.body.autoCobrarEn);
+        if (req.body.autoCobrarEn !== undefined && (!Number.isFinite(auto) || auto <= 1)) {
+          throw errorDe("INVALID_AMOUNT", { campo: "autoCobrarEn" });
+        }
+        return { autoCobrarEn: Number.isFinite(auto) && auto > 1 ? auto : null };
+      },
+      repartir: ({ semillas, cfg }) => {
+        const { punto, hmacs } = crash.arrancar({ semillas, cfg });
+        return {
+          hmacs,
+          /* El punto de reventón es LO tapado. Si saliera de acá, el
+             navegador cobraría siempre un centésimo antes. */
+          oculto: { punto },
+          publico: { arrancoEn: Date.now() },
+        };
+      },
+    });
+    return res.json({ success: true, data: r });
+  } catch (err) {
+    return responderError(res, err, "games/crash/open");
+  }
+});
+
+/**
+ * COBRAR.
+ *
+ * El multiplicador lo decide el reloj DEL SERVIDOR: cuánto pasó desde
+ * que se creó la ronda. Lo que manda el cliente (`en`) solo puede
+ * bajarlo, nunca subirlo, así que un navegador tocado no puede cobrar
+ * más de lo que le tocaba.
+ */
+router.post("/crash/cashout", autorizar(true), limite, async (req, res) => {
+  try {
+    const ronda = await juegos.rondaAbierta(req.user._id, "crash");
+
+    const msDesde = Date.now() - new Date(ronda.createdAt).getTime();
+    const r = crash.cobrar({
+      apuestaSc: ronda.apuestaSc,
+      punto: (ronda.oculto || {}).punto || 1,
+      msDesde,
+      pedido: req.body.en,
+    });
+
+    await juegos.cerrarRonda({
+      userId: req.user._id,
+      ronda,
+      multiplicador: r.multiplicador,
+      pagoSc: r.pagoSc,
+      resultado: { punto: (ronda.oculto || {}).punto, reventado: r.reventado, en: r.en },
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        rondaId: ronda._id,
+        punto: (ronda.oculto || {}).punto,
+        reventado: r.reventado,
+        multiplicador: r.multiplicador,
+        pagoSc: r.pagoSc,
+        ...(await wallet.saldoDe(req.user._id)),
+      },
+    });
+  } catch (err) {
+    return responderError(res, err, "games/crash/cashout");
+  }
+});
 
 module.exports = router;

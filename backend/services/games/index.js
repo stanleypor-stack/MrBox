@@ -260,6 +260,189 @@ async function jugarUnaRonda({ user, juego, apuestaSc, revisar, sortear }) {
   };
 }
 
+/* ── Las rondas que duran varios clicks ───────────────────────────── */
+
+/**
+ * ABRE UNA RONDA.
+ *
+ * Mines, Dragon's Tower y Crash no terminan en el mismo pedido en que
+ * empiezan: el jugador destapa, sube o espera, y recién después
+ * cobra. Eso cambia tres cosas, y ninguna es de adorno.
+ *
+ * EL RESULTADO YA ESTA SORTEADO, PERO TAPADO
+ *
+ * El tablero entero --o el punto de reventón-- se sortea ACA, cuando
+ * se abre, y se guarda en `oculto`, que el modelo no devuelve nunca.
+ * Decidir en cada click, sabiendo cuánto va ganando el jugador, es
+ * exactamente lo que un sorteo verificable tiene que hacer
+ * imposible.
+ *
+ * SE COBRA AL ABRIR
+ *
+ * La apuesta sale del saldo acá y no al cobrar. Así no se puede
+ * abandonar una ronda perdida: cuando el tablero existe, la plata ya
+ * salió.
+ *
+ * UNA SOLA ABIERTA POR JUEGO
+ *
+ * Lo garantiza el índice único de `GameRound`, no un `if`: dos
+ * pestañas abriendo a la vez chocan contra la base, y la segunda
+ * recibe el error en vez de pisar la primera.
+ */
+async function abrirRonda({ user, juego, apuestaSc, revisar, repartir }) {
+  const cfg = await Settings.leer();
+
+  if ((cfg.juegos || {}).apagados) throw errorDe("GAMES_OFF", {}, 403);
+
+  const monto = await revisarApuesta(apuestaSc, cfg);
+  const jugada = typeof revisar === "function" ? revisar({ apuestaSc: monto, cfg }) : {};
+
+  await revisarTopePorBono(user._id, monto, cfg);
+  await controles.revisarAntesDeJugar({ userId: user._id, montoSc: monto });
+
+  /*
+    SE MIRA ANTES DE COBRAR SI YA TENIA UNA ABIERTA.
+
+    El índice único alcanza para que no queden dos, pero si se cobra
+    primero y el índice rebota después, la apuesta quedó descontada
+    por una ronda que no existe.
+  */
+  const abierta = await GameRound.findOne({ user: user._id, juego, abierta: true }).lean();
+  if (abierta) throw errorDe("ROUND_OPEN", { juego, rondaId: abierta._id }, 409);
+
+  const tanda = await semillaDe(user._id);
+
+  await wallet.mover({
+    userId: user._id,
+    amountSc: -monto,
+    type: "game_bet",
+    juegaSc: monto,
+    reference: { kind: "game", label: juego },
+  });
+
+  const movida = await proximoNonce(tanda._id);
+  const semillas = {
+    semillaServidor: movida.semillaServidor,
+    semillaCliente: movida.semillaCliente,
+    nonce: movida.nonce,
+  };
+
+  let r;
+  try {
+    r = repartir({ apuestaSc: monto, semillas, cfg, jugada });
+  } catch (err) {
+    /* Igual que en una ronda de una sola vuelta: si el reparto se
+       rompe por un error nuestro, la apuesta vuelve. */
+    await wallet.mover({
+      userId: user._id, amountSc: monto, type: "game_win",
+      reason: "devolucion por error", reference: { kind: "game", label: juego },
+    }).catch(() => {});
+    throw err;
+  }
+
+  let ronda;
+  try {
+    ronda = await GameRound.create({
+      user: user._id,
+      juego,
+      apuestaSc: monto,
+      jugada: { ...jugada, ...(r.jugada || {}) },
+      resultado: r.publico || {},
+      oculto: r.oculto || {},
+      multiplicador: 0,
+      pagoSc: 0,
+      semillaServidorHash: movida.semillaServidorHash,
+      semillaCliente: movida.semillaCliente,
+      nonce: movida.nonce,
+      hmacs: r.hmacs || [],
+      abierta: true,
+    });
+  } catch (err) {
+    if (err && err.code === 11000) {
+      await wallet.mover({
+        userId: user._id, amountSc: monto, type: "game_win",
+        reason: "devolucion: ya tenia una ronda abierta",
+        reference: { kind: "game", label: juego },
+      }).catch(() => {});
+      throw errorDe("ROUND_OPEN", { juego }, 409);
+    }
+    throw err;
+  }
+
+  return {
+    juego,
+    rondaId: ronda._id,
+    apuestaSc: monto,
+    ...(r.publico || {}),
+    prueba: {
+      semillaServidorHash: movida.semillaServidorHash,
+      semillaCliente: movida.semillaCliente,
+      nonce: movida.nonce,
+    },
+    ...(await wallet.saldoDe(user._id)),
+  };
+}
+
+/** La ronda abierta de un jugador, con lo tapado adentro. */
+async function rondaAbierta(userId, juego) {
+  const r = await GameRound.findOne({ user: userId, juego, abierta: true })
+    .select("+oculto")
+    .lean();
+  if (!r) throw errorDe("NO_ROUND", { juego }, 404);
+  return r;
+}
+
+/**
+ * CIERRA UNA RONDA Y PAGA, SI HAY QUE PAGAR.
+ *
+ * El cierre va con la condición `abierta: true` adentro del update:
+ * dos pedidos de cobrar al mismo tiempo --dos clicks, dos pestañas--
+ * y solo uno encuentra la ronda abierta. El otro no paga.
+ */
+async function cerrarRonda({ userId, ronda, multiplicador, pagoSc, resultado }) {
+  const cerrada = await GameRound.findOneAndUpdate(
+    { _id: ronda._id, abierta: true },
+    {
+      $set: {
+        abierta: false,
+        cerradaEl: new Date(),
+        multiplicador: multiplicador || 0,
+        pagoSc: sc(pagoSc || 0),
+        resultado: resultado || ronda.resultado || {},
+      },
+    },
+    { returnDocument: "after" },
+  ).lean();
+
+  if (!cerrada) throw errorDe("NO_ROUND", { juego: ronda.juego }, 409);
+
+  if (pagoSc > 0) {
+    await wallet.mover({
+      userId,
+      amountSc: sc(pagoSc),
+      type: "game_win",
+      reference: { kind: "game", id: ronda._id, label: ronda.juego },
+    });
+  }
+
+  return cerrada;
+}
+
+/** Guarda el avance de una ronda que sigue abierta. */
+async function guardarAvance({ ronda, resultado, oculto }) {
+  const cambios = { resultado };
+  if (oculto) cambios.oculto = oculto;
+
+  const r = await GameRound.findOneAndUpdate(
+    { _id: ronda._id, abierta: true },
+    { $set: cambios },
+    { returnDocument: "after" },
+  ).lean();
+
+  if (!r) throw errorDe("NO_ROUND", { juego: ronda.juego }, 409);
+  return r;
+}
+
 module.exports = {
   RONDAS_MINIMAS_CON_BONO,
   TOPE_MINIMO_CON_BONO,
@@ -268,4 +451,8 @@ module.exports = {
   proximoNonce,
   revisarApuesta,
   jugarUnaRonda,
+  abrirRonda,
+  rondaAbierta,
+  cerrarRonda,
+  guardarAvance,
 };

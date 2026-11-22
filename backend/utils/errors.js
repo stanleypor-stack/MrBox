@@ -58,6 +58,8 @@ const CODIGOS = {
   TOO_MANY_AT_ONCE: "You cannot open that many at once.",
   NO_SEED: "No seed to play with.",
   GAMES_OFF: "Games are closed right now.",
+  ROUND_OPEN: "You already have a round going.",
+  NO_ROUND: "That round is not open.",
 
   /* VIP y rakeback */
   RANK_TOO_LOW: "Your rank does not unlock that yet.",
