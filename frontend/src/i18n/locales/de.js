@@ -1158,7 +1158,7 @@ export default {
       "welcomeBalance": "Startguthaben",
       "monthlyBox": "Monatliche Gratis-Box",
       "weeklyBox": "Wöchentliche Gratis-Box",
-      "rakeback": "Box-Rakeback",
+      "rakeback": "Rakeback auf dein ganzes Spiel",
       "vipManager": "VIP-Betreuer",
       "reload": "Reload über den Support"
     },

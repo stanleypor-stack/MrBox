@@ -1158,7 +1158,7 @@ export default {
       "welcomeBalance": "Solde de bienvenue",
       "monthlyBox": "Coffret mensuel offert",
       "weeklyBox": "Coffret hebdo offert",
-      "rakeback": "Rakeback coffrets",
+      "rakeback": "Rakeback sur tout votre jeu",
       "vipManager": "Responsable VIP",
       "reload": "Recharge via le support"
     },

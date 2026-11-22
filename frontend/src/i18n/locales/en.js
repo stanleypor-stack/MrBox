@@ -1158,7 +1158,7 @@ export default {
       "welcomeBalance": "Welcome balance",
       "monthlyBox": "Monthly free box",
       "weeklyBox": "Weekly free box",
-      "rakeback": "Box rakeback",
+      "rakeback": "Rakeback on all your play",
       "vipManager": "VIP manager",
       "reload": "Reload by support"
     },

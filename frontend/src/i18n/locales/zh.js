@@ -1158,7 +1158,7 @@ export default {
       "welcomeBalance": "欢迎余额",
       "monthlyBox": "每月免费盒",
       "weeklyBox": "每周免费盒",
-      "rakeback": "开盒返水",
+      "rakeback": "所有投注都返水",
       "vipManager": "专属经理",
       "reload": "客服充值"
     },

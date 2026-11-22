@@ -1158,7 +1158,7 @@ export default {
       "welcomeBalance": "ウェルカム残高",
       "monthlyBox": "月次無料ボックス",
       "weeklyBox": "週次無料ボックス",
-      "rakeback": "ボックスレーキバック",
+      "rakeback": "すべてのプレイにレーキバック",
       "vipManager": "専任マネージャー",
       "reload": "サポート経由のリロード"
     },
