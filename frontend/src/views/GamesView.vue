@@ -7,6 +7,11 @@
         :maximo-sc="maximoSc" :saldo-sc="saldo"
       />
 
+      <MbJuegoReme
+        v-else-if="elJuego.id === 'reme'"
+        :maximo-sc="maximoSc" :saldo-sc="saldo"
+      />
+
       <!--
         LOS QUE TODAVIA NO ESTAN.
 
@@ -87,6 +92,7 @@ import { mapGetters } from "vuex";
 import api from "@/api";
 import { JUEGOS } from "@/juegos";
 import MbJuegoDice from "@/components/juegos/MbJuegoDice.vue";
+import MbJuegoReme from "@/components/juegos/MbJuegoReme.vue";
 
 /**
  * LA PANTALLA DE LOS JUEGOS.
@@ -105,7 +111,7 @@ import MbJuegoDice from "@/components/juegos/MbJuegoDice.vue";
 export default {
   name: "GamesView",
 
-  components: { MbJuegoDice },
+  components: { MbJuegoDice, MbJuegoReme },
 
   data() {
     return {
