@@ -1,70 +1,29 @@
 <template>
   <div class="gx gx-dice">
     <div class="gx-row">
-      <!-- ── La columna de controles ───────────────────────────── -->
-      <div class="gx-ctl">
-        <div class="gx-mode">
-          <button type="button" :class="{ on: !auto }" @click="auto = false">Manual</button>
-          <button type="button" :class="{ on: auto }" @click="auto = true">Auto</button>
+      <MbControlesDeJuego
+        v-model="apuesta" :auto="auto" :cuantas="cuantas" :trabado="trabado"
+        :sin-jugar="sinJugar" :etiqueta="etiquetaDelBoton" :rojo="quedan > 0"
+        :error="error" :maximo-sc="maximoSc" :saldo-sc="saldoSc" compacto
+        @auto="auto = $event" @cuantas="cuantas = $event" @jugar="jugar"
+      >
+        <div class="gx-title">{{ $t('games.winAmount') }}</div>
+        <div class="gx-profit">
+          <span>{{ plata(ganancia) }}</span>
+          <span class="mb-sc" style="width: 20px; height: 20px; font-size: 8px" aria-hidden="true">SC</span>
         </div>
 
-        <div class="gx-main p25">
-          <div class="gx-betamt">
-            <div class="gx-title">{{ $t('games.playAmount') }}</div>
-            <div :class="['gx-amt', { err: !!errorApuesta }]">
-              <input
-                type="text" inputmode="decimal" :placeholder="$t('games.amount')"
-                :aria-label="$t('games.playAmount')" :value="apuesta"
-                :disabled="girando" @input="escribirApuesta" @blur="redondearApuesta"
-              >
-              <span class="mb-sc" style="width: 20px; height: 20px; font-size: 8px" aria-hidden="true">SC</span>
-              <div class="gx-hx">
-                <button type="button" @click="mitad">&#189;</button>
-                <button type="button" @click="doble">2x</button>
-              </div>
-            </div>
-            <p v-if="errorApuesta" class="gx-errtxt">{{ errorApuesta }}</p>
-          </div>
-
-          <div class="gx-title">{{ $t('games.winAmount') }}</div>
-          <div class="gx-profit">
-            <span>{{ plata(ganancia) }}</span>
-            <span class="mb-sc" style="width: 20px; height: 20px; font-size: 8px" aria-hidden="true">SC</span>
-          </div>
-
-          <div class="gx-seg4">
-            <button
-              v-for="m in modos" :key="m.id" type="button"
-              :class="{ on: modo === m.id }" :aria-label="m.id" @click="elegirModo(m.id)"
-            >
-              <img :src="m.img" alt="">
-            </button>
-          </div>
-
-          <div v-if="auto" class="gx-count">
-            <div class="gx-title">{{ $t('games.numberOfPlays') }}</div>
-            <div class="gx-countbox">
-              <input
-                type="text" inputmode="numeric" :aria-label="$t('games.numberOfPlays')"
-                :value="cuantas" @input="escribirCuantas"
-              >
-              <img v-show="!Number(cuantas)" src="/img/juegos/infinito.svg" alt="" style="width: 22px">
-            </div>
-          </div>
-
-          <div class="gx-bet">
-            <button
-              type="button" :class="['gx-btn', { red: auto && quedan > 0 }]"
-              :disabled="noSePuedeJugar" @click="jugar"
-            >
-              <span class="edge"></span>
-              <span class="front">{{ etiquetaDelBoton }}</span>
-            </button>
-          </div>
+        <div class="gx-seg4">
+          <button
+            v-for="m in modos" :key="m.id" type="button"
+            :class="{ on: modo === m.id }" :aria-label="m.id"
+            :disabled="trabado" @click="elegirModo(m.id)"
+          >
+            <img :src="m.img" alt="">
+          </button>
         </div>
-      </div>
+      </MbControlesDeJuego>
 
-      <!-- ── El tablero ────────────────────────────────────────── -->
       <div class="gx-game">
         <div class="gx-dhist">
           <div v-for="(h, i) in historial" :key="i" :class="h.gano ? 'gx-chip w' : 'gx-chip'">
@@ -75,16 +34,23 @@
         <div class="gx-dw1">
           <div class="gx-dw">
             <div
-              ref="pista" class="gx-dtrack" :style="{ background: pistaVerde ? 'var(--win)' : 'var(--loss)' }"
+              ref="pista" class="gx-dtrack"
+              :style="{ background: modo === 'outside' ? 'var(--win)' : 'var(--loss)' }"
               @pointerdown="tocarPista"
             >
               <div
                 class="gx-dfill"
-                :style="{ left: dos ? t1 + '%' : '0%', width: dos ? (t2 - t1) + '%' : t1 + '%',
-                          background: pistaVerde ? 'var(--loss)' : 'var(--win)' }"
+                :style="{
+                  left: dos ? t1 + '%' : '0%',
+                  width: dos ? (t2 - t1) + '%' : t1 + '%',
+                  background: modo === 'outside' ? 'var(--loss)' : 'var(--win)',
+                }"
               ></div>
 
-              <div class="gx-dres" :style="{ left: (resultado ? resultado.numero : 50) + '%', opacity: resultado ? 1 : 0 }">
+              <div
+                class="gx-dres"
+                :style="{ left: (resultado ? resultado.numero : 50) + '%', opacity: resultado ? 1 : 0 }"
+              >
                 <span :style="{ color: resultado && resultado.gano ? 'var(--win)' : 'var(--loss)' }">
                   {{ resultado ? resultado.numero.toFixed(2) : '' }}
                 </span>
@@ -109,10 +75,10 @@
           <div>
             <div class="gx-dhead">{{ modo }}</div>
             <div class="gx-iconbox">
-              <input type="text" inputmode="numeric" :value="t1" @change="escribirT1">
+              <input type="text" inputmode="numeric" :value="t1" :disabled="trabado" @change="escribirT1">
               <template v-if="dos">
                 <span style="margin: 0 6px">-</span>
-                <input type="text" inputmode="numeric" :value="t2" @change="escribirT2">
+                <input type="text" inputmode="numeric" :value="t2" :disabled="trabado" @change="escribirT2">
               </template>
               <img src="/img/juegos/lowhigh.svg" alt="">
             </div>
@@ -131,54 +97,47 @@
 </template>
 
 <script>
-import api from "@/api";
+import MbControlesDeJuego from "./MbControlesDeJuego.vue";
+import jugar from "./jugar";
 
 /**
  * DICE.
  *
- * La pantalla es la del diseño, calcada: las mismas clases, el mismo
- * CSS (`styles/_juegos.scss`) y los mismos dibujos. Lo que cambia es
- * de dónde sale el resultado: acá lo decide el SERVIDOR.
+ * Sale un número de 0 a 99 y el jugador apuesta a dónde cae. Cuatro
+ * modos: menor, mayor, adentro y afuera.
  *
- * NADA DE LO QUE SE CALCULA ACA DECIDE UN PAGO
+ * LO QUE SE CALCULA ACA NO DECIDE NINGUN PAGO
  *
  * El multiplicador y la chance se muestran para que el jugador sepa a
- * qué está jugando antes de apretar, pero el servidor los vuelve a
- * calcular con su propio margen y paga por los suyos. Si alguien toca
- * estos números en el navegador, lo único que logra es mentirse a sí
- * mismo: ver `backend/services/games/dice.js`.
+ * qué juega antes de apretar, pero el servidor los vuelve a calcular
+ * con su margen y paga por los suyos. Tocar estos números en el
+ * navegador no cambia un peso: ver `backend/services/games/dice.js`.
  *
- * EL NUMERO SE MUESTRA CON DOS DECIMALES, COMO EN EL DISEÑO
+ * EL NUMERO SE ESCRIBE CON DOS DECIMALES, COMO EN EL DISEÑO
  *
- * El sorteo da un entero de 0 a 99 --es la regla de BetSweeps y es de
- * donde sale el 94%-- y el diseño lo dibuja con dos decimales. Las
- * dos cosas conviven: el entero es el que decide y el `.00` es cómo
- * se escribe.
+ * El sorteo da un entero de 0 a 99 --es la regla de BetSweeps y de
+ * ahí sale el 94%-- y el diseño lo dibuja con dos decimales. El
+ * entero es el que decide; el `.00` es cómo se escribe.
  */
 export default {
   name: "MbJuegoDice",
 
+  components: { MbControlesDeJuego },
+
+  mixins: [jugar],
+
   props: {
-    /* El tope de apuesta y el saldo vienen de arriba: son del sitio,
-       no de este juego. */
     maximoSc: { type: Number, default: 0 },
     saldoSc: { type: Number, default: 0 },
   },
 
   data() {
     return {
-      auto: false,
-      apuesta: "1.00",
-      cuantas: "0",
       modo: "under",
       t1: 50,
       t2: 85,
-      girando: false,
       resultado: null,
-      historial: [],
-      errorApuesta: "",
       arrastrando: 0,
-      quedan: 0,
     };
   },
 
@@ -194,8 +153,6 @@ export default {
 
     dos() { return this.modo === "between" || this.modo === "outside"; },
 
-    /* Cuántos de los 100 números pagan. La MISMA cuenta que el
-       servidor; ver el comentario de arriba sobre quién manda. */
     chance() {
       if (this.modo === "over") return 99 - this.t1;
       if (this.modo === "under") return this.t1;
@@ -211,78 +168,16 @@ export default {
       return (parseFloat(this.apuesta) || 0) * this.multiplicador;
     },
 
-    /* La franja pintada es la que PIERDE en `outside`, al revés que en
-       los otros tres: es lo que hace el diseño. */
-    pistaVerde() { return this.modo === "outside"; },
-
-    noSePuedeJugar() {
-      if (this.girando) return true;
-      const n = parseFloat(this.apuesta) || 0;
-      return n <= 0 || this.chance <= 0;
-    },
-
-    etiquetaDelBoton() {
-      if (this.girando) return this.$t("common.loading");
-      if (this.auto && this.quedan > 0) return this.$t("games.stop");
-      return this.auto ? this.$t("games.startAuto") : this.$t("games.play");
+    sinJugar() {
+      return this.girando || (parseFloat(this.apuesta) || 0) <= 0 || this.chance <= 0;
     },
   },
 
-  beforeDestroy() {
-    this.soltar();
-    this.quedan = 0;
-  },
+  beforeDestroy() { this.soltar(); },
 
   methods: {
-    plata(n) {
-      return Number(n || 0).toLocaleString("en-US", {
-        minimumFractionDigits: 2, maximumFractionDigits: 2,
-      });
-    },
-
-    /* ── La apuesta ───────────────────────────────────────────── */
-
-    escribirApuesta(e) {
-      let v = String(e.target.value).replace(",", ".").replace(/[^\d.]/g, "");
-      const i = v.indexOf(".");
-      if (i >= 0) v = v.slice(0, i + 1) + v.slice(i + 1).replace(/\./g, "").slice(0, 2);
-      this.apuesta = v;
-      this.errorApuesta = "";
-    },
-
-    redondearApuesta() {
-      const n = parseFloat(this.apuesta) || 0;
-      this.apuesta = this.plata(n > 0 ? this.acotar(n) : 0);
-    },
-
-    /* Nunca más que el saldo ni que el tope del sitio: apretar y que
-       rebote por algo que la pantalla ya sabía es una molestia
-       evitable. */
-    acotar(n) {
-      let x = Math.max(0.01, n);
-      if (this.maximoSc > 0) x = Math.min(x, this.maximoSc);
-      if (this.saldoSc > 0) x = Math.min(x, this.saldoSc);
-      return x;
-    },
-
-    mitad() {
-      if (this.girando) return;
-      this.apuesta = this.plata(this.acotar((parseFloat(this.apuesta) || 0) / 2));
-    },
-
-    doble() {
-      if (this.girando) return;
-      this.apuesta = this.plata(this.acotar((parseFloat(this.apuesta) || 0) * 2));
-    },
-
-    escribirCuantas(e) {
-      this.cuantas = String(e.target.value).replace(/[^\d]/g, "").slice(0, 4);
-    },
-
-    /* ── El objetivo ──────────────────────────────────────────── */
-
     elegirModo(id) {
-      if (this.girando) return;
+      if (this.trabado) return;
       const eraDoble = this.dos;
       this.modo = id;
       if (this.dos && !eraDoble) { this.t1 = 35; this.t2 = 85; }
@@ -304,13 +199,13 @@ export default {
     /*
       ARRASTRAR LAS MANIJAS.
 
-      Con eventos de puntero y `setPointerCapture`, que es lo que hace
-      que el dedo siga mandando aunque se salga de la barra. Con
+      Con eventos de puntero y `setPointerCapture`: es lo que hace que
+      el dedo siga mandando aunque se salga de la barra. Con
       `mousemove` suelto, arrastrar rápido en un celular pierde el
       control a mitad de camino.
     */
     agarrar(cual, e) {
-      if (this.girando) return;
+      if (this.trabado) return;
       this.arrastrando = cual;
       try { e.target.setPointerCapture(e.pointerId); } catch (err) { /* da igual */ }
       window.addEventListener("pointermove", this.mover);
@@ -338,69 +233,27 @@ export default {
       window.removeEventListener("pointerup", this.soltar);
     },
 
-    /* Tocar la barra mueve la manija más cercana. */
     tocarPista(e) {
-      if (this.girando || !this.$refs.pista) return;
+      if (this.trabado || !this.$refs.pista) return;
       const caja = this.$refs.pista.getBoundingClientRect();
       const pct = Math.round(((e.clientX - caja.left) / caja.width) * 100);
       const cual = this.dos && Math.abs(pct - this.t2) < Math.abs(pct - this.t1) ? 2 : 1;
       this.agarrar(cual, e);
     },
 
-    /* ── Jugar ────────────────────────────────────────────────── */
-
-    async jugar() {
-      /* En automático, el botón para. */
-      if (this.auto && this.quedan > 0) { this.quedan = 0; return; }
-
-      if (this.auto) {
-        const n = parseInt(this.cuantas, 10) || 0;
-        /* Cero quiere decir "hasta que lo pare", que es lo que dibuja
-           el infinito al lado del campo. */
-        this.quedan = n > 0 ? n : Infinity;
-      }
-
-      await this.unaTirada();
-
-      while (this.auto && this.quedan > 0) {
-        this.quedan -= 1;
-        if (this.quedan <= 0) break;
-        await new Promise((r) => setTimeout(r, 420));
-        if (!this.auto || this.quedan <= 0) break;
-        const sigue = await this.unaTirada();
-        if (!sigue) break;
-      }
-      this.quedan = 0;
-    },
-
-    async unaTirada() {
-      this.girando = true;
-      this.errorApuesta = "";
-      try {
-        const { data } = await api.post("/games/dice/play", {
-          apuestaSc: parseFloat(this.apuesta) || 0,
+    jugar() {
+      return this.apretar(async () => {
+        const d = await this.unaJugada("/games/dice/play", {
           modo: this.modo,
           desde: this.t1,
           hasta: this.dos ? this.t2 : undefined,
         });
+        if (!d) return false;
 
-        const d = data.data;
-        this.$store.commit("saldo", d);
         this.resultado = { numero: d.numero, gano: d.gano };
-
-        /* Los últimos diez, como en el diseño. */
-        this.historial.unshift({ v: d.numero.toFixed(2), gano: d.gano });
-        this.historial = this.historial.slice(0, 10);
-
-        this.$emit("ronda", d);
+        this.anotar({ v: d.numero.toFixed(2), gano: d.gano });
         return true;
-      } catch (err) {
-        this.errorApuesta = err.textoParaElJugador || "";
-        this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
-        return false;
-      } finally {
-        this.girando = false;
-      }
+      });
     },
   },
 };
