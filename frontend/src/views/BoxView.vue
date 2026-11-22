@@ -550,8 +550,17 @@ export default {
       this.girando = true;
       this.resultado = null;
       try {
+        /*
+          `gratis` dice cual de los dos botones se apreto.
+
+          Sin eso el servidor gastaba la apertura de regalo tambien
+          cuando se apretaba el boton CON EL PRECIO: se abria sin
+          cobrar, con el saldo en cero, y el regalo desaparecia sin que
+          nadie lo pidiera.
+        */
         const { data } = await api.post(`/boxes/${this.caja.slug}/open`, {
           veces: gratis ? 1 : this.veces,
+          gratis: !!gratis,
         });
         this.$store.commit("saldo", data.data);
         this.$store.commit("inventarioCambio");

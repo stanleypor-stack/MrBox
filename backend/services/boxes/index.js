@@ -81,7 +81,7 @@ async function semillaDe(userId) {
  * @param {number} [o.veces]   cuántas de una (x1 a x4)
  * @param {boolean} [o.demo]   de prueba: no cobra, no paga, no guarda
  */
-async function abrir({ user, slug, veces = 1, demo = false }) {
+async function abrir({ user, slug, veces = 1, demo = false, usarGratis = true }) {
   const cfg = await Settings.leer();
   const caja = await cajaPorSlug(slug);
 
@@ -150,8 +150,24 @@ async function abrir({ user, slug, veces = 1, demo = false }) {
     que hacer imposible.
   */
   for (let i = 0; i < cuantas; i += 1) {
-    /* ¿Le queda alguna gratis? Se gastan antes que el saldo. */
-    const gratis = await gastarAperturaGratis(user._id, caja._id);
+    /*
+      LA APERTURA DE REGALO SE GASTA SOLO SI LA PIDIERON.
+
+      Antes se gastaba siempre, mirara quien mirara. La pantalla tiene
+      DOS botones --"abrir gratis" y "abrir SC 2.37"-- y los dos caian
+      aca: el que apretaba el de pagar veia que se abria sin cobrarle
+      nada y con el saldo en cero, porque por atras se estaba
+      quemando su caja de regalo. El precio escrito en el boton era
+      mentira en ese momento.
+
+      Y al reves tambien: el que queria PAGAR para guardarse el
+      regalo para despues no podia, porque el regalo se iba igual.
+
+      Ahora cada boton hace lo que dice. `usarGratis` viene en el
+      pedido; si no viene --un cliente viejo-- se mantiene lo de
+      antes, que es lo unico que ese cliente sabe hacer.
+    */
+    const gratis = usarGratis ? await gastarAperturaGratis(user._id, caja._id) : false;
 
     /*
       UNA APERTURA GRATIS TAMBIEN ES JUGAR, PERO NO MUEVE EL SALDO.

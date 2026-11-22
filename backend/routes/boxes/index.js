@@ -41,6 +41,30 @@ const limiteAbrir = rateLimit({
   handler: (req, res) => res.status(429).json(errorDe("RATE_LIMITED", {}, 429).aRespuesta()),
 });
 
+
+/*
+  LAS PRUEBAS SIN SESION.
+
+  El tope de pruebas vive en la cuenta, asi que sin sesion no hay nada
+  que contar: `POST /:slug/demo` sin token se podia pedir para siempre
+  --probado: 10 de 10 con el tope en 3. No hay plata de por medio y las
+  chances de cada caja ya son publicas --el sitio las muestra-- asi que
+  lo unico que se llevaba era trabajo del servidor; pero el "3 pruebas
+  gratis" era un cartel y nada mas.
+
+  Un tope duro por IP dejaria afuera a una oficina entera atras de un
+  solo numero, asi que es un freno y no una cuota: alcanza para que no
+  se pueda machacar y sobra para que nadie normal lo toque.
+*/
+const limiteDemoAnonima = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: Number(process.env.DEMO_RATE_LIMIT) || 40,
+  standardHeaders: true,
+  legacyHeaders: false,
+  /* Con sesion ya cuenta la cuenta, que es mas justo que la IP. */
+  skip: (req) => !!req.user,
+  handler: (req, res) => res.status(429).json(errorDe("RATE_LIMITED", {}, 429).aRespuesta()),
+});
 /* ── El catalogo ──────────────────────────────────────────────────── */
 
 /**
@@ -367,7 +391,7 @@ router.get("/:slug", autorizar(false), async (req, res) => {
  * navegador. Sin sesion las cuenta la pantalla: no hay a quien
  * contarselas, y como el demo no mueve un peso, tampoco hace falta.
  */
-router.post("/:slug/demo", autorizar(false), limiteAbrir, async (req, res) => {
+router.post("/:slug/demo", autorizar(false), limiteAbrir, limiteDemoAnonima, async (req, res) => {
   try {
     const cfg = await Settings.leer();
     const tope = Number(cfg.aperturasDeDemo) || 0;
@@ -382,12 +406,29 @@ router.post("/:slug/demo", autorizar(false), limiteAbrir, async (req, res) => {
     const topeALaVez = Number(cfg.cajasALaVez) || 4;
     const veces = Math.max(1, Math.min(topeALaVez, Number(req.body.veces) || 1));
 
+    /*
+      EL TOPE LO DECIDE LA BASE, EN LA MISMA OPERACION.
+
+      Antes se leia `demosUsadas`, se comparaba y despues se sumaba.
+      Dos pedidos a la vez leian los dos el mismo numero y pasaban los
+      dos. Con la condicion adentro del filtro, el que llega segundo
+      no encuentra a quien actualizar y rebota.
+    */
     if (req.user) {
-      const usadas = Number(req.user.demosUsadas) || 0;
-      if (usadas + veces > tope) {
+      const r = await User.findOneAndUpdate(
+        {
+          _id: req.user._id,
+          $expr: { $lte: [{ $add: [{ $ifNull: ["$demosUsadas", 0] }, veces] }, tope] },
+        },
+        { $inc: { demosUsadas: veces } },
+        { returnDocument: "before" },
+      ).select("demosUsadas").lean();
+
+      if (!r) {
+        const u = await User.findById(req.user._id).select("demosUsadas").lean();
+        const usadas = Number(u && u.demosUsadas) || 0;
         throw errorDe("NO_DEMOS_LEFT", { quedan: Math.max(0, tope - usadas) }, 403);
       }
-      await User.updateOne({ _id: req.user._id }, { $inc: { demosUsadas: veces } });
     }
 
     const r = await cajas.abrir({ user: null, slug: req.params.slug, veces, demo: true });
@@ -405,7 +446,18 @@ router.post("/:slug/demo", autorizar(false), limiteAbrir, async (req, res) => {
 /** La de verdad. */
 router.post("/:slug/open", autorizar(true), limiteAbrir, async (req, res) => {
   try {
-    const r = await cajas.abrir({ user: req.user, slug: req.params.slug, veces: req.body.veces });
+    /*
+      `gratis: false` quiere decir "cobrame": es el boton con el precio.
+      Si el campo no viene, se gasta la de regalo como siempre --un
+      cliente viejo no sabe mandarlo y no se le puede cambiar la
+      respuesta por sorpresa.
+    */
+    const r = await cajas.abrir({
+      user: req.user,
+      slug: req.params.slug,
+      veces: req.body.veces,
+      usarGratis: req.body.gratis !== false,
+    });
     return res.json({ success: true, data: r });
   } catch (err) {
     return responderError(res, err, "open");

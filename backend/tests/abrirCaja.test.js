@@ -193,6 +193,70 @@ test("LAS GRATIS SE GASTAN ANTES QUE EL SALDO", async (t) => {
   assert.equal(tercera.datos.data.freeOpens, 0);
 });
 
+test("EL BOTON QUE COBRA NO SE COME LA CAJA DE REGALO", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+  /*
+    El bug: la pantalla tiene dos botones --"abrir gratis" y "abrir SC
+    x"-- y los dos caian en el mismo lugar, donde la de regalo se
+    gastaba siempre. Con el saldo en cero, apretar el de PAGAR abria
+    la caja igual y se llevaba el regalo en silencio: parecian
+    aperturas infinitas y sin costo.
+
+    `gratis: false` es "cobrame". Sin saldo tiene que rebotar, y el
+    regalo tiene que quedar donde estaba.
+  */
+  const j = await jugador({ saldo: 0, gratis: 1 });
+
+  const pagando = await pedir("POST", "/boxes/prueba/open", {
+    token: j.token,
+    cuerpo: { gratis: false },
+  });
+  assert.equal(pagando.datos.code, "NOT_ENOUGH_COINS", "cobro con el saldo en cero");
+
+  const u = await User.findById(j.id).select("freeOpens cajasGratis").lean();
+  assert.equal(u.freeOpens, 1, "se gasto el regalo sin que nadie lo pidiera");
+  assert.equal(u.cajasGratis.filter((c) => c.usadaEl).length, 0);
+
+  /* Y el boton de al lado sigue funcionando. */
+  const gratis = await pedir("POST", "/boxes/prueba/open", {
+    token: j.token,
+    cuerpo: { gratis: true },
+  });
+  assert.equal(gratis.datos.data.gastadoSc, 0);
+  assert.equal(gratis.datos.data.resultados[0].conAperturaGratis, true);
+  assert.equal(gratis.datos.data.freeOpens, 0);
+});
+
+test("teniendo regalo Y saldo, el boton que cobra cobra y guarda el regalo", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+  /*
+    El otro lado del mismo bug: el que queria pagar para guardarse el
+    regalo para una caja mas cara no podia, porque se le iba igual.
+  */
+  const j = await jugador({ saldo: 100, gratis: 1 });
+
+  const r = await pedir("POST", "/boxes/prueba/open", {
+    token: j.token,
+    cuerpo: { gratis: false },
+  });
+  assert.equal(r.datos.data.gastadoSc, PRECIO);
+  assert.equal(r.datos.data.balanceSc, 100 - PRECIO);
+  assert.equal(r.datos.data.freeOpens, 1, "se gasto el regalo igual");
+  assert.equal(r.datos.data.resultados[0].conAperturaGratis, false);
+});
+
+test("un cliente que no manda `gratis` se sigue comportando como antes", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+  /*
+    Sin el campo no se le puede cambiar la respuesta por sorpresa: esa
+    pantalla solo sabe que la gratis se gasta sola.
+  */
+  const j = await jugador({ saldo: 100, gratis: 1 });
+  const r = await pedir("POST", "/boxes/prueba/open", { token: j.token });
+  assert.equal(r.datos.data.gastadoSc, 0);
+  assert.equal(r.datos.data.freeOpens, 0);
+});
+
 test("una apertura gratis suma a lo jugado y deja UNA fila de cero", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
   /*
