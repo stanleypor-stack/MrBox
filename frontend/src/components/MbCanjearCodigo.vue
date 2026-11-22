@@ -198,7 +198,7 @@ export default {
   box-shadow: 0 24px 60px rgba(0, 0, 0, .55);
 
   @include en-celular {
-    padding: 190px 20px 24px;
+    padding: 190px 16px 22px;
     text-align: center;
   }
 }
@@ -244,7 +244,7 @@ export default {
 .mb-cod__grupo {
   @include en-celular {
     text-align: left;
-    padding: 13px 13px 14px;
+    padding: 14px 12px 15px;
     border-radius: 16px;
     border: 1px solid #27406b;
     background: rgba(4, 11, 27, .55);
@@ -277,6 +277,33 @@ export default {
   font-size: 15px;
   padding: 0 14px;
 
+  /*
+    En el celular, mas alto y con mas aire adentro: es EL campo de la
+    ventana y tiene que verse como tal, no como un renglon.
+
+    Y 16px de letra, no 15: por debajo de 16 Safari en iPhone le hace
+    zoom a toda la pagina apenas tocas el campo, y despues el que
+    escribe queda con la pantalla corrida.
+  */
+  @include en-celular {
+    /*
+      `flex: none` ANTES QUE EL ALTO, O EL ALTO NO EXISTE.
+
+      Arriba el campo es `flex: 1` para ocupar lo que le sobra a la
+      fila, que al lado del boton esta bien. Pero en el celular la
+      fila se apila en columna, y ahi el eje principal pasa a ser el
+      vertical: `flex: 1` quiere decir `flex-basis: 0` de ALTO, el
+      alto lo reparte el flex y el `height` queda de adorno. Por eso
+      el campo venia del alto justo de la letra --25 px-- aunque
+      dijera 48, y el boton no, que es `flex: none`.
+    */
+    flex: none;
+    height: 54px;
+    font-size: 16px;
+    padding: 0 16px;
+    border-radius: 13px;
+  }
+
   &::placeholder { color: $placeholder; }
   &:focus { outline: none; border-color: $azul; }
   &.is-mal { border-color: #ff6b75; }
@@ -302,7 +329,7 @@ export default {
     la pastilla al ancho de la pantalla parecia el boton principal de
     la ventana.
   */
-  @include en-celular { width: 100%; border-radius: 13px; }
+  @include en-celular { width: 100%; height: 52px; border-radius: 13px; }
 
   /*
     Apagado, un azul apagado de verdad y no el mismo boton transparente.
