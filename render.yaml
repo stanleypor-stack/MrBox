@@ -129,6 +129,15 @@ services:
       - key: VUE_APP_TURNSTILE_SITE_KEY
         sync: false
 
+      #  El CLIENT ID de Google, tambien publico: el boton de "Entrar
+      #  con Google" lo manda en el pedido y Google lo ve igual.
+      #
+      #  Hacen falta LOS DOS, aca y en el backend, y son el mismo
+      #  valor: sin este el boton ni se dibuja, y sin el del backend
+      #  la ruta contesta que no existe. Faltaba este.
+      - key: VUE_APP_GOOGLE_CLIENT_ID
+        sync: false
+
     routes:
       #  El sitio es una sola pagina con rutas del lado del navegador.
       #  Sin esto, entrar derecho a `/boxes/mac` da 404: ese archivo no
