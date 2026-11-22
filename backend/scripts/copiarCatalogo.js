@@ -43,13 +43,13 @@ const { MongoClient } = require("mongodb");
   aprobaciones.
 */
 const QUE_COPIAR = [
-  { nombre: "items", filtro: {} },
-  { nombre: "boxes", filtro: { creator: null } },
-  { nombre: "settings", filtro: {} },
-  { nombre: "banners", filtro: {} },
-  { nombre: "promotions", filtro: {} },
+  { nombre: "items", filtro: {}, clave: "sku" },
+  { nombre: "boxes", filtro: { creator: null }, clave: "slug" },
+  { nombre: "settings", filtro: {}, clave: "key" },
+  { nombre: "banners", filtro: {}, clave: "clave" },
+  { nombre: "promotions", filtro: {}, clave: "clave" },
   { nombre: "challenges", filtro: {} },
-  { nombre: "promocodes", filtro: {} },
+  { nombre: "promocodes", filtro: {}, clave: "code" },
   { nombre: "deals", filtro: {} },
 ];
 
@@ -74,7 +74,7 @@ async function copiar() {
   console.log('de   "%s"', bOrigen.databaseName);
   console.log('a    "%s"   %s\n', bDestino.databaseName, escribir ? "SE VA A ESCRIBIR" : "solo mirando");
 
-  for (const { nombre, filtro } of QUE_COPIAR) {
+  for (const { nombre, filtro, clave } of QUE_COPIAR) {
     const docs = await bOrigen.collection(nombre).find(filtro).toArray();
     const habia = await bDestino.collection(nombre).countDocuments();
 
@@ -84,6 +84,28 @@ async function copiar() {
     }
 
     if (escribir) {
+      /*
+        LO QUE YA ESTABA ALLA CON OTRO IDENTIFICADOR.
+
+        El servidor crea solo la fila de perillas la primera vez que
+        arranca. Esa fila lleva la misma `key` que la de aca pero otro
+        `_id`, y el indice unico no deja que convivan: copiar por `_id`
+        sin sacarla antes se corta a la mitad, con los objetos ya
+        copiados y las promociones no.
+
+        Se saca la de alla y queda la de aca, que es la que esta
+        configurada. Nada apunta a las perillas por su identificador.
+      */
+      if (clave) {
+        const { deletedCount } = await bDestino.collection(nombre).deleteMany({
+          [clave]: { $in: docs.map((d) => d[clave]) },
+          _id: { $nin: docs.map((d) => d._id) },
+        });
+        if (deletedCount) {
+          console.log("  %s          se saco %d que estaba con otro id", nombre.padEnd(14), deletedCount);
+        }
+      }
+
       /*
         Por lotes y con `replaceOne` + upsert: una copia entera de
         1737 objetos en una sola operacion se pasa del limite de 16 MB
