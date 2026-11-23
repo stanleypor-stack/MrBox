@@ -581,16 +581,15 @@ async function tandaALaVista(juego, userId) {
  *
  * Solo mientras esta abierta.
  *
- * CUANTAS POR RONDA
+ * UNA POR JUGADOR Y POR RONDA, EN LOS DOS
  *
- * En Crash, una: la de arriba es la apuesta del jugador en ese vuelo
- * y el cobro cierra esa fila. La segunda tiene que rebotar y no
- * cobrar nada.
+ * Es la regla de BetSweeps, con esas palabras: "you can only bet one
+ * time per round" en Crash y "you can only bet once per game" en
+ * Slide. La segunda tiene que rebotar y no cobrar nada.
  *
- * En Slide, las que quiera: la rueda es una sola y el diseno dibuja
- * las tres columnas con sus apuestas, asi que se puede ir al rojo y
- * al amarillo de la misma vuelta, como en BetSweeps. Cada apuesta es
- * su propia fila y se paga sola.
+ * El prototipo deja apretar los tres colores de la misma vuelta
+ * porque es un prototipo y su plata es de mentira. La regla de la
+ * casa es la de BetSweeps.
  */
 async function apostarEnTanda({ req, juego, revisar }) {
   const cfg = await Settings.leer();
@@ -612,15 +611,12 @@ async function apostarEnTanda({ req, juego, revisar }) {
 
     El indice unico alcanza para que no queden dos abiertas, pero si
     se cobra primero y el indice rebota despues, la apuesta quedo
-    descontada por una ronda que no existe. Solo para los de a una.
+    descontada por una ronda que no existe.
   */
-  const deAUna = juego === "crash";
-  if (deAUna) {
-    const yaTiene = await GameRound.findOne({
-      user: req.user._id, juego, abierta: true,
-    }).lean();
-    if (yaTiene) throw errorDe("ROUND_OPEN", { juego }, 409);
-  }
+  const yaTiene = await GameRound.findOne({
+    user: req.user._id, juego, abierta: true,
+  }).lean();
+  if (yaTiene) throw errorDe("ROUND_OPEN", { juego }, 409);
 
   await wallet.mover({
     userId: req.user._id,
@@ -639,7 +635,6 @@ async function apostarEnTanda({ req, juego, revisar }) {
       semillaServidorHash: tanda.semillaHash,
       nonce: tanda.numero,
       abierta: true,
-      unaSola: deAUna,
     });
   } catch (err) {
     if (err && err.code === 11000) {

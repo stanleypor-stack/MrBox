@@ -3,10 +3,10 @@
     <div class="gx-row">
       <div class="gx-cctl">
         <div class="gx-mode">
-          <button type="button" :class="{ on: !auto }" @click="auto = false">
+          <button type="button" :class="{ on: !auto }" @click="cambiarModo(false)">
             {{ $t('games.manual') }}
           </button>
-          <button type="button" :class="{ on: auto }" @click="auto = true">
+          <button type="button" :class="{ on: auto }" @click="cambiarModo(true)">
             {{ $t('games.auto') }}
           </button>
         </div>
@@ -177,6 +177,8 @@ export default {
       mandando: false,
       /* Apretó Play con la ronda ya en vuelo: entra en la que sigue. */
       enEspera: false,
+      /* El automático está andando: apuesta sola en cada vuelta. */
+      corriendo: false,
 
       latido: null,
       cadaCuanto: 0,
@@ -206,23 +208,39 @@ export default {
     },
 
     /*
-      EL BOTON, CON LOS TRES ESTADOS DEL DISEÑO.
+      EL BOTON, QUE ES UNO SOLO Y HACE LAS DOS COSAS.
 
-      Play cuando no hay nada jugado; "Starting..." cuando ya se
-      apostó y la ronda todavía no arrancó --o se apostó para la que
-      viene--; Collect mientras el avión vuela con plata adentro.
+      En manual, los tres estados del diseno y de BetSweeps: Play,
+      "Starting..." mientras la vuelta no arranco, y Collect en pleno
+      vuelo.
+
+      En automatico, BetSweeps no muestra ni Play ni Collect: muestra
+      Start Autoplay y, mientras corre, Stop Autoplay. El cobro lo
+      hace solo el "Collect At", que es el numero de arriba. Aca es
+      igual, con el mismo boton, porque esta pantalla tiene uno.
     */
     boton() {
       if (this.mandando) {
         return { texto: this.$t("common.loading"), trabado: true, rojo: false, hacer: () => {} };
       }
 
+      if (this.auto) {
+        if (this.corriendo) {
+          return {
+            texto: this.$t("games.stop"), trabado: false, rojo: true, hacer: this.pararAuto,
+          };
+        }
+        return {
+          texto: this.$t("games.startAuto"),
+          trabado: this.monto <= 0 || this.monto > this.saldoSc,
+          rojo: false,
+          hacer: this.arrancarAuto,
+        };
+      }
+
       if (this.cobrando) {
         return {
-          texto: this.$t("games.collect"),
-          trabado: false,
-          rojo: true,
-          hacer: this.cobrar,
+          texto: this.$t("games.collect"), trabado: false, rojo: true, hacer: this.cobrar,
         };
       }
 
@@ -263,7 +281,7 @@ export default {
       no se ve, y el dibujo no puede seguir pidiendo cuadros.
     */
     this.vivo = false;
-    this.auto = false;
+    this.corriendo = false;
     if (this.latido) window.clearInterval(this.latido);
     if (this.cuadro) window.cancelAnimationFrame(this.cuadro);
   },
@@ -348,7 +366,7 @@ export default {
           pantalla todavía no tiene nada jugado en ella.
         */
         if (esOtra && d.estado === "apostando" && !this.mia) {
-          if (this.enEspera || this.auto) await this.apostar(true);
+          if (this.enEspera || (this.auto && this.corriendo)) await this.apostar(true);
         }
       } catch (err) {
         /* La consulta siguiente lo arregla. */
@@ -360,6 +378,35 @@ export default {
       this.cadaCuanto = cada;
       if (this.latido) window.clearInterval(this.latido);
       this.latido = window.setInterval(this.mirar, cada);
+    },
+
+    /*
+      EL AUTOMATICO.
+
+      En BetSweeps, Crash tiene su autoplay: arranca, apuesta sola en
+      cada vuelta y se corta con el botón. Acá es el mismo botón del
+      diseño el que lo prende y lo apaga, porque esta pantalla no
+      tiene lugar para otro.
+
+      Se corta solo si una apuesta falla --sin saldo, tope del día,
+      juegos cerrados-- y al salir de la pantalla: un automático que
+      sigue jugando en una pantalla que no se ve es plata que se va
+      sin que nadie mire.
+    */
+    /* Cambiar de pestaña corta la tanda, como en BetSweeps. */
+    cambiarModo(enAutomatico) {
+      if (this.auto !== enAutomatico) this.pararAuto();
+      this.auto = enAutomatico;
+    },
+
+    arrancarAuto() {
+      this.corriendo = true;
+      this.apostar(true);
+    },
+
+    pararAuto() {
+      this.corriendo = false;
+      this.enEspera = false;
     },
 
     async apostar(automatica = false) {
@@ -387,8 +434,9 @@ export default {
         this.error = err.textoParaElJugador || "";
         this.enEspera = false;
         /* Si falla, el automático para: repetir un error no es una
-           comodidad, es un cartel repetido. */
-        this.auto = false;
+           comodidad, es un cartel repetido. La pestaña queda en Auto,
+           lo que se apaga es la tanda. */
+        this.corriendo = false;
         if (!automatica) {
           this.$store.dispatch("avisar", { texto: err.textoParaElJugador, tono: "error" });
         }

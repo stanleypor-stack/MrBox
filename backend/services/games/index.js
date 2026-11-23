@@ -390,8 +390,6 @@ async function abrirRonda({ user, juego, apuestaSc, revisar, repartir }) {
       nonce: movida.nonce,
       hmacs: r.hmacs || [],
       abierta: true,
-      /* Mines y Towers: una por jugador y por juego (ver GameRound). */
-      unaSola: true,
     });
   } catch (err) {
     if (err && err.code === 11000) {

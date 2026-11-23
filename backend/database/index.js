@@ -50,27 +50,29 @@ async function conectar() {
  * plata en silencio.
  */
 /*
-  EL INDICE VIEJO DE LAS RONDAS.
+  EL INDICE DE "UNA RONDA ABIERTA POR JUEGO".
 
-  `{user, juego}` unico empezo filtrando por `abierta: true` y ahora
-  filtra por `unaSola: true`, porque Slide acepta varias apuestas en
-  la misma rueda. Mongo no cambia las opciones de un indice que ya
-  existe --tira "Index already exists with different options"-- asi
-  que al viejo hay que tirarlo una vez.
+  Mongo no cambia las opciones de un indice que ya existe: si el
+  filtro parcial del esquema no es el que esta en la base, el
+  `createIndexes` de abajo se cae con "Index already exists with
+  different options" y el servidor no arranca.
 
-  Se mira el filtro antes de tocar nada: en una base nueva no hay
-  nada que tirar, y en una que ya se migro tampoco.
+  Asi que se compara, y si no coincide se tira el que esta. Vale para
+  los dos sentidos --el que cambio el filtro y el que lo volvio
+  atras-- y en una base donde ya coincide no toca nada.
 */
-async function tirarIndiceViejoDeRondas() {
+const FILTRO_DE_RONDAS = { abierta: true };
+
+async function alDiaElIndiceDeRondas() {
   try {
     const col = mongoose.connection.db.collection("gamerounds");
     const indices = await col.indexes();
-    const viejo = indices.find(
-      (i) => i.name === "user_1_juego_1"
-        && i.partialFilterExpression
-        && i.partialFilterExpression.abierta !== undefined,
-    );
-    if (viejo) await col.dropIndex(viejo.name);
+    const actual = indices.find((i) => i.name === "user_1_juego_1");
+    if (!actual) return;
+
+    const esElMismo = JSON.stringify(actual.partialFilterExpression || null)
+      === JSON.stringify(FILTRO_DE_RONDAS);
+    if (!esElMismo) await col.dropIndex(actual.name);
   } catch (err) {
     /* Si la coleccion no existe todavia, no hay nada que migrar. */
     if (!/ns does not exist|IndexNotFound|NamespaceNotFound/i.test(String(err && err.message))) {
@@ -80,7 +82,7 @@ async function tirarIndiceViejoDeRondas() {
 }
 
 async function asegurarIndices() {
-  await tirarIndiceViejoDeRondas();
+  await alDiaElIndiceDeRondas();
   /* `createIndexes` y no `init`: `init` guarda su promesa y no vuelve a
      construir nada, asi que despues de un `dropDatabase` --lo que hace
      cada prueba-- dejaria la base sin indices. */

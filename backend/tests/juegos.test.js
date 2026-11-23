@@ -495,16 +495,16 @@ async function rondaFresca(juego, token) {
   return d && d.estado === "apostando" ? d : null;
 }
 
-test("slide: se puede apostar a varios colores de la misma rueda", async (t) => {
+test("slide: una sola apuesta por vuelta, como en BetSweeps", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
   const j = await jugador({ saldo: 100 });
 
   /*
-    EL DISENO DIBUJA TRES COLUMNAS CON SUS APUESTAS.
+    "YOU CAN ONLY BET ONCE PER GAME", dice BetSweeps con esas
+    palabras. El prototipo deja apretar los tres colores porque su
+    plata es de mentira; la regla de la casa es esta.
 
-    La rueda es una sola, asi que ir al rojo y al amarillo de la
-    misma vuelta tiene que poder hacerse --como en BetSweeps-- y cada
-    apuesta tiene que cobrarse una vez.
+    Lo que importa no es que la segunda rebote: es que no cobre.
   */
   const hay = await rondaFresca("slide", j.token);
   if (!hay) return t.skip("la ronda no abrio a tiempo");
@@ -514,16 +514,17 @@ test("slide: se puede apostar a varios colores de la misma rueda", async (t) => 
     token: j.token, cuerpo: { apuestaSc: 5, color: "red" },
   });
   assert.equal(roja.estado, 200, JSON.stringify(roja.datos));
+  const despuesDeUna = await saldoDe(j.id);
+  assert.ok(Math.abs(despuesDeUna - (antes - 5)) < 0.001, "cobro otra cosa que 5");
 
   const amarilla = await pedir("POST", "/games/slide/bet", {
     token: j.token, cuerpo: { apuestaSc: 3, color: "yellow" },
   });
-  assert.equal(amarilla.estado, 200, JSON.stringify(amarilla.datos));
-
-  assert.ok(Math.abs(await saldoDe(j.id) - (antes - 8)) < 0.001, "cobro otra cosa que 8");
+  assert.notEqual(amarilla.estado, 200, "aposto dos veces en la misma vuelta");
+  assert.equal(await saldoDe(j.id), despuesDeUna, "la segunda cobro igual");
 
   const mias = await GameRound.find({ user: j.id, juego: "slide" }).lean();
-  assert.equal(mias.length, 2, "no quedaron las dos apuestas anotadas");
+  assert.equal(mias.length, 1, "quedo anotada mas de una apuesta");
 });
 
 test("crash: una sola apuesta por vuelo", async (t) => {

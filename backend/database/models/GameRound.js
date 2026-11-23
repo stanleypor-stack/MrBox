@@ -67,16 +67,6 @@ const gameRoundSchema = new mongoose.Schema(
     abierta: { type: Boolean, default: false, index: true },
     cerradaEl: { type: Date, default: null },
 
-    /*
-      DE A UNA.
-
-      Mines, Towers y Crash se juegan de a una por jugador: mientras
-      hay una abierta no puede empezar otra. Slide no --se puede
-      apostar a los tres colores de la misma rueda, como en el diseño
-      y como en BetSweeps-- así que esta bandera dice quién entra en
-      la regla, en lugar de que la regla sea "toda ronda abierta".
-    */
-    unaSola: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
@@ -87,11 +77,12 @@ gameRoundSchema.index({ user: 1, createdAt: -1 });
 /*
   UNA SOLA RONDA ABIERTA POR JUEGO Y POR JUGADOR.
 
-  Mines, Towers y Crash se juegan de a una. Sin esto, dos pestañas
-  abren dos rondas y la segunda pisa a la primera: el jugador paga dos
-  veces y cobra una. El índice parcial deja convivir todas las
-  cerradas, y también las de Slide, que es el único que acepta varias
-  a la vez (ver `unaSola` arriba).
+  Mines, Towers, Crash y Slide se juegan de a una por vuelta, que es
+  la regla de BetSweeps: "you can only bet one time per round". Sin
+  esto, dos pestañas abren dos rondas y la segunda pisa a la primera:
+  el jugador paga dos veces y cobra una.
+
+  El índice parcial deja convivir todas las cerradas.
 
   Si alguna vez se cambia este filtro, hay que tirar el índice viejo
   antes: Mongo no cambia las opciones de uno que ya existe. Eso lo
@@ -99,7 +90,7 @@ gameRoundSchema.index({ user: 1, createdAt: -1 });
 */
 gameRoundSchema.index(
   { user: 1, juego: 1 },
-  { unique: true, partialFilterExpression: { unaSola: true } }
+  { unique: true, partialFilterExpression: { abierta: true } }
 );
 
 module.exports = mongoose.model("GameRound", gameRoundSchema);
