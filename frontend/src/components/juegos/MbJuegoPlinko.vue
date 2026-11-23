@@ -11,8 +11,13 @@
           <div class="gx-title">{{ $t('games.rows') }}</div>
           <div style="margin-top: 12px">
             <div class="gx-dd">
+              <!--
+                `gx-dd-btn` es lo que le da la caja: sin esa clase el
+                desplegable sale como un numerito suelto con una
+                flechita al lado, que es como se veia.
+              -->
               <button
-                type="button" :class="{ on: menuAbierto }" :disabled="trabado"
+                type="button" :class="['gx-dd-btn', { open: menuAbierto }]" :disabled="trabado"
                 @click="menuAbierto = !menuAbierto"
               >
                 {{ filas }}
@@ -47,23 +52,38 @@
         </div>
 
         <div class="gx-pboard" :style="{ aspectRatio: ancho + ' / ' + alto }">
+          <!--
+            EL DESTELLO LO HACE EL CSS, NO VUE.
+
+            El `:key` con el contador es lo que lo dispara: cuando el
+            clavo se vuelve a golpear cambia la llave, Vue repone el
+            elemento y la animacion empieza de nuevo. Antes esto era
+            una opacidad recalculada 25 veces por segundo para CADA
+            clavo --y hay mas de cien-- y eso era el tironeo.
+          -->
           <div
             v-for="p in clavos" :key="p.id" class="gx-pin"
             :style="{ left: p.x, top: p.y, width: p.s, height: p.s }"
           >
-            <i :style="{ opacity: p.bo, transform: p.bs }"></i>
+            <i v-if="golpeados[p.id]" :key="golpeados[p.id]" class="pega"></i>
           </div>
 
           <div
             v-for="m in casilleros" :key="'m' + m.id" class="gx-pm"
             :style="{ left: m.x, top: m.y, width: m.w, height: m.h, fontSize: m.fs }"
           >
-            {{ m.t }}<i :style="{ opacity: m.o }">{{ m.t }}</i>
+            {{ m.t }}<i v-if="prendidas[m.id]" :key="prendidas[m.id]" class="pega">{{ m.t }}</i>
           </div>
 
+          <!--
+            Y la bola va con `transition`: se le dice a donde tiene
+            que llegar y en cuanto, y el navegador dibuja el camino a
+            los cuadros por segundo que tenga la pantalla. Poniendole
+            la posicion a mano nunca pasaba de 25.
+          -->
           <div
             v-for="b in bolas" :key="b.id" class="gx-pball"
-            :style="{ left: b.x, top: b.y, width: b.s, aspectRatio: '1 / 1' }"
+            :style="{ left: b.x, top: b.y, width: b.s, aspectRatio: '1 / 1', transition: b.tr }"
           ></div>
         </div>
       </div>
@@ -75,6 +95,16 @@
 import api from "@/api";
 import MbControlesDeJuego from "./MbControlesDeJuego.vue";
 import jugar from "./jugar";
+
+/*
+  LAS DOS CURVAS DEL REBOTE.
+
+  El diseno acelera al caer (u al cuadrado) y frena al subir. En CSS
+  eso son estas dos bezier, que es la forma de que la curva la dibuje
+  el navegador en vez de calcularla cuadro a cuadro.
+*/
+const CAE = "cubic-bezier(.55,.085,.68,.53)";
+const SUBE = "cubic-bezier(.25,.46,.45,.94)";
 
 /**
  * PLINKO.
@@ -122,9 +152,12 @@ export default {
       menuAbierto: false,
       /* Las bolas que están cayendo ahora mismo. */
       cayendo: [],
+      /* Cuantas veces se golpeo cada clavo y se prendio cada casilla.
+         El numero no se muestra: solo sirve para que el CSS repita el
+         destello cuando vuelve a pasar. */
+      golpeados: {},
+      prendidas: {},
       /* El brillo de la casilla donde acaba de caer una. */
-      destellos: [],
-      ahora: Date.now(),
       reloj: null,
       pagos: {},
     };
@@ -159,43 +192,21 @@ export default {
         for (let j = 0; j < linea; j += 1) {
           const y = 8 + ARRANQUE + 3 + i * SALTO;
           const x = -((linea - 1) / 2 - j) * SALTO;
-          const golpe = this.golpes[i + "-" + j];
           out.push({
             id: i + "-" + j,
             x: ((x + this.ancho / 2) / this.ancho) * 100 + "%",
             y: (y / this.alto) * 100 + "%",
             s: (6 / this.ancho) * 100 + "cqw",
-            bo: golpe === undefined ? "0" : String(1 - golpe),
-            bs: golpe === undefined ? "scale(1)" : `scale(${1 + (1 - golpe) * 0.8})`,
           });
         }
       }
       return out;
     },
 
-    /** Qué clavos están iluminados ahora, por una bola que pasó. */
-    golpes() {
-      const m = {};
-      for (const b of this.cayendo) {
-        if (b.filas !== this.filas) continue;
-        for (const h of b.golpes) {
-          const dt = this.ahora - b.desde - h.t;
-          if (dt >= 0 && dt < 200) m[h.id] = dt / 200;
-        }
-      }
-      return m;
-    },
-
     casilleros() {
       const y = this.alto - 36 - 10;
       return this.tabla.map((v, i) => {
         const x = -((this.filas + 1) / 2 - i) * SALTO + (SALTO - 40) / 2;
-        const d = this.destellos.find((f) => f.casilla === i && f.filas === this.filas);
-        let o = 0;
-        if (d) {
-          const dt = this.ahora - d.t;
-          o = dt < 400 ? dt / 400 : dt < 600 ? 1 : Math.max(0, 1 - (dt - 600) / 400);
-        }
         return {
           id: i,
           x: ((x + this.ancho / 2) / this.ancho) * 100 + "%",
@@ -204,28 +215,36 @@ export default {
           h: (36 / this.alto) * 100 + "%",
           fs: (10 / this.ancho) * 100 + "cqw",
           t: Number(v).toFixed(2) + " x",
-          o: String(o),
         };
       });
     },
 
+    /*
+      LA BOLA: A DONDE VA Y EN CUANTO TIEMPO.
+
+      No se le calcula la posicion cuadro a cuadro: se le da el
+      destino del tramo y el navegador lo dibuja. Cae acelerando y
+      sube frenando --las dos curvas del diseno-- y eso en CSS son las
+      dos bezier de arriba.
+
+      Si un tramo se adelanta tarde, la transicion arranca desde donde
+      la bola ESTA dibujada, asi que no salta: se acomoda sola.
+    */
     bolas() {
       return this.cayendo
         .filter((b) => b.filas === this.filas)
         .map((b) => {
-          const el = this.ahora - b.desde;
-          let k = 1;
-          while (k < b.cuadros.length - 1 && b.cuadros[k].t < el) k += 1;
-          const a = b.cuadros[k - 1];
+          const k = Math.min(b.paso, b.cuadros.length - 1);
+          const a = b.cuadros[Math.max(0, k - 1)];
           const c = b.cuadros[k];
-          const u = c.t === a.t ? 1 : Math.max(0, Math.min(1, (el - a.t) / (c.t - a.t)));
-          /* Cae acelerando y sube frenando, que es lo que hace un rebote. */
-          const ey = c.y > a.y ? u * u : 1 - (1 - u) * (1 - u);
+          const dura = Math.max(0, c.t - a.t);
+          const cae = c.y > a.y;
           return {
             id: b.id,
-            x: a.x + (c.x - a.x) * u + "%",
-            y: a.y + (c.y - a.y) * ey + "%",
+            x: c.x + "%",
+            y: c.y + "%",
             s: (16 / this.ancho) * 100 + "%",
+            tr: k === 0 ? "none" : "left " + dura + "ms linear, top " + dura + "ms " + (cae ? CAE : SUBE),
           };
         });
     },
@@ -238,16 +257,35 @@ export default {
   created() { this.traerPagos(); },
 
   mounted() {
-    /* Un solo reloj para todas las bolas: uno por bola serían diez
-       relojes corriendo cuando alguien pone el automático. */
+    /*
+      UN SOLO RELOJ, Y SOLO PARA CAMBIAR DE TRAMO.
+
+      Antes este reloj redibujaba el tablero entero 25 veces por
+      segundo. Ahora solo adelanta el tramo de cada bola y prende los
+      destellos; el dibujo lo hace el navegador, que va a los cuadros
+      por segundo de la pantalla y no a los de este reloj.
+
+      Uno para todas las bolas: uno por bola serian diez relojes
+      corriendo cuando alguien pone el automatico.
+    */
     this.reloj = window.setInterval(() => {
-      this.ahora = Date.now();
+      const ahora = Date.now();
+
+      for (const b of this.cayendo) {
+        const paso = ahora - b.desde;
+        while (b.paso < b.cuadros.length - 1 && b.cuadros[b.paso].t <= paso) b.paso += 1;
+        while (b.golpe < b.golpes.length && b.golpes[b.golpe].t <= paso) {
+          const id = b.golpes[b.golpe].id;
+          this.$set(this.golpeados, id, (this.golpeados[id] || 0) + 1);
+          b.golpe += 1;
+        }
+      }
+
       this.cayendo = this.cayendo.filter((b) => {
-        if (this.ahora - b.desde < b.fin) return true;
-        this.destellos.push({ casilla: b.casilla, t: this.ahora, filas: b.filas });
+        if (ahora - b.desde < b.fin) return true;
+        this.$set(this.prendidas, b.casilla, (this.prendidas[b.casilla] || 0) + 1);
         return false;
       });
-      this.destellos = this.destellos.filter((f) => this.ahora - f.t < 1000);
     }, 40);
   },
 
@@ -309,6 +347,9 @@ export default {
         desde: Date.now(),
         cuadros,
         golpes,
+        /* En que tramo va y cuantos clavos ya golpeo. */
+        paso: 0,
+        golpe: 0,
         fin: t,
         casilla: j - 1,
         filas,

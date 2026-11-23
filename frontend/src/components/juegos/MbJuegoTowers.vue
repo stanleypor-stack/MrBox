@@ -17,8 +17,9 @@
 
         <div style="margin-top: 10px">
           <div class="gx-dd">
+            <!-- `gx-dd-btn` le da la caja: ver el comentario en Plinko. -->
             <button
-              type="button" :class="{ on: menuAbierto }" :disabled="abierta"
+              type="button" :class="['gx-dd-btn', { open: menuAbierto }]" :disabled="abierta"
               @click="menuAbierto = !menuAbierto"
             >
               {{ nombreDelRiesgo }}

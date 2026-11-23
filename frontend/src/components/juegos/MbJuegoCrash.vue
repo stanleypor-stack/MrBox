@@ -158,15 +158,15 @@ const LATIDO_VUELO_MS = 350;
 const LATIDO_QUIETO_MS = 1200;
 
 /*
-  CADA CUANTO SE MUEVEN EL NUMERO Y EL GRAFICO.
+  EL RELOJ DE RESPALDO.
 
-  Con `requestAnimationFrame` quedaba mas fino, pero se duerme: en una
-  pestaña de fondo --y en algunos navegadores incrustados-- no dispara
-  nunca, y el multiplicador y la cuenta regresiva se quedaban
-  clavados. Un intervalo corto anda siempre, y el navegador lo frena
-  solo cuando la pestaña no se ve.
+  El grafico lo dibuja `requestAnimationFrame`, que va a los cuadros
+  de la pantalla. Esto es por si rAF no dispara --pestaña de fondo,
+  navegador incrustado-- para que el numero y la cuenta regresiva no
+  queden clavados. Cinco veces por segundo alcanza para eso y no se
+  nota al lado de rAF.
 */
-const PASO_DEL_RELOJ_MS = 40;
+const RESPALDO_MS = 200;
 
 export default {
   name: "MbJuegoCrash",
@@ -208,6 +208,7 @@ export default {
       latido: null,
       cadaCuanto: 0,
       cuadro: null,
+      respaldo: null,
       vivo: true,
     };
   },
@@ -294,7 +295,27 @@ export default {
   created() { this.mirar(); },
 
   mounted() {
-    this.cuadro = window.setInterval(this.pintar, PASO_DEL_RELOJ_MS);
+    /*
+      DOS RELOJES, Y NO ES REDUNDANCIA.
+
+      `requestAnimationFrame` dibuja a los cuadros que tenga la
+      pantalla --60 por segundo en un telefono, y la curva se ve
+      lisa--. Pero se duerme: en una pestana de fondo, y en algunos
+      navegadores incrustados, no dispara nunca.
+
+      Por eso atras va un intervalo lento. Si rAF anda, no se nota; si
+      rAF no anda, el numero y la cuenta regresiva igual se mueven.
+      Las dos llaman a lo mismo, que recalcula desde el reloj: llamarlo
+      de mas no cambia nada.
+    */
+    const lazo = () => {
+      if (!this.vivo) return;
+      this.pintar();
+      this.cuadro = window.requestAnimationFrame(lazo);
+    };
+    this.cuadro = window.requestAnimationFrame(lazo);
+    this.respaldo = window.setInterval(this.pintar, RESPALDO_MS);
+
     document.addEventListener("visibilitychange", this.alVolver);
   },
 
@@ -308,7 +329,8 @@ export default {
     this.vivo = false;
     this.corriendo = false;
     if (this.latido) window.clearTimeout(this.latido);
-    if (this.cuadro) window.clearInterval(this.cuadro);
+    if (this.cuadro) window.cancelAnimationFrame(this.cuadro);
+    if (this.respaldo) window.clearInterval(this.respaldo);
     document.removeEventListener("visibilitychange", this.alVolver);
   },
 

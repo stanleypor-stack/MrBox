@@ -50,7 +50,20 @@
 .gx-count{width:100%}
 .gx-countbox{width:100%;display:flex;align-items:center;height:42px;margin-top:5px;border:2px solid var(--elev);border-radius:5px;padding-right:10px}
 .gx-countbox input{width:90%;padding:0 17px;font-size:15px}
-.gx-bet{width:100%;margin-top:20px;padding:8px 4px 4px;border-radius:8px;background:var(--inv)}
+/*
+  EL BOTON DE JUGAR, PAREJO ARRIBA Y ABAJO.
+
+  La cara del boton va levantada 4 px --es el efecto de tecla, lo
+  hace `.gx-btn .front`-- y el prototipo le dejaba 8 px de relleno
+  arriba: quedaban 4 arriba contra 8 abajo (4 de relleno mas los 4
+  del canto de la tecla, que asoma). Contra el borde oscuro del
+  panel, esos 4 px se leian como si al boton le hubieran cortado
+  la tapa, y en el telefono --donde el boton va pegado al borde de
+  arriba-- se veia en todos los juegos.
+
+  Con 12 quedan 8 y 8. La tecla se sigue viendo tecla.
+*/
+.gx-bet{width:100%;margin-top:20px;padding:12px 4px 4px;border-radius:8px;background:var(--inv)}
 .gx-btn{position:relative;width:100%;display:block;border-radius:9px;font-weight:700;transition:filter .25s}
 .gx-btn .edge{position:absolute;inset:0;border-radius:7px;background:#1c4fc4}
 .gx-btn .front{position:relative;display:grid;place-content:center;height:38px;padding:0 .3em;border-radius:7px;background:linear-gradient(180deg,#4fa2ff 0%,#2f6fe0 100%);border:2px solid #ffffff;font-weight:900;font-size:18px;transform:translateY(-4px);transition:transform .6s cubic-bezier(.3,.7,.4,1)}
@@ -170,8 +183,21 @@
 .gx-pboard{position:relative;width:100%;container-type:inline-size}
 .gx-pin{position:absolute;border-radius:50%;background:#8f98c5;transform:translate(-50%,-50%)}
 .gx-pin i{position:absolute;inset:0;border-radius:50%;background:#fff;opacity:0}
+/*
+  EL DESTELLO DEL CLAVO, EN CSS Y NO EN JAVASCRIPT.
+
+  Son los mismos 200 ms y la misma escala que hacia el prototipo
+  cuadro a cuadro (de 1,8 a 1 mientras se apaga). Hecho aca, lo
+  dibuja el navegador: con cien clavos en pantalla, calcularlo en
+  JavaScript era el tironeo que se veia en el telefono.
+*/
+@keyframes gx-pega{from{opacity:1;transform:scale(1.8)}to{opacity:0;transform:scale(1)}}
+.gx-pin i.pega{animation:gx-pega .2s linear}
 .gx-pm{position:absolute;display:flex;align-items:center;justify-content:center;border-radius:3px;background:var(--elev);font-weight:700;color:#fff;white-space:nowrap}
 .gx-pm i{position:absolute;inset:0;border-radius:3px;background:var(--acc);opacity:0;display:flex;align-items:center;justify-content:center;font-style:normal}
+/* Y la casilla: prende en 0,4 s, se queda 0,2 y se apaga en 0,4. */
+@keyframes gx-prende{0%{opacity:0}40%{opacity:1}60%{opacity:1}100%{opacity:0}}
+.gx-pm i.pega{animation:gx-prende 1s linear}
 .gx-pball{position:absolute;border-radius:50%;background:#fff;transform:translate(-50%,-50%);z-index:4;pointer-events:none}
 /* tower */
 .gx-tower .gx-ctl{height:560px}
