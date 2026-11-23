@@ -250,7 +250,11 @@ export default {
       this.subidos = d.subidos || 0;
       this.elegidas = d.elegidas || [];
 
+      /* Un piso mas: la moneda. El dragon lo pone el final. */
+      if (!d.termino) this.sonar("pop");
+
       if (d.termino) {
+        if (d.quemo) this.sonar("boom");
         this.abierta = false;
         this.terminada = true;
         this.quemo = !!d.quemo;
@@ -270,6 +274,7 @@ export default {
       this.dragones = d.dragones || [];
       this.multiplicador = d.multiplicador || 0;
       this.pagoSc = d.pagoSc || 0;
+      this.sonar("cash");
       this.anotar({ v: this.multiplicador.toFixed(2) + "x", gano: true });
     },
   },

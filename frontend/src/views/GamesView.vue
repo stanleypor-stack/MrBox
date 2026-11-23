@@ -99,7 +99,7 @@
               </button>
               <button
                 type="button" class="gx-sqbtn" :aria-label="$t('games.sound')"
-                @click="sonido = !sonido"
+                :aria-pressed="String(sonido)" @click="cambiarSonido"
               >
                 <img :src="sonido ? '/img/juegos/volumen.svg' : '/img/juegos/mute.png'" alt="">
               </button>
@@ -128,6 +128,7 @@
 import { mapGetters } from "vuex";
 import api from "@/api";
 import { JUEGOS } from "@/juegos";
+import { sonidoEncendido, prenderSonido } from "@/sonidos";
 import MbJuegoDice from "@/components/juegos/MbJuegoDice.vue";
 import MbJuegoReme from "@/components/juegos/MbJuegoReme.vue";
 import MbJuegoKeno from "@/components/juegos/MbJuegoKeno.vue";
@@ -161,7 +162,8 @@ export default {
 
   data() {
     return {
-      sonido: true,
+      /* Lo que eligio la ultima vez, que quedo guardado. */
+      sonido: sonidoEncendido(),
       maximoSc: 0,
       maximoPremioSc: 0,
       minimoSc: 0.1,
@@ -222,6 +224,10 @@ export default {
     ir(id) {
       if (id === this.elJuego.id) return;
       this.$router.push(`/games/${id}`);
+    },
+
+    cambiarSonido() {
+      this.sonido = prenderSonido(!this.sonido);
     },
 
     avisarDelSorteo() {

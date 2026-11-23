@@ -58,6 +58,52 @@ async function hayTransacciones() {
   return soportaTransacciones;
 }
 
+/*
+  EL POLVO DECIMAL, Y POR QUE ESTO IMPORTA.
+
+  `$inc` suma en binario. Sumar y restar importes de dos decimales
+  deja basura abajo del centavo --0,1 + 0,2 da 0,30000000000000004--
+  y despues de unas cuantas jugadas el saldo GUARDADO es
+  0,79999999999999993 mientras la pantalla, que redondea, muestra
+  0,80.
+
+  Ahi el jugador aprieta jugar sus 0,80, la base compara
+  0,79999999999999993 >= 0,8, contesta que no, y el cartel le dice que
+  "le faltan 0". Paso de verdad y es lo peor que puede hacer un
+  casino: decirle a alguien que no le alcanza la plata que tiene.
+
+  Dos candados:
+
+  1. La base SUMA Y REDONDEA en el mismo paso (`sumasRedondeadas`),
+     asi que de ahora en mas ningun saldo tiene polvo.
+  2. El filtro perdona una diezmilesima, para los saldos que ya
+     quedaron sucios de antes. Nadie puede sacar un centavo de mas con
+     eso, y nadie queda trabado por un error de redondeo.
+*/
+const POLVO = 0.0001;
+
+/**
+ * Pasa los `$inc` a una suma redondeada a dos decimales.
+ *
+ * Es un pipeline y no un `$inc` porque `$inc` no sabe redondear: el
+ * redondeo tiene que pasar DENTRO de la misma escritura, o entre la
+ * suma y el redondeo se cuela otra jugada.
+ */
+function sumasRedondeadas(cambios) {
+  const puesta = {};
+  for (const [campo, cuanto] of Object.entries(cambios.$inc || {})) {
+    /*
+      El `+ 0` de afuera no es de adorno: redondear -0,0000000000000002
+      da MENOS CERO, y un saldo en menos cero se imprime "-0.00". El
+      jugador no tiene por que ver eso. Sumarle cero lo deja en cero.
+    */
+    puesta[campo] = {
+      $add: [{ $round: [{ $add: [{ $ifNull: ["$" + campo, 0] }, cuanto] }, 2] }, 0],
+    };
+  }
+  return [{ $set: puesta }];
+}
+
 /**
  * Mueve el saldo de alguien y lo anota.
  *
@@ -111,7 +157,7 @@ async function mover({
     Descontar pide saldo suficiente, y la condición va EN EL FILTRO para
     que la decida la base y no nosotros. Ver el comentario de arriba.
   */
-  if (monto < 0) filtro.balanceSc = { $gte: -monto };
+  if (monto < 0) filtro.balanceSc = { $gte: sc(-monto) - POLVO };
 
   /*
     SACAR PLATA PIDE ADEMAS QUE SEA CANJEABLE.
@@ -128,7 +174,7 @@ async function mover({
     filtro.$expr = {
       $gte: [
         { $subtract: ["$balanceSc", { $max: [{ $ifNull: ["$bonoAtadoSc", 0] }, 0] }] },
-        -monto,
+        sc(-monto) - POLVO,
       ],
     };
   }
@@ -195,8 +241,11 @@ async function mover({
       `new: false` devuelve el documento COMO ESTABA. De ahí sale
       `balanceBefore` exacto: leerlo aparte sería otra carrera.
     */
-    const antes = await User.findOneAndUpdate(filtro, cambios, {
-      new: false,
+    const antes = await User.findOneAndUpdate(filtro, sumasRedondeadas(cambios), {
+      returnDocument: "before",
+      /* Mongoose 9 pide declararlo para aceptar un arreglo como
+         actualizacion; sin esto lo toma por un error de tipeo. */
+      updatePipeline: true,
       session: sesion || undefined,
     })
       .select("+balanceSc +bonoPendienteSc")

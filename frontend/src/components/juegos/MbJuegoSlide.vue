@@ -96,6 +96,7 @@
 
 <script>
 import api from "@/api";
+import { sonar } from "@/sonidos";
 
 /**
  * SLIDE.
@@ -155,6 +156,21 @@ const FICHA = 125;
 /* Lo que tarda la cinta en frenar, también del diseño. */
 const GIRO_MS = 5500;
 
+/*
+  CADA CUANTO SE MUEVE EL RELOJ DE LA PANTALLA.
+
+  Con `requestAnimationFrame` quedaba mas fino, pero se duerme: en una
+  pestaña de fondo --y en algunos navegadores incrustados-- no dispara
+  nunca, y la cuenta regresiva se quedaba clavada hasta la proxima
+  respuesta del servidor. Un intervalo corto anda siempre, y el
+  navegador lo frena solo cuando la pestaña no se ve, que es
+  exactamente cuando no importa.
+
+  40 ms son 25 pasos por segundo: el ojo no distingue mas en un numero
+  que cambia, y el telefono no se entera.
+*/
+const PASO_DEL_RELOJ_MS = 40;
+
 export default {
   name: "MbJuegoSlide",
 
@@ -178,7 +194,15 @@ export default {
          siempre del mismo lugar. */
       anterior: 3,
       mandando: false,
+      /* A que color aposte en esta vuelta, para saber si suena
+         ganar o perder cuando salga. */
+      tenia: "",
       latido: null,
+      cuadro: null,
+      vivo: true,
+      /* De donde arranca el reloj de la pantalla entre consulta y
+         consulta: cuanto faltaba y en que momento lo dijo. */
+      ancla: { ms: 0, cuando: 0 },
     };
   },
 
@@ -280,10 +304,16 @@ export default {
 
   created() { this.mirar(); },
 
-  mounted() { this.latido = window.setInterval(this.mirar, 500); },
+  mounted() {
+    this.cuadro = window.setInterval(this.correrElReloj, PASO_DEL_RELOJ_MS);
+    document.addEventListener("visibilitychange", this.alVolver);
+  },
 
   beforeDestroy() {
-    if (this.latido) window.clearInterval(this.latido);
+    this.vivo = false;
+    if (this.latido) window.clearTimeout(this.latido);
+    if (this.cuadro) window.clearInterval(this.cuadro);
+    document.removeEventListener("visibilitychange", this.alVolver);
   },
 
   methods: {
@@ -319,10 +349,57 @@ export default {
       this.apuesta = this.plata(Math.max(0, n));
     },
 
+    /*
+      EL RELOJ LO LLEVA LA PANTALLA, LA HORA LA PONE EL SERVIDOR.
+
+      La cuenta regresiva muestra centesimas. Si solo se moviera
+      cuando llega una respuesta, saltaria de a cincuenta centesimas
+      y parecia roto --y eso es lo que se veia--.
+
+      Asi que corre sola, cuadro a cuadro, desde el ultimo dato que
+      mando el servidor. Cada respuesta la vuelve a poner en hora, asi
+      que nunca se despega.
+    */
+    correrElReloj() {
+      if (!this.vivo || this.estado !== "apostando" || !this.ancla.cuando) return;
+      this.faltaMs = Math.max(0, this.ancla.ms - (performance.now() - this.ancla.cuando));
+    },
+
+    /*
+      VOLVER A LA PESTAÑA.
+
+      El navegador frena los relojes de una pestaña que no se ve. Al
+      volver, lo que muestra la pantalla quedo viejo, asi que se
+      pregunta de una en vez de esperar al proximo turno.
+    */
+    alVolver() {
+      if (!document.hidden && this.vivo) this.mirar();
+    },
+
+    /*
+      CUANDO VOLVER A PREGUNTAR.
+
+      No cada medio segundo para siempre: eso es una consulta por
+      jugador dos veces por segundo, todo el dia, y el reloj ya corre
+      solo. Se pregunta seguido cerca del cambio --que es cuando algo
+      pasa-- y tranquilo cuando falta un rato.
+    */
+    programarLaProxima(d) {
+      if (!this.vivo) return;
+      if (this.latido) window.clearTimeout(this.latido);
+
+      const falta = Number(d && d.faltaMs) || 0;
+      const normal = d && d.estado === "apostando" ? 1500 : 600;
+      const cuando = falta > 0 ? Math.min(normal, falta + 120) : normal;
+
+      this.latido = window.setTimeout(this.mirar, Math.max(250, cuando));
+    },
+
     async mirar() {
       try {
         const { data } = await api.get("/games/slide/estado");
         const d = data.data;
+        const antes = this.estado;
 
         /* Vuelta nueva: la de antes queda como punto de partida. */
         if (d.numero !== this.numero) {
@@ -342,14 +419,32 @@ export default {
           this.casilla = null;
         }
 
+        /* Arranco a girar: la cinta y el sonido, juntos. */
+        if (antes === "apostando" && d.estado === "girando") sonar("roll");
+
         this.estado = d.estado;
         this.faltaMs = d.faltaMs || 0;
+        this.ancla = { ms: this.faltaMs, cuando: performance.now() };
         this.historial = d.historial || [];
         this.apuestas = (d.apuestas || []).map((a) => ({
           ...a,
           inicial: String(a.jugador || "?").slice(0, 1).toUpperCase(),
         }));
         if (d.estadisticas) this.cuenta = d.estadisticas;
+
+        /*
+          GANE O PERDI.
+
+          Cuando la cinta FRENA, no cuando empieza a girar: el
+          resultado viaja al arrancar --la cinta tiene que saber a
+          donde ir-- pero cantarlo cinco segundos antes de que se vea
+          seria contar el final.
+        */
+        if (antes === "girando" && d.estado === "mostrando" && this.tenia) {
+          const salio = d.resultado ? d.resultado.color : "";
+          sonar(this.tenia === salio ? "win" : "lose");
+          this.tenia = "";
+        }
 
         if (d.resultado && typeof d.resultado.casilla === "number") {
           /* `transcurridoMs` solo llega mientras gira; cuando ya se
@@ -362,6 +457,8 @@ export default {
         /* Una consulta perdida la arregla la siguiente: el juego no se
            corta por un pedido que no llegó. */
       }
+
+      this.programarLaProxima({ estado: this.estado, faltaMs: this.faltaMs });
     },
 
     async apostar(color) {
@@ -373,6 +470,7 @@ export default {
           color,
         });
         this.$store.commit("saldo", data.data);
+        this.tenia = color;
         this.apuestas = (data.data.apuestas || []).map((a) => ({
           ...a,
           inicial: String(a.jugador || "?").slice(0, 1).toUpperCase(),

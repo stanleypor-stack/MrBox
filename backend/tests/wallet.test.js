@@ -76,6 +76,50 @@ test("acreditar sube el saldo y deja la fila con el antes y el despues", async (
   assert.equal(sc(guardado.balanceSc), 35.5, "el saldo guardado y la fila tienen que coincidir");
 });
 
+test("EL POLVO DECIMAL NO PUEDE TRABAR UNA JUGADA", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+
+  /*
+    EL CASO DE VERDAD.
+
+    Un saldo que de tanto sumar y restar quedo en 0,79999999999999982
+    se ve como 0,80 en la pantalla. El jugador aprieta jugar sus 0,80
+    y la base le contesta que no le alcanza; el cartel, que redondea,
+    le dice que "le faltan 0".
+
+    Decirle a alguien que no le alcanza la plata que tiene es lo peor
+    que puede hacer un casino, asi que esto tiene test propio.
+  */
+  const sucio = 2.4 - 1.6;
+  assert.notEqual(sucio, 0.8, "el caso de prueba ya no reproduce el polvo");
+
+  const u = await jugadorCon(sucio);
+
+  const r = await wallet.mover({
+    userId: u._id, amountSc: -0.8, type: "game_bet", juegaSc: 0.8,
+    reference: { kind: "test", label: "dice" },
+  });
+  assert.equal(r.balanceAfter, 0);
+
+  /* Y el saldo queda LIMPIO: sin esto, el polvo vuelve a juntarse. */
+  const guardado = await User.findById(u._id).select("+balanceSc").lean();
+  assert.equal(guardado.balanceSc, 0, "quedo polvo en el saldo");
+});
+
+test("el saldo se guarda siempre redondeado al centavo", async (t) => {
+  if (!hayBase) return t.skip("sin MongoDB");
+  const u = await jugadorCon(0);
+
+  /* Diez movimientos de los que mas polvo dejan. */
+  for (let i = 0; i < 10; i += 1) {
+    await wallet.mover({ userId: u._id, amountSc: 0.1, type: "purchase" });
+    await wallet.mover({ userId: u._id, amountSc: 0.2, type: "purchase" });
+  }
+
+  const guardado = await User.findById(u._id).select("+balanceSc").lean();
+  assert.equal(guardado.balanceSc, 3, "3,00 exacto, sin polvo: " + guardado.balanceSc);
+});
+
 test("descontar mas de lo que hay NO pasa y no deja fila", async (t) => {
   if (!hayBase) return t.skip("sin MongoDB");
   const u = await jugadorCon(5);

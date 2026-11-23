@@ -218,6 +218,10 @@ export default {
       const caja = this.$refs.pista.getBoundingClientRect();
       const pct = Math.round(((e.clientX - caja.left) / caja.width) * 100);
 
+      /* El tick suena cuando el numero CAMBIA, no en cada pixel:
+         el prototipo hace lo mismo y sin eso es un zumbido. */
+      const antes = this.arrastrando === 1 ? this.t1 : this.t2;
+
       if (this.arrastrando === 1) {
         this.t1 = this.dos
           ? Math.max(4, Math.min(this.t2 - 3, pct))
@@ -225,6 +229,9 @@ export default {
       } else {
         this.t2 = Math.min(96, Math.max(this.t1 + 3, pct));
       }
+
+      const ahora = this.arrastrando === 1 ? this.t1 : this.t2;
+      if (ahora !== antes) this.sonar("tick");
     },
 
     soltar() {

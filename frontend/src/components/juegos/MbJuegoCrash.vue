@@ -105,6 +105,7 @@
 
 <script>
 import api from "@/api";
+import { sonar } from "@/sonidos";
 
 /**
  * CRASH.
@@ -141,10 +142,31 @@ import api from "@/api";
 /* La curva, la misma que el servidor: e^(0,00006 t). */
 const RITMO = 0.00006;
 
-/* Cada cuánto se pregunta. Mientras vuela, seguido: lo que tarda una
-   consulta es lo que puede pasarse el número de la pantalla. */
-const LATIDO_VUELO_MS = 300;
-const LATIDO_QUIETO_MS = 700;
+/*
+  CADA CUANTO SE PREGUNTA.
+
+  El reloj y el multiplicador corren solos en la pantalla, cuadro a
+  cuadro, asi que preguntar seguido no es para que se vea fluido: es
+  para enterarse de los cambios.
+
+  Volando se pregunta seguido, porque el reventon puede caer en
+  cualquier momento y es lo unico que la pantalla no puede adivinar
+  --a proposito, para que nadie lo adivine--. Esperando y mostrando,
+  tranquilo: lo que falta ya lo sabe.
+*/
+const LATIDO_VUELO_MS = 350;
+const LATIDO_QUIETO_MS = 1200;
+
+/*
+  CADA CUANTO SE MUEVEN EL NUMERO Y EL GRAFICO.
+
+  Con `requestAnimationFrame` quedaba mas fino, pero se duerme: en una
+  pestaña de fondo --y en algunos navegadores incrustados-- no dispara
+  nunca, y el multiplicador y la cuenta regresiva se quedaban
+  clavados. Un intervalo corto anda siempre, y el navegador lo frena
+  solo cuando la pestaña no se ve.
+*/
+const PASO_DEL_RELOJ_MS = 40;
 
 export default {
   name: "MbJuegoCrash",
@@ -172,6 +194,9 @@ export default {
       /* Lo que hace que arrancó, según el servidor, y cuándo se supo:
          entre consulta y consulta el tiempo se sigue solo. */
       base: { ms: 0, cuando: 0 },
+      /* Lo mismo para la cuenta regresiva: ultimo dato del servidor y
+         cuando llego, para que los decimos corran parejos. */
+      ancla: { ms: 0, cuando: 0 },
       multiplicador: 1,
 
       mandando: false,
@@ -269,8 +294,8 @@ export default {
   created() { this.mirar(); },
 
   mounted() {
-    this.latido = window.setInterval(this.mirar, LATIDO_QUIETO_MS);
-    this.cuadro = window.requestAnimationFrame(this.pintar);
+    this.cuadro = window.setInterval(this.pintar, PASO_DEL_RELOJ_MS);
+    document.addEventListener("visibilitychange", this.alVolver);
   },
 
   beforeDestroy() {
@@ -282,8 +307,9 @@ export default {
     */
     this.vivo = false;
     this.corriendo = false;
-    if (this.latido) window.clearInterval(this.latido);
-    if (this.cuadro) window.cancelAnimationFrame(this.cuadro);
+    if (this.latido) window.clearTimeout(this.latido);
+    if (this.cuadro) window.clearInterval(this.cuadro);
+    document.removeEventListener("visibilitychange", this.alVolver);
   },
 
   methods: {
@@ -337,9 +363,13 @@ export default {
         const d = data.data;
 
         const esOtra = d.numero !== this.numero;
+        const antes = this.estado;
+        const teniaPlata = !!(this.mia && this.mia.abierta);
+
         this.numero = d.numero;
         this.estado = d.estado;
         this.faltaMs = d.faltaMs || 0;
+        this.ancla = { ms: this.faltaMs, cuando: performance.now() };
         this.historial = d.historial || [];
         this.apuestas = d.apuestas || [];
         this.mia = d.miApuesta || null;
@@ -356,8 +386,19 @@ export default {
           this.multiplicador = d.resultado.punto;
         }
 
-        /* El latido va más seguido mientras vuela. */
-        this.acomodarLatido(d.estado === "girando" ? LATIDO_VUELO_MS : LATIDO_QUIETO_MS);
+        /*
+          EL REVENTON.
+
+          Si cuando exploto habia plata mia volando, suena; y si el
+          cobro automatico la saco antes, suena ganar. El servidor ya
+          decidio las dos cosas: esto solo las cuenta.
+        */
+        if (antes === "girando" && d.estado === "mostrando" && teniaPlata) {
+          const cobrada = this.mia && this.mia.pagoSc > 0;
+          sonar(cobrada ? "win" : "lose");
+        }
+
+
 
         /*
           LA APUESTA QUE ESPERABA, Y EL AUTOMATICO.
@@ -371,13 +412,24 @@ export default {
       } catch (err) {
         /* La consulta siguiente lo arregla. */
       }
+
+      this.programarLaProxima();
     },
 
-    acomodarLatido(cada) {
-      if (this.cadaCuanto === cada || !this.vivo) return;
-      this.cadaCuanto = cada;
-      if (this.latido) window.clearInterval(this.latido);
-      this.latido = window.setInterval(this.mirar, cada);
+    /*
+      La proxima consulta se pide para cuando algo vaya a pasar: si
+      faltan cuatro segundos para que abra, no hace falta preguntar
+      ocho veces en el medio.
+    */
+    programarLaProxima() {
+      if (!this.vivo) return;
+      if (this.latido) window.clearTimeout(this.latido);
+
+      const normal = this.estado === "girando" ? LATIDO_VUELO_MS : LATIDO_QUIETO_MS;
+      const falta = this.estado === "girando" ? 0 : this.faltaMs;
+      const cuando = falta > 0 ? Math.min(normal, falta + 120) : normal;
+
+      this.latido = window.setTimeout(this.mirar, Math.max(250, cuando));
     },
 
     /*
@@ -451,6 +503,7 @@ export default {
       try {
         const { data } = await api.post("/games/crash/cashout", { en: this.multiplicador });
         this.$store.commit("saldo", data.data);
+        if (data.data.pagoSc > 0) sonar("cash");
 
         if (data.data.reventado) {
           /* Se apretó tarde: el servidor dice que ya había reventado. */
@@ -472,10 +525,23 @@ export default {
       if (this.estado === "girando") {
         const t = this.base.ms + (performance.now() - this.base.cuando);
         this.multiplicador = Math.floor(Math.exp(RITMO * t) * 100) / 100;
+      } else if (this.ancla.cuando) {
+        /*
+          LA CUENTA REGRESIVA TAMBIEN CORRE SOLA.
+
+          Muestra decimos de segundo. Si solo se moviera cuando llega
+          una respuesta, saltaria de a un segundo entero y se veria
+          trabada, que es justo lo que pasaba.
+        */
+        this.faltaMs = Math.max(0, this.ancla.ms - (performance.now() - this.ancla.cuando));
       }
 
       this.dibujar();
-      this.cuadro = window.requestAnimationFrame(this.pintar);
+    },
+
+    /* Al volver a la pestaña, lo que se ve quedo viejo: se pregunta. */
+    alVolver() {
+      if (!document.hidden && this.vivo) this.mirar();
     },
 
     /*

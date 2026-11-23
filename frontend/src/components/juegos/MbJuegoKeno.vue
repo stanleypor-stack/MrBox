@@ -160,6 +160,7 @@ export default {
 
         this.salieron = d.salieron;
         this.aciertos = d.aciertos;
+        if (d.aciertos > 0) this.sonar("pop");
         this.anotar({ v: String(d.aciertos), gano: d.gano });
         return true;
       });

@@ -272,7 +272,11 @@ export default {
       this.ultima = d.casilla;
       this.multiplicador = d.multiplicador || 0;
 
+      /* La gema al destapar limpio; la bomba la pone `anotar`. */
+      if (!d.termino) this.sonar("gema");
+
       if (d.termino) {
+        if (d.exploto) this.sonar("boom");
         this.abierta = false;
         this.terminada = true;
         this.exploto = !!d.exploto;
@@ -291,6 +295,7 @@ export default {
       this.minadas = d.minadas || [];
       this.multiplicador = d.multiplicador || 0;
       this.pagoSc = d.pagoSc || 0;
+      this.sonar("cash");
       this.anotar({ v: this.multiplicador.toFixed(2) + "x", gano: true });
     },
   },

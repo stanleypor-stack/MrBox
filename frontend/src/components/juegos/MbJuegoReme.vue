@@ -98,6 +98,7 @@ export default {
       return this.apretar(async () => {
         /* Un giro largo mientras se espera la respuesta. */
         this.vuelta += 720 + Math.floor(Math.random() * 360);
+        this.sonar("rueda");
 
         const d = await this.unaJugada("/games/reme/play", {});
         if (!d) return false;

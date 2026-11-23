@@ -1,4 +1,5 @@
 import api from "@/api";
+import { sonar } from "@/sonidos";
 
 /**
  * LO QUE HACEN IGUAL LOS OCHO JUEGOS EN LA PANTALLA.
@@ -75,11 +76,20 @@ export default {
       }
     },
 
-    /** Guarda una ficha en el historial, que son diez como en el diseño. */
+    /**
+     * Guarda una ficha en el historial, que son diez como en el diseño.
+     *
+     * Y suena, porque esto es el final de la jugada en los seis: el
+     * unico lugar por el que pasan todos, ganen o pierdan.
+     */
     anotar(ficha) {
       this.historial.unshift(ficha);
       this.historial = this.historial.slice(0, 10);
+      sonar(ficha.gano ? "win" : "lose");
     },
+
+    /** Para los sonidos propios de cada juego. */
+    sonar,
 
     /**
      * EL BOTON.

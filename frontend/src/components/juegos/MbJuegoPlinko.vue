@@ -326,7 +326,20 @@ export default {
         if (!d) return false;
 
         const dura = this.soltar(d.camino, this.filas);
-        this.anotar({ v: Number(d.multiplicador).toFixed(2) + "x", gano: d.multiplicador > 1 });
+
+        /*
+          EL SONIDO VA CUANDO LA BOLITA LLEGA, NO CUANDO SALE.
+
+          Lo que decide la jugada ya esta decidido, pero el jugador
+          todavia la ve cayendo: que suene al soltarla seria cantarle
+          el resultado antes de verlo.
+        */
+        window.setTimeout(() => {
+          this.sonar("plinko");
+          this.anotar({
+            v: Number(d.multiplicador).toFixed(2) + "x", gano: d.multiplicador > 1,
+          });
+        }, Math.max(0, dura - 120));
 
         /* La próxima bola espera a que ésta termine de caer: dos
            bolas superpuestas en automático no se entienden. */
