@@ -565,14 +565,17 @@ export default {
   /*
     EL FONDO CONTINUA EL BORDE DE ARRIBA DEL POSTER.
 
-    En PC el poster va entero --`contain`, ver abajo-- y el carton es
-    un poco mas alto que el. Esa sobra se manda toda arriba, y este es
-    el color del borde superior del poster, medido: #2a0475. Asi no se
-    ve una franja, se ve el cielo un poco mas largo.
+    Cuando el formulario es mas alto que el poster --registrarse tiene
+    mas campos que entrar-- sobra lugar arriba, y este es el color del
+    borde superior del poster, medido: #2a0475. Asi no se ve una
+    franja, se ve el cielo un poco mas largo.
   */
   background: #2a0475;
-  min-height: 620px;
   overflow: hidden;
+
+  /* El poster, pegado abajo: lo que sobra queda todo arriba. */
+  display: flex;
+  align-items: flex-end;
 
   /* El alto en el telefono lo fija el bloque de abajo, que es el
      ultimo y por lo tanto el que gana. */
@@ -580,28 +583,28 @@ export default {
 }
 
 /*
-  EL POSTER.
+  EL POSTER, DEL MISMO TAMANO EN LAS DOS PANTALLAS.
 
-  Va entero, no recortado: `contain` y no `cover`. Con `cover` el
-  carton le comia una franja de cada lado, y cuanto se comia dependia
-  de la pantalla --el alto del carton lo decide el formulario, que es
-  mas alto en registrarse que en entrar, asi que no hay un ancho fijo
-  que acierte siempre--.
+  Antes iba estirado con `contain` adentro de un carton que medía lo
+  que midiera el formulario. Y el formulario de registrarse es mas
+  alto que el de entrar, asi que el MISMO poster salia de dos tamanos
+  distintos segun la pantalla: en entrar chico con violeta a los
+  costados, en registrarse grande. Se notaba.
 
-  Y pegado abajo, asi lo que sobra queda todo arriba. Centrado, la
-  sobra se parte en dos y la de abajo se notaba: el borde inferior del
-  poster es asfalto rosa con textura y debajo aparecia una franja lisa
-  que se leia como un bloque aparte. El borde de ARRIBA en cambio es
-  violeta liso --#2a0475, medido-- y el carton usa ese mismo color de
-  fondo: no se ve una franja, se ve el cielo un poco mas largo.
+  Ahora el ancho lo pone la columna y el alto sale de la proporcion
+  del archivo --938 x 1677, medida del archivo, no estimada--. Como
+  las dos pantallas tienen la misma columna, el poster mide siempre lo
+  mismo; lo unico que cambia es cuanto cielo violeta queda arriba.
+
+  Va entero, sin recortar: la caja tiene exactamente su proporcion,
+  asi que `cover` no tiene nada que comerse.
 */
 .mb-auth__arte {
-  position: absolute;
-  inset: 0;
+  display: block;
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center bottom;
+  height: auto;
+  aspect-ratio: 938 / 1677;
+  object-fit: cover;
 }
 
 

@@ -417,6 +417,9 @@ export default {
       abierta: -1,
       filas: [],
       pulls: [],
+      /* Las que llegaron y todavia no salieron: ver `soltarUna`. */
+      colaDePulls: [],
+      relojSalida: null,
       relojPulls: null,
       tickets: [],
       cargando: true,
@@ -540,25 +543,61 @@ export default {
         const { data } = await api.get("/boxes/feed/latest", { params: { limit: 24 } });
 
         /*
-          SE PEGAN LAS NUEVAS, NO SE CAMBIA LA CINTA ENTERA.
+          LAS NUEVAS HACEN COLA, NO ENTRAN TODAS JUNTAS.
 
-          Reemplazar la lista hacia que Vue tratara como "nueva" a
-          cada tarjeta y las animara a todas a la vez: la cinta
-          quedaba en blanco un cuarto de segundo, dos veces por
-          segundo. Pegando solo las que no estaban, lo que ya se ve
-          no se vuelve a dibujar y entra una sola por vez, que es
-          justo lo que hace mrloot.
+          Se pregunta cada segundo y medio y el servidor genera una
+          cada tanto, asi que en cada respuesta vienen dos, tres o
+          cuatro nuevas. Pegarlas de una las hacia aparecer en bloque
+          --tres tarjetas entrando al mismo tiempo-- y la cinta daba
+          saltos en vez de correr.
+
+          Ahora esperan en la cola y sale UNA por vez (ver
+          `soltarUna`). La velocidad es la misma, porque salen al
+          ritmo al que llegan; lo que cambia es que entran de a una.
         */
         const tengo = new Set(this.pulls.map((p) => p._id));
-        const nuevas = data.data.filter((p) => !tengo.has(p._id));
+        const enCola = new Set(this.colaDePulls.map((p) => p._id));
+        const nuevas = data.data.filter((p) => !tengo.has(p._id) && !enCola.has(p._id));
 
-        if (nuevas.length) this.pulls = nuevas.concat(this.pulls).slice(0, 24);
-        else if (!this.pulls.length) this.pulls = data.data;
+        if (!this.pulls.length && !this.colaDePulls.length) {
+          /* La primera vez entra todo junto: no hay nada que mirar
+             entrando, hay una cinta vacia que llenar. */
+          this.pulls = data.data;
+          return;
+        }
+
+        /* Las mas viejas primero, para que salgan en orden. */
+        this.colaDePulls = this.colaDePulls.concat(nuevas.slice().reverse()).slice(-40);
       } catch (err) {
         /* La cinta es decoracion: si falla, se queda con lo que tenia.
            Un cartel rojo en la portada porque no entro un pull seria
            peor que la cinta quieta. */
       }
+    },
+
+    /**
+     * SUELTA UNA TARJETA Y SE VUELVE A LLAMAR.
+     *
+     * No es un intervalo fijo: la espera sale de cuantas estan
+     * esperando. Con la cola corta --lo normal-- sale una cada 700 u
+     * 800 ms, que es el ritmo al que llegan. Si la pestana estuvo
+     * escondida y se juntaron veinte, salen mas rapido hasta
+     * emparejar, en lugar de quedar la cinta diez minutos atrasada.
+     *
+     * Lo unico que tiene que garantizar: una por vez, nunca dos
+     * juntas.
+     */
+    soltarUna() {
+      if (this.colaDePulls.length) {
+        const p = this.colaDePulls.shift();
+        this.pulls = [p].concat(this.pulls).slice(0, 24);
+      }
+
+      const espera = this.colaDePulls.length
+        ? Math.max(220, Math.min(900, 1400 / this.colaDePulls.length))
+        : 400;
+
+      this.relojSalida = window.setTimeout(this.soltarUna, espera);
     },
 
     arte(c) {
@@ -658,9 +697,13 @@ export default {
     this.relojPulls = window.setInterval(() => {
       if (!document.hidden) this.traerPulls();
     }, 1500);
+    this.soltarUna();
   },
 
-  beforeDestroy() { window.clearInterval(this.relojPulls); },
+  beforeDestroy() {
+    window.clearInterval(this.relojPulls);
+    window.clearTimeout(this.relojSalida);
+  },
 };
 </script>
 
